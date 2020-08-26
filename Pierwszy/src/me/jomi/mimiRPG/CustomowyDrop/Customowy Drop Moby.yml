@@ -1,0 +1,26 @@
+#TYP:
+#  - pierwotnyDrop: (true / false)
+#    ime: CustomName # opcjonalne
+#    glowa: item na głowie # opcjonalne
+#  - rolle1.szansa1
+#  - bonusEnch1
+#  - item1
+#  - rolle2.szansa2
+#  - bonusEnch2
+#  - item2
+#
+#  Jeśli potrzebujesz dać kilka tabel jednemu mobowi
+#  użyj w jego typie "x" (xZOMBIE, xxZOMBIE)
+#
+ZOMBIE:
+  - pierwotnyDrop: true
+    ime: '&aPrzykładowy zombie'
+    glowa: 
+      ==: org.bukkit.inventory.ItemStack
+      v: 2230
+      type: STONE_BUTTON
+  - 1.01
+  - 0.005
+  - ==: org.bukkit.inventory.ItemStack
+    v: 2230
+    type: BONE

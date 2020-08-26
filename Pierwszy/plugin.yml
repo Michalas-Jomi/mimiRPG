@@ -1,0 +1,6 @@
+name: mimiRPG
+version: 1.0
+main: me.jomi.mimiRPG.Main
+api-version: 1.16
+
+

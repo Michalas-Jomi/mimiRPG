@@ -1,0 +1,21 @@
+#TYP:
+#  - pierwotnyDrop: (true / false)
+#  - rolle1.szansa1
+#  - bonusEnch1
+#  - item1
+#  - rolle2.szansa2
+#  - bonusEnch2
+#  - item2
+#
+OAK_LOG:
+  - pierwotnyDrop: true
+  - 1.1
+  - 0.02
+  - ==: org.bukkit.inventory.ItemStack
+    v: 2230
+    type: STICK
+  - 1.2
+  - 0.02
+  - ==: org.bukkit.inventory.ItemStack
+    v: 2230
+    type: OAK_SAPLING
