@@ -62,8 +62,8 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		ekonomia = setupVault();
         if (!ekonomia)
-        	Logger.getLogger("Minecraft").severe(
-        		"["+getDescription().getName()+"] - Nie poprawny Vault! Wyłączanie niektórych funkcji");
+        	logger.severe(
+        		"["+getDescription().getName()+"] - Nie wykryto Vault! Wyłączanie niektórych funkcji");
         
 		new Baza();
 		zarejestruj(new Gracze());
@@ -151,8 +151,10 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
         if (rsp == null)
             return false;
         econ = rsp.getProvider();
-		chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        perms = getServer().getServicesManager().getRegistration(Permission.class).getProvider();
+        try {
+        	chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
+        	perms = getServer().getServicesManager().getRegistration(Permission.class).getProvider();
+        } catch(NullPointerException e) {}
         return econ != null;
     }
 	

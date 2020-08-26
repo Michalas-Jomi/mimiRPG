@@ -27,8 +27,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class Antylog implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Antylog");
-	final HashMap<String, Set<String>>  gracze = new HashMap<>();
-	final HashMap<String, Integer> 	  czasy  = new HashMap<>();
+	final HashMap<String, Set<String>> gracze = new HashMap<>();
+	final HashMap<String, Integer> 	   czasy  = new HashMap<>();
 	
 	final int maxCzas = 40;
 	
@@ -70,7 +70,6 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 		info(nick);
 	}
 
-	
 	@EventHandler(priority=EventPriority.HIGHEST)
 	public void uderzenie(EntityDamageByEntityEvent ev) {
 		if (!(ev.getDamager() instanceof Player && ev.getEntity() instanceof Player)) return;
