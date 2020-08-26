@@ -92,10 +92,12 @@ public abstract class Func {
 		return listToString(lista, start, " ");
 	}
 	public static String listToString(List<?> lista, int start, String wstawka) {
-		String s = lista.size() > start ? ""+lista.get(start) : "";
-		for (int i=start+1; i<lista.size(); i++)
-			s += wstawka + lista.get(i);
-		return s;
+		StringBuilder s = new StringBuilder(lista.size() > start ? ""+lista.get(start) : "");
+		int i=0;
+		for (Object obj : lista)
+			if (i++ > start)
+				s.append(wstawka).append(obj.toString());
+		return s.toString();
 	}
 	public static double sprawdz_poprawnoœæ(String liczba, double domyœlna) {
 		try {
@@ -108,7 +110,7 @@ public abstract class Func {
 	public static String koloruj(String text) {
 		if (text == null) return null;
 
-		text = przejœcia(text);
+		text = kolorkiRGB(przejœcia(text));
 		return text.replace("&", "§").replace("§§", "&");
 	}
 	public static String przejœcia(String text) {
@@ -126,7 +128,7 @@ public abstract class Func {
 				text = text.substring(0, index) + text.substring(index + 2);
 			}
 		}
-		return kolorkiRGB(text);
+		return text;
 	}
 	private static String przejœcie(String text) {
 		String hex1 = text.substring(0, 6);
@@ -150,44 +152,43 @@ public abstract class Func {
 		int bskok = (stop - bakt) / text.length();
 		
 		
-		String w = "";
+		StringBuilder w = new StringBuilder();
 		while (!text.isEmpty()) {
-			w += "&#" + hex(rakt) + hex(gakt) + hex(bakt) + text.charAt(0);
+			w.append("§x").append(hex(rakt)).append(hex(gakt)).append(hex(bakt)).append(text.charAt(0));
 			text = text.substring(1);
 			rakt += rskok;
 			gakt += gskok;
 			bakt += bskok;
 		}
-		return w;
+		return w.toString();
 	}
 	private static String hex(int liczba) {
-		return (Integer.toHexString(liczba)+'0').substring(0, 2);
+		String w = (Integer.toHexString(liczba)+'0').substring(0, 2);
+		return "§" + w.charAt(0) + "§" + w.charAt(1);
 	}
 	private static String kolorkiRGB(String msg) {
-		  StringBuffer legacyBuilder = new StringBuffer(msg);
-	      StringBuffer rgbBuilder = new StringBuffer();
-	      Matcher rgbMatcher = Pattern.compile("(&)?&#([0-9a-fA-F]{6})").matcher(legacyBuilder.toString());
-	      while (rgbMatcher.find()) {
-	        boolean isEscaped = (rgbMatcher.group(1) != null);
-	        if (!isEscaped)
-	          try {
-	            String hexCode = rgbMatcher.group(2);
-	            rgbMatcher.appendReplacement(rgbBuilder, parseHexColor(hexCode));
-	            continue;
-	          } catch (NumberFormatException numberFormatException) {} 
-	        rgbMatcher.appendReplacement(rgbBuilder, "&#$2");
-	      } 
-	      rgbMatcher.appendTail(rgbBuilder);
-	      return rgbBuilder.toString();
-	    }
+		StringBuffer rgbBuilder = new StringBuffer();
+		Matcher rgbMatcher = Pattern.compile("(&)?&#([0-9a-fA-F]{6})").matcher(msg);
+		while (rgbMatcher.find()) {
+			if (rgbMatcher.group(1) == null)
+				try {
+					String hexCode = rgbMatcher.group(2);
+					rgbMatcher.appendReplacement(rgbBuilder, parseHexColor(hexCode));
+					continue;
+				} catch (NumberFormatException e) {}
+			rgbMatcher.appendReplacement(rgbBuilder, "&#$2");
+		}
+		rgbMatcher.appendTail(rgbBuilder);
+		return rgbBuilder.toString();
+	}
 	private static String parseHexColor(String hexColor) throws NumberFormatException {
 	    if (hexColor.startsWith("#"))
 	      hexColor = hexColor.substring(1); 
 	    if (hexColor.length() != 6)
 	      throw new NumberFormatException("Invalid hex length"); 
 	    Color.decode("#" + hexColor);
-	    StringBuilder assembledColorCode = new StringBuilder();
-	    assembledColorCode.append("§x");
+	    
+	    StringBuilder assembledColorCode = new StringBuilder("§x");
 	    for (char curChar : hexColor.toCharArray())
 	      assembledColorCode.append("§").append(curChar); 
 	    return assembledColorCode.toString();
