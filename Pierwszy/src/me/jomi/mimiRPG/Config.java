@@ -23,10 +23,9 @@ public class Config {
 	private String sciezkaJarDomyœlny = null;
 	private String sciezka;
 	
-	
 	public Config(String nazwa) {
 		this.sciezka = "plugins/"+Main.plugin.getDescription().getName()+"/" + nazwa + ".yml";
-		this.sciezkaJarDomyœlny = "Configi/" + nazwa + ".yml";
+		this.sciezkaJarDomyœlny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
 		prze³aduj();
 	}
 	public Config(File plik) {

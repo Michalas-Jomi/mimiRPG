@@ -37,7 +37,5 @@ public class Baza{
 	}
 	private static void wczytajGrupy() {
 		grupy = config.sekcja("grupy");
-		// TODO dodaæ config do wyjecia z grupy: {}
-		
 	}
 }

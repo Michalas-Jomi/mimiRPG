@@ -37,10 +37,7 @@ public class Main extends JavaPlugin {
 	// TODO blok przyciągający itemy
 	// TODO drabinki 0-255
 	
-	// TODO przerzucić pliki .yml do oddzielnego folderu i stworzyć dla Baza.yml
-	
-	// TODO pliki dla osiągnięcia.yml i Customowe Craftingi.yml
-	
+	// TODO sklep na panelu
 	
     public static Permission perms = null;
     public static Economy econ = null;
