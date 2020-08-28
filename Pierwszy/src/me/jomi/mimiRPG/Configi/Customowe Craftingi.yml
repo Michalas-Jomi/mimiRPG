@@ -1,0 +1,34 @@
+# <nazwa itemu>:
+#   item: <item>
+#   układ: <lista paternów>
+#   <rozpisaka paternów> (tzn patern: materiał)
+#
+# Przykłady:
+#
+# Moneta:
+#   item:
+#     ==: org.bukkit.inventory.ItemStack
+#     v: 2567
+#     type: SUNFLOWER
+#     meta:
+#       ==: ItemMeta
+#       meta-type: TILE_ENTITY
+#       display-name: §6Moneta
+#       lore:
+#       - §eTo moneta
+#       - §ePłacisz nią
+#       - §eU wieśniaków, wiesz
+#       blockMaterial: Moneta
+#   układ:
+#   - 'ABA'
+#   - 'BCB'
+#   - 'ABA'
+#   A: Air
+#   B: Gold_Ingot
+#   C: Iron_Ingot
+# LootbagRzadki:
+#   item: lootbagRzadki (z Customowe Itemy.yml)
+#   układ:
+#   - 'SS'
+#   - 'SS'
+#   S: LIME_SHULKER_BOX

@@ -31,7 +31,7 @@ public class Baza{
 	
 	private static void wczytajCustomoweItemy() {
 		itemy.clear();
-		Config config = new Config("Customowe Itemy", "CustomowyDrop/Customowe Itemy");
+		Config config = new Config("Customowe Itemy");
 		for (String klucz : config.klucze(false))
 			itemy.put(klucz, (ItemStack) config.wczytaj(klucz));
 	}

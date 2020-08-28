@@ -43,7 +43,7 @@ public class Osi¹gniêcia implements Listener, Prze³adowalny{
 		
 		List<String> wczytane = Lists.newArrayList();
 		for (String klucz : config.klucze(false)) {
-			Osi¹gniêciaInst inst = new Osi¹gniêciaInst(klucz, (String) config.wczytaj(klucz, "nazwa"), config.wczytajItemy(klucz, "nagrody"));
+			Osi¹gniêciaInst inst = new Osi¹gniêciaInst(klucz, config.wczytajItemy(klucz, "nagrody"));
 			wczytane.add(inst.nazwaPliku);
 		}
 		Iterator<Advancement> iterator = Bukkit.advancementIterator();
@@ -139,7 +139,6 @@ public class Osi¹gniêcia implements Listener, Prze³adowalny{
 class Osi¹gniêciaInst {
 	public static final String prefix = Osi¹gniêcia.prefix;
 	public String nazwaPliku;
-	public String nazwa;
 	public String kryterium;
 	public List<ItemStack> nagrody;
 	
@@ -150,12 +149,11 @@ class Osi¹gniêciaInst {
 	public Advancement adv;
 	
 	public String toString() {
-		return String.format("AdvInst(plik=%s, nazwa=%s, czynnoœæ=%s, wartoœæ=%s)", nazwaPliku, nazwa, czynnoœæ, wartoœæ);
+		return String.format("AdvInst(plik=%s, czynnoœæ=%s, wartoœæ=%s)", nazwaPliku, czynnoœæ, wartoœæ);
 	}
 	
 	@SuppressWarnings("deprecation")
-	public Osi¹gniêciaInst(String nazwaPliku, String nazwa, List<ItemStack> nagrody) {
-		this.nazwa = nazwa;
+	public Osi¹gniêciaInst(String nazwaPliku, List<ItemStack> nagrody) {
 		this.nagrody = nagrody;
 		this.nazwaPliku = nazwaPliku;
 
@@ -219,12 +217,10 @@ class Osi¹gniêciaInst {
 	public void nagródz(Player p) {
 		for (ItemStack item : nagrody)
 			Func.dajItem(p, item);
-		if (!nazwa.equals("")) {
-			Napis n = new Napis("§7Gracz §e" + p.getDisplayName() + "§7 ukoñczy³ §a");
-			n.dodaj(Napis.osi¹gniêcie("skyblock", nazwaPliku));
-			for (Player gracz : Bukkit.getOnlinePlayers())
-				n.wyœwietl(gracz);
-			Bukkit.getConsoleSender().sendMessage("" + n);
-		}
+		Napis n = new Napis("§7Gracz §e" + p.getDisplayName() + "§7 ukoñczy³ §a");
+		n.dodaj(Napis.osi¹gniêcie("skyblock", nazwaPliku));
+		for (Player gracz : Bukkit.getOnlinePlayers())
+			n.wyœwietl(gracz);
+		Bukkit.getConsoleSender().sendMessage("" + n);
 	}
 }

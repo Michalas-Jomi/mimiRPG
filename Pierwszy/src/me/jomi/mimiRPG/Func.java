@@ -298,6 +298,7 @@ public abstract class Func {
         item.setItemMeta(meta);
         return item;
 	}
+	
 	public static boolean dajItem(Player p, ItemStack item) {
 		if (p.getInventory().firstEmpty() == -1) {
 			p.getWorld().dropItem(p.getLocation(), item);
@@ -307,7 +308,6 @@ public abstract class Func {
 			return true;
 		}
 	}
-	public static final UUID uuid = UUID.randomUUID();
 	public static ItemStack dajG³ówkê(String url) {
 		return dajG³ówkê(null, url, null);
 	}
@@ -328,7 +328,7 @@ public abstract class Func {
 			meta.setLore(lore);
 		}
 		
-		GameProfile profile = new GameProfile(uuid, null);
+		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", url));
         try {
             Field profileField = meta.getClass().getDeclaredField("profile");
@@ -342,6 +342,7 @@ public abstract class Func {
         item.setItemMeta(meta);
         return item;	
 	}
+	
 	public static double zaokr¹glij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);
 		liczba  = (double) (int) liczba;
@@ -355,6 +356,8 @@ public abstract class Func {
 		try {
 			JarFile jar = new JarFile("plugins/"+nazwaPluginu+".jar");
 			JarEntry plik = jar.getJarEntry("me/jomi/"+nazwaPluginu+"/" + co);
+			if (plik == null)
+				return false;
 			InputStream inputStream = jar.getInputStream(plik);
 			
 			int read;
@@ -388,6 +391,7 @@ public abstract class Func {
 		    }
 		return w.isEmpty() ? w : w.substring(1);
 	}
+	
 	public static OfflinePlayer graczOffline(String nick) {
 		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers()) {
 			if (gracz.getName().equalsIgnoreCase(nick))

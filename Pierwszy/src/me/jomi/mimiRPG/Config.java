@@ -23,13 +23,10 @@ public class Config {
 	private String sciezkaJarDomyœlny = null;
 	private String sciezka;
 	
-	public Config(String nazwa, String sciezkaJarDomyœlny) {
-		this.sciezka = "plugins/"+Main.plugin.getDescription().getName()+"/" + nazwa + ".yml";
-		this.sciezkaJarDomyœlny = sciezkaJarDomyœlny + ".yml";
-		prze³aduj();
-	}
+	
 	public Config(String nazwa) {
 		this.sciezka = "plugins/"+Main.plugin.getDescription().getName()+"/" + nazwa + ".yml";
+		this.sciezkaJarDomyœlny = "Configi/" + nazwa + ".yml";
 		prze³aduj();
 	}
 	public Config(File plik) {
@@ -148,13 +145,11 @@ public class Config {
 	private void stwórz() {
 		File dir = new File(sciezka.substring(0, sciezka.lastIndexOf("/")));
 		if (!dir.exists())
-			dir.mkdir();
+			dir.mkdirs();
 		
 		f = new File(sciezka);
 		if (f.exists()) return;
-		if (sciezkaJarDomyœlny != null)
-			Func.wyjmijPlik(sciezkaJarDomyœlny, sciezka);
-		else {
+		if (!Func.wyjmijPlik(sciezkaJarDomyœlny, sciezka)) {
 			try {
 				f.createNewFile();
 				String path = f.getAbsolutePath();

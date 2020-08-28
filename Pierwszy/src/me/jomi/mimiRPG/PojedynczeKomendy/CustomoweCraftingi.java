@@ -30,10 +30,9 @@ public class CustomoweCraftingi implements Prze³adowalny {
 		Main.plugin.getServer().removeRecipe(nms);
 		Main.plugin.getServer().addRecipe(rec);
 	}
-	@SuppressWarnings("unchecked")
 	private static void wczytaj(String klucz) {
-		ItemStack item =config.wczytajItem(klucz + ".item");
-		List<String> lista = (List<String>) config.wczytaj(klucz + ".uk³ad");
+		ItemStack item = config.wczytajItem(klucz + ".item");
+		List<String> lista = config.wczytajListe(klucz + ".uk³ad");
 		String linia = Func.listToString(lista, 0, "");
 		Set<Character> set = Sets.newConcurrentHashSet();
 		for (int i=0; i<linia.length(); i++) {
@@ -42,7 +41,7 @@ public class CustomoweCraftingi implements Prze³adowalny {
 		}
 		HashMap<Character, Material> mapa = new HashMap<>();
 		for (char znak : set) {
-			mapa.put(znak, Material.valueOf((String) config.wczytaj(klucz + "." + znak)));
+			mapa.put(znak, Material.valueOf(config.wczytajStr(klucz + "." + znak).toUpperCase()));
 		}
 			
 		String[] arr = new String[lista.size()];

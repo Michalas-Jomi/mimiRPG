@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.CustomowyDrop;
+package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,12 +18,13 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
+import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Prze³adowalny;
 
 public class CustomowyDrop implements Listener, Prze³adowalny{
 
-	public static final Config configBloki = new Config("Customowy Drop Bloki", "CustomowyDrop/Customowy Drop Bloki");
-	public static final Config configMoby  = new Config("Customowy Drop Moby", "CustomowyDrop/Customowy Drop Moby");
+	public static final Config configBloki = new Config("Customowy Drop Bloki");
+	public static final Config configMoby  = new Config("Customowy Drop Moby");
 
 	public static final HashMap<String, List<Drop>> mapa = new HashMap<>();
 	
@@ -102,4 +103,63 @@ public class CustomowyDrop implements Listener, Prze³adowalny{
 					drop.dropnij(loc, lvl);
 				}
 	}
+}
+
+class Drop {
+	List<Item> itemy = Lists.newArrayList();
+	boolean wy³¹czPierwotny;
+	ItemStack itemNaG³owie;
+	String imie;
+	
+	public Drop(boolean wy³¹czPierwotny, ItemStack itemNaG³owie, String imie) {
+		this.wy³¹czPierwotny = wy³¹czPierwotny;
+		this.itemNaG³owie = itemNaG³owie;
+		if (imie != null)
+			imie = Func.koloruj(imie);
+		this.imie = imie;
+	}
+	public boolean warunek(LivingEntity mob) {
+		if (imie != null && !imie.equals(mob.getCustomName()))
+			return false;
+		ItemStack glowa = mob.getEquipment().getHelmet();
+		if (glowa == null || glowa.getType().isAir())
+			glowa = null;
+		if (itemNaG³owie != null && !itemNaG³owie.equals(glowa))
+			return false;
+		return true;
+	}
+	public void dodajDrop(double szansa, double bonusEnch, ItemStack item) {
+		itemy.add(new Item(szansa, bonusEnch, item));
+	}
+	public void dropnij(Location loc, int lvl) {
+		for (Item item : itemy)
+			item.upuœæ(loc, lvl);
+	}
+
+	public String toString() {
+		return String.format("§rDrop(imie=%s)", Func.odkoloruj(imie));
+	}
+	
+}
+
+class Item {
+	private int pe³ne;
+	private double szansa;
+	private ItemStack item;
+	private double bonusEnch;
+	
+	public Item(double szansa, double bonusEnch, ItemStack item) {
+		this.item = item;
+		pe³ne = (int) szansa;
+		this.bonusEnch = bonusEnch;
+		this.szansa =  szansa - pe³ne;
+	}
+	
+	public void upuœæ(Location loc, int lvl) {
+		double szansa = this.szansa + (lvl * bonusEnch);
+		for (int i=0; i<pe³ne; i++)
+			if (Math.random() <= szansa)
+				loc.getWorld().dropItem(loc, item);
+	}
+	
 }

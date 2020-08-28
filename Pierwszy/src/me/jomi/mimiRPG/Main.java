@@ -21,14 +21,12 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.CustomowyDrop.CustomowyDrop;
 import me.jomi.mimiRPG.MiniGierki.*;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.*;
 import me.jomi.mimiRPG.Edytory.EdytorTabliczek;
 import me.jomi.mimiRPG.Edytory.EdytujItem;
 import me.jomi.mimiRPG.Gracze.Gracze;
-import me.jomi.mimiRPG.JednorekiBandyta.JednorekiBandyta;
 import me.jomi.mimiRPG.Maszyny.*;
 
 public class Main extends JavaPlugin {
@@ -40,6 +38,8 @@ public class Main extends JavaPlugin {
 	// TODO drabinki 0-255
 	
 	// TODO przerzucić pliki .yml do oddzielnego folderu i stworzyć dla Baza.yml
+	
+	// TODO pliki dla osiągnięcia.yml i Customowe Craftingi.yml
 	
 	
     public static Permission perms = null;
@@ -55,11 +55,11 @@ public class Main extends JavaPlugin {
 	public static Config ust;
 	public void onLoad() {
 		plugin = this;
-
+		
 		ConfigurationSerialization.registerClass(Napis.class);
 		ConfigurationSerialization.registerClass(Grupa.class);
 		
-		ust = new Config("ustawienia", "ustawienia");
+		ust = new Config("ustawienia");
 		moduły = ust.sekcja("Moduły");
 	}
 	public void onEnable() {
