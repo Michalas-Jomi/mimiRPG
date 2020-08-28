@@ -137,6 +137,9 @@ public abstract class Func {
 		String hex2 = text.substring(7, 13);
 		text = text.substring(13);
 		
+		if (text.isEmpty())
+			return "";
+		
 		int stop;
 		
 		int rakt = Integer.parseInt(hex1.substring(0, 2), 16);
@@ -153,18 +156,17 @@ public abstract class Func {
 		
 		
 		StringBuilder w = new StringBuilder();
-		while (!text.isEmpty()) {
-			w.append("§x").append(hex(rakt)).append(hex(gakt)).append(hex(bakt)).append(text.charAt(0));
-			text = text.substring(1);
-			rakt += rskok;
-			gakt += gskok;
-			bakt += bskok;
+		for (char znak : text.toCharArray()) {
+			w.append("§x");
+			hex(w, rakt);	hex(w, gakt);	hex(w, bakt);
+			rakt += rskok;	gakt += gskok;	bakt += bskok;
+			w.append(znak);
 		}
 		return w.toString();
 	}
-	private static String hex(int liczba) {
-		String w = (Integer.toHexString(liczba)+'0').substring(0, 2);
-		return "§" + w.charAt(0) + "§" + w.charAt(1);
+	private static void hex(StringBuilder strB, int liczba) {
+		String w = (Integer.toHexString(liczba)+'0');
+		strB.append('§').append(w.charAt(0)).append('§').append(w.charAt(1));
 	}
 	private static String kolorkiRGB(String msg) {
 		StringBuffer rgbBuilder = new StringBuffer();
@@ -196,6 +198,18 @@ public abstract class Func {
 	public static String odkoloruj(String text) {
 		if (text == null) return null;
 		return text.replace("&", "&&").replace("§", "&");
+	}
+	public static String usuñKolor(String text) {
+		StringBuilder strB = new StringBuilder();
+		boolean pomiñ = false;
+		for (char znak : text.toCharArray()) {
+			if (pomiñ || znak == '§') {
+				pomiñ = !pomiñ;
+				continue;
+			}
+			strB.append(znak);
+		}
+		return strB.toString();
 	}
 	
 	public static ItemStack po³ysk(ItemStack item) {

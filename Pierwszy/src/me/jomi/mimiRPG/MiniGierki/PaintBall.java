@@ -44,7 +44,7 @@ public class PaintBall extends MiniGra{
 	private List<Player> czerwoni  = Lists.newArrayList();
 	private List<Player> niebiescy = Lists.newArrayList();
 	private List<Location> Sczerwoni;
-	private List<Location> Sniebiescy;
+	private List<Location> Sniebiescy;	
 	private boolean koñczenie;
 	private int pktKoñczenie = 20;
 	private int Cpkt;

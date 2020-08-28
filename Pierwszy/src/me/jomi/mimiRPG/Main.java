@@ -39,6 +39,8 @@ public class Main extends JavaPlugin {
 	// TODO blok przyciągający itemy
 	// TODO drabinki 0-255
 	
+	// TODO przerzucić pliki .yml do oddzielnego folderu i stworzyć dla Baza.yml
+	
 	
     public static Permission perms = null;
     public static Economy econ = null;
@@ -55,6 +57,7 @@ public class Main extends JavaPlugin {
 		plugin = this;
 
 		ConfigurationSerialization.registerClass(Napis.class);
+		ConfigurationSerialization.registerClass(Grupa.class);
 		
 		ust = new Config("ustawienia", "ustawienia");
 		moduły = ust.sekcja("Moduły");
