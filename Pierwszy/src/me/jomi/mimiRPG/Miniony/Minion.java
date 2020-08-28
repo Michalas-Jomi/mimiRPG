@@ -32,7 +32,6 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.MenuStronne;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import net.minecraft.server.v1_16_R1.EntityZombie;
 import net.minecraft.server.v1_16_R1.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R1.PathfinderGoalSelector;
@@ -128,8 +127,8 @@ public abstract class Minion extends EntityZombie {
 		if (!gracze.contains(stworzyciel)) gracze.add(stworzyciel);
 		podnoszenie = lore.get(4).split(" ")[1].startsWith("§a");
 		
-		stanWody = EdytujItem.sprawdz_liczbe(lore.get(5).split(" ")[1], 0);
-		stanJedzenia = Func.sprawdz_poprawnoœæ(lore.get(6).split(" ")[1], 0);
+		stanWody = Func.Int(lore.get(5).split(" ")[1], 0);
+		stanJedzenia = Func.Double(lore.get(6).split(" ")[1], 0);
 		
 		staty.add(new Statystyka(lore.get(7)));
 		staty.add(new Statystyka(lore.get(8)));
@@ -658,19 +657,12 @@ public abstract class Minion extends EntityZombie {
 			if (e instanceof CraftItem)
 				podnieœItem((CraftItem) e);
 	}
-	public static boolean porównaj(ItemStack item1, ItemStack item2) {
-		ItemStack item1c = item1.clone();
-		ItemStack item2c = item2.clone();
-		item1c.setAmount(1);
-		item2c.setAmount(1);
-		return item1c.equals(item2c);
-	}
 	protected void podnieœItem(CraftItem itemByt) {
 		ItemStack item = itemByt.getItemStack();
 		for (int i=0; i<ekwipunek.size(); i++) {
 			ItemStack eqItem = ekwipunek.get(i);
 			if (eqItem == null) continue;
-			if (porównaj(eqItem, item)) {
+			if (Func.porównaj(eqItem, item)) {
 				int ile = Math.min(eqItem.getMaxStackSize() - eqItem.getAmount(), item.getAmount());
 				if (ile == 0) continue;
 				item.setAmount(item.getAmount() - ile);

@@ -17,7 +17,6 @@ import org.bukkit.inventory.PlayerInventory;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
@@ -40,7 +39,7 @@ public class LosowyDropGracza extends Komenda implements Listener {
 			if (args.length == 1)
 				return Main.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza ße" + args[0] + " ß6: ße" + Gracze.gracz(p.getName()).dropPoåmierci + "%");
 			else {
-				int liczba = EdytujItem.sprawdz_liczbe(args[1], -1);
+				int liczba = Func.Int(args[1], -1);
 				if (liczba < 0)
 					return Main.powiadom(p, prefix + "Niepoprawna liczba: ße" + args[1]);
 				else {

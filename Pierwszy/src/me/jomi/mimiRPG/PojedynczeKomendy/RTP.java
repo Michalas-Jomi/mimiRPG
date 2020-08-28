@@ -17,7 +17,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Prze³adowalny;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 
 public class RTP extends Komenda implements Prze³adowalny {
 	public static final String prefix = Func.prefix("RTP");
@@ -81,7 +80,7 @@ public class RTP extends Komenda implements Prze³adowalny {
 				return Main.powiadom(sender, prefix + "¯aden byt nie odpowiada podanym kryteriom " + args[1]);
 			teleportowany = en.get(0);
 		case 1:
-			zasiêg = EdytujItem.sprawdz_liczbe(args[0], -1);
+			zasiêg = Func.Int(args[0], -1);
 			if (zasiêg <= -1)
 				return Main.powiadom(sender, prefix + "Niepoprawny zasiêg");
 		}

@@ -14,7 +14,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Zegar;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 
 public class Glosowanie extends Komenda implements Zegar {
 	public static final String prefix = Func.prefix("G³osowanie");
@@ -63,8 +62,8 @@ public class Glosowanie extends Komenda implements Zegar {
 				p.sendMessage(prefix + nazwa + " nie jest prawid³ow¹ nazw¹ g³osowania");
 				break;
 			}
-			int potrzebneG³osy = EdytujItem.sprawdz_liczbe(args[1], -1);
-			int czas = EdytujItem.sprawdz_liczbe(args[2], -1);
+			int potrzebneG³osy = Func.Int(args[1], -1);
+			int czas = Func.Int(args[2], -1);
 			if (potrzebneG³osy <= 0 || czas <= 0) {
 				p.sendMessage(prefix + "/vote stwórz <potrzebne g³osy> <czas w minutach> <nazwa g³osowania>");
 				break;

@@ -38,9 +38,7 @@ public abstract class Func {
 			tekst = tekst.replaceFirst("%s", "§e" + u + "§6");
 		return "§6" + tekst + "§6";
 	}
-	public static int losuj(int min, int max) {
-		return min + (int)(Math.random() * ((max - min) + 1));
-	}
+	
 	public static String DoubleToString(double liczba) {
 		String ca³oœci = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
@@ -99,17 +97,24 @@ public abstract class Func {
 				s.append(wstawka).append(obj.toString());
 		return s.toString();
 	}
-	public static double sprawdz_poprawnoœæ(String liczba, double domyœlna) {
+	
+	public static double Double(String liczba, double domyœlna) {
 		try {
 			return Double.parseDouble(liczba.trim());
 		} catch(NumberFormatException er) {
 			return domyœlna;
 		}
 	}
+	public static int Int(String liczba, int domyslna) {
+		try {
+			return Integer.parseInt(liczba.trim());
+		} catch(NumberFormatException nfe) {
+			return domyslna;
+		}
+	}
 	
 	public static String koloruj(String text) {
 		if (text == null) return null;
-
 		text = kolorkiRGB(przejœcia(text));
 		return text.replace("&", "§").replace("§§", "&");
 	}
@@ -343,12 +348,24 @@ public abstract class Func {
         return item;	
 	}
 	
+	public static boolean porównaj(ItemStack item1, ItemStack item2) {
+		ItemStack item1c = item1.clone();
+		ItemStack item2c = item2.clone();
+		item1c.setAmount(1);
+		item2c.setAmount(1);
+		return item1c.equals(item2c);
+	}
+	
+	public static int losuj(int min, int max) {
+		return min + (int)(Math.random() * ((max - min) + 1));
+	}
 	public static double zaokr¹glij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);
 		liczba  = (double) (int) liczba;
 		liczba /= Math.pow(10, miejsca);
 		return liczba;
 	}
+	
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
 		String nazwaPluginu = Main.plugin.getDescription().getName();

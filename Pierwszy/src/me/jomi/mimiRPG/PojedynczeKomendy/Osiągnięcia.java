@@ -28,7 +28,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Prze³adowalny;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import me.jomi.mimiRPG.MiniGierki.MiniGra;
 
 public class Osi¹gniêcia implements Listener, Prze³adowalny{
@@ -173,7 +172,7 @@ class Osi¹gniêciaInst {
 		int i = 1;
 		if (t.length >= 3)
 			wartoœæ = t[i++];
-		iloœæ = EdytujItem.sprawdz_liczbe(t[i], -1);
+		iloœæ = Func.Int(t[i], -1);
 		if (iloœæ <= -1)
 			Main.plugin.getLogger().warning("niepoprawny plik osi¹gniêcia.yml, osi¹gniêcie " + nazwaPliku);
 		if (Osi¹gniêcia.mapa.get(czynnoœæ) == null)

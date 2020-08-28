@@ -20,7 +20,6 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 public class Wyplac extends Komenda implements Listener {
@@ -40,7 +39,7 @@ public class Wyplac extends Komenda implements Listener {
 
 		int ile = 1;
 		if (args.length >= 2)
-			ile = EdytujItem.sprawdz_liczbe(args[1], 1);
+			ile = Func.Int(args[1], 1);
 		if (ile > 64) ile = 64;
 		if (ile <= 0) ile = 1;
 		
@@ -64,7 +63,7 @@ public class Wyplac extends Komenda implements Listener {
 		if (p.getInventory().firstEmpty() == -1)
 			return powiadom(p, "Twój ekwipunek jest pe³ny");
 		
-		double kwota = Func.sprawdz_poprawnoœæ(args[0].replace(",", ""), 0);
+		double kwota = Func.Double(args[0].replace(",", ""), 0);
 		if (kwota == 0)
 			return powiadom(p, "Niepoprawna liczba: §e" + args[0]);
 		
@@ -85,7 +84,7 @@ public class Wyplac extends Komenda implements Listener {
 		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && meta.getDisplayName().equals("§9§lBanknot§2") && meta.hasLore()) {
 			List<String> lore = meta.getLore();
 			if (lore.size() == 2 && lore.get(0).equals("§bU¿yj Prawym przyciskiem myszy")) {
-				double ile = Func.sprawdz_poprawnoœæ(lore.get(1).split(" ")[1].replace(",", ""), 0);
+				double ile = Func.Double(lore.get(1).split(" ")[1].replace(",", ""), 0);
 				if (ile == 0) return;
 				EconomyResponse r = Main.econ.depositPlayer(p, ile);
 				if (r.transactionSuccess()) {
@@ -121,7 +120,7 @@ public class Wyplac extends Komenda implements Listener {
 
 		int ile = 1;
 		if (args.length >= 2)
-			ile = EdytujItem.sprawdz_liczbe(args[1], 1);
+			ile = Func.Int(args[1], 1);
 		if (ile > 64) ile = 64;
 		if (ile <= 0) ile = 1;
 		

@@ -31,7 +31,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Zegar;
-import me.jomi.mimiRPG.Miniony.Minion;
 
 public class Budownik extends Komenda implements Listener, Zegar {
 	public static final String prefix = Func.prefix("Budownik");
@@ -97,7 +96,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 			return;
 		Player p = ev.getPlayer();
 		ItemStack item = p.getInventory().getItemInMainHand();
-		if (Minion.porównaj(item, itemSkrzynia)) {
+		if (Func.porównaj(item, itemSkrzynia)) {
 			if (mapa.containsKey(p.getName())) {
 				ev.setCancelled(true);
 				p.sendMessage(prefix + "Najpierw ustaw róg poprzedniego Budownika, zamin zabierzesz siê za kolejny, jeœli go zgubi³eœ u¿yj /rógbudownika");
@@ -108,7 +107,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 			p.sendMessage(prefix + "Skrzynia budownika ustawiona, pora na róg");
 			Func.dajItem(p, itemRóg);
 			mapa.put(p.getName(), ev.getBlock().getLocation());
-		} else if (Minion.porównaj(item, itemRóg)) {
+		} else if (Func.porównaj(item, itemRóg)) {
 			ev.setCancelled(true);
 			if (!mapa.containsKey(p.getName())) {
 				p.sendMessage(prefix + "Nie ustawiasz aktualnie ¿adnego budownika");

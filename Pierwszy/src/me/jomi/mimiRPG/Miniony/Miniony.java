@@ -31,7 +31,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Prze³adowalny;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 
 public class Miniony extends Komenda implements Listener, Prze³adowalny {
 	public static ItemStack itemKopacz  = stwórzItem(Material.COBBLESTONE,		"§1§lMinion §1Kopacz§9",	Arrays.asList("&aU¿yj tego narzêdzia (PPM)", "&aAby zespawnowaæ swojego miniona", "&bid: &dnowy"));
@@ -176,7 +175,7 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 		if (tagi.contains("mimiMinion"))
 			for (String tag : tagi)
 				if (tag.startsWith("mimiMinion_"))
-					return EdytujItem.sprawdz_liczbe(tag.substring(11), -1);
+					return Func.Int(tag.substring(11), -1);
 		return -1;
 	}
 	

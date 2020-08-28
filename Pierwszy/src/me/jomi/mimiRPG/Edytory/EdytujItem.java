@@ -40,7 +40,6 @@ public class EdytujItem extends Komenda {
 	public static List<String> atrybuty = Arrays.asList("armor", "armor_toughness", "attack_damage", "attack_speed", "knockback_resistance", "luck", "max_health", "movement_speed", "flying_speed", "horse_jump_strength");
 	public static List<String> sloty	= Arrays.asList("ręka", "druga_ręka", "głowa", "klata", "nogi", "stopy" );
 	
-
 	public static void dodajTekst(TextComponent doCzego, Action akcja, String text, String komenda) {
 		TextComponent e = new TextComponent(text);
 		e.setClickEvent(new ClickEvent(akcja, komenda));
@@ -252,7 +251,7 @@ public class EdytujItem extends Komenda {
 						return powiadom(p, "/edytujItem lore usuń <nr lini>");
 					return powiadom(p, "/edytujItem lore ustaw <nr lini> <text>");
 				}
-				int i = sprawdz_liczbe(args[2], -1);
+				int i = Func.Int(args[2], -1);
 				if (i == -1)
 					return powiadom(p, args[2] + " nie jest poprawną liczbą");
 				if (i > lore.size() && !args[1].equals("wstaw"))
@@ -280,7 +279,7 @@ public class EdytujItem extends Komenda {
 				return powiadom(p, "Niepoprawna nazwa enchantu: " + args[1]);
 			int lvl = enchant.getMaxLevel();
 			if (args.length >= 3)
-				lvl = sprawdz_liczbe(args[2], 0);
+				lvl = Func.Int(args[2], 0);
 			if (lvl == 0) meta.removeEnchant(enchant);
 			else		  meta.addEnchant(enchant, lvl, true);
 			p.sendMessage(prefix + "Dodano enchant §e" + args[1] + " " + Func.IntToString(lvl));
@@ -345,13 +344,6 @@ public class EdytujItem extends Komenda {
 		p.sendMessage(prefix + msg);
 		return false;
 	}
-	public static int sprawdz_liczbe(String liczba, int domyslna) {
-		try {
-			return Integer.parseInt(liczba.trim());
-		} catch(NumberFormatException nfe) {
-			return domyslna;
-		}
-	}	
 	private static ItemFlag dajFlage(String nazwa) {
 		switch (nazwa) {
 		case "atrybuty": 	return ItemFlag.HIDE_ATTRIBUTES;

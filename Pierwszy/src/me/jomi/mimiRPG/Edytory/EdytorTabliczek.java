@@ -94,7 +94,7 @@ public class EdytorTabliczek extends Komenda implements Listener{
 				ustaw(p, blok);
 				return true;
 			}
-		int nr = EdytujItem.sprawdz_liczbe(args[0], -1);
+		int nr = Func.Int(args[0], -1);
 		if (nr == -1 || nr >= 4) return Main.powiadom(p, prefix + "Niepoprawny nr lini");
 		Sign blok = mapa.get(p.getName());
 		if (blok == null) return Main.powiadom(p, prefix + "Wybrana tabliczka nie istnieje");

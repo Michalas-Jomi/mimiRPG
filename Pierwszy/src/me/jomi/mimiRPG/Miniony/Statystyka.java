@@ -50,7 +50,7 @@ public class Statystyka {
 		przepisz(mapa.get(nazwa), this);
 		akt = start;
 		if (parametry.length > 1)
-			akt = Func.sprawdz_poprawnoœæ(parametry[1], -1);
+			akt = Func.Double(parametry[1], -1);
 		cena = (akt - start) / krok;
 		nst = akt + krok;
 	}

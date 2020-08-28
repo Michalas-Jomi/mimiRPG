@@ -32,7 +32,6 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Prze³adowalny;
 import me.jomi.mimiRPG.MiniGierki.MiniGra;
-import me.jomi.mimiRPG.Miniony.Minion;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
@@ -76,7 +75,7 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		
 		ev.setCancelled(true);
 		
-		if (!Minion.porównaj(item, lootbag.item))
+		if (!Func.porównaj(item, lootbag.item))
 			return;
 		if (!p.hasPermission("mimiRPG.lootbag.otworz")) {
 			p.sendMessage(prefix + "Nie masz uprawnieñ na otwieranie lootbagów");

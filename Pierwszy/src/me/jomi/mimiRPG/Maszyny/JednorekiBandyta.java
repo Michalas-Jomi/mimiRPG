@@ -27,7 +27,6 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Prze³adowalny;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import net.md_5.bungee.api.chat.ClickEvent;
 
 public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny {
@@ -395,7 +394,7 @@ class AutomatTworzony {
 			JednorekiBandyta.inst.prze³aduj();
 			return;
 		case "koszt":
-			int ile = EdytujItem.sprawdz_liczbe(args[1], -1);
+			int ile = Func.Int(args[1], -1);
 			if (ile < 0) {gracz.sendMessage(prefix + "Niepoprawna liczba"); return;}
 			koszt = ile;
 			break;
@@ -451,7 +450,7 @@ class AutomatTworzony {
 				return;
 			}
 		case "uwygrana":
-			int nr = EdytujItem.sprawdz_liczbe(args[1], -1);
+			int nr = Func.Int(args[1], -1);
 			if (nr == -1 || nr > wygrane.size()) {
 				gracz.sendMessage(prefix + "Nieprawid³owy nr lini " + args[1]);
 				return;

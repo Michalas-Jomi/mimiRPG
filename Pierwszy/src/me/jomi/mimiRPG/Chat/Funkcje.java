@@ -14,7 +14,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Prze³adowalny;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 
 public class Funkcje extends Komenda implements Prze³adowalny {
 	public static final String prefix = Func.prefix("Funkcje");
@@ -102,7 +101,7 @@ class Funkcja {
 	            public void run() {
 	                nastêpna(p, nr+1, parametry);
 	            }
-	        }, EdytujItem.sprawdz_liczbe(komenda.split(" ")[1], 0));
+	        }, Func.Int(komenda.split(" ")[1], 0));
 			return;
 		}
 		Bukkit.getServer().dispatchCommand(p, komenda);

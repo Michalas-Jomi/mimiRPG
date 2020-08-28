@@ -13,9 +13,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Edytory.EdytujItem;
-import me.jomi.mimiRPG.Miniony.Minion;
-
 public class Config {
 	private YamlConfiguration plik;
 	private File f;
@@ -46,7 +43,7 @@ public class Config {
 		}
 		if (item instanceof ItemStack)
 			for (Entry<String, ItemStack> en : Baza.itemy.entrySet())
-				if (Minion.porównaj(en.getValue(), (ItemStack) item))
+				if (Func.porównaj(en.getValue(), (ItemStack) item))
 					return en.getKey() + " " + ((ItemStack) item).getAmount();
 		return item;
 	}
@@ -117,7 +114,7 @@ public class Config {
 		String[] wejscie = ((String) item).split(" ");
 		ItemStack _item = Baza.itemy.get(wejscie[0]).clone();
 		if (wejscie.length >= 2)
-			_item.setAmount(EdytujItem.sprawdz_liczbe(wejscie[1], 1));
+			_item.setAmount(Func.Int(wejscie[1], 1));
 		return _item;
 	}
 	

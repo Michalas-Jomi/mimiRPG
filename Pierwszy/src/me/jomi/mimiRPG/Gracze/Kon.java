@@ -16,7 +16,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 
 public class Kon {
@@ -121,7 +120,7 @@ public class Kon {
 		ConfigurationSection sekcja = gracz.config.sekcja("koñ", "itemy");
 		if (sekcja != null)
 			for (String slot : sekcja.getKeys(false)) {
-				int i = EdytujItem.sprawdz_liczbe(slot, -1);
+				int i = Func.Int(slot, -1);
 				if (i <= -1 || i >= slotyEq) continue;
 				inv.setItem(i, gracz.config.wczytajItem("koñ", "itemy", i));
 			}

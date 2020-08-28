@@ -130,7 +130,7 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 		}
 		String s = lore.get(len-2).split(" ")[1];
 		s = s.substring(2, s.length()-1);
-		double cena = Func.sprawdz_poprawnoœæ(s, -1);
+		double cena = Func.Double(s, -1);
 		if (cena > Main.econ.getBalance(p)) {
 			p.sendMessage(prefix + "Nie staæ ciê na to");
 			return;
@@ -288,7 +288,7 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 			p.sendMessage(prefix + "Ta komenda nie dzia³a poprawnie! wpisz §e/raport §6aby dowiedzieæ siê wiêcej");
 			return true;
 		}
-		double koszt = Func.sprawdz_poprawnoœæ(cena, -1);
+		double koszt = Func.Double(cena, -1);
 		if (koszt == -1) {
 			p.sendMessage(prefix + "Niepoprawna liczba: " + cena);
 			return true;
