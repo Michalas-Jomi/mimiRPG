@@ -371,7 +371,7 @@ public abstract class Func {
 	
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
-		String nazwaPluginu = Main.plugin.getDescription().getName();
+		String nazwaPluginu = Main.plugin.getName();
 		File f2 = new File(gdzie);
 		try {
 			JarFile jar = new JarFile("plugins/"+nazwaPluginu+".jar");
@@ -384,9 +384,9 @@ public abstract class Func {
             byte[] bytes = new byte[1024];
             FileOutputStream outputStream = new FileOutputStream(f2);
             
-            while ((read = inputStream.read(bytes)) != -1) {
+            while ((read = inputStream.read(bytes)) != -1)
             	outputStream.write(bytes, 0, read);
-            }
+
             outputStream.close();
             return true;
 		} catch (IOException e) {

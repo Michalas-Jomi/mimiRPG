@@ -1,24 +1,3 @@
-# Napis Schemat 
-# \/ \/ \/ \/ \/
-## Schemat _1_
-# text: 'text' #wymagane
-# hover: 'text po najechaniu myszką' #opcjonalne
-# akcja: RUN_COMMAND / SUGGEST_COMMAND / COPY_TO_CLIPBOARD / OPEN_URL #opcjonalne domyślnie RUN_COMMAND
-# komenda: '/komenda' #opcjonalne
-# extra: #opcjonalne
-#   drugi Napis
-#
-## Schemat _2_
-# 'text||hover: text||komenda<akcja>: text||drugi napis'
-# Aliasy: 
-#   hover - h | komenda - k | RUN_COMMAND - r
-#   SUGGEST_COMMAND - s | COPY_TO_CLIPBOARD - c | OPEN_URL - o
-# przykład: 
-#  '&2Spawn pod ||&a/spawn||hover: &dKliknij aby sie przeteleportować||komenda<Run_Command>: /spawn'
-#  '&2Spawn pod ||&a/spawn||h: &dKliknij aby się przeteleportować||k<r>: /spawn'
-#
-
-
 
 # Prefix dla konsoli w /mi
 WiadomoscConsole: '[Konsola]'

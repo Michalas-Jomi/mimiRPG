@@ -1,0 +1,56 @@
+Często opisuje coś używając specjalnej nazwy
+Słowniczek:
+@
+Napis
+
+Schemat _1_
+
+text: 'text' #wymagane
+hover: 'text po najechaniu myszką' #opcjonalne
+akcja: RUN_COMMAND / SUGGEST_COMMAND / COPY_TO_CLIPBOARD / OPEN_URL #opcjonalne domyślnie RUN_COMMAND
+komenda: '/komenda' #opcjonalne
+extra: #opcjonalne
+  drugi Napis
+
+Schemat _2_
+
+'text||hover: text||komenda<akcja>: text||drugi napis'
+Aliasy: 
+  hover - h | komenda - k | RUN_COMMAND - r
+  SUGGEST_COMMAND - s | COPY_TO_CLIPBOARD - c | OPEN_URL - o
+przykład: 
+ '&2Spawn pod ||&a/spawn||hover: &dKliknij aby sie przeteleportować||komenda<Run_Command>: /spawn'
+ '&2Spawn pod ||&a/spawn||h: &dKliknij aby się przeteleportować||k<r>: /spawn'
+
+@
+item
+org.bukkit.ItemStack
+najłatwiej jest wrzucić item do plecaka i skopiować z configu plecaka
+
+@@@@@@@@@@@@@@@@@
+Koniec Słowniczka
+@@@@@@@@@@@@@@@@@
+
+@
+Sklep
+
+w configu
+wszystkie pliki .yml w plugins/mimirpg/sklep i katalogach podrzędnych są traktowane jako "strony" 
+nazwa pliku (nielicząc końcówki .yml) to id strony
+
+Budowa strony
+
+nazwa: <nazwa wyświetlająca się jako nazwa strony(Ekwipunku)> # opcjonalne
+rzędy: <liczba od 1 do 6 określająca ilość rzędów strony> # opcjonalne domyślnie 6
+<nr slota>:
+  ilość: <ilość kupowanego/sprzedawanego przedmiotu> # opcjonalne domyślnie 1
+  cena kupna: <cena za <item> w ilości <ilość> dla kupującego> # opcjonalne
+  cena sprzedarzy: <cena za <item> w ilości <ilość> dla sprzedającego> # opcjonalne
+  strona: <nazwa strony> # opcjonalne, przenosi na wskazaną strone, anuluje pozostałe opcjonalne parametry
+  item: <item>
+  
+Użycie w grze
+kontrola jest pod /mimipomoc Sklep
+jedyne co nie jest tam uwzględnione to to iż samo "/sklep" jest traktowane jako "/sklep Główna", o ile strona "Główna" istnieje
+
+

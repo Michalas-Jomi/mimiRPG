@@ -4,6 +4,7 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -55,9 +56,14 @@ public class Main extends JavaPlugin {
 		plugin = this;
 		path = getDataFolder().getPath() + '/';
 		
-		
 		ConfigurationSerialization.registerClass(Napis.class);
 		ConfigurationSerialization.registerClass(Grupa.class);
+		
+		File f = new File(path);
+		if (!f.exists()) {
+			f.mkdirs();
+			Func.wyjmijPlik("Configi/Pomoc.txt", path+"Pomoc.txt");
+		}
 		
 		ust = new Config("ustawienia");
 		moduły = ust.sekcja("Moduły");
@@ -122,6 +128,8 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
 			Przeładowalny.przeładowalne.put(obj.getClass().getSimpleName(), p);
 			p.przeładuj();
 		}
+		if (obj instanceof Instrukcja)
+			Instrukcja.mapa.put(obj.getClass().getSimpleName(), (Instrukcja) obj);
 	}
 	public void onDisable() {
 		for (Player p : Bukkit.getOnlinePlayers())

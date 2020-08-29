@@ -26,11 +26,12 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Instrukcja;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Prze³adowalny;
 
-public class Sklep extends Komenda implements Listener, Prze³adowalny {
+public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcja {
 	public static final String prefix = Func.prefix("Sklep");
 	final HashMap<String, Strona> otwarte = new HashMap<>();
 	final HashMap<String, Strona> strony = new HashMap<>();
@@ -130,6 +131,14 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny {
 			p.sendMessage(prefix + "§cTa stona nie istnieje");
 	}
 
+	@Override
+	public void info(CommandSender p, int strona) {
+		p.sendMessage("§9PPM §c- §bKupujesz");
+		p.sendMessage("§9Shift + PPM §c- §bKupujesz mo¿liwie du¿o");
+		p.sendMessage("§9LPM §c- §bSprzedajesz");
+		p.sendMessage("§9Shift + LPM §c- §bSprzedajesz mo¿liwie du¿o");
+		p.sendMessage("§9/sklep <strona>");
+	}
 }
 
 class Strona {

@@ -53,6 +53,4 @@ public class Prze³aduj extends Komenda {
 		Main.log(r);
 			
 	}
-	
-
 }
