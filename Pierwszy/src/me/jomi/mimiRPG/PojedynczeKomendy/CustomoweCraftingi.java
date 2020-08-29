@@ -50,13 +50,12 @@ public class CustomoweCraftingi implements Prze³adowalny {
 		dodaj(klucz, item, arr, mapa);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void prze³aduj() {
 		config.prze³aduj();
 		
 		// Usuwanie niechcianych craftingów
-		for (String przepis : (List<String>) Main.ust.wczytajLubDomyœlna("ZablokowaneCraftingi", Lists.newArrayList()))
-			Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft(przepis));
+		for (Object przepis :  Main.ust.wczytajLubDomyœlna("ZablokowaneCraftingi", Lists.newArrayList()))
+			Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
 		
 		for (String klucz : config.klucze(false))
 			wczytaj(klucz);

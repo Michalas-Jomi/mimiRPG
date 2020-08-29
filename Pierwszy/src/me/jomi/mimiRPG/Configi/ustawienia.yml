@@ -38,7 +38,6 @@ Moduły:
   EdytorTabliczek: true
   EdytujItem: true
   Funkcje: true
-  Generatory: true
   Głowa: true
   ItemLink: true
   JednorekiBandyta: true
@@ -60,6 +59,7 @@ Moduły:
   Poziom: true
   Przyjaciele: true
   RTP: true
+  Sklep: true
   Spawnery: true
   Targ: true
   Ujezdzaj: true

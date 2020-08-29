@@ -68,19 +68,20 @@ public abstract class Komenda implements TabExecutor {
 	@Override
 	public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 
-	protected List<String> utab(String wpisane, String... Podpowiedzi) {
-		return uzupe³nijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
-	}
 	protected List<String> utab(String[] wpisane, String... Podpowiedzi) {
 		return uzupe³nijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
+	}
+	protected List<String> utab(String[] wpisane, Iterable<String> Podpowiedzi) {
+		return uzupe³nijTabComplete(wpisane, Podpowiedzi);
 	}
 	protected List<String> uzupe³nijTabComplete(String[] wpisane, Iterable<String> Podpowiedzi) {
 		return uzupe³nijTabComplete(Func.ostatni(wpisane), Podpowiedzi);
 	}
 	protected List<String> uzupe³nijTabComplete(String wpisane, Iterable<String> Podpowiedzi) {
     	List<String> lista = Lists.newArrayList();
+    	wpisane = wpisane.toLowerCase();
 		for (String podpowiedz : Podpowiedzi)
-			if (podpowiedz.toLowerCase().startsWith(wpisane.toLowerCase()))
+			if (podpowiedz.toLowerCase().startsWith(wpisane))
 				lista.add(podpowiedz);
 		return lista;
     }

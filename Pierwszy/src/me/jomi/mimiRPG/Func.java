@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -99,11 +100,13 @@ public abstract class Func {
 	}
 	
 	public static double Double(String liczba, double domyœlna) {
-		try {
-			return Double.parseDouble(liczba.trim());
-		} catch(NumberFormatException er) {
-			return domyœlna;
-		}
+		if (liczba.contains("."))
+			try {
+				return Double.parseDouble(liczba.trim());
+			} catch(NumberFormatException er) {
+				return domyœlna;
+			}
+		return Int(liczba, (int) domyœlna);
 	}
 	public static int Int(String liczba, int domyslna) {
 		try {
@@ -161,17 +164,17 @@ public abstract class Func {
 		
 		
 		StringBuilder w = new StringBuilder();
+		Consumer<Integer> hex = liczba -> {
+			String _hex = (Integer.toHexString(liczba)+'0');
+			w.append('§').append(_hex.charAt(0)).append('§').append(_hex.charAt(1));
+		};
 		for (char znak : text.toCharArray()) {
 			w.append("§x");
-			hex(w, rakt);	hex(w, gakt);	hex(w, bakt);
-			rakt += rskok;	gakt += gskok;	bakt += bskok;
+			hex.accept(rakt); hex.accept(gakt);	hex.accept(bakt);
+			rakt += rskok;	  gakt += gskok;	bakt += bskok;
 			w.append(znak);
 		}
 		return w.toString();
-	}
-	private static void hex(StringBuilder strB, int liczba) {
-		String w = (Integer.toHexString(liczba)+'0');
-		strB.append('§').append(w.charAt(0)).append('§').append(w.charAt(1));
 	}
 	private static String kolorkiRGB(String msg) {
 		StringBuffer rgbBuilder = new StringBuffer();
@@ -418,6 +421,9 @@ public abstract class Func {
 	}
 	public static String nieNullStr(String str) {
 		return str == null ? "" : str;
+	}
+	public static <T> List<T> nieNullList(List<T> lista){
+		return lista != null ? lista : Lists.newArrayList();
 	}
 	public static String ostatni(String[] stringi) {
 		if (stringi.length == 0) return "";

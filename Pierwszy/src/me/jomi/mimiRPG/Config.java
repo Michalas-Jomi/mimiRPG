@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 
 public class Config {
 	private YamlConfiguration plik;
-	private File f;
+	public File f;
 	
 	private String sciezkaJarDomyœlny = null;
 	private String sciezka;
@@ -86,10 +86,13 @@ public class Config {
 	public double  wczytajDouble (Object... sciezka) { return (double) wczytaj(sciezka);}
 	public boolean wczytajBoolean(Object... sciezka) { return (boolean)wczytaj(sciezka);}
 	public String  wczytajStr	 (Object... sciezka) { return Func.koloruj((String) wczytaj(sciezka));}
-	
-	public Object wczytajLubDomyœlna(String sciezka, Object domyœlna) {
+
+	@SuppressWarnings("unchecked")
+	public <T> T wczytajLubDomyœlna(String sciezka, T domyœlna) {
 		Object obj = wczytaj(sciezka);
-		return obj != null ? obj : domyœlna;
+		if (obj == null)
+			return domyœlna;
+		return (T) obj;
 	}
 	public List<String> wczytajListe(Object... sciezka){
 		List<String> lista = plik.getStringList(sc(sciezka));
@@ -112,7 +115,8 @@ public class Config {
 		if (item instanceof ItemStack)
 			return (ItemStack) item;
 		String[] wejscie = ((String) item).split(" ");
-		ItemStack _item = Baza.itemy.get(wejscie[0]).clone();
+		if (!Baza.itemy.containsKey(wejscie[0])) return null;
+			ItemStack _item = Baza.itemy.get(wejscie[0]).clone();
 		if (wejscie.length >= 2)
 			_item.setAmount(Func.Int(wejscie[1], 1));
 		return _item;

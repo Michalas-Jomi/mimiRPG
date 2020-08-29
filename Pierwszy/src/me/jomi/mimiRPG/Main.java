@@ -37,7 +37,7 @@ public class Main extends JavaPlugin {
 	// TODO blok przyciągający itemy
 	// TODO drabinki 0-255
 	
-	// TODO sklep na panelu
+	// TODO info opisujące wszystko
 	
     public static Permission perms = null;
     public static Economy econ = null;
@@ -46,12 +46,15 @@ public class Main extends JavaPlugin {
 	public static final HashMap<String, MiniGra> minigry = new HashMap<>();
 	
 	public static JavaPlugin plugin;
+	public static String path;
 	
 	public static boolean ekonomia = false;
 	
 	public static Config ust;
 	public void onLoad() {
 		plugin = this;
+		path = getDataFolder().getPath() + '/';
+		
 		
 		ConfigurationSerialization.registerClass(Napis.class);
 		ConfigurationSerialization.registerClass(Grupa.class);
@@ -62,8 +65,7 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		ekonomia = setupVault();
         if (!ekonomia)
-        	logger.severe(
-        		"["+getDescription().getName()+"] - Nie wykryto Vault! Wyłączanie niektórych funkcji");
+        	error("Nie wykryto Vault! Wyłączanie niektórych funkcji");
         
 		new Baza();
 		zarejestruj(new Gracze());
@@ -82,8 +84,8 @@ CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.clas
 EdytorTabliczek.class, EdytujItem.class, Funkcje.class, Głowa.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
-Plecak.class, Poziom.class, Przyjaciele.class, RTP.class, Spawnery.class, Targ.class, Ujezdzaj.class,
-UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
+Plecak.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
+Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
 Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
 			try {
 				if (!(włączonyModół(klasa)))
@@ -167,9 +169,15 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
 	}
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");
+	private static final String logprefix = "[mimiRPG] ";
 	public static void log(Object... msg) {
-		String w = Func.listToString(msg, 0, " ");
-		logger.info("[" + plugin.getDescription().getName() + "] " + w);
+		logger.info(logprefix + Func.listToString(msg, 0));
+	}
+	public static void warn(Object... msg) {
+		logger.warning(logprefix + Func.listToString(msg, 0));
+	}
+	public static void error(Object...msg) {
+		logger.severe(logprefix + Func.listToString(msg, 0));
 	}
 
 	public static void dodajPermisje(String... permisje) {
