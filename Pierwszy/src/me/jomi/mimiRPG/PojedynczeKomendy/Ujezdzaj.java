@@ -68,6 +68,8 @@ public class Ujezdzaj extends Komenda {
 			p.sendMessage("§cnieprawid³owy selektor " + nazwa);
 			return null;
 		}
+		if (en.isEmpty())
+			return null;
 		return en.get(0);
 	}
 	

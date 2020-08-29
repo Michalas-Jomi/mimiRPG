@@ -17,7 +17,7 @@ import me.jomi.mimiRPG.Prze³adowalny;
 
 public class Funkcje extends Komenda implements Prze³adowalny {
 	public static final String prefix = Func.prefix("Funkcje");
-	private static HashMap<String, Funkcja> mapa = new HashMap<>();
+	private HashMap<String, Funkcja> mapa = new HashMap<>();
 	
 	public Funkcje() {
 		super("funkcja", null, "func");
@@ -43,7 +43,7 @@ public class Funkcje extends Komenda implements Prze³adowalny {
 		return true;
 	}
 
-	private static final List<Funkcja> funkcje = Lists.newArrayList();
+	private final List<Funkcja> funkcje = Lists.newArrayList();
 	public void prze³aduj() {
 		funkcje.clear();
 		File folder = new File("plugins/"+Main.plugin.getName()+"/funkcje");
@@ -63,7 +63,7 @@ public class Funkcje extends Komenda implements Prze³adowalny {
 			else
 				skanuj(plik);
 	}
-	private static int start = ("plugins/"+Main.plugin.getName()+"/funkcje/").length();
+	private int start = ("plugins/"+Main.plugin.getName()+"/funkcje/").length();
 	private void dodaj(File plik) {
 		if (plik.getName().contains(" ")) {
 			Main.plugin.getLogger().warning("Niepoprawna nazwa Funkcji " + plik.getPath());

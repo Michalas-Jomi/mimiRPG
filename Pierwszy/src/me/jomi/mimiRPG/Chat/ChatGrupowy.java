@@ -26,20 +26,22 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 public class ChatGrupowy extends Komenda implements Listener {
 
 	public static String prefix = Func.prefix("Chat Grupowy");
-	public static HashMap<String, ChatGrupowyInst> mapa = new HashMap<>();
-	public static List<String> nazwy = Lists.newArrayList();
-	public static List<CommandSender> podgl¹dacze = Lists.newArrayList();
+	public HashMap<String, ChatGrupowyInst> mapa = new HashMap<>();
+	public List<String> nazwy = Lists.newArrayList();
+	public List<CommandSender> podgl¹dacze = Lists.newArrayList();
 	
+	public static ChatGrupowy inst;
 	public ChatGrupowy() {
 		super("chatGrupowy", null, "cg");
 		Main.dodajPermisje("chatGrupowy.podgladaj");
+		inst = this;
 	}
 	
-	private static void dodaj(Napis doCzego, String tekst, String hover, String sugest) {
+	private void dodaj(Napis doCzego, String tekst, String hover, String sugest) {
 		doCzego.dodaj(new Napis(tekst, hover, Action.SUGGEST_COMMAND, sugest));
 	}
 	
-	private static boolean info(CommandSender p) {
+	private boolean info(CommandSender p) {
 		Napis msg = new Napis("\n");
 		
 		msg.dodaj("\n§6§l>>> §eCzat Grupowy §6§l<<");
@@ -58,11 +60,11 @@ public class ChatGrupowy extends Komenda implements Listener {
 		msg.wyœwietl(p);
 		return true;
 	}
-	private static boolean powiadom(CommandSender p, String msg) {
+	private boolean powiadom(CommandSender p, String msg) {
 		p.sendMessage(prefix + msg);
 		return true;
 	}
-	private static int znajdzPodgl¹dacza(CommandSender p) {
+	private int znajdzPodgl¹dacza(CommandSender p) {
 		String nick = p.getName();
 		for (int i=0; i<podgl¹dacze.size(); i++)
 			if (podgl¹dacze.get(i).getName().equals(nick))
@@ -208,8 +210,6 @@ public class ChatGrupowy extends Komenda implements Listener {
 			return info(p);
 		}
 	}
-	
-	
 }
 
 class ChatGrupowyInst {
@@ -221,8 +221,8 @@ class ChatGrupowyInst {
 	public ChatGrupowyInst(CommandSender p, String nazwa) {
 		this.nazwa = "§3" + nazwa;
 		gracze.add(p);
-		ChatGrupowy.nazwy.add(this.nazwa);
-		ChatGrupowy.mapa.put(p.getName(), this);
+		ChatGrupowy.inst.nazwy.add(this.nazwa);
+		ChatGrupowy.inst.mapa.put(p.getName(), this);
 		p.sendMessage(prefix + "Utworzy³eœ czat grupowy " + this.nazwa);
 	}
 	
@@ -231,7 +231,7 @@ class ChatGrupowyInst {
 			p.sendMessage(prefix + "Nale¿ysz ju¿ do tego czatu");
 		}
 		gracze.add(p);
-		ChatGrupowy.mapa.put(p.getName(), this);
+		ChatGrupowy.inst.mapa.put(p.getName(), this);
 		wyœlij("Gracz §d" + p.getName() + "§f do³¹czy³ do czatu");
 	}
 	public void zaproœ(CommandSender zapraszaj¹cy, CommandSender p) {
@@ -249,9 +249,9 @@ class ChatGrupowyInst {
 			p.sendMessage(prefix + "Opuœci³eœ czat grupowy " + nazwa);
 			wyœlij("Gracz §d" + p.getName() + "§f opuœci³ czat");
 		}
-		ChatGrupowy.mapa.remove(p.getName());
+		ChatGrupowy.inst.mapa.remove(p.getName());
 		if (gracze.size() == 0)
-			ChatGrupowy.nazwy.remove(nazwa);
+			ChatGrupowy.inst.nazwy.remove(nazwa);
 	}
 	public void wyrzuæ(CommandSender wyrzucacz, CommandSender p) {
 		opuœæ(p, false);
@@ -265,7 +265,7 @@ class ChatGrupowyInst {
 		msg = "§e[" + nazwa + "§e] §f" + msg;
 		for (CommandSender gracz : gracze)
 			gracz.sendMessage(msg);
-		for (CommandSender gracz : ChatGrupowy.podgl¹dacze)
+		for (CommandSender gracz : ChatGrupowy.inst.podgl¹dacze)
 			if (znajdzGracza(gracz) == -1)
 				gracz.sendMessage(msg);
 		Bukkit.getConsoleSender().sendMessage(msg);

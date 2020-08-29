@@ -13,10 +13,10 @@ import me.jomi.mimiRPG.Prze³adowalny;
 import me.jomi.mimiRPG.Zegar;
 
 public class AutoWiadomosci implements Prze³adowalny, Zegar {
-	private static List<Napis> wiadomoœci = Lists.newArrayList();
-	private static List<Napis> doWys³ania = Lists.newArrayList();
-	private static int timer = 0;
-	private static Napis ostatnia = null;
+	private List<Napis> wiadomoœci = Lists.newArrayList();
+	private List<Napis> doWys³ania = Lists.newArrayList();
+	private int timer = 0;
+	private Napis ostatnia = null;
 	
 	public int czas() {
 		if (timer >= 0)

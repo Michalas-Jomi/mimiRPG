@@ -67,7 +67,7 @@ public class KomendyInfo extends Komenda implements Listener {
 		return true;
 	}
 
-	public static List<CommandSender> gracze = Lists.newArrayList();
+	public List<CommandSender> gracze = Lists.newArrayList();
 	@EventHandler(priority=EventPriority.LOWEST)
 	public void wykrywanieKomend(PlayerCommandPreprocessEvent ev) {
 		for (CommandSender p : gracze)

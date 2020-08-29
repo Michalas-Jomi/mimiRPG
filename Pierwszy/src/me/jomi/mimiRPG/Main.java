@@ -5,7 +5,6 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -15,7 +14,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommandYamlParser;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -24,9 +22,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.jomi.mimiRPG.Chat.*;
 import me.jomi.mimiRPG.MiniGierki.*;
 import me.jomi.mimiRPG.Miniony.Miniony;
-import me.jomi.mimiRPG.PojedynczeKomendy.*;
-import me.jomi.mimiRPG.Edytory.EdytorTabliczek;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
+import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
+import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
+import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.Gracze.Gracze;
 import me.jomi.mimiRPG.Maszyny.*;
 
@@ -36,6 +34,7 @@ public class Main extends JavaPlugin {
 	// Blokada zabijania Invulnerable mobów jest w Klasie KolorPisania
 	
 	// TODO blok przyciągający itemy
+	// TODO ulepszenie spawnerów
 	
     public static Permission perms = null;
     public static Economy econ = null;
@@ -63,7 +62,6 @@ public class Main extends JavaPlugin {
 		}
 		
 		ust = new Config("ustawienia");
-		moduły = ust.sekcja("Moduły");
 	}
 	public void onEnable() {
 		ekonomia = setupVault();
@@ -76,48 +74,33 @@ public class Main extends JavaPlugin {
 		new Mimi();
         new Raport();
         
+		zarejestruj(new Moduły());
+        
 		if (włączonyModół(Minigry.class)) {
 			new Minigry();
 			for (MiniGra minigra : minigry.values()) 
 				zarejestruj(minigra);
 		}
 		
-		for (Class<?> klasa : Arrays.asList(Antylog.class, AutoWiadomosci.class, Budownik.class, ChatGrupowy.class,
-CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
-EdytorTabliczek.class, EdytujItem.class, Funkcje.class, Głowa.class, ItemLink.class, JednorekiBandyta.class,
-KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
-Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
-Plecak.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
-Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
-Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
-			try {
-				if (!(włączonyModół(klasa)))
-					continue;
-				zarejestruj(klasa.newInstance());
-			} catch (InstantiationException | IllegalAccessException e) {
-				log("§cProblem przy tworzeniu:", klasa.getSimpleName());
-			}
-		}
-        
         if (!Przeładowalny.przeładowalne.isEmpty())
 			new Przeładuj();
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
-        
-        // Wiadomoś braku dostępu do komendy do komendy
+        // Wiadomość braku dostępu do komendy
         String pref = Func.prefix("Komenda");
         for (Command cmd : PluginCommandYamlParser.parse(this))
         	cmd.setPermissionMessage(pref + "§cNie masz uprawnień ziomuś");
 
+        
         Main.dodajPermisje("powiadomienia");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
 	}
-	private void zarejestruj(Object obj) {
+	static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
-			getServer().getPluginManager().registerEvents((Listener) obj, this);
+			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
 		if (obj instanceof Zegar)
 			Zegar.zarejestruj((Zegar) obj);
 		if (obj instanceof Przeładowalny) {
@@ -191,10 +174,7 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class)) {
 			pluginManager.addPermission(new org.bukkit.permissions.Permission((plugin.getName() + '.' + permisja).toLowerCase()));
 	}
 	
-	private static ConfigurationSection moduły;
 	public static boolean włączonyModół(Class<?> modół) {
-		if (moduły == null) return false;
-		Object jest = moduły.get(modół.getSimpleName());
-		return jest == null ? false : (boolean) jest;
+		return Moduły.włączony(modół.getSimpleName());
 	}
 }
