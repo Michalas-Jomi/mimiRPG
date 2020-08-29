@@ -26,12 +26,12 @@ public class Pomoc extends Komenda {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		if (!Instrukcja.mapa.containsKey(args[0]))
-			return Main.powiadom(sender, prefix + "Niepoprawna sekcja: §e" + args[0]);
+			return Main.powiadom(sender, prefix + "Niepoprawna sekcja: Â§e" + args[0]);
 		int strona = 1;
 		if (args.length >= 2) {
 			strona = Func.Int(args[1], -1);
 			if (strona == -1)
-				return Main.powiadom(sender, prefix + "Niepoprawny numer Strony: §e" + args[1]);
+				return Main.powiadom(sender, prefix + "Niepoprawny numer Strony: Â§e" + args[1]);
 		}
 		Instrukcja.mapa.get(args[0]).info(sender, strona);
 		return true;

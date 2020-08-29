@@ -25,16 +25,16 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import net.minecraft.server.v1_16_R1.BlockPosition;
 import net.minecraft.server.v1_16_R1.NBTTagCompound;
 import net.minecraft.server.v1_16_R1.NBTTagList;
 import net.minecraft.server.v1_16_R1.TileEntityMobSpawner;
 
-public class Spawnery extends Komenda implements Listener, Prze³adowalny {
+public class Spawnery extends Komenda implements Listener, PrzeÅ‚adowalny {
 	public static final String prefix = Func.prefix("Spawner");
 	private static final HashMap<String, String> mapa = new HashMap<>();
-	private static final List<String> t³umaczenia = Lists.newArrayList();
+	private static final List<String> tÅ‚umaczenia = Lists.newArrayList();
 	private static final List<String> typy = Lists.newArrayList();
 	
 	private static int MaxNearbyEntities;
@@ -49,17 +49,17 @@ public class Spawnery extends Komenda implements Listener, Prze³adowalny {
 		for (EntityType en : EntityType.values())
 			typy.add(en.toString());
 	}
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		mapa.clear();
-		t³umaczenia.clear();
+		tÅ‚umaczenia.clear();
 		Config config = Main.ust;
-		for (String klucz : config.sekcja("Spawnery", "t³umaczenia").getKeys(false)) {
-				String wartoœæ = config.wczytajStr("Spawnery", "t³umaczenia", klucz);
+		for (String klucz : config.sekcja("Spawnery", "tÅ‚umaczenia").getKeys(false)) {
+				String wartoÅ›Ä‡ = config.wczytajStr("Spawnery", "tÅ‚umaczenia", klucz);
 				if (!typy.contains(klucz.toUpperCase()))
 					Main.plugin.getLogger().warning(prefix + "Nie odnaleziono moba " + klucz);
-				mapa.put(klucz, wartoœæ);
-				mapa.put(wartoœæ, klucz);
-				t³umaczenia.add(wartoœæ);
+				mapa.put(klucz, wartoÅ›Ä‡);
+				mapa.put(wartoÅ›Ä‡, klucz);
+				tÅ‚umaczenia.add(wartoÅ›Ä‡);
 			}
 		SpawnCount 			= (int) config.wczytaj("Spawnery", "SpawnCount");
 		SpawnRange 			= (int) config.wczytaj("Spawnery", "SpawnRange");
@@ -69,7 +69,7 @@ public class Spawnery extends Komenda implements Listener, Prze³adowalny {
 		RequiredPlayerRange = (int) config.wczytaj("Spawnery", "RequiredPlayerRange");
 	}
 	public String raport() {
-		return "§6Spawnery: §e" + t³umaczenia.size();
+		return "Â§6Spawnery: Â§e" + tÅ‚umaczenia.size();
 	}
 	
 	private static String dajNazwe(String klucz) {
@@ -79,16 +79,16 @@ public class Spawnery extends Komenda implements Listener, Prze³adowalny {
 	}
 	
 	@EventHandler(priority=EventPriority.HIGH)
-	public void stwianieBloków(BlockPlaceEvent ev) {
+	public void stwianieBlokÃ³w(BlockPlaceEvent ev) {
 		if (ev.isCancelled() || ev.getBlock() == null || !(ev.getBlock().getState() instanceof CraftCreatureSpawner)) return;
 		CraftCreatureSpawner sspawner = (CraftCreatureSpawner) ev.getBlock().getState();
 		ItemStack item = ev.getItemInHand();
 		if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
 		List<String> lore = item.getItemMeta().getLore();
 		if (lore.size() < 3) return;
-		if (!lore.get(0).equals("§bNiezwyk³y blok")) return;
-		if (!lore.get(1).equals("§bWokó³ niego pojawiaj¹ siê moby")) return;
-		String nazwa = lore.get(2).split(" to§d ")[1];
+		if (!lore.get(0).equals("Â§bNiezwykÅ‚y blok")) return;
+		if (!lore.get(1).equals("Â§bWokÃ³Å‚ niego pojawiajÄ… siÄ™ moby")) return;
+		String nazwa = lore.get(2).split(" toÂ§d ")[1];
  		sspawner.setRequiredPlayerRange(RequiredPlayerRange);
  		sspawner.setMaxNearbyEntities(MaxNearbyEntities);
  		sspawner.setMaxSpawnDelay(MaxSpawnDelay);
@@ -112,14 +112,14 @@ public class Spawnery extends Komenda implements Listener, Prze³adowalny {
  		spawnerTag.set("SpawnData", spawnData);
  		spawner.load(spawner.getBlock(), spawnerTag);
 	}
-	private static NBTTagCompound dajAtrybut(String nazwa, double wartoœæ) {
+	private static NBTTagCompound dajAtrybut(String nazwa, double wartoÅ›Ä‡) {
 		NBTTagCompound nbt = new NBTTagCompound();
 		nbt.setString("Name", "minecraft:" + nazwa);
-		nbt.setDouble("Base", wartoœæ);
+		nbt.setDouble("Base", wartoÅ›Ä‡);
 		return nbt;
 	}
 	@EventHandler(priority=EventPriority.HIGH)
-	public void niszczenieBloków(BlockBreakEvent ev) {
+	public void niszczenieBlokÃ³w(BlockBreakEvent ev) {
 		Block blok = ev.getBlock();
 		if (blok == null || blok.getState() == null || ev.isCancelled() || !(blok.getState() instanceof CraftCreatureSpawner)) return;
 		Player p = ev.getPlayer();
@@ -135,28 +135,28 @@ public class Spawnery extends Komenda implements Listener, Prze³adowalny {
 	}
 	
 	private static ItemStack dajSpawner(String nazwa) {
-		if (!t³umaczenia.contains(nazwa))
+		if (!tÅ‚umaczenia.contains(nazwa))
 			nazwa = dajNazwe(nazwa);
-		ItemStack item = Func.stwórzItem(Material.SPAWNER, 1, "§cSpawner " + nazwa);
-		Func.dodajLore(item, "§bNiezwyk³y blok");
-		Func.dodajLore(item, "§bWokó³ niego pojawiaj¹ siê moby");
-		Func.dodajLore(item, "§bTroche dziwne ¿e wszystkie to§d " + nazwa);
+		ItemStack item = Func.stwÃ³rzItem(Material.SPAWNER, 1, "Â§cSpawner " + nazwa);
+		Func.dodajLore(item, "Â§bNiezwykÅ‚y blok");
+		Func.dodajLore(item, "Â§bWokÃ³Å‚ niego pojawiajÄ… siÄ™ moby");
+		Func.dodajLore(item, "Â§bTroche dziwne Å¼e wszystkie toÂ§d " + nazwa);
 		return item;
 	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return uzupe³nijTabComplete(args, t³umaczenia);
+		return uzupeÅ‚nijTabComplete(args, tÅ‚umaczenia);
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Tylko gracz mo¿e stworzyæ spawner");
+			return Main.powiadom(sender, prefix + "Tylko gracz moÅ¼e stworzyÄ‡ spawner");
 		Player p = (Player) sender;
 		
 		if (args.length < 1) return Main.powiadom(p, prefix + "Brak nazwy moba");
 		String nazwa = Func.listToString(args, 0);
 		if (!mapa.containsKey(nazwa))
-			p.sendMessage(prefix + "§cNie odnaleziono spawnera w bazie danych, upewnij siê ¿e wszystko jest ok");
+			p.sendMessage(prefix + "Â§cNie odnaleziono spawnera w bazie danych, upewnij siÄ™ Å¼e wszystko jest ok");
 		Func.dajItem(p, dajSpawner(nazwa));
 		return true;
 	}

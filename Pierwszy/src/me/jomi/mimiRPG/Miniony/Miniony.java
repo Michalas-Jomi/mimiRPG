@@ -30,28 +30,28 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Miniony extends Komenda implements Listener, Prze³adowalny {
-	public static ItemStack itemKopacz  = stwórzItem(Material.COBBLESTONE,		"§1§lMinion §1Kopacz§9",	Arrays.asList("&aU¿yj tego narzêdzia (PPM)", "&aAby zespawnowaæ swojego miniona", "&bid: &dnowy"));
-	public static ItemStack itemFarmer  = stwórzItem(Material.HAY_BLOCK, 		"§1§lMinion §aFarmer§9",	Arrays.asList("&aU¿yj tego narzêdzia (PPM)", "&aAby zespawnowaæ swojego miniona", "&bid: &dnowy"));
-	public static ItemStack itemRzeznik = stwórzItem(Material.BONE_BLOCK, 		"§1§lMinion §cRzeŸnik§9",	Arrays.asList("&aU¿yj tego narzêdzia (PPM)", "&aAby zespawnowaæ swojego miniona", "&bid: &dnowy"));
+public class Miniony extends Komenda implements Listener, PrzeÅ‚adowalny {
+	public static ItemStack itemKopacz  = stwÃ³rzItem(Material.COBBLESTONE,		"Â§1Â§lMinion Â§1KopaczÂ§9",	Arrays.asList("&aUÅ¼yj tego narzÄ™dzia (PPM)", "&aAby zespawnowaÄ‡ swojego miniona", "&bid: &dnowy"));
+	public static ItemStack itemFarmer  = stwÃ³rzItem(Material.HAY_BLOCK, 		"Â§1Â§lMinion Â§aFarmerÂ§9",	Arrays.asList("&aUÅ¼yj tego narzÄ™dzia (PPM)", "&aAby zespawnowaÄ‡ swojego miniona", "&bid: &dnowy"));
+	public static ItemStack itemRzeznik = stwÃ³rzItem(Material.BONE_BLOCK, 		"Â§1Â§lMinion Â§cRzeÅºnikÂ§9",	Arrays.asList("&aUÅ¼yj tego narzÄ™dzia (PPM)", "&aAby zespawnowaÄ‡ swojego miniona", "&bid: &dnowy"));
 	
 	public static String prefix = Func.prefix("Minion");
 	public static HashMap<String, Integer> otwarte = new HashMap<>();
 	
-	public static int odœwie¿anieMinionówTicki = 5;
+	public static int odÅ›wieÅ¼anieMinionÃ³wTicki = 5;
 	
-	private static boolean wy³¹czanie = false;
-	public static boolean w³¹czone = false;
+	private static boolean wyÅ‚Ä…czanie = false;
+	public static boolean wÅ‚Ä…czone = false;
 	
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		Minion.mapaJedzenia.clear();
 		for (String klucz : Main.ust.sekcja("Miniony.jedzenie").getKeys(false))
 			Minion.mapaJedzenia.put(Material.valueOf(klucz.toUpperCase()), Main.ust.wczytajDouble("Miniony.jedzenie", klucz));
 	}
 	public String raport() {
-		return "§6Potrawy minionów: §e" + Minion.mapaJedzenia.size();
+		return "Â§6Potrawy minionÃ³w: Â§e" + Minion.mapaJedzenia.size();
 	}
 	
 	private static void zegar() {
@@ -59,25 +59,25 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 		    public void run() {
 		    	zegar();
 		    	for (Minion minion : Minion.mapa.values())
-		    		minion._mimiTick(odœwie¿anieMinionówTicki);
+		    		minion._mimiTick(odÅ›wieÅ¼anieMinionÃ³wTicki);
 		    }
-		}, odœwie¿anieMinionówTicki);
+		}, odÅ›wieÅ¼anieMinionÃ³wTicki);
 	}
 	
 	public Miniony() {
 		super("minion");
 		Main.dodajPermisje("minion.bypass");
 		Statystyka.ZainicjujStatystyki();
-		usuñStare();
+		usuÅ„Stare();
 		wczytajMiniony();
 		zegar();
 	}
-	private static void usuñStare() {
+	private static void usuÅ„Stare() {
 		for (Entity en : Bukkit.selectEntities(Bukkit.getConsoleSender(), "@e[tag=mimiMinion]"))
 			en.remove();
 	}
 	public static void wczytajMiniony() {
-		usuñStare();
+		usuÅ„Stare();
 		File folder = new File("plugins/mimiRPG/miniony");
 		if (folder.exists())
 			for (File plik : folder.listFiles()) {
@@ -88,27 +88,27 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 				if (imie == null)
 					continue;				
 				switch(imie) {
-				case "§1Kopacz":  new Kopacz(config);  break;
-				case "§aFarmer":  new Farmer(config);  break;
-				case "§cRzeŸnik": new RzeŸnik(config); break;
+				case "Â§1Kopacz":  new Kopacz(config);  break;
+				case "Â§aFarmer":  new Farmer(config);  break;
+				case "Â§cRzeÅºnik": new RzeÅºnik(config); break;
 				}
 			}
 		else
 			folder.mkdirs();
-		w³¹czone = true;
+		wÅ‚Ä…czone = true;
 	}
 	public static void zapiszMiniony() {
-		Main.log("Zapisywanie Minionów");
-		wy³¹czanie = true;
+		Main.log("Zapisywanie MinionÃ³w");
+		wyÅ‚Ä…czanie = true;
 		for (Minion m : Minion.mapa.values()) {
 			m.zapisz();
 			m.getBukkitEntity().remove();
 		}
-		w³¹czone = false;
+		wÅ‚Ä…czone = false;
 	}
 	
-	private static ItemStack stwórzItem(Material mat, String nazwa, List<String> lore) {
-		ItemStack item = Func.stwórzItem(mat, 1, nazwa, lore);
+	private static ItemStack stwÃ³rzItem(Material mat, String nazwa, List<String> lore) {
+		ItemStack item = Func.stwÃ³rzItem(mat, 1, nazwa, lore);
 		Func.enchantuj(item, Enchantment.LUCK, -1);
 		Func.ukryj(item, ItemFlag.HIDE_ENCHANTS);
 		return item;
@@ -116,53 +116,53 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 	
 	@EventHandler
 	public void klikniecieMoba(PlayerInteractEntityEvent ev) {
-		if (!w³¹czone) return;
+		if (!wÅ‚Ä…czone) return;
 		Entity mob = ev.getRightClicked();
 		Player p = ev.getPlayer();
 		int id = idminiona(mob);
 		if (id == -1) return;
 		if (otwarte.containsValue(id)) return;
 		ev.setCancelled(true);
-		Minion.mapa.get(id).klikniêty(p);
+		Minion.mapa.get(id).klikniÄ™ty(p);
 	}
 	
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (!w³¹czone) return;
+		if (!wÅ‚Ä…czone) return;
 		Player p = (Player) ev.getPlayer();
 		if (otwarte.containsKey(p.getName()))
-			Minion.mapa.get(otwarte.get(p.getName())).zamknij(p, ev.getInventory(), ev.getView().getTitle().equals("§1§lMinion"));
+			Minion.mapa.get(otwarte.get(p.getName())).zamknij(p, ev.getInventory(), ev.getView().getTitle().equals("Â§1Â§lMinion"));
 	}
 	
 	@EventHandler
-	public void klikniêcieEq(InventoryClickEvent ev) {
-		if (!w³¹czone) return;
+	public void klikniÄ™cieEq(InventoryClickEvent ev) {
+		if (!wÅ‚Ä…czone) return;
 		Player p = (Player) ev.getWhoClicked();
 		String nick = p.getName();
 		if (otwarte.containsKey(nick))
-			if (Minion.mapa.get(otwarte.get(nick)).klikniêcie(p, ev))
+			if (Minion.mapa.get(otwarte.get(nick)).klikniÄ™cie(p, ev))
 				ev.setCancelled(true);
 	}
 	
 	@EventHandler
 	public void bicieMiniona(EntityDamageByEntityEvent ev) {
-		if (!w³¹czone) return;
+		if (!wÅ‚Ä…czone) return;
 		if (idminiona(ev.getEntity()) != -1)
 			ev.setCancelled(true);
 		int id = idminiona(ev.getDamager());
 		if (id != -1)
-			Minion.mapa.get(id).u¿yjNarzêdzia();
+			Minion.mapa.get(id).uÅ¼yjNarzÄ™dzia();
 	}
 	
 	@EventHandler
-	public void œmieræMiniona(EntityDeathEvent ev) {
-		if (!w³¹czone) return;
+	public void Å›mierÄ‡Miniona(EntityDeathEvent ev) {
+		if (!wÅ‚Ä…czone) return;
 		int id = idminiona(ev.getEntity());
 		if (id != -1) {
 			Minion minion = Minion.mapa.get(id);
 			ev.getDrops().clear();
 			ev.setDroppedExp(0);
-			if (!wy³¹czanie) {
+			if (!wyÅ‚Ä…czanie) {
 				minion.zrespMoba();
 				minion.zapisz();
 				
@@ -181,7 +181,7 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 	
 	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled = true)
 	public void spawn(EntitySpawnEvent ev) {
-		if (!w³¹czone) return;
+		if (!wÅ‚Ä…czone) return;
 		if (ev.getEntity().getScoreboardTags().contains("mimiMinion"))
 			ev.setCancelled(false);
 	}
@@ -189,15 +189,15 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 	@EventHandler(priority=EventPriority.LOWEST)
 	public void budowanie(BlockPlaceEvent ev) {
 		if (ev.isCancelled()) return;
-		if (!w³¹czone) return;
+		if (!wÅ‚Ä…czone) return;
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		if (item == null || item.getType().equals(Material.AIR)) return;
 		if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
 		String nazwa = item.getItemMeta().getDisplayName();
 		switch(nazwa) {
-		case "§1§lMinion §1Kopacz§9":
-		case "§1§lMinion §aFarmer§9":
-		case "§1§lMinion §cRzeŸnik§9":
+		case "Â§1Â§lMinion Â§1KopaczÂ§9":
+		case "Â§1Â§lMinion Â§aFarmerÂ§9":
+		case "Â§1Â§lMinion Â§cRzeÅºnikÂ§9":
 			break;		
 		default:
 			return;
@@ -206,26 +206,26 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 
 		if (item.getItemMeta().getLore().size() > 5)
 			switch (nazwa) {
-			case "§1§lMinion §1Kopacz§9":
+			case "Â§1Â§lMinion Â§1KopaczÂ§9":
 				new Kopacz(p, item);
 				break;
-			case "§1§lMinion §aFarmer§9":
+			case "Â§1Â§lMinion Â§aFarmerÂ§9":
 				new Farmer(p, item);
 				break;
-			case "§1§lMinion §cRzeŸnik§9":
-				new RzeŸnik(p, item);
+			case "Â§1Â§lMinion Â§cRzeÅºnikÂ§9":
+				new RzeÅºnik(p, item);
 				break;	
 			}
 		else 
 			switch(nazwa) {
-				case "§1§lMinion §1Kopacz§9":
+				case "Â§1Â§lMinion Â§1KopaczÂ§9":
 					new Kopacz(p.getLocation(), p.getName());
 					break;
-				case "§1§lMinion §aFarmer§9":
+				case "Â§1Â§lMinion Â§aFarmerÂ§9":
 					new Farmer(p.getLocation(), p.getName());
 					break;
-				case "§1§lMinion §cRzeŸnik§9":
-					new RzeŸnik(p.getLocation(), p.getName());
+				case "Â§1Â§lMinion Â§cRzeÅºnikÂ§9":
+					new RzeÅºnik(p.getLocation(), p.getName());
 					break;		
 		}
 		ev.setCancelled(true);
@@ -235,27 +235,27 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return uzupe³nijTabComplete(args, Arrays.asList("w³¹cz", "wy³¹cz", "Kopacz", "RzeŸnik", "Farmer"));
+			return uzupeÅ‚nijTabComplete(args, Arrays.asList("wÅ‚Ä…cz", "wyÅ‚Ä…cz", "Kopacz", "RzeÅºnik", "Farmer"));
 		return null;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		switch(args[0]) {
-		case "w³¹cz":
-			if (Miniony.w³¹czone)
-				sender.sendMessage(Miniony.prefix + "Miniony s¹ ju¿ w³¹czone");
+		case "wÅ‚Ä…cz":
+			if (Miniony.wÅ‚Ä…czone)
+				sender.sendMessage(Miniony.prefix + "Miniony sÄ… juÅ¼ wÅ‚Ä…czone");
 			else {
 				Miniony.wczytajMiniony();
-				sender.sendMessage(Miniony.prefix + "W³¹czono miniony");
+				sender.sendMessage(Miniony.prefix + "WÅ‚Ä…czono miniony");
 			}
 			return true;
-		case "wy³¹cz":
-			if (Miniony.w³¹czone) {
+		case "wyÅ‚Ä…cz":
+			if (Miniony.wÅ‚Ä…czone) {
 				Miniony.zapiszMiniony();
-				sender.sendMessage(Miniony.prefix + "Wy³¹czono miniony");
+				sender.sendMessage(Miniony.prefix + "WyÅ‚Ä…czono miniony");
 			} else
-				sender.sendMessage(Miniony.prefix + "Miniony s¹ ju¿ wy³¹czone");
+				sender.sendMessage(Miniony.prefix + "Miniony sÄ… juÅ¼ wyÅ‚Ä…czone");
 			return true;
 		}
 		Player p;
@@ -277,7 +277,7 @@ public class Miniony extends Komenda implements Listener, Prze³adowalny {
 			p.getInventory().addItem(itemKopacz);
 			break;
 		case "r":
-		case "RzeŸnik":
+		case "RzeÅºnik":
 			p.getInventory().addItem(itemRzeznik);
 			break;
 		}

@@ -28,7 +28,7 @@ public class ChatGrupowy extends Komenda implements Listener {
 	public static String prefix = Func.prefix("Chat Grupowy");
 	public HashMap<String, ChatGrupowyInst> mapa = new HashMap<>();
 	public List<String> nazwy = Lists.newArrayList();
-	public List<CommandSender> podgl¹dacze = Lists.newArrayList();
+	public List<CommandSender> podglÄ…dacze = Lists.newArrayList();
 	
 	public static ChatGrupowy inst;
 	public ChatGrupowy() {
@@ -44,30 +44,30 @@ public class ChatGrupowy extends Komenda implements Listener {
 	private boolean info(CommandSender p) {
 		Napis msg = new Napis("\n");
 		
-		msg.dodaj("\n§6§l>>> §eCzat Grupowy §6§l<<");
-		dodaj(msg, "\n§e§l-> §b/cg stwórz <nazwa czatu>", 	"Tworzy nowy czat grupowy", 			"/cg stwórz ");
-		dodaj(msg, "\n§e§l-> §b/cg zaproœ <nick>", 			"Zaprasza gracza do czatu", 			"/cg zaproœ ");
-		dodaj(msg, "\n§e§l-> §b/cg wyrzuæ <nick>", 			"Wyrzuca gracza z czatu", 				"/cg wyrzuæ ");
-		dodaj(msg, "\n§e§l-> §b/cg opuœæ", 					"Opuszcza czat grupowy", 				"/cg opuœæ");
-		dodaj(msg, "\n§e§l-> §b/cg ogólny <wiadomoœæ>", 	"Pisze wiadomoœæ na czacie serwerowym", "/cg ogólny ");
-		dodaj(msg, "\n§e§l-> §b/cg lista", 					"Wyœwietla listê graczy czatu", 		"/cg lista");
+		msg.dodaj("\nÂ§6Â§l>>> Â§eCzat Grupowy Â§6Â§l<<");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg stwÃ³rz <nazwa czatu>", 	"Tworzy nowy czat grupowy", 			"/cg stwÃ³rz ");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg zaproÅ› <nick>", 			"Zaprasza gracza do czatu", 			"/cg zaproÅ› ");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg wyrzuÄ‡ <nick>", 			"Wyrzuca gracza z czatu", 				"/cg wyrzuÄ‡ ");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg opuÅ›Ä‡", 					"Opuszcza czat grupowy", 				"/cg opuÅ›Ä‡");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg ogÃ³lny <wiadomoÅ›Ä‡>", 	"Pisze wiadomoÅ›Ä‡ na czacie serwerowym", "/cg ogÃ³lny ");
+		dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg lista", 					"WyÅ›wietla listÄ™ graczy czatu", 		"/cg lista");
 		//adminowe
 		if (p.hasPermission("mimiRPG.chatGrupowy.podgladaj")) {
-			dodaj(msg, "\n§e§l-> §b/cg lista w", 			"Wyœwietla listê graczy wszystkich cztatów", 	  "/cg lista w");
-			dodaj(msg, "\n§e§l-> §b/cg podgl¹daj", 			"Przechodzi w tryb podgl¹dania czatów grupowych", "/cg podgl¹daj");
+			dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg lista w", 			"WyÅ›wietla listÄ™ graczy wszystkich cztatÃ³w", 	  "/cg lista w");
+			dodaj(msg, "\nÂ§eÂ§l-> Â§b/cg podglÄ…daj", 			"Przechodzi w tryb podglÄ…dania czatÃ³w grupowych", "/cg podglÄ…daj");
 		}
-		msg.dodaj("\n§6§l>>> §eCzat Grupowy §6§l<<");
-		msg.wyœwietl(p);
+		msg.dodaj("\nÂ§6Â§l>>> Â§eCzat Grupowy Â§6Â§l<<");
+		msg.wyÅ›wietl(p);
 		return true;
 	}
 	private boolean powiadom(CommandSender p, String msg) {
 		p.sendMessage(prefix + msg);
 		return true;
 	}
-	private int znajdzPodgl¹dacza(CommandSender p) {
+	private int znajdzPodglÄ…dacza(CommandSender p) {
 		String nick = p.getName();
-		for (int i=0; i<podgl¹dacze.size(); i++)
-			if (podgl¹dacze.get(i).getName().equals(nick))
+		for (int i=0; i<podglÄ…dacze.size(); i++)
+			if (podglÄ…dacze.get(i).getName().equals(nick))
 				return i;
 		return -1;
 	}
@@ -89,18 +89,18 @@ public class ChatGrupowy extends Komenda implements Listener {
 	public void opuszczenieGry(PlayerQuitEvent ev) {
 		CommandSender p = ev.getPlayer();
 		if (mapa.containsKey(p.getName()))
-			mapa.get(p.getName()).opuœæ(p, true);
+			mapa.get(p.getName()).opuÅ›Ä‡(p, true);
 	}
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 2) return null;
-		List<String> lista = Arrays.asList("stwórz", "lista", "zaproœ", "wyrzuæ", "opuœæ", "ogólny");
+		List<String> lista = Arrays.asList("stwÃ³rz", "lista", "zaproÅ›", "wyrzuÄ‡", "opuÅ›Ä‡", "ogÃ³lny");
 		if (sender.hasPermission("mimiRPG.chatGrupowy.podgladaj")) {
 			lista.add("lista w");
-			lista.add("podgl¹daj");
+			lista.add("podglÄ…daj");
 		}
-		return uzupe³nijTabComplete(Func.listToString(args, 0), lista);
+		return uzupeÅ‚nijTabComplete(Func.listToString(args, 0), lista);
 	}
 
 	@Override
@@ -109,31 +109,31 @@ public class ChatGrupowy extends Komenda implements Listener {
 		CommandSender gracz;
 		switch(args[0]) {
 		case "s":
-		case "stwórz":
+		case "stwÃ³rz":
 			if (args.length < 2) return info(p);
 			if (mapa.containsKey(p.getName()))
-				return powiadom(p, "Nale¿ysz ju¿ do czatu grupowego");
+				return powiadom(p, "NaleÅ¼ysz juÅ¼ do czatu grupowego");
 			String nazwa = Func.listToString(args, 1);
 			if (nazwa.length() > 30)
-				return powiadom(p, "Zbyt d³uga nazwa czatu");
+				return powiadom(p, "Zbyt dÅ‚uga nazwa czatu");
 			if (nazwy.contains(nazwa))
-				return powiadom(p, "Grupa o tej nazwie ju¿ istnieje");
+				return powiadom(p, "Grupa o tej nazwie juÅ¼ istnieje");
 			new ChatGrupowyInst(p, nazwa);
 			return true;
 		case "z":
-		case "zaproœ":
+		case "zaproÅ›":
 			if (args.length < 2) return info(p);
 			if (!mapa.containsKey(p.getName()))
-				return powiadom(p, "Nie nale¿ysz do czatu ¿adnego grupowego");
+				return powiadom(p, "Nie naleÅ¼ysz do czatu Å¼adnego grupowego");
 			if (p.getName().equals(args[1]))
-				return powiadom(p, "Nie mo¿esz wykonywaæ tego na sobie");
+				return powiadom(p, "Nie moÅ¼esz wykonywaÄ‡ tego na sobie");
 			if (mapa.containsKey(args[1]))
-				return powiadom(p, "Gracz §e" + args[1] + "§6 nale¿y ju¿ do jakiegoœ czatu grupowego");
+				return powiadom(p, "Gracz Â§e" + args[1] + "Â§6 naleÅ¼y juÅ¼ do jakiegoÅ› czatu grupowego");
 			gracz = Bukkit.getPlayer(args[1]);
 			if (gracz == null)
-				return powiadom(p, "Gracz §e" + args[1] + "§6 nie istnieje");
-			mapa.get(p.getName()).wyœlij("Gracz §d" + p.getName() + "§f zaprosi³ gracza §d" + args[1] + "§f do czatu");
-			mapa.get(p.getName()).zaproœ(p, gracz);
+				return powiadom(p, "Gracz Â§e" + args[1] + "Â§6 nie istnieje");
+			mapa.get(p.getName()).wyÅ›lij("Gracz Â§d" + p.getName() + "Â§f zaprosiÅ‚ gracza Â§d" + args[1] + "Â§f do czatu");
+			mapa.get(p.getName()).zaproÅ›(p, gracz);
 			return true;
 		case "wbijDo":
 			if (args.length < 2) return info(p);
@@ -142,40 +142,40 @@ public class ChatGrupowy extends Komenda implements Listener {
 			gracz = Bukkit.getPlayer(args[1]);
 			if (gracz == null) return info(p);
 			if (!mapa.containsKey(gracz.getName()) || mapa.containsKey(p.getName())) {
-				p.sendMessage(prefix + "Nie mo¿esz ju¿ do³¹czyæ z tego zaproszenia");
+				p.sendMessage(prefix + "Nie moÅ¼esz juÅ¼ doÅ‚Ä…czyÄ‡ z tego zaproszenia");
 				return true;
 			}
 			mapa.get(gracz.getName()).dodaj(p);
 			return true;
 		case "w":
-		case "wyrzuæ":
+		case "wyrzuÄ‡":
 			if (args.length < 2) return info(p);
 			if (!mapa.containsKey(p.getName()))
-				return powiadom(p, "Nie nale¿ysz do czatu ¿adnego grupowego");
+				return powiadom(p, "Nie naleÅ¼ysz do czatu Å¼adnego grupowego");
 			if (p.getName().equals(args[1]))
-				return powiadom(p, "Nie mo¿esz wykonywaæ tego na sobie");
+				return powiadom(p, "Nie moÅ¼esz wykonywaÄ‡ tego na sobie");
 			gracz = Bukkit.getPlayer(args[1]);
 			if (gracz == null)
-				return powiadom(p, "Gracz §e" + args[1] + "§6 nie istnieje");
+				return powiadom(p, "Gracz Â§e" + args[1] + "Â§6 nie istnieje");
 			if (mapa.get(p.getName()).znajdzGracza(gracz) == -1)
-				return powiadom(p, "Gracz §e" + args[1] + "§6 nie nale¿y do twojego czatu grupowego");
-			mapa.get(p.getName()).wyrzuæ(p, gracz);
+				return powiadom(p, "Gracz Â§e" + args[1] + "Â§6 nie naleÅ¼y do twojego czatu grupowego");
+			mapa.get(p.getName()).wyrzuÄ‡(p, gracz);
 			return true;
-		case "opuœæ":
+		case "opuÅ›Ä‡":
 			if (!mapa.containsKey(p.getName()))
-				return powiadom(p, "Nie nale¿ysz do czatu ¿adnego grupowego");
-			mapa.get(p.getName()).opuœæ(p, true);
+				return powiadom(p, "Nie naleÅ¼ysz do czatu Å¼adnego grupowego");
+			mapa.get(p.getName()).opuÅ›Ä‡(p, true);
 			return true;
 		case "o":
-		case "ogólny":
+		case "ogÃ³lny":
 			if (!mapa.containsKey(p.getName()))
-				return powiadom(p, "Nie nale¿ysz do czatu ¿adnego grupowego");
+				return powiadom(p, "Nie naleÅ¼ysz do czatu Å¼adnego grupowego");
 			if (args.length < 2) 
-				return powiadom(p, "Nie podano ¿adnej wiadomoœci");
+				return powiadom(p, "Nie podano Å¼adnej wiadomoÅ›ci");
 			if (p instanceof Player)
 				((Player) p).chat("||" + Func.listToString(args, 1));
 			else
-				p.sendMessage(prefix + "zamiaste tego u¿yj /say /me /mi");
+				p.sendMessage(prefix + "zamiaste tego uÅ¼yj /say /me /mi");
 			return true;
 		case "l":
 		case "lista":
@@ -189,20 +189,20 @@ public class ChatGrupowy extends Komenda implements Listener {
 				return true;
 			}
 			if (!mapa.containsKey(p.getName()))
-				return powiadom(p, "Nie nale¿ysz do czatu ¿adnego grupowego");
+				return powiadom(p, "Nie naleÅ¼ysz do czatu Å¼adnego grupowego");
 			mapa.get(p.getName()).lista(p);
 			return true;
 		case "p":
-		case "podgl¹daj":
+		case "podglÄ…daj":
 			if (p.hasPermission("mimiRPG.chatGrupowy.podgladaj")) {
-				int i = znajdzPodgl¹dacza(p);
+				int i = znajdzPodglÄ…dacza(p);
 				if (i == -1) {
-					podgl¹dacze.add(p);
-					p.sendMessage(prefix + "Podgl¹dacz czaty grupowe");
+					podglÄ…dacze.add(p);
+					p.sendMessage(prefix + "PodglÄ…dacz czaty grupowe");
 				}
 				else {
-					podgl¹dacze.remove(i);
-					p.sendMessage(prefix + "Nie podgl¹dasz ju¿ czatów grupowych");
+					podglÄ…dacze.remove(i);
+					p.sendMessage(prefix + "Nie podglÄ…dasz juÅ¼ czatÃ³w grupowych");
 				}
 				return true;		
 			}
@@ -219,61 +219,61 @@ class ChatGrupowyInst {
 	public String nazwa;
 	
 	public ChatGrupowyInst(CommandSender p, String nazwa) {
-		this.nazwa = "§3" + nazwa;
+		this.nazwa = "Â§3" + nazwa;
 		gracze.add(p);
 		ChatGrupowy.inst.nazwy.add(this.nazwa);
 		ChatGrupowy.inst.mapa.put(p.getName(), this);
-		p.sendMessage(prefix + "Utworzy³eœ czat grupowy " + this.nazwa);
+		p.sendMessage(prefix + "UtworzyÅ‚eÅ› czat grupowy " + this.nazwa);
 	}
 	
 	public void dodaj(CommandSender p) {
 		if (znajdzGracza(p) != -1) {
-			p.sendMessage(prefix + "Nale¿ysz ju¿ do tego czatu");
+			p.sendMessage(prefix + "NaleÅ¼ysz juÅ¼ do tego czatu");
 		}
 		gracze.add(p);
 		ChatGrupowy.inst.mapa.put(p.getName(), this);
-		wyœlij("Gracz §d" + p.getName() + "§f do³¹czy³ do czatu");
+		wyÅ›lij("Gracz Â§d" + p.getName() + "Â§f doÅ‚Ä…czyÅ‚ do czatu");
 	}
-	public void zaproœ(CommandSender zapraszaj¹cy, CommandSender p) {
-		TextComponent msg = new TextComponent(prefix + "Zaproszenie od gracza §e" + zapraszaj¹cy.getName() + " ");
+	public void zaproÅ›(CommandSender zapraszajÄ…cy, CommandSender p) {
+		TextComponent msg = new TextComponent(prefix + "Zaproszenie od gracza Â§e" + zapraszajÄ…cy.getName() + " ");
 		
-		TextComponent m = new TextComponent("§a[Do³¹cz]");
-		m.setClickEvent(new ClickEvent(Action.RUN_COMMAND, "/cg wbijDo " + zapraszaj¹cy.getName()));
+		TextComponent m = new TextComponent("Â§a[DoÅ‚Ä…cz]");
+		m.setClickEvent(new ClickEvent(Action.RUN_COMMAND, "/cg wbijDo " + zapraszajÄ…cy.getName()));
 		msg.addExtra(m);
 		
 		p.spigot().sendMessage(msg);
 	}
-	public void opuœæ(CommandSender p, boolean komunikat) {
+	public void opuÅ›Ä‡(CommandSender p, boolean komunikat) {
 		gracze.remove(znajdzGracza(p));
 		if (komunikat) {
-			p.sendMessage(prefix + "Opuœci³eœ czat grupowy " + nazwa);
-			wyœlij("Gracz §d" + p.getName() + "§f opuœci³ czat");
+			p.sendMessage(prefix + "OpuÅ›ciÅ‚eÅ› czat grupowy " + nazwa);
+			wyÅ›lij("Gracz Â§d" + p.getName() + "Â§f opuÅ›ciÅ‚ czat");
 		}
 		ChatGrupowy.inst.mapa.remove(p.getName());
 		if (gracze.size() == 0)
 			ChatGrupowy.inst.nazwy.remove(nazwa);
 	}
-	public void wyrzuæ(CommandSender wyrzucacz, CommandSender p) {
-		opuœæ(p, false);
-		wyœlij("Gracz §d" + wyrzucacz.getName() + "§f wyrzuci³ gracza §d" + p.getName() + " z czatu");
-		p.sendMessage(prefix + "Zosta³eœ wyrzucony z czatu " + nazwa + " §6 przez gracza §e" + wyrzucacz.getName());
+	public void wyrzuÄ‡(CommandSender wyrzucacz, CommandSender p) {
+		opuÅ›Ä‡(p, false);
+		wyÅ›lij("Gracz Â§d" + wyrzucacz.getName() + "Â§f wyrzuciÅ‚ gracza Â§d" + p.getName() + " z czatu");
+		p.sendMessage(prefix + "ZostaÅ‚eÅ› wyrzucony z czatu " + nazwa + " Â§6 przez gracza Â§e" + wyrzucacz.getName());
 	}
 	public void napisz(CommandSender p, String msg) {
-		wyœlij("§d" + p.getName() + "§7: §f" + msg);
+		wyÅ›lij("Â§d" + p.getName() + "Â§7: Â§f" + msg);
 	}
-	public void wyœlij(String msg) {
-		msg = "§e[" + nazwa + "§e] §f" + msg;
+	public void wyÅ›lij(String msg) {
+		msg = "Â§e[" + nazwa + "Â§e] Â§f" + msg;
 		for (CommandSender gracz : gracze)
 			gracz.sendMessage(msg);
-		for (CommandSender gracz : ChatGrupowy.inst.podgl¹dacze)
+		for (CommandSender gracz : ChatGrupowy.inst.podglÄ…dacze)
 			if (znajdzGracza(gracz) == -1)
 				gracz.sendMessage(msg);
 		Bukkit.getConsoleSender().sendMessage(msg);
 	}
 	public void lista(CommandSender p) {
-		p.sendMessage("\n§6§l>>> " + nazwa + " §6§l<<<");
+		p.sendMessage("\nÂ§6Â§l>>> " + nazwa + " Â§6Â§l<<<");
 		for (CommandSender gracz : gracze)
-			p.sendMessage("§6§l- §d" + gracz.getName());
+			p.sendMessage("Â§6Â§l- Â§d" + gracz.getName());
 	}
 	public int znajdzGracza(CommandSender p) {
 		String nick = p.getName();

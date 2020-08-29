@@ -26,11 +26,11 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import net.md_5.bungee.api.chat.ClickEvent;
 
-public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny {
-	public static final String prefix = Func.prefix("Jednorêki Bandyta");
+public class JednorekiBandyta extends Komenda implements Listener, PrzeÅ‚adowalny {
+	public static final String prefix = Func.prefix("JednorÄ™ki Bandyta");
 	public static final Config config = new Config("configi/jednoreki bandyta");
 	
 	protected static JednorekiBandyta inst;
@@ -41,9 +41,9 @@ public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny
 	}
 	
 	private static final List<Automat> automaty = Lists.newArrayList();
-	public void prze³aduj() {
-		Automat.prze³aduj();
-		config.prze³aduj();
+	public void przeÅ‚aduj() {
+		Automat.przeÅ‚aduj();
+		config.przeÅ‚aduj();
 		automaty.clear();
 		
 		Automat ost = null;
@@ -58,14 +58,14 @@ public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny
 			ost.wczytany();
 	}
 	public String raport() {
-		return "§6Automaty Jednorêkiego Bandyty: §e" + automaty.size();
+		return "Â§6Automaty JednorÄ™kiego Bandyty: Â§e" + automaty.size();
 	}
 	
 	private static final HashMap<String, AutomatTworzony> mapaTworzycieli = new HashMap<>();
 	
 	public static void anuluj(Player p) {
 		mapaTworzycieli.remove(p.getName());
-		p.sendMessage(prefix + "Nie tworzysz ju¿ ¿adnego automatyu");
+		p.sendMessage(prefix + "Nie tworzysz juÅ¼ Å¼adnego automatyu");
 	}
 	
 	@EventHandler(priority=EventPriority.HIGH, ignoreCancelled=false)
@@ -93,22 +93,22 @@ public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return uzupe³nijTabComplete(args, Arrays.asList("stwórz", "anuluj"));
+			return uzupeÅ‚nijTabComplete(args, Arrays.asList("stwÃ³rz", "anuluj"));
 		return null;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Hazard to z³ooo, nawet nie próbuj ziom");
+			return Main.powiadom(sender, prefix + "Hazard to zÅ‚ooo, nawet nie prÃ³buj ziom");
 		Player p = (Player) sender;
 		if (args.length < 2) return Main.powiadom(p, prefix + "/automat stworz <nazwa>");
 		switch (args[0].toLowerCase()) {
 		case "s":
 		case "stworz":
-		case "stwórz":
+		case "stwÃ³rz":
 			for (Automat automat : automaty)
 				if (automat.nazwa.equals(args[1])) {
-					p.sendMessage(prefix + "Ta nazwa autoatu jest ju¿ zajêta");
+					p.sendMessage(prefix + "Ta nazwa autoatu jest juÅ¼ zajÄ™ta");
 					return true;
 				}
 			mapaTworzycieli.put(p.getName(), new AutomatTworzony(p, args[1]));
@@ -128,16 +128,16 @@ public class JednorekiBandyta extends Komenda implements Listener, Prze³adowalny
 class Automat {
 	public static final String prefix = JednorekiBandyta.prefix;
 	
-	private static int slotyGóra = 1;
-	private static int slotyDó³ = 1;
+	private static int slotyGÃ³ra = 1;
+	private static int slotyDÃ³Å‚ = 1;
 	private static int wczesneRolle = 20;
 	private static int czekanieKrok = 2;
 	private static int czekanieMin = 5;
 	private static int czekanieMax = 20;
 	private static int licznikMax = 5;
-	public static void prze³aduj() {
-		slotyGóra = (int) Main.ust.wczytaj("JednorekiBandyta.slotyGóra");
-		slotyDó³ = (int) Main.ust.wczytaj("JednorekiBandyta.slotyDó³");
+	public static void przeÅ‚aduj() {
+		slotyGÃ³ra = (int) Main.ust.wczytaj("JednorekiBandyta.slotyGÃ³ra");
+		slotyDÃ³Å‚ = (int) Main.ust.wczytaj("JednorekiBandyta.slotyDÃ³Å‚");
 		wczesneRolle = (int) Main.ust.wczytaj("JednorekiBandyta.wczesneRolle");
 		czekanieKrok = (int) Main.ust.wczytaj("JednorekiBandyta.czekanieKrok");
 		czekanieMax = (int) Main.ust.wczytaj("JednorekiBandyta.czekanieMax");
@@ -183,23 +183,23 @@ class Automat {
 	
 	public void graj(Player p) {
 		if (!p.hasPermission("mimiRPG.automat.graj")) {
-			p.sendMessage(prefix + "Nie masz uprawnieñ do gry na automatach");
+			p.sendMessage(prefix + "Nie masz uprawnieÅ„ do gry na automatach");
 			return;
 		}
 		if (gracz != null) {
 			if (!gracz.getName().equals(p.getName()))
-				p.sendMessage(prefix + "Aktualnie gra tu §e" + gracz.getDisplayName());
+				p.sendMessage(prefix + "Aktualnie gra tu Â§e" + gracz.getDisplayName());
 			return;
 		}
 		double kasa = Main.econ.getBalance(p);
 		if (kasa < koszt) {
-			p.sendMessage(prefix + "Nie staæ ciê na ten automat");
+			p.sendMessage(prefix + "Nie staÄ‡ ciÄ™ na ten automat");
 			return;
 		}
 		Main.econ.withdrawPlayer(p, koszt);
 		
 		gracz = p;
-		zakrêæ();
+		zakrÄ™Ä‡();
 	}
 	private void koniec() {
 		gracz = null;
@@ -214,16 +214,16 @@ class Automat {
 		return wygrana(ost);
 	}
 	private boolean wygrana(Material mat) {
-		gracz.sendMessage(prefix + "§aWygra³eœ");
+		gracz.sendMessage(prefix + "Â§aWygraÅ‚eÅ›");
 		
 		for (Wygrana wygrana : wygrane)
 			if (wygrana.blok.equals(mat)) {
-				final String msg = gracz.getDisplayName() + "§a wygra³ §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
+				final String msg = gracz.getDisplayName() + "Â§a wygraÅ‚ Â§6w kasynie Â§e" + Func.DoubleToString(koszt) + "$";
 				if (broadcastWygrana)
 					Bukkit.broadcastMessage(prefix + msg);
 				else {
 					Main.log("[Automat] " + msg);
-					gracz.sendMessage(prefix + "Wygra³eœ §e" + Func.DoubleToString(wygrana.wygrana) + "$");
+					gracz.sendMessage(prefix + "WygraÅ‚eÅ› Â§e" + Func.DoubleToString(wygrana.wygrana) + "$");
 				}
 				gracz.getWorld().playSound(gracz.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1);
 				Main.econ.depositPlayer(gracz, wygrana.wygrana).transactionSuccess();
@@ -234,9 +234,9 @@ class Automat {
 		return false;
 	}
 	private boolean przegrana() {
-		gracz.sendMessage(prefix + "§cPrzegra³eœ");
+		gracz.sendMessage(prefix + "Â§cPrzegraÅ‚eÅ›");
 		
-		final String msg = gracz.getDisplayName() + "§c przegra³ §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
+		final String msg = gracz.getDisplayName() + "Â§c przegraÅ‚ Â§6w kasynie Â§e" + Func.DoubleToString(koszt) + "$";
 		if (broadcastPrzegrana)
 			Bukkit.broadcastMessage(prefix + msg);
 		else
@@ -254,70 +254,70 @@ class Automat {
 			if (liczba <= wygrane.get(i).szansa)
 				return wygrane.get(i).blok;
 		
-		Main.log(prefix + "Jest b³¹d w dzia³aniach, JednorêkiBandyta -> Automat -> losujBlok\n wylosowana: " + liczba);
+		Main.log(prefix + "Jest bÅ‚Ä…d w dziaÅ‚aniach, JednorÄ™kiBandyta -> Automat -> losujBlok\n wylosowana: " + liczba);
 		return null;
 	}
-	private void zakrêæ() {
-		gracz.sendMessage(prefix + "Grasz o §e" + koszt + "$");
-		zakrêæWszystkie(wczesneRolle);
+	private void zakrÄ™Ä‡() {
+		gracz.sendMessage(prefix + "Grasz o Â§e" + koszt + "$");
+		zakrÄ™Ä‡Wszystkie(wczesneRolle);
 	}
-	// zakrêca kilka razy na maksymalnej szybkoœci
-	private void zakrêæWszystkie(int licznik) {
-		zakrêæKilka(spiny.size());
+	// zakrÄ™ca kilka razy na maksymalnej szybkoÅ›ci
+	private void zakrÄ™Ä‡Wszystkie(int licznik) {
+		zakrÄ™Ä‡Kilka(spiny.size());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
 		    	if (licznik <= 0)
-		    		_zakrêæWszystkie(czekanieMin);
+		    		_zakrÄ™Ä‡Wszystkie(czekanieMin);
 		    	else
-		    		zakrêæWszystkie(licznik - 1);
+		    		zakrÄ™Ä‡Wszystkie(licznik - 1);
 		    }
 		}, czekanieMin);
 	}
-	// zakrêcanie coraz to wolniej
-	private void _zakrêæWszystkie(int czekanie) {
-		zakrêæKilka(spiny.size());
+	// zakrÄ™canie coraz to wolniej
+	private void _zakrÄ™Ä‡Wszystkie(int czekanie) {
+		zakrÄ™Ä‡Kilka(spiny.size());
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
 		    	if (czekanie >= czekanieMax)
-		    		zakrêæ(spiny.size(), czekanie, licznikMax);
+		    		zakrÄ™Ä‡(spiny.size(), czekanie, licznikMax);
 		    	else
-		    		_zakrêæWszystkie(czekanie + czekanieKrok);
+		    		_zakrÄ™Ä‡Wszystkie(czekanie + czekanieKrok);
 		    }
 		}, czekanie);
 		
 	}
 	// ostateczne losowanie
-	private void zakrêæ(int ile, int czekanie, int licznik) {
+	private void zakrÄ™Ä‡(int ile, int czekanie, int licznik) {
 		if (ile <= 0) {
 			podlicz();
 			return;
 		}
 		
-		zakrêæKilka(ile);
+		zakrÄ™Ä‡Kilka(ile);
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
 		    	if (licznik <= 0) {
 		    		gracz.getWorld().playSound(gracz.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1);
-			    	zakrêæ(ile - 1, czekanie, licznikMax);
+			    	zakrÄ™Ä‡(ile - 1, czekanie, licznikMax);
 		    	}
 		    	else
-		    		zakrêæ(ile, czekanie, licznik - 1);
+		    		zakrÄ™Ä‡(ile, czekanie, licznik - 1);
 		    }
 		}, czekanie);
 	}
-	private void zakrêæKilka(int ile) {
+	private void zakrÄ™Ä‡Kilka(int ile) {
 		for (int i=0; i<spiny.size(); i++) {
 			if (i >= ile) break;
-			zakrêæJeden(spiny.get(i));
+			zakrÄ™Ä‡Jeden(spiny.get(i));
 			gracz.getWorld().playSound(blokAktywacyjny, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1);
 		}
 	}
-	private void zakrêæJeden(Location spin) {
+	private void zakrÄ™Ä‡Jeden(Location spin) {
 		spin = spin.clone();
-		spin.add(0, -slotyDó³, 0);
+		spin.add(0, -slotyDÃ³Å‚, 0);
 		
-		for (int i=0; i < slotyDó³ + slotyGóra; i++) {
+		for (int i=0; i < slotyDÃ³Å‚ + slotyGÃ³ra; i++) {
 			Block b1 = spin.getBlock();
 			Block b2 = spin.add(0, 1, 0).getBlock();
 			b1.setType(b2.getType());
@@ -346,41 +346,41 @@ class AutomatTworzony {
 	private Location blokAktywacyjny;
 	private Location wybrany;
 	public void status() {
-		Napis n = new Napis("§a------- §lAutomat §a-------");
+		Napis n = new Napis("Â§a------- Â§lAutomat Â§a-------");
 		
-		n.dodaj(new Napis("\n§6Koszt gry: §e" + koszt, "§bKliknij aby ustawiæ", ClickEvent.Action.SUGGEST_COMMAND, "/automat koszt " + koszt));
-		n.dodaj(new Napis("\n§6Info po wygraniu: " 		+ (broadcastWygrana    ? "§aWyœwietlaj" : "§cNie wyœwietlaj"), "§bKliknij aby ustawiæ", ClickEvent.Action.SUGGEST_COMMAND, "/automat broadcastWygrana zmien"));
-		n.dodaj(new Napis("\n§6Info po przegraniu: " 	+ (broadcastPrzegrana  ? "§aWyœwietlaj" : "§cNie wyœwietlaj"), "§bKliknij aby ustawiæ", ClickEvent.Action.SUGGEST_COMMAND, "/automat broadcastPrzegrana zmien"));
-		n.dodaj(new Napis("\n§6Blok aktywacyjny: §e" + koordy(blokAktywacyjny), "§bKliknij aby ustawiæ wybrany", ClickEvent.Action.SUGGEST_COMMAND, "/automat blokAktywacyjny " + koordy(wybrany)));
-		n.dodaj(new Napis("\n§6spiny: ", "§bKliknij aby dodaæ", ClickEvent.Action.SUGGEST_COMMAND, "/automat dspin auto"));
-		if (spiny.isEmpty()) n.dodaj("§6puste");
+		n.dodaj(new Napis("\nÂ§6Koszt gry: Â§e" + koszt, "Â§bKliknij aby ustawiÄ‡", ClickEvent.Action.SUGGEST_COMMAND, "/automat koszt " + koszt));
+		n.dodaj(new Napis("\nÂ§6Info po wygraniu: " 		+ (broadcastWygrana    ? "Â§aWyÅ›wietlaj" : "Â§cNie wyÅ›wietlaj"), "Â§bKliknij aby ustawiÄ‡", ClickEvent.Action.SUGGEST_COMMAND, "/automat broadcastWygrana zmien"));
+		n.dodaj(new Napis("\nÂ§6Info po przegraniu: " 	+ (broadcastPrzegrana  ? "Â§aWyÅ›wietlaj" : "Â§cNie wyÅ›wietlaj"), "Â§bKliknij aby ustawiÄ‡", ClickEvent.Action.SUGGEST_COMMAND, "/automat broadcastPrzegrana zmien"));
+		n.dodaj(new Napis("\nÂ§6Blok aktywacyjny: Â§e" + koordy(blokAktywacyjny), "Â§bKliknij aby ustawiÄ‡ wybrany", ClickEvent.Action.SUGGEST_COMMAND, "/automat blokAktywacyjny " + koordy(wybrany)));
+		n.dodaj(new Napis("\nÂ§6spiny: ", "Â§bKliknij aby dodaÄ‡", ClickEvent.Action.SUGGEST_COMMAND, "/automat dspin auto"));
+		if (spiny.isEmpty()) n.dodaj("Â§6puste");
 		else for (Location spin : spiny)
-			n.dodaj(new Napis("\n§e " + koordy(spin), "§bKliknij Aby usun¹æ", 
+			n.dodaj(new Napis("\nÂ§e " + koordy(spin), "Â§bKliknij Aby usunÄ…Ä‡", 
 					ClickEvent.Action.SUGGEST_COMMAND, "/automat uspin " + koordy(spin)));
-		n.dodaj(new Napis("\n§6wygrane: ", "§bKliknij aby dodaæ zaznaczony", ClickEvent.Action.SUGGEST_COMMAND, "/automat wygrana " + ((wybrany != null && wybrany.getBlock() != null) ? wybrany.getBlock().getType().toString() : "<blok>") + " "));
-		if (wygrane.isEmpty()) n.dodaj("§6puste");
+		n.dodaj(new Napis("\nÂ§6wygrane: ", "Â§bKliknij aby dodaÄ‡ zaznaczony", ClickEvent.Action.SUGGEST_COMMAND, "/automat wygrana " + ((wybrany != null && wybrany.getBlock() != null) ? wybrany.getBlock().getType().toString() : "<blok>") + " "));
+		if (wygrane.isEmpty()) n.dodaj("Â§6puste");
 		else for (int i=0; i < wygrane.size(); i++)
-			n.dodaj(new Napis("\n§e- " + wygrane.get(i), "§bKliknij Aby usun¹æ",
+			n.dodaj(new Napis("\nÂ§e- " + wygrane.get(i), "Â§bKliknij Aby usunÄ…Ä‡",
 					ClickEvent.Action.SUGGEST_COMMAND, "/automat uwygrana " + i));
 		n.dodaj("\n");
-		n.dodaj(new Napis("\n§6Wybrany Blok: §d" + blokLokacji(wybrany), "§bUderz, u¿ywaj¹c patyka, w chciany blok aby go wybraæ"));
-		n.dodaj(new Napis("\n§a[Zapisz] ", "§bKliknij aby zapisaæ, §cnie bêdzie powrotu", ClickEvent.Action.SUGGEST_COMMAND, "/automat zapisz potwierdz"));
+		n.dodaj(new Napis("\nÂ§6Wybrany Blok: Â§d" + blokLokacji(wybrany), "Â§bUderz, uÅ¼ywajÄ…c patyka, w chciany blok aby go wybraÄ‡"));
+		n.dodaj(new Napis("\nÂ§a[Zapisz] ", "Â§bKliknij aby zapisaÄ‡, Â§cnie bÄ™dzie powrotu", ClickEvent.Action.SUGGEST_COMMAND, "/automat zapisz potwierdz"));
 		n.dodaj(new Napis("-------"));
-		n.dodaj(new Napis("§c [Anuluj]", "§bKliknij aby anulowaæ, §cnie bêdzie powrotu", ClickEvent.Action.SUGGEST_COMMAND, "/automat anuluj potwierdz"));
+		n.dodaj(new Napis("Â§c [Anuluj]", "Â§bKliknij aby anulowaÄ‡, Â§cnie bÄ™dzie powrotu", ClickEvent.Action.SUGGEST_COMMAND, "/automat anuluj potwierdz"));
 		n.dodaj("\n");
 		
-		n.wyœwietl(gracz);
+		n.wyÅ›wietl(gracz);
 	}
 	public void zaznacz(Location loc) {
 		wybrany = loc;
-		gracz.sendMessage(prefix + "Wybrano blok§d " + blokLokacji(loc));
+		gracz.sendMessage(prefix + "Wybrano blokÂ§d " + blokLokacji(loc));
 		status();
 	}
 	public void komenda(String[] args) {
 		switch(args[0]) {
 		case "zapisz":
-			if (spiny.isEmpty()) 	{gracz.sendMessage(prefix + "Nie ustawiono ¿adnego spina");   return;}
-			if (wygrane.isEmpty()) 	{gracz.sendMessage(prefix + "Nie ustawiono ¿adnej wygranej"); return;}
+			if (spiny.isEmpty()) 	{gracz.sendMessage(prefix + "Nie ustawiono Å¼adnego spina");   return;}
+			if (wygrane.isEmpty()) 	{gracz.sendMessage(prefix + "Nie ustawiono Å¼adnej wygranej"); return;}
 			if (blokAktywacyjny == null) {gracz.sendMessage(prefix + "Nie ustawiono BLoku Aktywacyjnego"); return;}
 			JednorekiBandyta.config.ustaw(nazwa + ".broadcastPrzegrana", broadcastPrzegrana);
 			JednorekiBandyta.config.ustaw(nazwa + ".broadcastWygrana", broadcastWygrana);
@@ -391,7 +391,7 @@ class AutomatTworzony {
 				JednorekiBandyta.config.ustaw(nazwa + "." + wygrana.blok, Arrays.asList(wygrana.szansa, wygrana.wygrana));
 			JednorekiBandyta.config.zapisz();
 			JednorekiBandyta.anuluj(gracz);
-			JednorekiBandyta.inst.prze³aduj();
+			JednorekiBandyta.inst.przeÅ‚aduj();
 			return;
 		case "koszt":
 			int ile = Func.Int(args[1], -1);
@@ -409,12 +409,12 @@ class AutomatTworzony {
 				blokAktywacyjny = wybrany;
 				break;
 			} else {
-				gracz.sendMessage(prefix + "Nie wybra³eœ ¿adnego bloku");
+				gracz.sendMessage(prefix + "Nie wybraÅ‚eÅ› Å¼adnego bloku");
 				return;
 			}
 		case "dspin":
 			if (spiny.contains(wybrany))
-				{gracz.sendMessage(prefix + "Ten spin jest ju¿ dodany (" + koordy(wybrany) + ")"); return;}
+				{gracz.sendMessage(prefix + "Ten spin jest juÅ¼ dodany (" + koordy(wybrany) + ")"); return;}
 			spiny.add(wybrany);
 			break;
 		case "uspin":
@@ -425,7 +425,7 @@ class AutomatTworzony {
 				int z = Integer.parseInt(args[3].trim());
 				loc = new Location(gracz.getWorld(), x, y, z);
 			} catch(NumberFormatException nfe) {
-				gracz.sendMessage(prefix + "Nieprawid³owe koordynaty " + args[1] + " " + args[2] + " " + args[3]);
+				gracz.sendMessage(prefix + "NieprawidÅ‚owe koordynaty " + args[1] + " " + args[2] + " " + args[3]);
 				return;
 			}
 			spiny.remove(loc);
@@ -452,7 +452,7 @@ class AutomatTworzony {
 		case "uwygrana":
 			int nr = Func.Int(args[1], -1);
 			if (nr == -1 || nr > wygrane.size()) {
-				gracz.sendMessage(prefix + "Nieprawid³owy nr lini " + args[1]);
+				gracz.sendMessage(prefix + "NieprawidÅ‚owy nr lini " + args[1]);
 				return;
 			}
 			wygrane.remove(nr);

@@ -28,7 +28,7 @@ public class KolorPisania extends Komenda implements Listener {
 	
 	public KolorPisania() {
 	    super("kolorpisania", prefix + "/kolorPisania <nick> <symbol koloru>", "kp");
-	    Main.dodajPermisje("przejœciakolorów");
+	    Main.dodajPermisje("przejÅ›ciakolorÃ³w");
 	}
 	
 	
@@ -49,19 +49,19 @@ public class KolorPisania extends Komenda implements Listener {
 		msgB.append(symbol).append(msg);
 		
 		msg = msgB.toString();
-		if (ev.getPlayer().hasPermission("mimirpg.przejœciakolorów"))
-			msg = Func.przejœcia(msg);
+		if (ev.getPlayer().hasPermission("mimirpg.przejÅ›ciakolorÃ³w"))
+			msg = Func.przejÅ›cia(msg);
 		ev.setMessage(msg);
 	}
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void PisanieMonitor(AsyncPlayerChatEvent ev) {
 		if (ev.isCancelled()) return;
 		String msg = ev.getMessage();
-			if (msg.contains("§x"))
-				Main.log(Func.usuñKolor(ev.getPlayer().getDisplayName()) + ": " + Func.usuñKolor(msg));
+			if (msg.contains("Â§x"))
+				Main.log(Func.usuÅ„Kolor(ev.getPlayer().getDisplayName()) + ": " + Func.usuÅ„Kolor(msg));
 	}
 	
-	// Blokada zabijania Invulnerable Mobów
+	// Blokada zabijania Invulnerable MobÃ³w
 	@EventHandler
 	public void uderzenie(EntityDamageByEntityEvent ev) {
 		if (ev.getEntity().isInvulnerable())
@@ -80,7 +80,7 @@ public class KolorPisania extends Komenda implements Listener {
 		if (Bukkit.getPlayer(args[0]) == null) {
 			if (!args[0].startsWith("g:") && Main.perms != null && 
 					Lists.newArrayList(Main.perms.getGroups()).contains(args[0].substring(2)))
-				return Main.powiadom(p, prefix + "Gracz §e" + args[0] + "§6 nie jest online");
+				return Main.powiadom(p, prefix + "Gracz Â§e" + args[0] + "Â§6 nie jest online");
 		}
 		String symbol = args[1];
 		if (symbol.equalsIgnoreCase("&r"))
@@ -89,7 +89,7 @@ public class KolorPisania extends Komenda implements Listener {
 			for (int i=2; i<args.length; i++)
 				symbol += " " + args[i];
 			if (symbol.length() > 100) {
-				p.sendMessage(prefix + "Maksymalna iloœæ znaków to §e100");
+				p.sendMessage(prefix + "Maksymalna iloÅ›Ä‡ znakÃ³w to Â§e100");
 				return true;
 			}
 		}
@@ -97,15 +97,15 @@ public class KolorPisania extends Komenda implements Listener {
 			Grupa grupa = Baza.grupa(args[0].substring(2));
 			grupa.kolorpisania = symbol;
 			Baza.config.ustaw_zapisz("grupy."+args[0].substring(2), grupa);
-			if (symbol != "") p.sendMessage(prefix + "Zmieniono domyœlny kolor pisania grupy §e" + args[0].substring(2) + "§6 na " + symbol);
-			else 			  p.sendMessage(prefix + "Zresetowano domyœlny kolor pisania grupy §e" + args[0].substring(2));	
+			if (symbol != "") p.sendMessage(prefix + "Zmieniono domyÅ›lny kolor pisania grupy Â§e" + args[0].substring(2) + "Â§6 na " + symbol);
+			else 			  p.sendMessage(prefix + "Zresetowano domyÅ›lny kolor pisania grupy Â§e" + args[0].substring(2));	
 			return true;
 		}
 		Gracz gracz = Gracze.gracz(args[0]);
 		gracz.kolorPisania = symbol;
 		gracz.config.ustaw_zapisz("kolorPisania", symbol);
-		if (symbol != "") p.sendMessage(prefix + "Zmieniono domyœlny kolor pisania gracza §e" + args[0] + "§6 na " + symbol);
-		else 			  p.sendMessage(prefix + "Zresetowano domyœlny kolor pisania gracza §e" + args[0]);	
+		if (symbol != "") p.sendMessage(prefix + "Zmieniono domyÅ›lny kolor pisania gracza Â§e" + args[0] + "Â§6 na " + symbol);
+		else 			  p.sendMessage(prefix + "Zresetowano domyÅ›lny kolor pisania gracza Â§e" + args[0]);	
 		return true;
 	}
 	

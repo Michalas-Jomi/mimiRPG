@@ -27,22 +27,22 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import me.jomi.mimiRPG.MiniGierki.MiniGra;
 
-public class Osi¹gniêcia implements Listener, Prze³adowalny{
-	public static final String prefix = Func.prefix("Osi¹gniêcia");
-	private static Config config = new Config("osi¹gniêcia");
+public class OsiÄ…gniÄ™cia implements Listener, PrzeÅ‚adowalny{
+	public static final String prefix = Func.prefix("OsiÄ…gniÄ™cia");
+	private static Config config = new Config("osiÄ…gniÄ™cia");
 	
-	public static HashMap<String, List<Osi¹gniêciaInst>> mapa = new HashMap<>();
+	public static HashMap<String, List<OsiÄ…gniÄ™ciaInst>> mapa = new HashMap<>();
 	
-	public void prze³aduj() {
-		config.prze³aduj();
+	public void przeÅ‚aduj() {
+		config.przeÅ‚aduj();
 		mapa.clear();
 		
 		List<String> wczytane = Lists.newArrayList();
 		for (String klucz : config.klucze(false)) {
-			Osi¹gniêciaInst inst = new Osi¹gniêciaInst(klucz, config.wczytajItemy(klucz, "nagrody"));
+			OsiÄ…gniÄ™ciaInst inst = new OsiÄ…gniÄ™ciaInst(klucz, config.wczytajItemy(klucz, "nagrody"));
 			wczytane.add(inst.nazwaPliku);
 		}
 		Iterator<Advancement> iterator = Bukkit.advancementIterator();
@@ -51,26 +51,26 @@ public class Osi¹gniêcia implements Listener, Prze³adowalny{
 			String klucz = adv.getKey().getKey();
 			if (adv.getKey().getNamespace().equals("skyblock"))
 				if (!wczytane.contains(klucz))
-					Main.plugin.getLogger().warning(prefix + "§cNie odnaleziono w osi¹gniêcia.yml osi¹gniêcia §4" + klucz);
+					Main.plugin.getLogger().warning(prefix + "Â§cNie odnaleziono w osiÄ…gniÄ™cia.yml osiÄ…gniÄ™cia Â§4" + klucz);
 		}
 	}
 	public String raport() {
 		int ile = 0;
-		for (List<Osi¹gniêciaInst> lista : mapa.values())
+		for (List<OsiÄ…gniÄ™ciaInst> lista : mapa.values())
 			ile += lista.size();
-		return "§6Osi¹gniêcia: §e" + ile;
+		return "Â§6OsiÄ…gniÄ™cia: Â§e" + ile;
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
-	public void stawianieBloków(BlockPlaceEvent ev) {
+	public void stawianieBlokÃ³w(BlockPlaceEvent ev) {
 		if (ev.isCancelled()) return;
 		Player p = ev.getPlayer();
 		p.incrementStatistic(Statistic.USE_ITEM, Material.MAGMA_CREAM);
-		spe³nij(p, "USE_ITEM", "" + ev.getBlock().getType());
-		spe³nij(p, "USE_ITEM", "" + ev.getItemInHand().getType());
+		speÅ‚nij(p, "USE_ITEM", "" + ev.getBlock().getType());
+		speÅ‚nij(p, "USE_ITEM", "" + ev.getItemInHand().getType());
 	}
 	@EventHandler(priority=EventPriority.HIGH)
-	public void niszczenieBloków(BlockBreakEvent ev) {
+	public void niszczenieBlokÃ³w(BlockBreakEvent ev) {
 		if (ev.isCancelled()) return;
 		Player p = ev.getPlayer();
 		Block b = ev.getBlock();
@@ -81,19 +81,19 @@ public class Osi¹gniêcia implements Listener, Prze³adowalny{
 			case CARROTS:
 				if (b.getBlockData().getAsString().contains("age=7"))
 					p.incrementStatistic(Statistic.MINE_BLOCK, Material.WHEAT);
-				spe³nij(p, "MINE_BLOCK", "CROPS");
+				speÅ‚nij(p, "MINE_BLOCK", "CROPS");
 				break;
 			case NETHER_WART:
 			case BEETROOTS:
 				if (b.getBlockData().getAsString().contains("age=3"))
 					p.incrementStatistic(Statistic.MINE_BLOCK, Material.WHEAT);
-				spe³nij(p, "MINE_BLOCK", "CROPS");
+				speÅ‚nij(p, "MINE_BLOCK", "CROPS");
 				break;
 			default:
 				p.incrementStatistic(Statistic.MINE_BLOCK, Material.BRICK);
 				break;
 			}
-		spe³nij(p, "MINE_BLOCK", "" + ev.getBlock().getType(), ev.getBlock());
+		speÅ‚nij(p, "MINE_BLOCK", "" + ev.getBlock().getType(), ev.getBlock());
 
 	}
 	@EventHandler
@@ -101,125 +101,125 @@ public class Osi¹gniêcia implements Listener, Prze³adowalny{
 		Player p = ev.getEntity().getKiller();
 		if (p == null) return;
 		if (ev.getEntityType().equals(EntityType.PLAYER))
-			spe³nij(p, "PLAYER_KILLS", "" + ev.getEntityType());
+			speÅ‚nij(p, "PLAYER_KILLS", "" + ev.getEntityType());
 		else {
-			spe³nij(p, "KILL_ENTITY", "" + ev.getEntityType());
-			spe³nij(p, "MOB_KILLS", "" + ev.getEntityType());
+			speÅ‚nij(p, "KILL_ENTITY", "" + ev.getEntityType());
+			speÅ‚nij(p, "MOB_KILLS", "" + ev.getEntityType());
 		}
 	}
-	private void spe³nij(Player p, String czynnoœæ, String wartoœæ, Block b) {
-		List<Osi¹gniêciaInst> lista = mapa.get(czynnoœæ);
+	private void speÅ‚nij(Player p, String czynnoÅ›Ä‡, String wartoÅ›Ä‡, Block b) {
+		List<OsiÄ…gniÄ™ciaInst> lista = mapa.get(czynnoÅ›Ä‡);
 		if (lista != null)
-			for (Osi¹gniêciaInst osi¹gniêcie : lista)
-				osi¹gniêcie.spe³nij(p, wartoœæ);
+			for (OsiÄ…gniÄ™ciaInst osiÄ…gniÄ™cie : lista)
+				osiÄ…gniÄ™cie.speÅ‚nij(p, wartoÅ›Ä‡);
 	}
-	private void spe³nij(Player p, String czynnoœæ, String wartoœæ) {
-		List<Osi¹gniêciaInst> lista = mapa.get(czynnoœæ);
+	private void speÅ‚nij(Player p, String czynnoÅ›Ä‡, String wartoÅ›Ä‡) {
+		List<OsiÄ…gniÄ™ciaInst> lista = mapa.get(czynnoÅ›Ä‡);
 		if (lista != null)
-			for (Osi¹gniêciaInst osi¹gniêcie : lista)
-				osi¹gniêcie.spe³nij(p, wartoœæ);
+			for (OsiÄ…gniÄ™ciaInst osiÄ…gniÄ™cie : lista)
+				osiÄ…gniÄ™cie.speÅ‚nij(p, wartoÅ›Ä‡);
 	}
 	@EventHandler
-	public void zdobycieOsi¹gniêcia(PlayerAdvancementDoneEvent ev) {
+	public void zdobycieOsiÄ…gniÄ™cia(PlayerAdvancementDoneEvent ev) {
 		Advancement adv = ev.getAdvancement();
 		if (!adv.getKey().getNamespace().equals("skyblock"))
 			return;
 		String nazwa = adv.getKey().getKey();
 		String klucz = ((String) adv.getCriteria().toArray()[0]).split(" ")[0].replace("x", "_");
 		if (klucz == null || !mapa.containsKey(klucz)) return;
-		for (Osi¹gniêciaInst osi¹gniêcie : mapa.get(klucz))
-			if (osi¹gniêcie.nazwaPliku.equals(nazwa)) {
-				osi¹gniêcie.nagródz(ev.getPlayer());
+		for (OsiÄ…gniÄ™ciaInst osiÄ…gniÄ™cie : mapa.get(klucz))
+			if (osiÄ…gniÄ™cie.nazwaPliku.equals(nazwa)) {
+				osiÄ…gniÄ™cie.nagrÃ³dz(ev.getPlayer());
 				break;
 			}
 		}
 }
 
-class Osi¹gniêciaInst {
-	public static final String prefix = Osi¹gniêcia.prefix;
+class OsiÄ…gniÄ™ciaInst {
+	public static final String prefix = OsiÄ…gniÄ™cia.prefix;
 	public String nazwaPliku;
 	public String kryterium;
 	public List<ItemStack> nagrody;
 	
-	public String czynnoœæ;
-	public String wartoœæ;
-	public int iloœæ;
+	public String czynnoÅ›Ä‡;
+	public String wartoÅ›Ä‡;
+	public int iloÅ›Ä‡;
 	
 	public Advancement adv;
 	
 	public String toString() {
-		return String.format("AdvInst(plik=%s, czynnoœæ=%s, wartoœæ=%s)", nazwaPliku, czynnoœæ, wartoœæ);
+		return String.format("AdvInst(plik=%s, czynnoÅ›Ä‡=%s, wartoÅ›Ä‡=%s)", nazwaPliku, czynnoÅ›Ä‡, wartoÅ›Ä‡);
 	}
 	
 	@SuppressWarnings("deprecation")
-	public Osi¹gniêciaInst(String nazwaPliku, List<ItemStack> nagrody) {
+	public OsiÄ…gniÄ™ciaInst(String nazwaPliku, List<ItemStack> nagrody) {
 		this.nagrody = nagrody;
 		this.nazwaPliku = nazwaPliku;
 
 		adv = Bukkit.getAdvancement(new NamespacedKey("skyblock", nazwaPliku));
 		if (adv == null) {
-			Main.plugin.getLogger().warning(prefix + "Niepoprawny plik osi¹gniêcia.yml, osi¹gniêcie " + nazwaPliku);
+			Main.plugin.getLogger().warning(prefix + "Niepoprawny plik osiÄ…gniÄ™cia.yml, osiÄ…gniÄ™cie " + nazwaPliku);
 			return;
 		}
 		kryterium = ((String) adv.getCriteria().toArray()[0]);
 		
 		String[] t = kryterium.replace("x", "_").split(" ");
 		if (t.length < 2) {
-			Main.plugin.getLogger().warning("niepoprawne kryterium \"" + kryterium + "\" w osi¹gniêcia.yml, osi¹gniêcie " + nazwaPliku);
+			Main.plugin.getLogger().warning("niepoprawne kryterium \"" + kryterium + "\" w osiÄ…gniÄ™cia.yml, osiÄ…gniÄ™cie " + nazwaPliku);
 			return;
 		}
-		czynnoœæ = t[0];
+		czynnoÅ›Ä‡ = t[0];
 		int i = 1;
 		if (t.length >= 3)
-			wartoœæ = t[i++];
-		iloœæ = Func.Int(t[i], -1);
-		if (iloœæ <= -1)
-			Main.plugin.getLogger().warning("niepoprawny plik osi¹gniêcia.yml, osi¹gniêcie " + nazwaPliku);
-		if (Osi¹gniêcia.mapa.get(czynnoœæ) == null)
-			Osi¹gniêcia.mapa.put(czynnoœæ, Lists.newArrayList());
-		Osi¹gniêcia.mapa.get(czynnoœæ).add(this);
+			wartoÅ›Ä‡ = t[i++];
+		iloÅ›Ä‡ = Func.Int(t[i], -1);
+		if (iloÅ›Ä‡ <= -1)
+			Main.plugin.getLogger().warning("niepoprawny plik osiÄ…gniÄ™cia.yml, osiÄ…gniÄ™cie " + nazwaPliku);
+		if (OsiÄ…gniÄ™cia.mapa.get(czynnoÅ›Ä‡) == null)
+			OsiÄ…gniÄ™cia.mapa.put(czynnoÅ›Ä‡, Lists.newArrayList());
+		OsiÄ…gniÄ™cia.mapa.get(czynnoÅ›Ä‡).add(this);
 	}
 
-	public void spe³nij(Player p, String Wartoœæ) {
-		if (p.getAdvancementProgress(adv).isDone() || (wartoœæ != null && !wartoœæ.equals(Wartoœæ))) return;
+	public void speÅ‚nij(Player p, String WartoÅ›Ä‡) {
+		if (p.getAdvancementProgress(adv).isDone() || (wartoÅ›Ä‡ != null && !wartoÅ›Ä‡.equals(WartoÅ›Ä‡))) return;
 		int ile;
-		if (wartoœæ != null)
-			switch(czynnoœæ) {
+		if (wartoÅ›Ä‡ != null)
+			switch(czynnoÅ›Ä‡) {
 			case "MINE_BLOCK":
-				if (wartoœæ.equals("CROPS")) {
+				if (wartoÅ›Ä‡.equals("CROPS")) {
 					ile = p.getStatistic(Statistic.MINE_BLOCK, Material.WHEAT);
 					break;
 				}
 			case "USE_ITEM":
-				ile = p.getStatistic(Statistic.valueOf(czynnoœæ), Material.valueOf(wartoœæ));
+				ile = p.getStatistic(Statistic.valueOf(czynnoÅ›Ä‡), Material.valueOf(wartoÅ›Ä‡));
 				break;
 			case "KILL_ENTITY":
-				ile = p.getStatistic(Statistic.valueOf(czynnoœæ), EntityType.valueOf(wartoœæ));
+				ile = p.getStatistic(Statistic.valueOf(czynnoÅ›Ä‡), EntityType.valueOf(wartoÅ›Ä‡));
 				break;
 			default:
-				MiniGra.powiadomOp("Niepoprawna czynnoœæ w pliku osi¹gniêcia.yml: " + czynnoœæ);
+				MiniGra.powiadomOp("Niepoprawna czynnoÅ›Ä‡ w pliku osiÄ…gniÄ™cia.yml: " + czynnoÅ›Ä‡);
 				ile = 0;
 				break;
 			}
 		else {
-			if (czynnoœæ.equals("MINE_BLOCK"))
+			if (czynnoÅ›Ä‡.equals("MINE_BLOCK"))
 				ile = p.getStatistic(Statistic.MINE_BLOCK, Material.BRICK);
-			else if (czynnoœæ.equals("USE_ITEM"))
+			else if (czynnoÅ›Ä‡.equals("USE_ITEM"))
 				ile = p.getStatistic(Statistic.USE_ITEM, Material.MAGMA_CREAM);
 			else
-				ile = p.getStatistic(Statistic.valueOf(czynnoœæ));
+				ile = p.getStatistic(Statistic.valueOf(czynnoÅ›Ä‡));
 		}
-		if (ile >= iloœæ)
+		if (ile >= iloÅ›Ä‡)
 			p.getAdvancementProgress(adv).awardCriteria(kryterium);
 		
 	}
-	public void nagródz(Player p) {
+	public void nagrÃ³dz(Player p) {
 		for (ItemStack item : nagrody)
 			Func.dajItem(p, item);
-		Napis n = new Napis("§7Gracz §e" + p.getDisplayName() + "§7 ukoñczy³ §a");
-		n.dodaj(Napis.osi¹gniêcie("skyblock", nazwaPliku));
+		Napis n = new Napis("Â§7Gracz Â§e" + p.getDisplayName() + "Â§7 ukoÅ„czyÅ‚ Â§a");
+		n.dodaj(Napis.osiÄ…gniÄ™cie("skyblock", nazwaPliku));
 		for (Player gracz : Bukkit.getOnlinePlayers())
-			n.wyœwietl(gracz);
+			n.wyÅ›wietl(gracz);
 		Bukkit.getConsoleSender().sendMessage("" + n);
 	}
 }

@@ -34,11 +34,11 @@ import me.jomi.mimiRPG.Zegar;
 
 public class Budownik extends Komenda implements Listener, Zegar {
 	public static final String prefix = Func.prefix("Budownik");
-	private final ItemStack itemSkrzynia = Func.po³ysk(Func.stwórzItem(Material.BARREL, "&6&lBudownik",
-		"&bTo jest jeden z rogów Budownika", "&bDrugi otrzymasz po postawieniu tego",
-		"&bGdy oba bêd¹ postawione,", "&bBudownik bêdzie budowa³ od rogu do rogu blokami", "&bZ tego bloku"));
-	private final ItemStack itemRóg = Func.po³ysk(Func.stwórzItem(Material.CHISELED_STONE_BRICKS, "&e&lRóg Budownika",
-		"&bTo jest róg budownika", "&bBudownik bêdzie budowaæ od bloku postawionego wczeœniej",
+	private final ItemStack itemSkrzynia = Func.poÅ‚ysk(Func.stwÃ³rzItem(Material.BARREL, "&6&lBudownik",
+		"&bTo jest jeden z rogÃ³w Budownika", "&bDrugi otrzymasz po postawieniu tego",
+		"&bGdy oba bÄ™dÄ… postawione,", "&bBudownik bÄ™dzie budowaÅ‚ od rogu do rogu blokami", "&bZ tego bloku"));
+	private final ItemStack itemRÃ³g = Func.poÅ‚ysk(Func.stwÃ³rzItem(Material.CHISELED_STONE_BRICKS, "&e&lRÃ³g Budownika",
+		"&bTo jest rÃ³g budownika", "&bBudownik bÄ™dzie budowaÄ‡ od bloku postawionego wczeÅ›niej",
 		"&bDo tego rogu surowcami", "&bZ tamtego rogu (Beczki)"));
 	
 	static final HashMap<String, Location> mapa = new HashMap<>();
@@ -47,8 +47,8 @@ public class Budownik extends Komenda implements Listener, Zegar {
 	static final Config config = new Config("configi/Budowniki");
 	public Budownik() {
 		super("budownik", prefix + "/budownik <gracz>");
-		ustawKomende("rógbudownika", null, null);
-		Main.plugin.getCommand("rógbudownika").setPermission(null);
+		ustawKomende("rÃ³gbudownika", null, null);
+		Main.plugin.getCommand("rÃ³gbudownika").setPermission(null);
 		for (String klucz : config.klucze(false))
 			budowniki.add(_Budownik.wczytaj(config, klucz));
 	}
@@ -59,7 +59,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 			loc.getWorld().spawnParticle(Particle.COMPOSTER, loc.clone().add(.5, .6, .5), 10, .6, .7, .6, 0);
 		return 5;
 	}
-	public static void wy³¹czanie() {
+	public static void wyÅ‚Ä…czanie() {
 		for (Location loc : mapa.values())
 			loc.getBlock().setType(Material.AIR);
 		for (_Budownik budownik : budowniki)
@@ -76,14 +76,14 @@ public class Budownik extends Komenda implements Listener, Zegar {
 		if (cmd.getName().equals("budownik"))
 			item = itemSkrzynia;
 		else
-			item = itemRóg;
+			item = itemRÃ³g;
 		if (sender instanceof Player)
 			Func.dajItem(((Player) sender), item);
 		else
 			if (args.length >= 1) {
 				Player p = Bukkit.getPlayer(args[0]);
 				if (p == null)
-					sender.sendMessage(prefix + "Nieodnaleziono gracza§e " + args[0]);
+					sender.sendMessage(prefix + "Nieodnaleziono graczaÂ§e " + args[0]);
 				else
 					Func.dajItem(p, item);
 			} else
@@ -96,21 +96,21 @@ public class Budownik extends Komenda implements Listener, Zegar {
 			return;
 		Player p = ev.getPlayer();
 		ItemStack item = p.getInventory().getItemInMainHand();
-		if (Func.porównaj(item, itemSkrzynia)) {
+		if (Func.porÃ³wnaj(item, itemSkrzynia)) {
 			if (mapa.containsKey(p.getName())) {
 				ev.setCancelled(true);
-				p.sendMessage(prefix + "Najpierw ustaw róg poprzedniego Budownika, zamin zabierzesz siê za kolejny, jeœli go zgubi³eœ u¿yj /rógbudownika");
+				p.sendMessage(prefix + "Najpierw ustaw rÃ³g poprzedniego Budownika, zamin zabierzesz siÄ™ za kolejny, jeÅ›li go zgubiÅ‚eÅ› uÅ¼yj /rÃ³gbudownika");
 				return;
 			}
 			if (p.getGameMode().equals(GameMode.CREATIVE))
 				item.setAmount(item.getAmount() - 1);
-			p.sendMessage(prefix + "Skrzynia budownika ustawiona, pora na róg");
-			Func.dajItem(p, itemRóg);
+			p.sendMessage(prefix + "Skrzynia budownika ustawiona, pora na rÃ³g");
+			Func.dajItem(p, itemRÃ³g);
 			mapa.put(p.getName(), ev.getBlock().getLocation());
-		} else if (Func.porównaj(item, itemRóg)) {
+		} else if (Func.porÃ³wnaj(item, itemRÃ³g)) {
 			ev.setCancelled(true);
 			if (!mapa.containsKey(p.getName())) {
-				p.sendMessage(prefix + "Nie ustawiasz aktualnie ¿adnego budownika");
+				p.sendMessage(prefix + "Nie ustawiasz aktualnie Å¼adnego budownika");
 				p.getInventory().setItemInMainHand(null);
 				return;
 			}
@@ -120,7 +120,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 				mapa.remove(p.getName());
 				p.getInventory().setItemInMainHand(null);
 			} else
-				p.sendMessage(prefix + "Budownik nie jest w stanie budowaæ na tak daleki dystans");
+				p.sendMessage(prefix + "Budownik nie jest w stanie budowaÄ‡ na tak daleki dystans");
 		}
 	}
 	@EventHandler
@@ -133,7 +133,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 						mapa.remove(en.getKey());
 						Player p = Bukkit.getPlayer(en.getKey());
 						if (p != null)
-							p.sendMessage(prefix + "Twój Budownik zosta³ zniszczony");
+							p.sendMessage(prefix + "TwÃ³j Budownik zostaÅ‚ zniszczony");
 						break;
 					}
 				Func.dajItem(ev.getPlayer(), itemSkrzynia);
@@ -166,20 +166,20 @@ class _Budownik {
 	Location skrzynia;
 	Location rog;
 	Location akt;
-	int[] zwiêkszanie = {0, 0, 0};
+	int[] zwiÄ™kszanie = {0, 0, 0};
 	String id;
 	_Budownik(Player p, Location skrzynia, Location rog) {
 		this.skrzynia = skrzynia;
 		akt = skrzynia.clone();
 		this.rog = rog;
 		
-		zwiêkszanie();
+		zwiÄ™kszanie();
 
 		Budownik.budowniki.add(this);
 		
 		p.sendMessage(prefix + "Budownik poprawnie zainstalowany");
 		
-		nastêpna();
+		nastÄ™pna();
 		buduj();
 		
 		int i = 0;
@@ -187,27 +187,27 @@ class _Budownik {
 		id = "" + i;
 		zapisz(Budownik.config);
 	}
-	private void zwiêkszanie() {
-		zwiêkszanie[0] = skrzynia.getBlockX() <= rog.getBlockX() ? 1 : -1;
-		zwiêkszanie[1] = skrzynia.getBlockY() <= rog.getBlockY() ? 1 : -1;
-		zwiêkszanie[2] = skrzynia.getBlockZ() <= rog.getBlockZ() ? 1 : -1;
+	private void zwiÄ™kszanie() {
+		zwiÄ™kszanie[0] = skrzynia.getBlockX() <= rog.getBlockX() ? 1 : -1;
+		zwiÄ™kszanie[1] = skrzynia.getBlockY() <= rog.getBlockY() ? 1 : -1;
+		zwiÄ™kszanie[2] = skrzynia.getBlockZ() <= rog.getBlockZ() ? 1 : -1;
 	}
-	void nastêpna() {
-		akt.add(zwiêkszanie[0], 0, 0);
-		if (akt.getBlockX() == rog.getBlockX() + zwiêkszanie[0]) {
+	void nastÄ™pna() {
+		akt.add(zwiÄ™kszanie[0], 0, 0);
+		if (akt.getBlockX() == rog.getBlockX() + zwiÄ™kszanie[0]) {
 			akt.setX(skrzynia.getX());
-			akt.add(0, 0, zwiêkszanie[2]);
-			if (akt.getBlockZ() == rog.getBlockZ() + zwiêkszanie[2]) {
+			akt.add(0, 0, zwiÄ™kszanie[2]);
+			if (akt.getBlockZ() == rog.getBlockZ() + zwiÄ™kszanie[2]) {
 				akt.setZ(skrzynia.getZ());
-				akt.add(0, zwiêkszanie[1], 0);
-				if (akt.getBlockY() == rog.getBlockY() + zwiêkszanie[1]) {
+				akt.add(0, zwiÄ™kszanie[1], 0);
+				if (akt.getBlockY() == rog.getBlockY() + zwiÄ™kszanie[1]) {
 					koniec();
 					return;
 				}
 			}
 		}
 		if (!akt.getBlock().getType().isAir())
-			nastêpna();
+			nastÄ™pna();
 	}
 	boolean koniec = false;
 	void koniec() {
@@ -221,8 +221,8 @@ class _Budownik {
 		Bukkit.selectEntities(Bukkit.getConsoleSender(), "@a[x=263,y=63,z=575,distance=..3]");
 		for (Entity en : skrzynia.getWorld().getNearbyEntities(skrzynia, 20, 30, 20))
 			if (en instanceof Player)
-				((Player) en).sendTitle("§6§lBudowa ukoñczona", "§eBudownik zakoñczy³ ju¿ swoj¹ prace", 20, 80, 20);
-		((Barrel) skrzynia.getBlock().getState()).setCustomName("§e§l§oBeczunia Po Budownikowa");
+				((Player) en).sendTitle("Â§6Â§lBudowa ukoÅ„czona", "Â§eBudownik zakoÅ„czyÅ‚ juÅ¼ swojÄ… prace", 20, 80, 20);
+		((Barrel) skrzynia.getBlock().getState()).setCustomName("Â§eÂ§lÂ§oBeczunia Po Budownikowa");
 		skrzynia.getWorld().playSound(skrzynia, Sound.ENTITY_WITHER_SHOOT, 1, 0);
 	}
 	
@@ -235,7 +235,7 @@ class _Budownik {
 				item.setAmount(item.getAmount() - 1);
 				akt.getWorld().spawnParticle(Particle.CLOUD, akt, 20, .5, .5, .5, .05);
 				akt.getWorld().playSound(akt, Sound.BLOCK_STONE_PLACE, .6f, 1);
-				nastêpna();
+				nastÄ™pna();
 				Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		            public void run() {
 						buduj();
@@ -263,7 +263,7 @@ class _Budownik {
 		budownik.rog = (Location) config.wczytaj(sciezka, "rog");
 		budownik.akt = (Location) config.wczytaj(sciezka, "akt");
 		budownik.id = sciezka;
-		budownik.zwiêkszanie();
+		budownik.zwiÄ™kszanie();
 		return budownik;
 	}
 	

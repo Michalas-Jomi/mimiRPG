@@ -13,10 +13,10 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 
 public class Ujezdzaj extends Komenda {
-	public static final String prefix = Func.prefix("Uje¿dzanie");
+	public static final String prefix = Func.prefix("UjeÅ¼dzanie");
 
 	public Ujezdzaj(){
-		super("uje¿dzaj");
+		super("ujeÅ¼dzaj");
 		Main.dodajPermisje("ujezdzaj.ominzasieg", "ujezdzaj.nakazinnym");
 	}
 	
@@ -52,20 +52,20 @@ public class Ujezdzaj extends Komenda {
 		if (args.length >= 2) {
 			if (!sender.hasPermission("mimiRPG.ujezdzaj.nakazinnym") && 
 					!sender.getName().equals(p2.getName()))
-				return Main.powiadom(sender, prefix + "Nie masz wystarczaj¹cych uprawnieñ aby tego u¿yæ");
+				return Main.powiadom(sender, prefix + "Nie masz wystarczajÄ…cych uprawnieÅ„ aby tego uÅ¼yÄ‡");
 			Entity p3 = byt(sender, args[1]);
 			if (p3 == null) return true;
-			usi¹dz(sender, p2, p3);
+			usiÄ…dz(sender, p2, p3);
 			return true;
 		}
-		usi¹dz(sender, (Player) sender, p2);
+		usiÄ…dz(sender, (Player) sender, p2);
 		return true;
 	}
 	
 	private Entity byt(CommandSender p, String nazwa) {
 		List<Entity> en = Bukkit.selectEntities(p, nazwa);
 		if (en.isEmpty()) {
-			p.sendMessage("§cnieprawid³owy selektor " + nazwa);
+			p.sendMessage("Â§cnieprawidÅ‚owy selektor " + nazwa);
 			return null;
 		}
 		if (en.isEmpty())
@@ -74,39 +74,39 @@ public class Ujezdzaj extends Komenda {
 	}
 	
 
-	private void usi¹dz(CommandSender p, Entity kto, Entity naKim) {
+	private void usiÄ…dz(CommandSender p, Entity kto, Entity naKim) {
 		if (kto.getUniqueId().equals(naKim.getUniqueId())) {
-			p.sendMessage(prefix + "Nie mo¿na uje¿dzaæ samego siebie");
+			p.sendMessage(prefix + "Nie moÅ¼na ujeÅ¼dzaÄ‡ samego siebie");
 			return;
 		}
 		if (zawiera(naKim.getPassengers(), kto)) {
 			naKim.removePassenger(kto);
 			if (p.getName().equals(kto.getName()))
-				p.sendMessage(prefix + Func.msg("Ju¿ nie uje¿dzasz %s", naKim.getName()));
+				p.sendMessage(prefix + Func.msg("JuÅ¼ nie ujeÅ¼dzasz %s", naKim.getName()));
 			else if (p.getName().equals(naKim.getName()))
-				p.sendMessage(prefix + Func.msg("%s juz cie nie uje¿dza", kto.getName()));
+				p.sendMessage(prefix + Func.msg("%s juz cie nie ujeÅ¼dza", kto.getName()));
 			else
-				p.sendMessage(prefix + Func.msg("%s ju¿ nie uje¿dza %s", kto.getName(), naKim.getName()));
+				p.sendMessage(prefix + Func.msg("%s juÅ¼ nie ujeÅ¼dza %s", kto.getName(), naKim.getName()));
 			return;
 		}
-		double odleg³oœæ = kto.getLocation().distance(naKim.getLocation());
+		double odlegÅ‚oÅ›Ä‡ = kto.getLocation().distance(naKim.getLocation());
 		if (!p.hasPermission("mimiRPG.ujezdzaj.ominzasieg")) {
-			if (odleg³oœæ > (double) Main.ust.wczytajLubDomyœlna("ujezdzanie.maxOdleg³oœæ", 5.0)) {
-				p.sendMessage(prefix + "Nie mo¿na uje¿dzaæ graczy na tak daleki dystans");
+			if (odlegÅ‚oÅ›Ä‡ > (double) Main.ust.wczytajLubDomyÅ›lna("ujezdzanie.maxOdlegÅ‚oÅ›Ä‡", 5.0)) {
+				p.sendMessage(prefix + "Nie moÅ¼na ujeÅ¼dzaÄ‡ graczy na tak daleki dystans");
 				return;
 			}
 		}
 		if (zawiera(kto.getPassengers(), naKim))
 			kto.removePassenger(naKim);
-		if (odleg³oœæ > 50)
+		if (odlegÅ‚oÅ›Ä‡ > 50)
 			kto.teleport(naKim);
 		naKim.addPassenger(kto);
 		if (p.getName().equals(kto.getName()))
-			p.sendMessage(prefix + Func.msg("Uje¿dzasz teraz %s", naKim.getName()));
+			p.sendMessage(prefix + Func.msg("UjeÅ¼dzasz teraz %s", naKim.getName()));
 		else if (p.getName().equals(naKim.getName()))
-			p.sendMessage(prefix + Func.msg("%s teraz cie uje¿dza", kto.getName()));
+			p.sendMessage(prefix + Func.msg("%s teraz cie ujeÅ¼dza", kto.getName()));
 		else
-			p.sendMessage(prefix + Func.msg("%s uje¿dza teraz %s", kto.getName(), naKim.getName()));
+			p.sendMessage(prefix + Func.msg("%s ujeÅ¼dza teraz %s", kto.getName(), naKim.getName()));
 	}
 	private boolean zawiera(List<Entity> lista, Entity en) {
 		for (Entity e : lista)

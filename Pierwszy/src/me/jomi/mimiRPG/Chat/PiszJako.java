@@ -27,7 +27,7 @@ public class PiszJako extends Komenda {
 		if (args.length < 2) return false;
 		List<Entity> en = Bukkit.selectEntities(sender, args[0]);
 		if (en.isEmpty()) {
-			sender.sendMessage(Func.prefix("Pisz Jako") + " Niepoprawna nazwa gracza: §e" + args[0]);
+			sender.sendMessage(Func.prefix("Pisz Jako") + " Niepoprawna nazwa gracza: Â§e" + args[0]);
 			return true;
 		}
 		for (Entity e : en)

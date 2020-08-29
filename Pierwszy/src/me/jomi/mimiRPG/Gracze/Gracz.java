@@ -10,26 +10,26 @@ public class Gracz {
 	public Config config;
 	public Player p;
 	
-	public int dropPoåmierci;
+	public int dropPo≈ömierci;
 	public String kolorPisania;
 	public List<String> przyjaciele;
 	
-	public Kon koÒ;
+	public Kon ko≈Ñ;
 	
 	public Gracz(Player p) {
 		this.p = p;
 		
 		config = new Config("gracze/" + p.getName());
 		
-		dropPoåmierci = (int) config.wczytajLubDomyúlna("dropPoåmierci", 0);
-		kolorPisania  = (String) config.wczytajLubDomyúlna("kolorPisania", "");
+		dropPo≈ömierci = (int) config.wczytajLubDomy≈õlna("dropPo≈ömierci", 0);
+		kolorPisania  = (String) config.wczytajLubDomy≈õlna("kolorPisania", "");
 		przyjaciele   = config.wczytajListe("przyjaciele");
 		
-		koÒ = new Kon(this,
-				(boolean) config.wczytajLubDomyúlna("koÒ.bezg≥oúny", false),
-				(boolean) config.wczytajLubDomyúlna("koÒ.ma≥y", false),
-				(String) config.wczytajLubDomyúlna("koÒ.kolor", "Bia≥y"),
-				(String) config.wczytajLubDomyúlna("koÒ.styl", "Brak"),
-				(int) config.wczytajLubDomyúlna("koÒ.zapas", -1));
+		ko≈Ñ = new Kon(this,
+				(boolean) config.wczytajLubDomy≈õlna("ko≈Ñ.bezg≈Ço≈õny", false),
+				(boolean) config.wczytajLubDomy≈õlna("ko≈Ñ.ma≈Çy", false),
+				(String) config.wczytajLubDomy≈õlna("ko≈Ñ.kolor", "Bia≈Çy"),
+				(String) config.wczytajLubDomy≈õlna("ko≈Ñ.styl", "Brak"),
+				(int) config.wczytajLubDomy≈õlna("ko≈Ñ.zapas", -1));
 	}
 }

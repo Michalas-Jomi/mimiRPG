@@ -21,7 +21,7 @@ public class Poziom extends Komenda implements Listener{
 	public static String prefix = Func.koloruj("&2[&aPoziom&2]&6 ");
 	
 	@EventHandler
-	public void u¿yj(PlayerInteractEvent ev) {
+	public void uÅ¼yj(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
 		ItemStack item = ev.getItem();
 		if (item == null) return;
@@ -31,7 +31,7 @@ public class Poziom extends Komenda implements Listener{
 		
 		int ile = item.getItemMeta().getCustomModelData();
 		p.giveExp(ile);
-		p.sendMessage(prefix + "Przyznano §e" + Func.IntToString(ile) + "§6 doœwiadczenia");
+		p.sendMessage(prefix + "Przyznano Â§e" + Func.IntToString(ile) + "Â§6 doÅ›wiadczenia");
 		
 		int x = item.getAmount();
 		item.setAmount(x-1);
@@ -39,15 +39,15 @@ public class Poziom extends Komenda implements Listener{
 	}
 
 	public Poziom() {
-		super("poziom", prefix + "/poziom [iloœæ]", "lvl");
+		super("poziom", prefix + "/poziom [iloÅ›Ä‡]", "lvl");
 	}
 	
-	private static int sprawdz_poprawnoœæ(Player p, int expAkt, String[] args) {
+	private static int sprawdz_poprawnoÅ›Ä‡(Player p, int expAkt, String[] args) {
 		int ile;
 		try {
-			if (args[0].equalsIgnoreCase("ca³y")) {
+			if (args[0].equalsIgnoreCase("caÅ‚y")) {
 				if (expAkt <= 0) {
-					p.sendMessage(prefix + "Nie posiadasz doœwiadczenia");
+					p.sendMessage(prefix + "Nie posiadasz doÅ›wiadczenia");
 					return 0;
 				}
 				ile = expAkt;
@@ -57,11 +57,11 @@ public class Poziom extends Komenda implements Listener{
 			
 		}
 		catch(NumberFormatException nfe) {
-			p.sendMessage(prefix + "Iloœæ musi byæ poprawn¹ liczb¹ ca³kowit¹ wiêksz¹ od 0");
+			p.sendMessage(prefix + "IloÅ›Ä‡ musi byÄ‡ poprawnÄ… liczbÄ… caÅ‚kowitÄ… wiÄ™kszÄ… od 0");
 			return 0; 
 		}
 		if (ile > expAkt) {
-			p.sendMessage(prefix + "Nie posiadasz wystarczaj¹co du¿o expa");
+			p.sendMessage(prefix + "Nie posiadasz wystarczajÄ…co duÅ¼o expa");
 			return 0;
 		}
 		return ile;
@@ -70,8 +70,8 @@ public class Poziom extends Komenda implements Listener{
 		ItemStack item = new ItemStack(Material.EXPERIENCE_BOTTLE, 1);
 		ItemMeta meta = item.getItemMeta();
 		meta.setCustomModelData(ile);
-		meta.setDisplayName("§6§lButelka z Expem");
-		meta.setLore(Arrays.asList("§2Posiada §a" + Func.IntToString(ile) + "§2 doœwiadczenia"));
+		meta.setDisplayName("Â§6Â§lButelka z Expem");
+		meta.setLore(Arrays.asList("Â§2Posiada Â§a" + Func.IntToString(ile) + "Â§2 doÅ›wiadczenia"));
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -81,7 +81,7 @@ public class Poziom extends Komenda implements Listener{
 		else if (lvl <= 31) return (int)(2.5*lvl*lvl - 40.5*lvl + 360);
 		else                return (int)(4.5*lvl*lvl - 162.5*lvl + 2220);
 	}
-	public static int policzCa³yExp(Player p) {
+	public static int policzCaÅ‚yExp(Player p) {
 		float xp = p.getExp();
 		int  lvl = p.getLevel();
 		int expAktLvl  = policzExp(lvl);
@@ -95,7 +95,7 @@ public class Poziom extends Komenda implements Listener{
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return uzupe³nijTabComplete(args, Arrays.asList("100", "1000", "3000", "ca³y"));
+			return uzupeÅ‚nijTabComplete(args, Arrays.asList("100", "1000", "3000", "caÅ‚y"));
 		return null;
 	}
 
@@ -105,23 +105,23 @@ public class Poziom extends Komenda implements Listener{
 			return Main.powiadom(sender, prefix + "Konsola bez expa, Konsola bez /poziom");
 		Player p = (Player) sender;
 		int lvl = p.getLevel();
-		int expAkt = policzCa³yExp(p);
+		int expAkt = policzCaÅ‚yExp(p);
 		
-		// Brak argumentów
+		// Brak argumentÃ³w
 		if (args.length == 0) {
-			p.sendMessage(prefix + "Posiadasz §e" + Func.IntToString(expAkt) + "§6 doœwiadczenia (" + lvl + "lvl)");
+			p.sendMessage(prefix + "Posiadasz Â§e" + Func.IntToString(expAkt) + "Â§6 doÅ›wiadczenia (" + lvl + "lvl)");
 			return true;
 		}
 		
 		else {
-			// Pe³ne eq
+			// PeÅ‚ne eq
 			if (p.getInventory().firstEmpty() == -1) {
-				p.sendMessage(prefix + "Twój ekwipunek jest pe³ny");
+				p.sendMessage(prefix + "TwÃ³j ekwipunek jest peÅ‚ny");
 				return true;
 			}
 			
 			// niepoprawna liczba
-			int ile = sprawdz_poprawnoœæ(p, expAkt, args);
+			int ile = sprawdz_poprawnoÅ›Ä‡(p, expAkt, args);
 			if (ile == 0)
 				return true;
 			
@@ -130,11 +130,11 @@ public class Poziom extends Komenda implements Listener{
 				ItemStack item = zabutelkuj(ile);
 				p.giveExp(-ile);
 				p.getInventory().addItem(item);
-				p.sendMessage(prefix + "Zabutelkowano §e" + Func.IntToString(ile) + "§6 doœwiadczenia");
+				p.sendMessage(prefix + "Zabutelkowano Â§e" + Func.IntToString(ile) + "Â§6 doÅ›wiadczenia");
 				return true;
 			}
 			else {
-				p.sendMessage(prefix + "Iloœæ musi byæ poprawn¹ liczb¹ ca³kowit¹ wiêksz¹ od 0");
+				p.sendMessage(prefix + "IloÅ›Ä‡ musi byÄ‡ poprawnÄ… liczbÄ… caÅ‚kowitÄ… wiÄ™kszÄ… od 0");
 				return true;
 			}
 		}

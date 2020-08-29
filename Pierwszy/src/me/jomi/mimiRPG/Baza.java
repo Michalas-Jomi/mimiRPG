@@ -11,12 +11,12 @@ public class Baza{
 	public static ConfigurationSection grupy;
 	
 	public Baza() {	
-		prze³aduj();
+		przeÅ‚aduj();
 	}
-	public static void prze³aduj() {
-		Main.ust.prze³aduj();
+	public static void przeÅ‚aduj() {
+		Main.ust.przeÅ‚aduj();
 
-		config.prze³aduj();
+		config.przeÅ‚aduj();
 									
 		wczytajCustomoweItemy();
 		wczytajGrupy();

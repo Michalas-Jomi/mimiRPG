@@ -33,35 +33,35 @@ public class KomendyInfo extends Komenda implements Listener {
 	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length >= 1) {
 			if (args[0].equals("lista")) {
-				p.sendMessage(prefix + "Gracze którzy wykrywaj¹ komendy: ");
+				p.sendMessage(prefix + "Gracze ktÃ³rzy wykrywajÄ… komendy: ");
 				for (CommandSender odbiorca : gracze)
-					p.sendMessage("§6- §e" + odbiorca.getName());
+					p.sendMessage("Â§6- Â§e" + odbiorca.getName());
 				p.sendMessage("");
 			} else {
 				Player p2 = Bukkit.getPlayer(args[0]);
 				if (p2 == null) {
-					p.sendMessage(prefix + "Nieprawid³owa nazwa gracza: " + args[0]);
+					p.sendMessage(prefix + "NieprawidÅ‚owa nazwa gracza: " + args[0]);
 					return true;
 				}
 				if (gracze.contains(p2)) {
 					gracze.remove(p2);
-					p2.sendMessage(prefix + "Nie podgl¹dasz ju¿ komend graczy");
-					p.sendMessage (prefix + "Gracz §e" + p2.getName() + "§6 nie podgl¹da ju¿ komend graczy");
+					p2.sendMessage(prefix + "Nie podglÄ…dasz juÅ¼ komend graczy");
+					p.sendMessage (prefix + "Gracz Â§e" + p2.getName() + "Â§6 nie podglÄ…da juÅ¼ komend graczy");
 					return true;
 				} else {
 					gracze.add(p2);
-					p2.sendMessage(prefix + "Dziêki prawomocnikowi §e" + p.getName() + "§6 podgl¹dasz komendy graczy");
-					p.sendMessage (prefix + "Gracz §e" + p2.getName() + "§6 od teraz podgl¹da komendy graczy");
+					p2.sendMessage(prefix + "DziÄ™ki prawomocnikowi Â§e" + p.getName() + "Â§6 podglÄ…dasz komendy graczy");
+					p.sendMessage (prefix + "Gracz Â§e" + p2.getName() + "Â§6 od teraz podglÄ…da komendy graczy");
 					return true;
 				}
 			}
 		} else {
 			if (gracze.contains(p)) {
 				gracze.remove(p);
-				p.sendMessage(prefix + "Nie podgl¹dasz ju¿ komend graczy");
+				p.sendMessage(prefix + "Nie podglÄ…dasz juÅ¼ komend graczy");
 			} else {
 				gracze.add(p);
-				p.sendMessage(prefix + "Podgl¹dasz komendy graczy");
+				p.sendMessage(prefix + "PodglÄ…dasz komendy graczy");
 			}
 		}
 		return true;
@@ -72,12 +72,12 @@ public class KomendyInfo extends Komenda implements Listener {
 	public void wykrywanieKomend(PlayerCommandPreprocessEvent ev) {
 		for (CommandSender p : gracze)
 			if (p != null)
-				p.sendMessage("§8[§7Cmd§8] §7" + ev.getPlayer().getName() + ": " + ev.getMessage());
+				p.sendMessage("Â§8[Â§7CmdÂ§8] Â§7" + ev.getPlayer().getName() + ": " + ev.getMessage());
 	}
 	@EventHandler
 	public void opuszczanieGry(PlayerQuitEvent ev) {
 		gracze.remove(ev.getPlayer());
-		Main.log(ev.getPlayer().getDisplayName() + "§f wyszed³ z gry");
+		Main.log(ev.getPlayer().getDisplayName() + "Â§f wyszedÅ‚ z gry");
 	}
 	
 }

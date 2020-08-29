@@ -25,17 +25,17 @@ import net.milkbowl.vault.economy.EconomyResponse;
 public class Wyplac extends Komenda implements Listener {
 
 	public Wyplac() {
-		super("wyp³aæ", "/wyp³aæ <kwota> <ile>", "withdraw");
-		ustawKomende("stworzbanknot", "/stworzbanknot <kwota> [iloœæ]", null);
+		super("wypÅ‚aÄ‡", "/wypÅ‚aÄ‡ <kwota> <ile>", "withdraw");
+		ustawKomende("stworzbanknot", "/stworzbanknot <kwota> [iloÅ›Ä‡]", null);
 	}
 
 	public static String prefix = Func.prefix("Banknot");
 	
 	private static boolean stworz(Player p, String[] args) {
 		double kwota = sprawdz(p, args);
-		if (kwota == 0) return Main.powiadom(p, prefix + "/stworzbanknot <kwota> [iloœæ]");
+		if (kwota == 0) return Main.powiadom(p, prefix + "/stworzbanknot <kwota> [iloÅ›Ä‡]");
 
-		kwota = Func.zaokr¹glij(kwota, 2);
+		kwota = Func.zaokrÄ…glij(kwota, 2);
 
 		int ile = 1;
 		if (args.length >= 2)
@@ -44,12 +44,12 @@ public class Wyplac extends Komenda implements Listener {
 		if (ile <= 0) ile = 1;
 		
 		p.getInventory().addItem(dajBanknot(kwota, ile));
-		p.sendMessage(prefix + "Utworzono nowy banknot o wartoœci §e" + Func.DoubleToString(kwota) + "$§6 w iloœci §e" + ile);
+		p.sendMessage(prefix + "Utworzono nowy banknot o wartoÅ›ci Â§e" + Func.DoubleToString(kwota) + "$Â§6 w iloÅ›ci Â§e" + ile);
 		
 		return true;
 	}
 	private static ItemStack dajBanknot(double kwota, int ile) {
-		ItemStack item = Func.stwórzItem(Material.PAPER, ile, "&9&lBanknot§2", Arrays.asList("&bU¿yj Prawym przyciskiem myszy", "&bWartoœæ:&a " + Func.DoubleToString(kwota)));
+		ItemStack item = Func.stwÃ³rzItem(Material.PAPER, ile, "&9&lBanknotÂ§2", Arrays.asList("&bUÅ¼yj Prawym przyciskiem myszy", "&bWartoÅ›Ä‡:&a " + Func.DoubleToString(kwota)));
 		return Func.ukryj(Func.enchantuj(item, Enchantment.ARROW_INFINITE, 1), ItemFlag.HIDE_ENCHANTS);
 	}
 	
@@ -58,14 +58,14 @@ public class Wyplac extends Komenda implements Listener {
 			return powiadom(p, "Na serwerze nie ma wgranej odpowiedniej ekonomi");
 		
 		if (args.length <= 0)
-			return powiadom(p, "/wyp³aæ <kwota> [iloœæ]");
+			return powiadom(p, "/wypÅ‚aÄ‡ <kwota> [iloÅ›Ä‡]");
 		
 		if (p.getInventory().firstEmpty() == -1)
-			return powiadom(p, "Twój ekwipunek jest pe³ny");
+			return powiadom(p, "TwÃ³j ekwipunek jest peÅ‚ny");
 		
 		double kwota = Func.Double(args[0].replace(",", ""), 0);
 		if (kwota == 0)
-			return powiadom(p, "Niepoprawna liczba: §e" + args[0]);
+			return powiadom(p, "Niepoprawna liczba: Â§e" + args[0]);
 		
 		return kwota;
 	}
@@ -75,25 +75,25 @@ public class Wyplac extends Komenda implements Listener {
 	}
 	
 	@EventHandler
-	public void u¿ycie(PlayerInteractEvent ev) {
+	public void uÅ¼ycie(PlayerInteractEvent ev) {
 		if (ev.getAction().toString().startsWith("LEFT")) return;
 		Player p = ev.getPlayer();
 		ItemStack item = p.getInventory().getItemInMainHand();
 		if (!item.hasItemMeta()) return;
 		ItemMeta meta = item.getItemMeta();
-		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && meta.getDisplayName().equals("§9§lBanknot§2") && meta.hasLore()) {
+		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && meta.getDisplayName().equals("Â§9Â§lBanknotÂ§2") && meta.hasLore()) {
 			List<String> lore = meta.getLore();
-			if (lore.size() == 2 && lore.get(0).equals("§bU¿yj Prawym przyciskiem myszy")) {
+			if (lore.size() == 2 && lore.get(0).equals("Â§bUÅ¼yj Prawym przyciskiem myszy")) {
 				double ile = Func.Double(lore.get(1).split(" ")[1].replace(",", ""), 0);
 				if (ile == 0) return;
 				EconomyResponse r = Main.econ.depositPlayer(p, ile);
 				if (r.transactionSuccess()) {
-					p.sendMessage(prefix + "Wp³acono §e" + r.amount + "$§6 aktualny stan konta to: §e" + r.balance + "$");
+					p.sendMessage(prefix + "WpÅ‚acono Â§e" + r.amount + "$Â§6 aktualny stan konta to: Â§e" + r.balance + "$");
 					item.setAmount(item.getAmount() - 1);
 					p.getInventory().setItemInMainHand(item);
 				}
 				else
-					p.sendMessage(prefix + "§cWyst¹pi³ nieznany b³¹d, powiadom o tym admina");
+					p.sendMessage(prefix + "Â§cWystÄ…piÅ‚ nieznany bÅ‚Ä…d, powiadom o tym admina");
 			}
 		}
 	}
@@ -114,9 +114,9 @@ public class Wyplac extends Komenda implements Listener {
 		if (kwota == 0) return true;
 		
 		if (kwota < 1)
-			return Main.powiadom(p, prefix + "Nie mo¿esz wyp³aæiæ mniej ni¿ §e1$");
+			return Main.powiadom(p, prefix + "Nie moÅ¼esz wypÅ‚aÄ‡iÄ‡ mniej niÅ¼ Â§e1$");
 		
-		kwota = Func.zaokr¹glij(kwota, 2);
+		kwota = Func.zaokrÄ…glij(kwota, 2);
 
 		int ile = 1;
 		if (args.length >= 2)
@@ -126,12 +126,12 @@ public class Wyplac extends Komenda implements Listener {
 		
 		double kasa = Main.econ.getBalance(p);
 		if (kasa < kwota*ile)
-			return Main.powiadom(p, prefix + "Nie posiadasz tyle pieniêdzy");
+			return Main.powiadom(p, prefix + "Nie posiadasz tyle pieniÄ™dzy");
 		
 		Main.econ.withdrawPlayer(p, kwota*ile);
 		
 		p.getInventory().addItem(dajBanknot(kwota, ile));
-		return Main.powiadom(p, prefix + "Utworzono banknot o wartoœci:§e " + Func.DoubleToString(kwota) + "§6 w iloœci §e" + ile);
+		return Main.powiadom(p, prefix + "Utworzono banknot o wartoÅ›ci:Â§e " + Func.DoubleToString(kwota) + "Â§6 w iloÅ›ci Â§e" + ile);
 	}
 	
 	

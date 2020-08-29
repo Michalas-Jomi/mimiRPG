@@ -24,72 +24,72 @@ import me.jomi.mimiRPG.Main;
 
 public class Wymienianie implements Listener{
 	public static String prefix = Func.prefix("Handel");
-	private static ItemStack œrodek = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§2Wymiana", Arrays.asList("§bAby tranzakcja by³¹ udana", "§boboje graczy musi j¹ zaakceptowaæ"));
+	private static ItemStack Å›rodek = Func.stwÃ³rzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Â§2Wymiana", Arrays.asList("Â§bAby tranzakcja byÅ‚Ä… udana", "Â§boboje graczy musi jÄ… zaakceptowaÄ‡"));
 	
 	public static HashMap<String, String> prozby = new HashMap<>();
-	public static List<String> handluj¹cy = Lists.newArrayList();
+	public static List<String> handlujÄ…cy = Lists.newArrayList();
 	
 	
 	private static void handel(Player p1, Player p2) {
 		String nick1 = p1.getName();
 		String nick2 = p2.getName();
-		Inventory inv = stwórzMenu(nick1, nick2);
+		Inventory inv = stwÃ³rzMenu(nick1, nick2);
 		p1.openInventory(inv);
 		p2.openInventory(inv);
-		handluj¹cy.add(nick1);
-		handluj¹cy.add(nick2);
+		handlujÄ…cy.add(nick1);
+		handlujÄ…cy.add(nick2);
 	}
 	private static void anulujHandel(Inventory inv, Player anulant) {
 		Player p1 = (Player) inv.getViewers().get(0);
 		Player p2 = (Player) inv.getViewers().get(1);
 		anulujHandel(inv, p1, p2);
 		if (anulant.getName().equals(p1.getName())) {
-			p2.sendMessage(prefix + "§e" + anulant.getName() + "§6 anulowa³ handel");
-			anulant.sendMessage(prefix + "Anulowa³eœ handel z graczem §e" + p2.getName());
+			p2.sendMessage(prefix + "Â§e" + anulant.getName() + "Â§6 anulowaÅ‚ handel");
+			anulant.sendMessage(prefix + "AnulowaÅ‚eÅ› handel z graczem Â§e" + p2.getName());
 		} else {
-			p1.sendMessage(prefix + "§e" + anulant.getName() + "§6 anulowa³ handel");
-			anulant.sendMessage(prefix + "Anulowa³eœ handel z graczem §e" + p1.getName());
+			p1.sendMessage(prefix + "Â§e" + anulant.getName() + "Â§6 anulowaÅ‚ handel");
+			anulant.sendMessage(prefix + "AnulowaÅ‚eÅ› handel z graczem Â§e" + p1.getName());
 			
 		}
 		
 	}
 	private static void anulujHandel(Inventory inv, Player p1, Player p2) {
-		wy³¹czHandel(p1, p2);
+		wyÅ‚Ä…czHandel(p1, p2);
 		for(int y=0; y<4; y++)
 			for (int x=0; x<3; x++) {
 				dajItem(p1, inv.getItem(y*9+x));
 				dajItem(p2, inv.getItem(y*9+x+6));
 			}
 	}
-	private static void wy³¹czHandel(Player p1, Player p2) {
-		handluj¹cy.remove(p1.getName());
-		handluj¹cy.remove(p2.getName());
+	private static void wyÅ‚Ä…czHandel(Player p1, Player p2) {
+		handlujÄ…cy.remove(p1.getName());
+		handlujÄ…cy.remove(p2.getName());
 		prozby.remove(p1.getName());
 		prozby.remove(p2.getName());
 		p1.closeInventory();
 		p2.closeInventory();
 	}
 	
-	private static Inventory stwórzMenu(String nick1, String nick2) {
-		Inventory inv = Bukkit.createInventory(null, 4*9, "§1§lWymiana§2");
+	private static Inventory stwÃ³rzMenu(String nick1, String nick2) {
+		Inventory inv = Bukkit.createInventory(null, 4*9, "Â§1Â§lWymianaÂ§2");
 		for (int i=4; i<9*4; i+=9)
-			inv.setItem(i, œrodek);
+			inv.setItem(i, Å›rodek);
 		
-		ItemStack g³os = dajG³os(nick1, false);
+		ItemStack gÅ‚os = dajGÅ‚os(nick1, false);
 		for (int i=3; i<9*4; i+=9)
-			inv.setItem(i, g³os);
+			inv.setItem(i, gÅ‚os);
 		
-		g³os = dajG³os(nick2, false);
+		gÅ‚os = dajGÅ‚os(nick2, false);
 		for (int i=5; i<9*4; i+=9)
-			inv.setItem(i, g³os);
+			inv.setItem(i, gÅ‚os);
 		
 		return inv;
 	}
-	private static ItemStack dajG³os(String nick, boolean zaakceptowano) {
+	private static ItemStack dajGÅ‚os(String nick, boolean zaakceptowano) {
 		if (zaakceptowano)
-			return Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, 1, "§aZaakceptowano", 	   Arrays.asList("§b" + nick));
+			return Func.stwÃ³rzItem(Material.LIME_STAINED_GLASS_PANE, 1, "Â§aZaakceptowano", 	   Arrays.asList("Â§b" + nick));
 		else
-			return Func.stwórzItem(Material.RED_STAINED_GLASS_PANE,  1, "§cNie zaakceptowano", Arrays.asList("§b" + nick));
+			return Func.stwÃ³rzItem(Material.RED_STAINED_GLASS_PANE,  1, "Â§cNie zaakceptowano", Arrays.asList("Â§b" + nick));
 	}
 	public static void dajItem(Player p, ItemStack item) {
 		if (item == null || item.getType().isAir()) return;
@@ -101,15 +101,15 @@ public class Wymienianie implements Listener{
 	private static void udana(Inventory inv) {
 		Player p1 = (Player) inv.getViewers().get(0);
 		Player p2 = (Player) inv.getViewers().get(1);
-		wy³¹czHandel(p1, p2);
+		wyÅ‚Ä…czHandel(p1, p2);
 		for (int y=0; y<4; y++)
 			for (int x=0; x<3; x++) {
 				int slot = y*9+x;
 				dajItem(p1, inv.getItem(slot+6));
 				dajItem(p2, inv.getItem(slot));
 			}
-		p1.sendMessage(prefix + "Handel z gracze §e" + p2.getName() + "§6 zakoñczy³ siê sukcesem");
-		p2.sendMessage(prefix + "Handel z gracze §e" + p1.getName() + "§6 zakoñczy³ siê sukcesem");
+		p1.sendMessage(prefix + "Handel z gracze Â§e" + p2.getName() + "Â§6 zakoÅ„czyÅ‚ siÄ™ sukcesem");
+		p2.sendMessage(prefix + "Handel z gracze Â§e" + p1.getName() + "Â§6 zakoÅ„czyÅ‚ siÄ™ sukcesem");
 	}
 	
 	@EventHandler
@@ -120,34 +120,34 @@ public class Wymienianie implements Listener{
 		if (!p.isSneaking()) return;
 		String nick1 = p.getName();
 		if (prozby.containsKey(nick1)) return;
-		if (handluj¹cy.contains(nick1)) return;
+		if (handlujÄ…cy.contains(nick1)) return;
 		Player p2 = (Player) ev.getRightClicked();
 		String nick2 = p2.getName();
 		if (nick1.equals(prozby.get(nick2)))
 			handel(p2, p);
 		else {
 			prozby.put(nick1, nick2);
-			p.sendMessage(prefix  + "Wys³ano propozycjê handlu do gracza §e"   + nick2);
-			p2.sendMessage(prefix + "Otrzymano propozycjê handlu od gracza §e" + nick1);
+			p.sendMessage(prefix  + "WysÅ‚ano propozycjÄ™ handlu do gracza Â§e"   + nick2);
+			p2.sendMessage(prefix + "Otrzymano propozycjÄ™ handlu od gracza Â§e" + nick1);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 			    public void run() {
-			    	if (nick2.equals(prozby.get(nick1)) && !handluj¹cy.contains(nick1)) {
+			    	if (nick2.equals(prozby.get(nick1)) && !handlujÄ…cy.contains(nick1)) {
 			    		prozby.remove(nick1);
-			    		p.sendMessage(prefix  + "Propozycja handlu z graczem §e" + nick2 + "§6 wygas³a");
-			    		p2.sendMessage(prefix + "Propozycja handlu gracza §e" + nick1 + "§6 wygas³a");
+			    		p.sendMessage(prefix  + "Propozycja handlu z graczem Â§e" + nick2 + "Â§6 wygasÅ‚a");
+			    		p2.sendMessage(prefix + "Propozycja handlu gracza Â§e" + nick1 + "Â§6 wygasÅ‚a");
 			    	}
 			    }
 			}, 400);
 		}
 	}
 	@EventHandler
-	public void podnoszenieItemów(EntityPickupItemEvent ev) {
-		if (handluj¹cy.contains(ev.getEntity().getName()))
+	public void podnoszenieItemÃ³w(EntityPickupItemEvent ev) {
+		if (handlujÄ…cy.contains(ev.getEntity().getName()))
 			ev.setCancelled(true);
 	}
 	@EventHandler
-	public void przeci¹ganie(InventoryDragEvent ev) {
-		if (handluj¹cy.contains(ev.getWhoClicked().getName())) {
+	public void przeciÄ…ganie(InventoryDragEvent ev) {
+		if (handlujÄ…cy.contains(ev.getWhoClicked().getName())) {
 			boolean lewa = prozby.containsKey(ev.getWhoClicked().getName());
 			for (int slot : ev.getRawSlots())
 				if (!sprawdzSlot(slot, lewa)) {
@@ -158,12 +158,12 @@ public class Wymienianie implements Listener{
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (handluj¹cy.contains(ev.getPlayer().getName()))
+		if (handlujÄ…cy.contains(ev.getPlayer().getName()))
 			anulujHandel(ev.getInventory(), (Player) ev.getPlayer());
 	}
 	@EventHandler
 	public void klikanie(InventoryClickEvent ev) {
-		if (!handluj¹cy.contains(ev.getWhoClicked().getName())) return;
+		if (!handlujÄ…cy.contains(ev.getWhoClicked().getName())) return;
 		switch (ev.getClick()) {
 		case DOUBLE_CLICK:
 		case SHIFT_RIGHT:
@@ -188,14 +188,14 @@ public class Wymienianie implements Listener{
 	private static void odakceptuj(Inventory inv, String nick, boolean lewa) {
 		String lewy = nick;
 		if (!lewa)
-			lewy = handluj¹cy.get(handluj¹cy.indexOf(nick) - 1);
-		wype³nijKolumne(inv, dajG³os(lewy, false), 3);
-		wype³nijKolumne(inv, dajG³os(prozby.get(lewy), false), 5);
+			lewy = handlujÄ…cy.get(handlujÄ…cy.indexOf(nick) - 1);
+		wypeÅ‚nijKolumne(inv, dajGÅ‚os(lewy, false), 3);
+		wypeÅ‚nijKolumne(inv, dajGÅ‚os(prozby.get(lewy), false), 5);
 	}
 	private static void zaakceptuj(Inventory inv, String nick, boolean lewa) {
 		int st = dajSt(lewa);
 		boolean zaakceptowane = inv.getItem(st).getType().equals(Material.LIME_STAINED_GLASS_PANE);
-		wype³nijKolumne(inv, dajG³os(nick, !zaakceptowane), st);
+		wypeÅ‚nijKolumne(inv, dajGÅ‚os(nick, !zaakceptowane), st);
 		if (!zaakceptowane) {
 			if (st == 5) st = 3;
 			else st = 5;
@@ -208,7 +208,7 @@ public class Wymienianie implements Listener{
 			return 3; 
 		return 5;
 	}
-	public static void wype³nijKolumne(Inventory inv, ItemStack item, int st) {
+	public static void wypeÅ‚nijKolumne(Inventory inv, ItemStack item, int st) {
 		for (int i=st; i<inv.getSize(); i+=9)
 			inv.setItem(i, item);
 	}

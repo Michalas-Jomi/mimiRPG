@@ -23,36 +23,36 @@ import me.jomi.mimiRPG.Func;
 
 public class Golf extends MiniGra{
 	protected static HashMap<String, Chicken> mapaKur = new HashMap<>();
-	protected ItemStack jajko = Func.stwórzItem(Material.EGG, 1, "&cReset pi³ki", Arrays.asList("Porzuca aktualn¹ pi³kê", "i oddaje kolejkê"));
+	protected ItemStack jajko = Func.stwÃ³rzItem(Material.EGG, 1, "&cReset piÅ‚ki", Arrays.asList("Porzuca aktualnÄ… piÅ‚kÄ™", "i oddaje kolejkÄ™"));
 	
 	public Golf() {
 		super("Golf", "Golf");
 	}
 	
-	public void wy³¹cz() {
-		super.wy³¹cz();
+	public void wyÅ‚Ä…cz() {
+		super.wyÅ‚Ä…cz();
 		if (!mapaKur.isEmpty())
 			for (Chicken kura : mapaKur.values())
 				if (kura != null)
 					kura.remove();
 	}
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		if (!mapaKur.isEmpty())
 			for (Chicken kura : mapaKur.values())
 				if (kura != null)
 					kura.remove();
-		super.prze³aduj();
+		super.przeÅ‚aduj();
 	}
 	
-	protected void zwyciêstwo(Arena arena) {}
+	protected void zwyciÄ™stwo(Arena arena) {}
 
 	public void zwyciestwo(Player p) {
-		Bukkit.broadcastMessage(prefix +"§e" + p.getName() + " §6ukoñczy³ tor!");
-		opuœæ(p, false);
+		Bukkit.broadcastMessage(prefix +"Â§e" + p.getName() + " Â§6ukoÅ„czyÅ‚ tor!");
+		opuÅ›Ä‡(p, false);
 	}
 	
 	protected ItemStack dajKij(int lvl) {
-		ItemStack item = Func.stwórzItem(Material.STICK, 1, "&2&o&lGolfowy Patyczek &e"+lvl, Arrays.asList("Stworzony do gry w golfa", "Jeden z kurczaków to twoja pi³ka"));
+		ItemStack item = Func.stwÃ³rzItem(Material.STICK, 1, "&2&o&lGolfowy Patyczek &e"+lvl, Arrays.asList("Stworzony do gry w golfa", "Jeden z kurczakÃ³w to twoja piÅ‚ka"));
 		ItemMeta  meta = item.getItemMeta();
 		meta.addEnchant(Enchantment.KNOCKBACK, lvl, true);
 		item.setItemMeta(meta);
@@ -71,19 +71,19 @@ public class Golf extends MiniGra{
 			p.getInventory().setItem(3, item3);
 			p.getInventory().setItem(4, item4);
 			p.getInventory().setItem(5, item5);
-			p.getInventory().setItem(6, Func.stwórzItem(Material.ENDER_PEARL, 1, "&9Teleport do pi³ki", null));
+			p.getInventory().setItem(6, Func.stwÃ³rzItem(Material.ENDER_PEARL, 1, "&9Teleport do piÅ‚ki", null));
 			mapaKur.put(p.getName(), null);
 			p.setAllowFlight(true);
-			p.sendMessage(prefix + "Mo¿esz lataæ");
+			p.sendMessage(prefix + "MoÅ¼esz lataÄ‡");
 		}
-		nastêpny(arena);
+		nastÄ™pny(arena);
 	}
 	
 	protected void zrespKure(Player p, Arena arena) {
 		String nick = p.getName();
 		if (mapaKur.get(nick) == null || mapaKur.get(nick).isDead()) {
 			Chicken kura = (Chicken) arena.start.getWorld().spawnEntity(arena.start, EntityType.CHICKEN);
-			kura.setCustomName("§6Pi³ka gracza " + nick);
+			kura.setCustomName("Â§6PiÅ‚ka gracza " + nick);
 			kura.setRemoveWhenFarAway(false);
 			kura.setCustomNameVisible(true);
 			kura.setCollidable(false);
@@ -92,7 +92,7 @@ public class Golf extends MiniGra{
 		}
 	}
 	
-	public void opuœæ(Player p, boolean komunikat) {
+	public void opuÅ›Ä‡(Player p, boolean komunikat) {
 		Arena arena = arenaGracza(p);
 		String nick = p.getName();
 		int index = arena.znajdzGracza(p);
@@ -101,12 +101,12 @@ public class Golf extends MiniGra{
 				mapaKur.get(nick).remove();
 			mapaKur.remove(nick);
 		}
-		super.opuœæ(p, komunikat);
+		super.opuÅ›Ä‡(p, komunikat);
 		if (p.getGameMode().equals(GameMode.SURVIVAL) || p.getGameMode().equals(GameMode.ADVENTURE)) {
 			p.setAllowFlight(false);
-			p.sendMessage(prefix + "Nie mo¿esz ju¿ lataæ");
+			p.sendMessage(prefix + "Nie moÅ¼esz juÅ¼ lataÄ‡");
 		}
-		arena.policzG³osy(this);
+		arena.policzGÅ‚osy(this);
 		if (arena.grane) {
 			if (arena.gracze.size() <= 0) {
 				arena.grane = false;
@@ -114,25 +114,25 @@ public class Golf extends MiniGra{
 			}
 			if (arena.zmienna >= index) {
 				arena.zmienna -= 1;
-				nastêpny(arena);
+				nastÄ™pny(arena);
 			}
 			if (arena.gracze.size() == 1) 
-				opuœæ(arena.gracze.get(0), false);
+				opuÅ›Ä‡(arena.gracze.get(0), false);
 		}
 	}
 	
-	public void nastêpny(Arena arena) {
+	public void nastÄ™pny(Arena arena) {
 		if (arena.gracze.size() <= 0)
 			return;
 		if (arena.gracze.size() == 1) {
-			opuœæ(arena.gracze.get(0), false);
+			opuÅ›Ä‡(arena.gracze.get(0), false);
 			return;
 		}
 		arena.zmienna += 1;
 		if (arena.zmienna >= arena.gracze.size())
 			arena.zmienna = 0;
 		for (Player p : arena.gracze) {
-			p.sendMessage(prefix + "Kolej gracza §e" + arena.gracze.get(arena.zmienna).getName());
+			p.sendMessage(prefix + "Kolej gracza Â§e" + arena.gracze.get(arena.zmienna).getName());
 			p.getInventory().setItem(0, new ItemStack(Material.AIR));
 			p.getInventory().setItem(7, new ItemStack(Material.AIR));
 		}
@@ -155,24 +155,24 @@ public class Golf extends MiniGra{
 		if (!(ev.getDamager() instanceof Player)) return;
 		Player p = (Player) ev.getDamager();
 		Arena arena = arenaGracza(p);
-		if (arena != null && arena.grane && ev.getEntity() instanceof CraftChicken && (ev.getEntity().getName()+" 1").split(" ")[0].equals(Func.koloruj("&6Pi³ka"))) {
+		if (arena != null && arena.grane && ev.getEntity() instanceof CraftChicken && (ev.getEntity().getName()+" 1").split(" ")[0].equals(Func.koloruj("&6PiÅ‚ka"))) {
 			if (ev.getDamager().getName().equals(arena.gracze.get(arena.zmienna).getName()) && ev.getEntity().getName().split(" ")[2].equals(ev.getDamager().getName())) {
 				ev.setDamage(0);
-				nastêpny(arena);
+				nastÄ™pny(arena);
 			}
 			else {
 				if (ev.getEntity().getName().split(" ")[2].equals(ev.getDamager().getName()))
 					ev.getDamager().sendMessage(prefix + "to nie twoja kolej stary");
 				else
-					ev.getDamager().sendMessage(prefix + "to nie twoja pi³ka stary");
+					ev.getDamager().sendMessage(prefix + "to nie twoja piÅ‚ka stary");
 				ev.setCancelled(true);
 			}
 		}
 	}
 	
 	@EventHandler
-	public void u¿ycie(PlayerInteractEvent ev) {
-		super.u¿ycie(ev);
+	public void uÅ¼ycie(PlayerInteractEvent ev) {
+		super.uÅ¼ycie(ev);
 		Player p = ev.getPlayer();
 		Arena arena = arenaGracza(p);
 		if (arena == null || ev.getAction().toString().startsWith("LEFT")) return;
@@ -184,7 +184,7 @@ public class Golf extends MiniGra{
 			if (kura != null && !kura.isDead())
 				p.teleport(kura);
 			else
-				p.sendMessage(prefix + "Twoja pi³ka aktuanie nie istnieje");
+				p.sendMessage(prefix + "Twoja piÅ‚ka aktuanie nie istnieje");
 			ev.setCancelled(true);
 			return;
 		case EGG:
@@ -192,7 +192,7 @@ public class Golf extends MiniGra{
 			if (i != arena.zmienna) return;
 			mapaKur.get(p.getName()).remove();
 			mapaKur.put(p.getName(), null);
-			nastêpny(arena);
+			nastÄ™pny(arena);
 			ev.setCancelled(true);
 			return;
 		default:

@@ -14,7 +14,7 @@ import me.jomi.mimiRPG.Main;
 public class Mi extends Komenda {
 
 	public Mi() {
-	    super("mi", Func.prefix("Wiadomoœæ Console") + "/mi <wiadomoœæ>");
+	    super("mi", Func.prefix("WiadomoÅ›Ä‡ Console") + "/mi <wiadomoÅ›Ä‡>");
 	}
 
 	@Override
@@ -25,9 +25,9 @@ public class Mi extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof ConsoleCommandSender)) 
-			return Main.powiadom(sender, "Tej komendy mo¿na u¿ywaæ tylko z konsoli");
+			return Main.powiadom(sender, "Tej komendy moÅ¼na uÅ¼ywaÄ‡ tylko z konsoli");
 		if (args.length < 1) return false;
-		String pref = Main.ust.wczytajLubDomyœlna("WiadomoscConsole", "[Konsola]") + " ";
+		String pref = Main.ust.wczytajLubDomyÅ›lna("WiadomoscConsole", "[Konsola]") + " ";
 		Bukkit.broadcastMessage(Func.koloruj(pref + Func.listToString(args, 0)));
 		return true;
 	}

@@ -20,58 +20,58 @@ import me.jomi.mimiRPG.Maszyny.JednorekiBandyta;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.*;
 
-public class Modu³y implements Prze³adowalny {
-	private static ConfigurationSection modu³y;
-	int w³¹czone = 0;
+public class ModuÅ‚y implements PrzeÅ‚adowalny {
+	private static ConfigurationSection moduÅ‚y;
+	int wÅ‚Ä…czone = 0;
 	
 	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Budownik.class, ChatGrupowy.class, 
 CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
-EdytorTabliczek.class, EdytujItem.class, Funkcje.class, G³owa.class, ItemLink.class, JednorekiBandyta.class,
+EdytorTabliczek.class, EdytujItem.class, Funkcje.class, GÅ‚owa.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
-Menu.class, Menurpg.class, Mi.class, Miniony.class, Osi¹gniêcia.class, Patrzeq.class, PiszJako.class,
+Menu.class, Menurpg.class, Mi.class, Miniony.class, OsiÄ…gniÄ™cia.class, Patrzeq.class, PiszJako.class,
 Plecak.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
 Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
 Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 	
 	@Override
-	public void prze³aduj() {
-		ConfigurationSection sekcja = Main.ust.sekcja("Modu³y");
-		w³¹cz(sekcja);
-		if (modu³y == null) 
-			modu³y = sekcja;
+	public void przeÅ‚aduj() {
+		ConfigurationSection sekcja = Main.ust.sekcja("ModuÅ‚y");
+		wÅ‚Ä…cz(sekcja);
+		if (moduÅ‚y == null) 
+			moduÅ‚y = sekcja;
 	}
 	
-	public void w³¹cz(ConfigurationSection sekcja) {
-		boolean prze³adowaæ = false;
+	public void wÅ‚Ä…cz(ConfigurationSection sekcja) {
+		boolean przeÅ‚adowaÄ‡ = false;
 		for (Class<?> klasa : klasy)
 			try {
 				String nazwa = klasa.getSimpleName();
-				if (modu³y == null)
+				if (moduÅ‚y == null)
 					if (sekcja.getBoolean(nazwa)) {
 						Main.zarejestruj(klasa.newInstance());
-						w³¹czone++;
+						wÅ‚Ä…czone++;
 					}
-				else if (modu³y != null && !modu³y.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
+				else if (moduÅ‚y != null && !moduÅ‚y.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
 					Main.zarejestruj(klasa.newInstance());
-					modu³y.set(nazwa, true);
-					w³¹czone++;
-					Main.log("§aW³¹czono Modu³: " + nazwa);
-					prze³adowaæ = true;
+					moduÅ‚y.set(nazwa, true);
+					wÅ‚Ä…czone++;
+					Main.log("Â§aWÅ‚Ä…czono ModuÅ‚: " + nazwa);
+					przeÅ‚adowaÄ‡ = true;
 				}
 			} catch (InstantiationException | IllegalAccessException e) {
-				Main.log("§cProblem przy tworzeniu:", klasa.getSimpleName());
+				Main.log("Â§cProblem przy tworzeniu:", klasa.getSimpleName());
 			}
-		if (prze³adowaæ)
+		if (przeÅ‚adowaÄ‡)
 			Bukkit.getServer().reloadData();
 	}
 
 	@Override
 	public String raport() {
-		return "§6W³¹czone Modu³y: §e" + w³¹czone + "§6/§e" + klasy.length;
+		return "Â§6WÅ‚Ä…czone ModuÅ‚y: Â§e" + wÅ‚Ä…czone + "Â§6/Â§e" + klasy.length;
 	}
 
-	public static boolean w³¹czony(String modu³) {
-		Object obj = modu³y.get(modu³);
+	public static boolean wÅ‚Ä…czony(String moduÅ‚) {
+		Object obj = moduÅ‚y.get(moduÅ‚);
 		return obj == null ? false : (boolean) obj;
 	}
 	

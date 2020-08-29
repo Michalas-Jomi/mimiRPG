@@ -18,7 +18,7 @@ public class ZamienEq extends Komenda{
 	public static final String prefix = Func.prefix("Zamiana eq");
 
 	public ZamienEq() {
-		super("zamieÒeq", prefix + "/zamieÒeq <nick> (nick)");
+		super("zamie≈Ñeq", prefix + "/zamie≈Ñeq <nick> (nick)");
 	}
 	
 	@Override
@@ -36,39 +36,39 @@ public class ZamienEq extends Komenda{
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		if (args.length >= 2 && istnieje(sender, args[0]) && istnieje(sender, args[1])) {
-			zamieÒ(sender, args[0], args[1]);
+			zamie≈Ñ(sender, args[0], args[1]);
 		} else if (args.length == 1) {
 			if (!(sender instanceof Player)) return false;
-			zamieÒ(sender, sender.getName(), args[0]);
+			zamie≈Ñ(sender, sender.getName(), args[0]);
 		}
 		return true;
 	}
-	private void zamieÒ(CommandSender sender, String nick1, String nick2) {
+	private void zamie≈Ñ(CommandSender sender, String nick1, String nick2) {
 		if (nick1.equals(nick2)) {
-			sender.sendMessage(prefix + "Nie moøesz zamiÒ eq gracza z nim samym");
+			sender.sendMessage(prefix + "Nie mo≈ºesz zami≈Ñ eq gracza z nim samym");
 			return;
 		}
 		
 		Player p;
 		p = Bukkit.getPlayer(nick1);
-		if (p != null) p.kickPlayer("ß6Zamiana eq z ße" + nick2);
+		if (p != null) p.kickPlayer("¬ß6Zamiana eq z ¬ße" + nick2);
 		p = Bukkit.getPlayer(nick2);
-		if (p != null) p.kickPlayer("ß6Zamiana eq z ße" + nick1);
+		if (p != null) p.kickPlayer("¬ß6Zamiana eq z ¬ße" + nick1);
 		
 		String u1 = Func.graczOffline(nick1).getUniqueId().toString();
 		String u2 = Func.graczOffline(nick2).getUniqueId().toString();
 		
 		// u1 -> switch
-		if (!Func.przenieúPlik(sc(u1, false), sc("aaaSWITCH", false)))  Main.log("ßeNie odnaleziono pliku gracza", nick1, "Gracz", nick2, "otrzyma pusty ekwipunek");
-		Func.przenieúPlik(	   sc(u1, true),  sc("aaaSWITCH", true));
+		if (!Func.przenie≈õPlik(sc(u1, false), sc("aaaSWITCH", false)))  Main.log("¬ßeNie odnaleziono pliku gracza", nick1, "Gracz", nick2, "otrzyma pusty ekwipunek");
+		Func.przenie≈õPlik(	   sc(u1, true),  sc("aaaSWITCH", true));
 		
 		// u2 -> u1
-		if (!Func.przenieúPlik(sc(u2, false), sc(u1, false))) Main.log("ßeNie odnaleziono pliku gracza", nick2, "Gracz", nick1, "otrzyma pusty eqwipunek");
-		Func.przenieúPlik(	   sc(u2, true),  sc(u1, true));
+		if (!Func.przenie≈õPlik(sc(u2, false), sc(u1, false))) Main.log("¬ßeNie odnaleziono pliku gracza", nick2, "Gracz", nick1, "otrzyma pusty eqwipunek");
+		Func.przenie≈õPlik(	   sc(u2, true),  sc(u1, true));
 		
 		// switch -> u2
-		Func.przenieúPlik(sc("aaaSWITCH", false), sc(u2, false));
-		Func.przenieúPlik(sc("aaaSWITCH", true),  sc(u2, true));
+		Func.przenie≈õPlik(sc("aaaSWITCH", false), sc(u2, false));
+		Func.przenie≈õPlik(sc("aaaSWITCH", true),  sc(u2, true));
 		
 		Main.log("Zamieniono eq, ec i exp graczy", nick1, nick2);
 	}
@@ -78,7 +78,7 @@ public class ZamienEq extends Komenda{
 	private boolean istnieje(CommandSender p, String nick) {
 		if (Func.graczOffline(nick) != null)
 			return true;
-		p.sendMessage("Gracz " + nick + " nigdy nie by≥ online!");
+		p.sendMessage("Gracz " + nick + " nigdy nie by≈Ç online!");
 		return false;
 	}
 

@@ -29,9 +29,9 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Instrukcja;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcja {
+public class Sklep extends Komenda implements Listener, PrzeÅ‚adowalny, Instrukcja {
 	public static final String prefix = Func.prefix("Sklep");
 	final HashMap<String, Strona> otwarte = new HashMap<>();
 	final HashMap<String, Strona> strony = new HashMap<>();
@@ -42,12 +42,12 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 	}
 
 	@Override
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		for (String gracz : otwarte.keySet()) {
 			Player p = Bukkit.getPlayer(gracz);
 			if (p == null) continue;
 			p.closeInventory();
-			p.sendMessage(prefix + "Prze³adowywanie Sklepu");
+			p.sendMessage(prefix + "PrzeÅ‚adowywanie Sklepu");
 		}
 		otwarte.clear();
 		strony.clear();
@@ -71,7 +71,7 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 		try {
 			config = new Config(plik);
 		} catch (Exception e) {
-			Main.error("Nieprawid³owy plik:", plik.getAbsolutePath(), "omijanie go");
+			Main.error("NieprawidÅ‚owy plik:", plik.getAbsolutePath(), "omijanie go");
 			return;
 		}
 		new Strona(config);
@@ -79,7 +79,7 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 
 	@Override
 	public String raport() {
-		return "§6Wczytane Strony Sklepu: §e" + strony.size();
+		return "Â§6Wczytane Strony Sklepu: Â§e" + strony.size();
 	}
 
 	@Override
@@ -93,14 +93,14 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Sklep jest dostêpny tylko dla graczy");
+			return Main.powiadom(sender, prefix + "Sklep jest dostÄ™pny tylko dla graczy");
 		Player p = (Player) sender;
 		if (args.length >= 1)
-			otwórz(p, args[0]);
-		else if (strony.containsKey("G³ówna"))
-			otwórz(p, "G³ówna");
+			otwÃ³rz(p, args[0]);
+		else if (strony.containsKey("GÅ‚Ã³wna"))
+			otwÃ³rz(p, "GÅ‚Ã³wna");
 		else
-			p.sendMessage(prefix + "Nie podano ¿adnej strony");
+			p.sendMessage(prefix + "Nie podano Å¼adnej strony");
 		return true;
 	}
 	
@@ -113,7 +113,7 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 			int slot = ev.getRawSlot();
 			if (slot >= 0 && slot < strona.inv.getSize()) {
 				ev.setCancelled(true);
-				otwarte.get(p.getName()).klikniêty(p, slot, ev.getClick());
+				otwarte.get(p.getName()).klikniÄ™ty(p, slot, ev.getClick());
 			}
 		}
 	}
@@ -122,41 +122,41 @@ public class Sklep extends Komenda implements Listener, Prze³adowalny, Instrukcj
 		if (otwarte.containsKey(ev.getPlayer().getName()))
 			otwarte.remove(ev.getPlayer().getName());
 	}
-	void otwórz(Player p, String strona) {
+	void otwÃ³rz(Player p, String strona) {
 		if (strony.containsKey(strona)) {
 			Strona str = strony.get(strona);
 			p.openInventory(str.inv);
 			otwarte.put(p.getName(), str);
 		} else
-			p.sendMessage(prefix + "§cTa stona nie istnieje");
+			p.sendMessage(prefix + "Â§cTa stona nie istnieje");
 	}
 
 	@Override
 	public void info(CommandSender p, int strona) {
-		p.sendMessage("§9PPM §c- §bKupujesz");
-		p.sendMessage("§9Shift + PPM §c- §bKupujesz mo¿liwie du¿o");
-		p.sendMessage("§9LPM §c- §bSprzedajesz");
-		p.sendMessage("§9Shift + LPM §c- §bSprzedajesz mo¿liwie du¿o");
-		p.sendMessage("§9/sklep <strona>");
+		p.sendMessage("Â§9PPM Â§c- Â§bKupujesz");
+		p.sendMessage("Â§9Shift + PPM Â§c- Â§bKupujesz moÅ¼liwie duÅ¼o");
+		p.sendMessage("Â§9LPM Â§c- Â§bSprzedajesz");
+		p.sendMessage("Â§9Shift + LPM Â§c- Â§bSprzedajesz moÅ¼liwie duÅ¼o");
+		p.sendMessage("Â§9/sklep <strona>");
 	}
 }
 
 class Strona {
-	final static ItemStack pustySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l");
+	final static ItemStack pustySlot = Func.stwÃ³rzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "Â§1Â§l");
 	final HashMap<Integer, String> mapa = new HashMap<>();
 	String nazwa;
 	Inventory inv;
 	public Strona(Config config) {
 		nazwa = config.f.getName();
 		nazwa = nazwa.substring(0, nazwa.lastIndexOf('.'));
-		int sloty = config.wczytajLubDomyœlna("rzêdy", 6);
-		inv = Bukkit.createInventory(null, sloty*9, config.wczytajLubDomyœlna("nazwa", "§1§lSklep"));
+		int sloty = config.wczytajLubDomyÅ›lna("rzÄ™dy", 6);
+		inv = Bukkit.createInventory(null, sloty*9, config.wczytajLubDomyÅ›lna("nazwa", "Â§1Â§lSklep"));
 		for (int i=0; i<inv.getSize(); i++)
 			inv.setItem(i, pustySlot);
 		for (String _slot : config.klucze(false)) {
 			int slot = Func.Int(_slot, -1);
 			if (slot == -1 || slot > inv.getSize()) {
-				if (_slot.equals("rzêdy") || _slot.equals("nazwa")) continue;
+				if (_slot.equals("rzÄ™dy") || _slot.equals("nazwa")) continue;
 				Main.warn("Niepoprawny nr slotu (" + _slot + ") w pliku: " + config.f.getAbsolutePath());
 				continue;
 			}
@@ -166,18 +166,18 @@ class Strona {
 				continue;
 			}
 			
-			item.setAmount(Math.min(config.wczytajLubDomyœlna(_slot + ".iloœæ", 1), 64));
+			item.setAmount(Math.min(config.wczytajLubDomyÅ›lna(_slot + ".iloÅ›Ä‡", 1), 64));
 			
-			String strona = config.wczytajLubDomyœlna(_slot + ".strona", "");
+			String strona = config.wczytajLubDomyÅ›lna(_slot + ".strona", "");
 			if (!strona.isEmpty()) {
 				mapa.put(slot, strona);
 				inv.setItem(slot, item);
 				continue;
 			}
 			
-			UnaryOperator<String> cena = czynnoœæ -> {
-				int _cena = config.wczytajLubDomyœlna(_slot + ".cena " + czynnoœæ, 0);
-				return _cena == 0 ? "§cBrak mo¿liwoœci " + czynnoœæ : "§6Cena " + czynnoœæ + ":§e " + _cena;
+			UnaryOperator<String> cena = czynnoÅ›Ä‡ -> {
+				int _cena = config.wczytajLubDomyÅ›lna(_slot + ".cena " + czynnoÅ›Ä‡, 0);
+				return _cena == 0 ? "Â§cBrak moÅ¼liwoÅ›ci " + czynnoÅ›Ä‡ : "Â§6Cena " + czynnoÅ›Ä‡ + ":Â§e " + _cena;
 			};
 			ItemMeta meta = item.getItemMeta();
 			List<String> lore = Func.nieNullList(meta.getLore());
@@ -191,17 +191,17 @@ class Strona {
 		Sklep.inst.strony.put(nazwa, this);
 	}
 	
-	void klikniêty(Player p, int slot, ClickType typ) {
+	void klikniÄ™ty(Player p, int slot, ClickType typ) {
 		if (!Main.ekonomia) {
-			p.sendMessage(Sklep.prefix + "Na serwerze nie ma ekonomi, wiêc sklep nie dzia³a");
+			p.sendMessage(Sklep.prefix + "Na serwerze nie ma ekonomi, wiÄ™c sklep nie dziaÅ‚a");
 			return;
 		}
 		if (mapa.containsKey(slot)) {
-			Sklep.inst.otwórz(p, mapa.get(slot));
+			Sklep.inst.otwÃ³rz(p, mapa.get(slot));
 			return;
 		}
 		ItemStack klikanyItem = inv.getItem(slot);
-		if (Func.porównaj(klikanyItem, pustySlot)) return;
+		if (Func.porÃ³wnaj(klikanyItem, pustySlot)) return;
 		
 		ItemStack finalnyItem = klikanyItem.clone();
 		ItemMeta meta = finalnyItem.getItemMeta();
@@ -222,7 +222,7 @@ class Strona {
 			int limitStart = limit;
 			ItemStack item2;
 			for (int i=0; i<4*9 && limit > 0; i++)
-				if ((item2 = pinv.getItem(i)) != null && Func.porównaj(finalnyItem, item2))
+				if ((item2 = pinv.getItem(i)) != null && Func.porÃ³wnaj(finalnyItem, item2))
 					if (item2.getAmount() > limit) {
 						limit = 0;
 						item2.setAmount(item2.getAmount() - limit);
@@ -242,7 +242,7 @@ class Strona {
 			int limitStart = limit;
 			ItemStack item2;
 			for (int i=0; i<4*9 && limit > 0; i++)
-				if ((item2 = pinv.getItem(i)) == null || Func.porównaj(finalnyItem, item2)) {
+				if ((item2 = pinv.getItem(i)) == null || Func.porÃ³wnaj(finalnyItem, item2)) {
 					int akt = item2 == null ? 0 : item2.getAmount();
 					int dodatek = Math.min(limit, finalnyItem.getMaxStackSize() - akt);
 					limit -= dodatek;

@@ -30,11 +30,11 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import me.jomi.mimiRPG.MiniGierki.MiniGra;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
+public class Lootbagi extends Komenda implements Listener, PrzeÅ‚adowalny{
 	public static final String prefix = Func.prefix("Lootbagi");
 	public static final Config config = new Config("configi/lootbagi");
 	public static final HashMap<String, Lootbag> lootbagi = new HashMap<>();
@@ -44,29 +44,29 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		super("lootbag");
 	}
 	
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		for (Inventory inv : itemy.values())
 			for (HumanEntity p : inv.getViewers()) {
 				p.closeInventory();
-				p.sendMessage("§aPrze³adowywanie Pluginu");
+				p.sendMessage("Â§aPrzeÅ‚adowywanie Pluginu");
 			}
-		config.prze³aduj();
+		config.przeÅ‚aduj();
 		lootbagi.clear();
 		for (String klucz : config.klucze(false))
 			Lootbag.wczytaj(config, klucz);
 	}
 	public String raport() {
-		return "§6Lootbagi: §e" + lootbagi.size();
+		return "Â§6Lootbagi: Â§e" + lootbagi.size();
 	}
 	
 	@EventHandler
-	public void u¿ycie(PlayerInteractEvent ev) {
+	public void uÅ¼ycie(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
 		ItemStack item = ev.getItem();
 		if (item == null) return;
 		if (ev.getAction().toString().contains("LEFT")) return;
 		if (!(item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName() && 
-				item.getItemMeta().getDisplayName().startsWith("§6Lootbag "))) return;
+				item.getItemMeta().getDisplayName().startsWith("Â§6Lootbag "))) return;
 		String nazwa = item.getItemMeta().getDisplayName();
 		nazwa = nazwa.substring(nazwa.indexOf(" ")+1);
 		
@@ -75,34 +75,34 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		
 		ev.setCancelled(true);
 		
-		if (!Func.porównaj(item, lootbag.item))
+		if (!Func.porÃ³wnaj(item, lootbag.item))
 			return;
 		if (!p.hasPermission("mimiRPG.lootbag.otworz")) {
-			p.sendMessage(prefix + "Nie masz uprawnieñ na otwieranie lootbagów");
+			p.sendMessage(prefix + "Nie masz uprawnieÅ„ na otwieranie lootbagÃ³w");
 			return;
 		}
 		if (lootbag.wygrane.isEmpty()) {
-			MiniGra.powiadomOp(prefix + "§cLootbag " + lootbag + " nie ma ¿adnych wygranych");
+			MiniGra.powiadomOp(prefix + "Â§cLootbag " + lootbag + " nie ma Å¼adnych wygranych");
 			return;
 		}
 		if (p.getInventory().firstEmpty() == -1) {
-			p.sendMessage(prefix + "Twój ekwipunek jest pe³ny");
+			p.sendMessage(prefix + "TwÃ³j ekwipunek jest peÅ‚ny");
 			return;
 		}
 		
 		if (p.isSneaking())
-			lootbag.otwórz(p);
+			lootbag.otwÃ³rz(p);
 		else
 			p.openInventory(lootbag.inv);
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (!ev.getView().getTitle().startsWith("§1Edytuj Lootbag§7 ")) return;
+		if (!ev.getView().getTitle().startsWith("Â§1Edytuj LootbagÂ§7 ")) return;
 		final HumanEntity p = ev.getPlayer();
 		final String nazwa = ev.getView().getTitle().substring(19);
 		Lootbag lootbag = lootbagi.get(nazwa);
 		if (lootbag == null) {
-			p.sendMessage(prefix + "§cLootbag nie istnieje!");
+			p.sendMessage(prefix + "Â§cLootbag nie istnieje!");
 			return;
 		}
 		final List<ItemStack> eqItemy = Lists.newArrayList();
@@ -112,29 +112,29 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 				eqItemy.add(item);
 		}
 		if (eqItemy.isEmpty()) {
-			p.sendMessage(prefix + "§cNie ustawiono ¿adnych dropów");
+			p.sendMessage(prefix + "Â§cNie ustawiono Å¼adnych dropÃ³w");
 			return;
 		}
 		lootbag.ustawItemy(eqItemy);
 		lootbag.zapisz(config, true);
-		p.sendMessage(prefix + "§aZapisano lootbag §r" + lootbag.nazwa);
+		p.sendMessage(prefix + "Â§aZapisano lootbag Â§r" + lootbag.nazwa);
 		if (ev.getViewers().size() == 1) 
 			itemy.remove(nazwa);
 	}
 	
 	@EventHandler
 	public void interkacjaEq(InventoryInteractEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (ev.getView().getTitle().startsWith("Â§1Lootbag Â§r"))
 			ev.setCancelled(true);
 	}
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (ev.getView().getTitle().startsWith("Â§1Lootbag Â§r"))
 			ev.setCancelled(true);
 	}
 	@EventHandler
 	public void przeciaganieEq(InventoryDragEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (ev.getView().getTitle().startsWith("Â§1Lootbag Â§r"))
 			ev.setCancelled(true);
 	}
 	
@@ -143,7 +143,7 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		List<String> lista = Lists.newArrayList();
 		String ost = "";
 		if (args.length <= 1) {
-			lista = Arrays.asList("stwórz edytuj usuñ item daj lista".split(" "));
+			lista = Arrays.asList("stwÃ³rz edytuj usuÅ„ item daj lista".split(" "));
 			ost = args.length == 1 ? args[0] : "";
 		} else {
 			lista = Lists.newArrayList(lootbagi.keySet());
@@ -151,13 +151,13 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 				lista.set(i, Func.odkoloruj(lista.get(i)));
 			ost = Func.listToString(args, 1);
 		}
-		return uzupe³nijTabComplete(ost, lista);
+		return uzupeÅ‚nijTabComplete(ost, lista);
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1 && (args[0].equalsIgnoreCase("lista") || args[0].equalsIgnoreCase("l"))) {
-			sender.sendMessage("§6Lootbagi: §a" + 
-(lootbagi.keySet().isEmpty() ? "§ebrak" : Func.listToString(Lists.newArrayList(lootbagi.keySet()), 0, "§f, §a")));
+			sender.sendMessage("Â§6Lootbagi: Â§a" + 
+(lootbagi.keySet().isEmpty() ? "Â§ebrak" : Func.listToString(Lists.newArrayList(lootbagi.keySet()), 0, "Â§f, Â§a")));
 			return true;
 		}
 		if (args.length < 2) return info(sender);
@@ -169,17 +169,17 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		switch(args[0].toLowerCase()) {
 		case "s":
 		case "stworz":
-		case "stwórz":
+		case "stwÃ³rz":
 			if (lootbagi.containsKey(nazwa)) {
-				sender.sendMessage(prefix + "Lootbag o tej nazwie ju¿ istnieje");
+				sender.sendMessage(prefix + "Lootbag o tej nazwie juÅ¼ istnieje");
 				return true;
 			}
 			new Lootbag(nazwa);
-			sender.sendMessage(prefix + "Stworzono Lootbag §e" + nazwa);
+			sender.sendMessage(prefix + "Stworzono Lootbag Â§e" + nazwa);
 			break;
 		case "u":
 		case "usun":
-		case "usuñ":
+		case "usuÅ„":
 			if (!lootbagi.containsKey(nazwa)) {
 				sender.sendMessage(prefix + "Lootbag o tej nazwie nie istnieje");
 				return true;
@@ -187,57 +187,57 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 			if (itemy.containsKey(nazwa))
 				for (HumanEntity gracz : itemy.get(nazwa).getViewers()) {
 					gracz.closeInventory();
-					gracz.sendMessage("§e" + sender.getName() + " §6 w³aœnie usun¹³ lootbag §e" + nazwa);
+					gracz.sendMessage("Â§e" + sender.getName() + " Â§6 wÅ‚aÅ›nie usunÄ…Å‚ lootbag Â§e" + nazwa);
 				}
 			lootbagi.remove(nazwa);
 			config.ustaw_zapisz(nazwa, null);
-			sender.sendMessage(prefix + "Usuniêto Lootbag §e" + nazwa);
+			sender.sendMessage(prefix + "UsuniÄ™to Lootbag Â§e" + nazwa);
 			break;
 		case "e":
 		case "edytuj":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy mo¿e u¿yæ tylko gracz");
+			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy moÅ¼e uÅ¼yÄ‡ tylko gracz");
 			
 			if (!lootbagi.containsKey(nazwa)) return Main.powiadom(p, prefix + "Lootbag o tej nazwie nie istnieje");
 
 			Inventory inv = itemy.get(nazwa);
 			if (inv == null) {
-				inv = Bukkit.createInventory(null, 9*6, "§1Edytuj Lootbag§7 " + lootbag.nazwa);
+				inv = Bukkit.createInventory(null, 9*6, "Â§1Edytuj LootbagÂ§7 " + lootbag.nazwa);
 				itemy.put(nazwa, inv);
 				for (ItemStack item : lootbag.wygrane)
 					inv.setItem(inv.firstEmpty(), item);
 			}
 			
-			if (lootbag.wygrane.size() > 9*6) return Main.powiadom(p, prefix + "ten lootbag jest za du¿y aby edytowaæ go poza plikiem");
+			if (lootbag.wygrane.size() > 9*6) return Main.powiadom(p, prefix + "ten lootbag jest za duÅ¼y aby edytowaÄ‡ go poza plikiem");
 			
 			p.openInventory(inv);
 			break;
 		case "i":
 		case "item":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy mo¿e u¿yæ tylko gracz");
+			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy moÅ¼e uÅ¼yÄ‡ tylko gracz");
 			
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if (lootbag == null)
-				return Main.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
+				return Main.powiadom(p, prefix + "Lootbag Â§e" + nazwa + "Â§6 nie istnieje");
 			if (item == null || item.getType().isAir())
-				return Main.powiadom(p, prefix + "Nie mo¿esz ustawiæ itemu lootbaga jago powietrze");
+				return Main.powiadom(p, prefix + "Nie moÅ¼esz ustawiÄ‡ itemu lootbaga jago powietrze");
 			
 			lootbag.item = item;
 			lootbag.item.setAmount(1);
 			ItemMeta meta = lootbag.item.getItemMeta();
-			meta.setDisplayName("§6Lootbag " + lootbag.nazwa);
+			meta.setDisplayName("Â§6Lootbag " + lootbag.nazwa);
 			lootbag.item.setItemMeta(meta);
 			lootbag.zapisz(config, true);
-			p.sendMessage(prefix + "Ustawiono item lootbaga §e" + lootbag.nazwa);
+			p.sendMessage(prefix + "Ustawiono item lootbaga Â§e" + lootbag.nazwa);
 			break;
 		case "d":
 		case "daj":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy mo¿e u¿yæ tylko gracz");
+			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy moÅ¼e uÅ¼yÄ‡ tylko gracz");
 			
 			if (lootbag == null)
-				return Main.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
+				return Main.powiadom(p, prefix + "Lootbag Â§e" + nazwa + "Â§6 nie istnieje");
 			if (p.getInventory().firstEmpty() == -1)
-				return Main.powiadom(p, prefix + "Twój ekwipunek jest pe³ny");
-			p.sendMessage(prefix + "Wzio³eœ lootbag §e" + lootbag.nazwa);
+				return Main.powiadom(p, prefix + "TwÃ³j ekwipunek jest peÅ‚ny");
+			p.sendMessage(prefix + "WzioÅ‚eÅ› lootbag Â§e" + lootbag.nazwa);
 			p.getInventory().addItem(lootbag.item);
 			break;
 		default:
@@ -246,15 +246,15 @@ public class Lootbagi extends Komenda implements Listener, Prze³adowalny{
 		return true;
 	}
 	private boolean info(CommandSender p) {
-		Napis n = new Napis("\n\n\n\n§6-----§l> §aLootbagi §6§l<§6-----");
-		n.dodaj(new Napis("\n§c> §e/lootbag stwórz <nazwa>", 	"§bTworzy nowego lootbaga", 			Action.SUGGEST_COMMAND, "/lootbag stwórz "));
-		n.dodaj(new Napis("\n§c> §e/lootbag edytuj <nazwa>", 	"§bEdytuje zawartoœæ lootbaga", 		Action.SUGGEST_COMMAND, "/lootbag edytuj "));
-		n.dodaj(new Napis("\n§c> §e/lootbag usuñ <nazwa>", 	"§bUsuwa lootbaga", 					Action.SUGGEST_COMMAND, "/lootbag usuñ "));
-		n.dodaj(new Napis("\n§c> §e/lootbag item <nazwa>", 	"§bustawia item lootbaga, jakby ikona", Action.SUGGEST_COMMAND, "/lootbag item "));
-		n.dodaj(new Napis("\n§c> §e/lootbag daj <nazwa>", 	"§bdaje ci 1 lootbag danego typu", 		Action.SUGGEST_COMMAND, "/lootbag daj "));
-		n.dodaj(new Napis("\n§c> §e/lootbag lista", 			"§bwyœwietla wszystkie lootbagi", 		Action.RUN_COMMAND, 	"/lootbag lista"));
+		Napis n = new Napis("\n\n\n\nÂ§6-----Â§l> Â§aLootbagi Â§6Â§l<Â§6-----");
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag stwÃ³rz <nazwa>", 	"Â§bTworzy nowego lootbaga", 			Action.SUGGEST_COMMAND, "/lootbag stwÃ³rz "));
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag edytuj <nazwa>", 	"Â§bEdytuje zawartoÅ›Ä‡ lootbaga", 		Action.SUGGEST_COMMAND, "/lootbag edytuj "));
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag usuÅ„ <nazwa>", 	"Â§bUsuwa lootbaga", 					Action.SUGGEST_COMMAND, "/lootbag usuÅ„ "));
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag item <nazwa>", 	"Â§bustawia item lootbaga, jakby ikona", Action.SUGGEST_COMMAND, "/lootbag item "));
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag daj <nazwa>", 	"Â§bdaje ci 1 lootbag danego typu", 		Action.SUGGEST_COMMAND, "/lootbag daj "));
+		n.dodaj(new Napis("\nÂ§c> Â§e/lootbag lista", 			"Â§bwyÅ›wietla wszystkie lootbagi", 		Action.RUN_COMMAND, 	"/lootbag lista"));
 		n.dodaj("\n");
-		n.wyœwietl(p);
+		n.wyÅ›wietl(p);
 		return true;
 	}
 }
@@ -270,12 +270,12 @@ class Lootbag {
 		this.nazwa = Func.koloruj(nazwa);
 		Lootbagi.lootbagi.put(this.nazwa, this);
 		
-		item = Func.stwórzItem(Material.LEATHER, 1, "&6Lootbag " + nazwa, Arrays.asList(
-				"PPM aby podejrzeæ", "Shift + PPM aby otworzyæ", "/lootbag edytuj aby dodaæ drop", 
-				"/lootbag item aby ustawiæ item lootbaga"));
+		item = Func.stwÃ³rzItem(Material.LEATHER, 1, "&6Lootbag " + nazwa, Arrays.asList(
+				"PPM aby podejrzeÄ‡", "Shift + PPM aby otworzyÄ‡", "/lootbag edytuj aby dodaÄ‡ drop", 
+				"/lootbag item aby ustawiÄ‡ item lootbaga"));
 		
-		ustawItemy(Arrays.asList(Func.stwórzItem(Material.FIREWORK_ROCKET, 1, 
-				"&6Przyk³adowa fajerwerka", Arrays.asList("Wrzuæ tu itemy które mog¹ wydropiæ"))));
+		ustawItemy(Arrays.asList(Func.stwÃ³rzItem(Material.FIREWORK_ROCKET, 1, 
+				"&6PrzykÅ‚adowa fajerwerka", Arrays.asList("WrzuÄ‡ tu itemy ktÃ³re mogÄ… wydropiÄ‡"))));
 	}
 	public void zapisz(Config config, boolean zapisz) {
 		config.ustaw(nazwa + ".wygrane", wygrane);
@@ -292,19 +292,19 @@ class Lootbag {
 		if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
 		
 		lootbag.item = config.wczytajItem(nazwa, "item");
-		lootbag.broadcast = (boolean) config.wczytajLubDomyœlna(nazwa + ".broadcast", false);
+		lootbag.broadcast = (boolean) config.wczytajLubDomyÅ›lna(nazwa + ".broadcast", false);
 		
-		lootbag.ustawPodgl¹d();
+		lootbag.ustawPodglÄ…d();
 		
 		return lootbag;
 	}
 	
 	public void ustawItemy(List<ItemStack> itemy) {
 		wygrane = itemy;
-		ustawPodgl¹d();
+		ustawPodglÄ…d();
 	}
-	private void ustawPodgl¹d() {
-		inv = Bukkit.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "§1Lootbag §r" + nazwa);
+	private void ustawPodglÄ…d() {
+		inv = Bukkit.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "Â§1Lootbag Â§r" + nazwa);
 		for (int i=0; i < wygrane.size() && i < 54; i++)
 			inv.setItem(i, wygrane.get(i));
 	}
@@ -313,13 +313,13 @@ class Lootbag {
 		return wygrane.get(Func.losuj(0, wygrane.size()-1));
 	}
 	
-	public void otwórz(Player p) {
+	public void otwÃ³rz(Player p) {
 		p.getInventory().addItem(losuj());
-		ItemStack itemWRêce = p.getInventory().getItemInMainHand();
-		itemWRêce.setAmount(itemWRêce.getAmount()-1);
+		ItemStack itemWRÄ™ce = p.getInventory().getItemInMainHand();
+		itemWRÄ™ce.setAmount(itemWRÄ™ce.getAmount()-1);
 		p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation(), 50, .3, .5, .3);
 		p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, .6f, .6f);
-		if (broadcast) Bukkit.broadcastMessage(prefix+"§e"+p.getDisplayName()+"§6 otworzy³ lootbag "+nazwa+"§6!");
+		if (broadcast) Bukkit.broadcastMessage(prefix+"Â§e"+p.getDisplayName()+"Â§6 otworzyÅ‚ lootbag "+nazwa+"Â§6!");
 	}
 	
 	public String toString() {

@@ -21,20 +21,20 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 public class Kon {
 	public Inventory inv;
 	private static final int slotyEq = 3*9;
-	private static final int slotMa≥y = 4*9 + 1;
-	private static final int slotBezg≥oúny = 4*9 + 3;
+	private static final int slotMa≈Çy = 4*9 + 1;
+	private static final int slotBezg≈Ço≈õny = 4*9 + 3;
 	private static final int slotKolor = 4*9 + 5;
 	private static final int slotStyl = 4*9 + 7;
 	
-	private static final ItemStack itemMa≥y = Func.stwÛrzItem(Material.EGG, "ß6Rozmiar", "ßeMa≥y");
-	private static final ItemStack itemDuøy = Func.stwÛrzItem(Material.EGG, "ß6Rozmiar", "ßeDuøy");
+	private static final ItemStack itemMa≈Çy = Func.stw√≥rzItem(Material.EGG, "¬ß6Rozmiar", "¬ßeMa≈Çy");
+	private static final ItemStack itemDu≈ºy = Func.stw√≥rzItem(Material.EGG, "¬ß6Rozmiar", "¬ßeDu≈ºy");
 	
-	private static final ItemStack itemBezg≥oúny 	= Func.stwÛrzItem(Material.BONE, "ß6DzwiÍk", "ß6Bezg≥oúny");
-	private static final ItemStack itemNieBezg≥oúny = Func.stwÛrzItem(Material.CREEPER_HEAD, "ß6DzwiÍk", "ß6Normalny");
+	private static final ItemStack itemBezg≈Ço≈õny 	= Func.stw√≥rzItem(Material.BONE, "¬ß6Dzwiƒôk", "¬ß6Bezg≈Ço≈õny");
+	private static final ItemStack itemNieBezg≈Ço≈õny = Func.stw√≥rzItem(Material.CREEPER_HEAD, "¬ß6Dzwiƒôk", "¬ß6Normalny");
 	
 	
-	public boolean bezg≥oúny;
-	public boolean ma≥y;
+	public boolean bezg≈Ço≈õny;
+	public boolean ma≈Çy;
 	public Kolor kolor;
 	public Gracz gracz;
 	public Styl styl;
@@ -45,19 +45,19 @@ public class Kon {
 	
 	private static final Kolor[] kolory = Kolor.values();
 	private static final Styl[] style = Styl.values();
-	public Kon(Gracz gracz, boolean bezg≥oúny, boolean ma≥y, String kolor, String styl, int zapas) {
+	public Kon(Gracz gracz, boolean bezg≈Ço≈õny, boolean ma≈Çy, String kolor, String styl, int zapas) {
 		this.kolor = Kolor.valueOf(kolor);
 		this.styl = Styl.valueOf(styl);
-		this.bezg≥oúny = bezg≥oúny;
+		this.bezg≈Ço≈õny = bezg≈Ço≈õny;
 		this.gracz = gracz;
 		this.zapas = zapas;
-		this.ma≥y = ma≥y;
+		this.ma≈Çy = ma≈Çy;
 		this.p = gracz.p;
 		
 		nrKolor = znajdz(kolory, this.kolor);
 		nrStyl = znajdz(style, this.styl);
 		
-		stwÛrzInv();
+		stw√≥rzInv();
 	}
 	private int znajdz(Object[] objekty, Object obj) {
 		for (int i=0; i< objekty.length; i++)
@@ -67,7 +67,7 @@ public class Kon {
 	}
 	
 	private Horse kon;
-	public void przywo≥aj() {
+	public void przywo≈Çaj() {
 		if (kon != null) kon.remove();
 		kon = (Horse) p.getWorld().spawnEntity(p.getLocation(), EntityType.HORSE);
 		
@@ -84,15 +84,15 @@ public class Kon {
 		kon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
 		kon.setHealth(20);
 
-		p.sendMessage(Koniki.prefix + Func.msg("Przywo≥a≥eú swojego Konika, moøesz jezdziÊ na nim jeszcze %s bez karmienia", Koniki.czas(gracz.koÒ.zapas)));
+		p.sendMessage(Koniki.prefix + Func.msg("Przywo≈Ça≈Çe≈õ swojego Konika, mo≈ºesz jezdziƒá na nim jeszcze %s bez karmienia", Koniki.czas(gracz.ko≈Ñ.zapas)));
 		
-		ustawMa≥y();
+		ustawMa≈Çy();
 		ustawStyl();
 		ustawKolor();
-		ustawBezg≥oúny();
+		ustawBezg≈Ço≈õny();
 	}
 	
-	public void usuÒ() {
+	public void usu≈Ñ() {
 		if (kon != null)
 			kon.remove();
 	}
@@ -102,7 +102,7 @@ public class Kon {
 		if (!nakarmiony())
 			zapas = (int) (System.currentTimeMillis() / 1000);
 		zapas += ile;
-		gracz.config.ustaw_zapisz("koÒ.zapas", zapas);
+		gracz.config.ustaw_zapisz("ko≈Ñ.zapas", zapas);
 	}
 	public boolean nakarmiony() {
 		return System.currentTimeMillis() / 1000 <= zapas;
@@ -111,44 +111,44 @@ public class Kon {
 		if (kon != null && !kon.getPassengers().isEmpty()) {
 			if (nakarmiony()) return;
 			kon.removePassenger(p);
-			p.sendMessage(Koniki.prefix + "TwÛj Konik jest g≥odny, nie jest w stanie cie dalej woziÊ");
+			p.sendMessage(Koniki.prefix + "Tw√≥j Konik jest g≈Çodny, nie jest w stanie cie dalej woziƒá");
 		}
 	}
 	
-	private void stwÛrzInv() {
-		inv = Bukkit.createInventory(p, 5*9, "ß1ßlTwÛj Konik");
-		ConfigurationSection sekcja = gracz.config.sekcja("koÒ", "itemy");
+	private void stw√≥rzInv() {
+		inv = Bukkit.createInventory(p, 5*9, "¬ß1¬ßlTw√≥j Konik");
+		ConfigurationSection sekcja = gracz.config.sekcja("ko≈Ñ", "itemy");
 		if (sekcja != null)
 			for (String slot : sekcja.getKeys(false)) {
 				int i = Func.Int(slot, -1);
 				if (i <= -1 || i >= slotyEq) continue;
-				inv.setItem(i, gracz.config.wczytajItem("koÒ", "itemy", i));
+				inv.setItem(i, gracz.config.wczytajItem("ko≈Ñ", "itemy", i));
 			}
-		ItemStack nic = Func.stwÛrzItem(Material.BLACK_STAINED_GLASS_PANE, "ß1ßlßo ß6ßo");
+		ItemStack nic = Func.stw√≥rzItem(Material.BLACK_STAINED_GLASS_PANE, "¬ß1¬ßl¬ßo ¬ß6¬ßo");
 		for (int i=slotyEq; i < 5*9; i++)
 			inv.setItem(i, nic);
-		Func.nazwij(inv.getItem(slotKolor), "ß6Kolor");
-		Func.nazwij(inv.getItem(slotStyl),  "ß6Styl");
-		ustawMa≥y();
+		Func.nazwij(inv.getItem(slotKolor), "¬ß6Kolor");
+		Func.nazwij(inv.getItem(slotStyl),  "¬ß6Styl");
+		ustawMa≈Çy();
 		ustawStyl();
 		ustawKolor();
-		ustawBezg≥oúny();
+		ustawBezg≈Ço≈õny();
 	}
-	private void ustawMa≥y() {
-		inv.setItem(slotMa≥y, ma≥y ? itemMa≥y : itemDuøy);
+	private void ustawMa≈Çy() {
+		inv.setItem(slotMa≈Çy, ma≈Çy ? itemMa≈Çy : itemDu≈ºy);
 		if (kon != null)
-			kon.setAge(ma≥y ? -1 : 0);
+			kon.setAge(ma≈Çy ? -1 : 0);
 	}
-	private void ustawBezg≥oúny() {
-		inv.setItem(slotBezg≥oúny, bezg≥oúny ? itemBezg≥oúny : itemNieBezg≥oúny);
+	private void ustawBezg≈Ço≈õny() {
+		inv.setItem(slotBezg≈Ço≈õny, bezg≈Ço≈õny ? itemBezg≈Ço≈õny : itemNieBezg≈Ço≈õny);
 		if (kon != null)
-			kon.setSilent(bezg≥oúny);
+			kon.setSilent(bezg≈Ço≈õny);
 	}
 	private void ustawKolor() {
 		ItemStack item = inv.getItem(slotKolor);
 		kolor = kolory[nrKolor];
 		item.setType(kolor.mat);
-		Func.ustawLore(item, "ße" + kolor, 0);
+		Func.ustawLore(item, "¬ße" + kolor, 0);
 		if (kon != null)
 			kon.setColor(kolor.kolor);
 	}
@@ -156,22 +156,22 @@ public class Kon {
 		ItemStack item = inv.getItem(slotStyl);
 		styl = style[nrStyl];
 		item.setType(styl.mat);
-		Func.ustawLore(item, "ße" + styl, 0);
+		Func.ustawLore(item, "¬ße" + styl, 0);
 		if (kon != null)
 			kon.setStyle(styl.styl);
 	}
-	public void klikniÍteEq(InventoryClickEvent ev) {
+	public void klikniƒôteEq(InventoryClickEvent ev) {
 		int slot = ev.getSlot();
 		if (slot < slotyEq || slot >= 5*9) return;
 		int zmiana = ev.getClick().toString().endsWith("RIGHT") ? -1 : 1;
 		switch(slot) {
-		case slotMa≥y:
-			ma≥y = !ma≥y;
-			ustawMa≥y();
+		case slotMa≈Çy:
+			ma≈Çy = !ma≈Çy;
+			ustawMa≈Çy();
 			break;
-		case slotBezg≥oúny:
-			bezg≥oúny = !bezg≥oúny;
-			ustawBezg≥oúny();
+		case slotBezg≈Ço≈õny:
+			bezg≈Ço≈õny = !bezg≈Ço≈õny;
+			ustawBezg≈Ço≈õny();
 			break;
 		case slotKolor:
 			nrKolor += zmiana;
@@ -194,24 +194,24 @@ public class Kon {
 	}
 	
 	public void zapisz() {
-		gracz.config.ustaw("koÒ.bezg≥oúny", bezg≥oúny);
-		gracz.config.ustaw("koÒ.kolor", kolor.name());
-		gracz.config.ustaw("koÒ.styl", styl.name());
-		gracz.config.ustaw("koÒ.ma≥y", ma≥y);
-		gracz.config.ustaw("koÒ.itemy", null);
+		gracz.config.ustaw("ko≈Ñ.bezg≈Ço≈õny", bezg≈Ço≈õny);
+		gracz.config.ustaw("ko≈Ñ.kolor", kolor.name());
+		gracz.config.ustaw("ko≈Ñ.styl", styl.name());
+		gracz.config.ustaw("ko≈Ñ.ma≈Çy", ma≈Çy);
+		gracz.config.ustaw("ko≈Ñ.itemy", null);
 		for (int i=0; i<slotyEq; i++) {
 			ItemStack item = inv.getItem(i);
 			if (item != null && !item.getType().isAir())
-				gracz.config.ustaw("koÒ.itemy."+i, item);
+				gracz.config.ustaw("ko≈Ñ.itemy."+i, item);
 		}
 		gracz.config.zapisz();
 	}
 	
 	public static enum Styl {
 		Brak(Style.NONE, Material.BARRIER),
-		Bia≥e_Nogi(Style.WHITE, Material.WHITE_DYE),
-		Bia≥e_Plamki(Style.WHITE_DOTS, Material.WOLF_SPAWN_EGG),
-		Bia≥e_£atki(Style.WHITEFIELD, Material.WHITE_STAINED_GLASS_PANE),
+		Bia≈Çe_Nogi(Style.WHITE, Material.WHITE_DYE),
+		Bia≈Çe_Plamki(Style.WHITE_DOTS, Material.WOLF_SPAWN_EGG),
+		Bia≈Çe_≈Åatki(Style.WHITEFIELD, Material.WHITE_STAINED_GLASS_PANE),
 		Czarne_Plamki(Style.BLACK_DOTS, Material.SQUID_SPAWN_EGG);
 		
 		public Style styl;
@@ -225,13 +225,13 @@ public class Kon {
 		}
 	}
 	public static enum Kolor {
-		Bia≥y(Color.WHITE, Material.WHITE_WOOL),
+		Bia≈Çy(Color.WHITE, Material.WHITE_WOOL),
 		Czarny(Color.BLACK, Material.BLACK_WOOL),
 		Szary(Color.GRAY, Material.GRAY_WOOL),
-		Jasny_Brπz(Color.CREAMY, Material.BROWN_CONCRETE),
-		Brπzowy_Mieszany(Color.CHESTNUT, Material.BROWN_CONCRETE_POWDER),
-		Brπzowy(Color.BROWN, Material.BROWN_WOOL),
-		Ciemny_Brπz(Color.DARK_BROWN, Material.BROWN_TERRACOTTA);
+		Jasny_BrƒÖz(Color.CREAMY, Material.BROWN_CONCRETE),
+		BrƒÖzowy_Mieszany(Color.CHESTNUT, Material.BROWN_CONCRETE_POWDER),
+		BrƒÖzowy(Color.BROWN, Material.BROWN_WOOL),
+		Ciemny_BrƒÖz(Color.DARK_BROWN, Material.BROWN_TERRACOTTA);
 		
 		public Color kolor;
 		public Material mat;

@@ -25,15 +25,15 @@ public class Czapka extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Poka¿ mi swoj¹ g³owê to ci to za³o¿e");
+			return Main.powiadom(sender, "PokaÅ¼ mi swojÄ… gÅ‚owÄ™ to ci to zaÅ‚oÅ¼e");
 		Player p = (Player) sender;
 		String prefix = Func.prefix("Czapka");
 		ItemStack helm = p.getInventory().getHelmet();
 		ItemStack reka = p.getInventory().getItemInMainHand();
-		if	 	(helm != null && reka == null) p.sendMessage(prefix + "Zdjêto czapkê");
-		else if	(helm == null && reka != null) p.sendMessage(prefix + "Za³o¿on¹ czapkê");
-		else if (helm != null && reka != null) p.sendMessage(prefix + "Za³o¿ono now¹ czapkê");
-		else 								   p.sendMessage(prefix + "Nie trzymasz nic w rêce");
+		if	 	(helm != null && reka == null) p.sendMessage(prefix + "ZdjÄ™to czapkÄ™");
+		else if	(helm == null && reka != null) p.sendMessage(prefix + "ZaÅ‚oÅ¼onÄ… czapkÄ™");
+		else if (helm != null && reka != null) p.sendMessage(prefix + "ZaÅ‚oÅ¼ono nowÄ… czapkÄ™");
+		else 								   p.sendMessage(prefix + "Nie trzymasz nic w rÄ™ce");
 		p.getInventory().setItemInMainHand(helm);
 		p.getInventory().setHelmet(reka);
 		return true;

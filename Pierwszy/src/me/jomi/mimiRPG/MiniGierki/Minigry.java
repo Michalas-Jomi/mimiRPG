@@ -12,29 +12,29 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Minigry extends Komenda implements Prze³adowalny {
+public class Minigry extends Komenda implements PrzeÅ‚adowalny {
 	
 	public Minigry() {
 		super("minigra", 			 Func.prefix("Minigra") + "/miniGra <minigra>", "mg");
 	    ustawKomende("minigraustaw", Func.prefix("Minigra") + "/minigraustaw <minigra> <nazwa>", null);
-		ustawKomende("tc", 			 Func.prefix("Minigra") + "/tc wiadomoœæ", null);
+		ustawKomende("tc", 			 Func.prefix("Minigra") + "/tc wiadomoÅ›Ä‡", null);
 		Main.dodajPermisje("minigry.komendy");
 		new Golf();
 		new Sumo();
 		new PaintBall();
 		new OneShotOneKill();
 	}
-	public void prze³aduj() {
-		MiniGra.config.prze³aduj();
+	public void przeÅ‚aduj() {
+		MiniGra.config.przeÅ‚aduj();
 		for (MiniGra mg : Main.minigry.values())
-			mg.prze³aduj();
+			mg.przeÅ‚aduj();
 	}
 	public String raport() {
-		String w = "§6Minigry:";
+		String w = "Â§6Minigry:";
 		for (MiniGra mg : Main.minigry.values())
-			w += "\n§b--§6" + mg.nazwa + ": §e" + mg.areny.obiekty.size() + " aren";
+			w += "\nÂ§b--Â§6" + mg.nazwa + ": Â§e" + mg.areny.obiekty.size() + " aren";
 		return w;
 	}
 	@Override
@@ -51,7 +51,7 @@ public class Minigry extends Komenda implements Prze³adowalny {
 			else 
 				lista = Arrays.asList("start", "koniec");
 		
-		return uzupe³nijTabComplete(args, lista);
+		return uzupeÅ‚nijTabComplete(args, lista);
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -60,14 +60,14 @@ public class Minigry extends Komenda implements Prze³adowalny {
 		Player p = (Player) sender;
 		
 		if (cmd.getName().equalsIgnoreCase("tc"))
-			return Main.powiadom(p, "§2[§aMinigry§2] §6Tej komendy mo¿na u¿ywaæ tylko w minigrach");
+			return Main.powiadom(p, "Â§2[Â§aMinigryÂ§2] Â§6Tej komendy moÅ¼na uÅ¼ywaÄ‡ tylko w minigrach");
 				
 		if (cmd.getName().equalsIgnoreCase("minigraustaw")) {
 			if (args.length < 2) return false;
 			if (Main.minigry.containsKey(args[0]))
 				Main.minigry.get(args[0]).ustawLokacje(p, args);
 			else
-				p.sendMessage("§2[§aMinigry§2] §6Niepoprawna nazwa minigry: §e" + args[0]);
+				p.sendMessage("Â§2[Â§aMinigryÂ§2] Â§6Niepoprawna nazwa minigry: Â§e" + args[0]);
 			return true;
 		}
 		
@@ -75,7 +75,7 @@ public class Minigry extends Komenda implements Prze³adowalny {
 		if (Main.minigry.containsKey(args[0]))
 			Main.minigry.get(args[0]).dolacz(p);
 		else
-			p.sendMessage("§2[§aMinigry§2] §6Niepoprawna nazwa minigry: §e" + args[0]);
+			p.sendMessage("Â§2[Â§aMinigryÂ§2] Â§6Niepoprawna nazwa minigry: Â§e" + args[0]);
 		return true;
 	}
 }

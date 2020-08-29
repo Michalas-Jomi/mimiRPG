@@ -10,10 +10,10 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 
-public class G≥owa extends Komenda {
+public class G≈Çowa extends Komenda {
 
-	public G≥owa() {
-	    super("g≥owa", Func.prefix("G≥owa") + "/g≥owa <url>");
+	public G≈Çowa() {
+	    super("g≈Çowa", Func.prefix("G≈Çowa") + "/g≈Çowa <url>");
 	}
 
 	@Override
@@ -24,9 +24,9 @@ public class G≥owa extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Nie ma g≥owy dla ciebie");
+			return Main.powiadom(sender, "Nie ma g≈Çowy dla ciebie");
 		if (args.length < 1) return false;
-		((Player) sender).getInventory().addItem(Func.dajG≥ÛwkÍ("ß1G≥owa", Func.listToString(args, 0), null));
+		((Player) sender).getInventory().addItem(Func.dajG≈Ç√≥wkƒô("¬ß1G≈Çowa", Func.listToString(args, 0), null));
 		return true;
 	}
 

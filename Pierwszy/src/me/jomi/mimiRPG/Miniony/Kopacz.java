@@ -13,10 +13,10 @@ import me.jomi.mimiRPG.Func;
 
 public class Kopacz extends Minion{
 
-	private static ItemStack he³m 	 = Func.dajG³ówkê("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjY0NGM4ZjM2ZTIxZDVlYTk1NjI0OTI4ZTNmMzVhMmI0OTQ5Y2U3NWIyZmE2OGNjZDJiYzg0ZDlhZGEwY2I3In19fQ==");
-	private static ItemStack klata 	 = Func.stwórzItem(Material.CHAINMAIL_CHESTPLATE);
-	private static ItemStack spodnie = Func.stwórzItem(Material.DIAMOND_LEGGINGS);
-	private static ItemStack buty 	 = Func.stwórzItem(Material.DIAMOND_BOOTS);
+	private static ItemStack heÅ‚m 	 = Func.dajGÅ‚Ã³wkÄ™("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjY0NGM4ZjM2ZTIxZDVlYTk1NjI0OTI4ZTNmMzVhMmI0OTQ5Y2U3NWIyZmE2OGNjZDJiYzg0ZDlhZGEwY2I3In19fQ==");
+	private static ItemStack klata 	 = Func.stwÃ³rzItem(Material.CHAINMAIL_CHESTPLATE);
+	private static ItemStack spodnie = Func.stwÃ³rzItem(Material.DIAMOND_LEGGINGS);
+	private static ItemStack buty 	 = Func.stwÃ³rzItem(Material.DIAMOND_BOOTS);
 
 	private Location blok;
 	
@@ -25,7 +25,7 @@ public class Kopacz extends Minion{
 	}
 	protected void init(Config config) {}
 	public Kopacz(Location loc, String stworzyciel) {
-		super(loc, stworzyciel, "§1Kopacz");
+		super(loc, stworzyciel, "Â§1Kopacz");
 	}
 	public Kopacz(Player p, ItemStack item) {
 		super(p, item);
@@ -33,8 +33,8 @@ public class Kopacz extends Minion{
 	protected void init() {}
 	protected void zrespMoba() {
 		super.zrespMoba();
-		Location wysokoœæOczu = loc.clone().add(new Vector(0, getHeight(), 0));
-		blok = wysokoœæOczu.clone().add(wysokoœæOczu.getDirection());
+		Location wysokoÅ›Ä‡Oczu = loc.clone().add(new Vector(0, getHeight(), 0));
+		blok = wysokoÅ›Ä‡Oczu.clone().add(wysokoÅ›Ä‡Oczu.getDirection());
 		setNoAI(true);
 	}
 	
@@ -44,13 +44,13 @@ public class Kopacz extends Minion{
 	protected void _dajItem(List<String> lore) {}
 	
 	protected void ubierz() {
-		ubierz(he³m, klata, spodnie, buty);
+		ubierz(heÅ‚m, klata, spodnie, buty);
 	}
 
 	protected void mimiTick() {
 		if(mimiTick(true)) {
 			wykop(blok.getBlock());
-			podnieœItemy(blok);
+			podnieÅ›Itemy(blok);
 		}
 	}
 

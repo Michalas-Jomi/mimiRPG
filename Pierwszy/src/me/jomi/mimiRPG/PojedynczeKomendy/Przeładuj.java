@@ -10,43 +10,43 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Prze³aduj extends Komenda {
+public class PrzeÅ‚aduj extends Komenda {
 
-	public Prze³aduj() {
-		super("prze³aduj");
+	public PrzeÅ‚aduj() {
+		super("przeÅ‚aduj");
 	}
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return uzupe³nijTabComplete(Func.listToString(args, 0), Prze³adowalny.prze³adowalne.keySet());
+		return uzupeÅ‚nijTabComplete(Func.listToString(args, 0), PrzeÅ‚adowalny.przeÅ‚adowalne.keySet());
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0)
-			prze³aduj(sender);
-		else if (Prze³adowalny.prze³adowalne.containsKey(args[0]))
-			prze³aduj(sender, args[0]);
+			przeÅ‚aduj(sender);
+		else if (PrzeÅ‚adowalny.przeÅ‚adowalne.containsKey(args[0]))
+			przeÅ‚aduj(sender, args[0]);
 		else
-			sender.sendMessage("§cNieporawna nazwa " + args[0]);
+			sender.sendMessage("Â§cNieporawna nazwa " + args[0]);
 		return true;
 	}
 	
-	private void prze³aduj(CommandSender sender) {
-		Baza.prze³aduj();
-		for (Prze³adowalny p : Prze³adowalny.prze³adowalne.values())
-			prze³aduj(sender, p);
-		sender.sendMessage("§aPrze³adowano wszystko");
+	private void przeÅ‚aduj(CommandSender sender) {
+		Baza.przeÅ‚aduj();
+		for (PrzeÅ‚adowalny p : PrzeÅ‚adowalny.przeÅ‚adowalne.values())
+			przeÅ‚aduj(sender, p);
+		sender.sendMessage("Â§aPrzeÅ‚adowano wszystko");
 	}
-	private void prze³aduj(CommandSender sender, String co) {
-		Baza.prze³aduj();
-		prze³aduj(sender, Prze³adowalny.prze³adowalne.get(co));
-		sender.sendMessage("§aPrze³adowano " + co);
+	private void przeÅ‚aduj(CommandSender sender, String co) {
+		Baza.przeÅ‚aduj();
+		przeÅ‚aduj(sender, PrzeÅ‚adowalny.przeÅ‚adowalne.get(co));
+		sender.sendMessage("Â§aPrzeÅ‚adowano " + co);
 	}
-	private void prze³aduj(CommandSender sender, Prze³adowalny p) {
-		p.prze³aduj();
+	private void przeÅ‚aduj(CommandSender sender, PrzeÅ‚adowalny p) {
+		p.przeÅ‚aduj();
 		String r = p.raport();
 		if (sender instanceof Player)
 			sender.sendMessage(r);

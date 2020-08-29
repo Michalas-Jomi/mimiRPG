@@ -15,9 +15,9 @@ import com.google.common.collect.Sets;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze≥adowalny;
+import me.jomi.mimiRPG.Prze≈Çadowalny;
 
-public class CustomoweCraftingi implements Prze≥adowalny {
+public class CustomoweCraftingi implements Prze≈Çadowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
 	public static void dodaj(String nazwa, ItemStack item, String[] linie, HashMap<Character, Material> mapa) {
@@ -32,7 +32,7 @@ public class CustomoweCraftingi implements Prze≥adowalny {
 	}
 	private static void wczytaj(String klucz) {
 		ItemStack item = config.wczytajItem(klucz + ".item");
-		List<String> lista = config.wczytajListe(klucz + ".uk≥ad");
+		List<String> lista = config.wczytajListe(klucz + ".uk≈Çad");
 		String linia = Func.listToString(lista, 0, "");
 		Set<Character> set = Sets.newConcurrentHashSet();
 		for (int i=0; i<linia.length(); i++) {
@@ -50,18 +50,18 @@ public class CustomoweCraftingi implements Prze≥adowalny {
 		dodaj(klucz, item, arr, mapa);
 	}
 	
-	public void prze≥aduj() {
-		config.prze≥aduj();
+	public void prze≈Çaduj() {
+		config.prze≈Çaduj();
 		
-		// Usuwanie niechcianych craftingÛw
-		for (Object przepis :  Main.ust.wczytajLubDomyúlna("ZablokowaneCraftingi", Lists.newArrayList()))
+		// Usuwanie niechcianych crafting√≥w
+		for (Object przepis :  Main.ust.wczytajLubDomy≈õlna("ZablokowaneCraftingi", Lists.newArrayList()))
 			Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
 		
 		for (String klucz : config.klucze(false))
 			wczytaj(klucz);
 	}
 	public String raport() {
-		return "ß6Customowe Craftingi: ße" + config.klucze(false).size();
+		return "¬ß6Customowe Craftingi: ¬ße" + config.klucze(false).size();
 	}
 	
 	

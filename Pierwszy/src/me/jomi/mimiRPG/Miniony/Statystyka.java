@@ -27,9 +27,9 @@ public class Statystyka {
 	}
 	
 	public static void ZainicjujStatystyki() {
-		new Statystyka("Zu¿ycieJedzenia", 3, -.02, .2, 5000, 500);
-		new Statystyka("Prêdkoœæ", 		100, -5, 20, 20000, 10000);
-		new Statystyka("Zu¿ycieWody", 	40, -1, 5, 2000, 1000);
+		new Statystyka("ZuÅ¼ycieJedzenia", 3, -.02, .2, 5000, 500);
+		new Statystyka("PrÄ™dkoÅ›Ä‡", 		100, -5, 20, 20000, 10000);
+		new Statystyka("ZuÅ¼ycieWody", 	40, -1, 5, 2000, 1000);
 		new Statystyka("dmg", .5, .2, 5, 5000, 20000);
 	}
 	
@@ -58,7 +58,7 @@ public class Statystyka {
 		this.nazwa = nazwa;
 		
 		przepisz(mapa.get(nazwa), this);
-		akt   = (double) config.wczytajLubDomyœlna("stat." + nazwa, start);
+		akt   = (double) config.wczytajLubDomyÅ›lna("stat." + nazwa, start);
 		cena = (akt - start) / krok;
 		nst = akt + krok;
 	}
@@ -77,23 +77,23 @@ public class Statystyka {
 			nst = akt + krok;
 			return true;
 		}
-		p.sendMessage(Minion.prefix + "Nie staæ ciê na to");
+		p.sendMessage(Minion.prefix + "Nie staÄ‡ ciÄ™ na to");
 		return false;
 	}
 
 	public String strCena() {
 		if ((akt >= max && nst < max) || (akt <= max && nst > max)) 
-			return "§6Osi¹gniêto maksymalny poziom";
-		return "§3Koszt ulepszenia: §e" + Func.DoubleToString(cena) + "$";
+			return "Â§6OsiÄ…gniÄ™to maksymalny poziom";
+		return "Â§3Koszt ulepszenia: Â§e" + Func.DoubleToString(cena) + "$";
 	}
 	
 	public String str() {
-		return Func.DoubleToString(Func.zaokr¹glij(akt, 2));
+		return Func.DoubleToString(Func.zaokrÄ…glij(akt, 2));
 	}
 	public String str2() {
 		if ((akt >= max && nst < max) || (akt <= max && nst > max))
-			return "§6§lMAX";
-		return Func.DoubleToString(Func.zaokr¹glij(nst, 2));
+			return "Â§6Â§lMAX";
+		return Func.DoubleToString(Func.zaokrÄ…glij(nst, 2));
 	}
 	
 	

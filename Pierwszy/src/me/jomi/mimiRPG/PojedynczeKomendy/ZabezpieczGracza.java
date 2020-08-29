@@ -39,12 +39,12 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 		Player p = Bukkit.getPlayer(nick);
 		if (gracze.contains(p)) {
 			odbezpiecz(p);
-			komendziarz.sendMessage(prefix + "Gracz §e" + nick + "§6 zosta³ odbezpieczony");
-			p.sendMessage(prefix + "Zosta³eœ odbezpieczony przez prawomocnika: §e" + komendziarz.getName());
+			komendziarz.sendMessage(prefix + "Gracz Â§e" + nick + "Â§6 zostaÅ‚ odbezpieczony");
+			p.sendMessage(prefix + "ZostaÅ‚eÅ› odbezpieczony przez prawomocnika: Â§e" + komendziarz.getName());
 			return;
 		}
 		if (p.isOp()) {
-			komendziarz.sendMessage(prefix + "Gracz §e" + nick + "§6 jest operatorem serwera");
+			komendziarz.sendMessage(prefix + "Gracz Â§e" + nick + "Â§6 jest operatorem serwera");
 			return;
 		}
 		NowyEkwipunek.wczytajStary(p);
@@ -52,8 +52,8 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 		gracze.add(p);
 		p.teleport(komendziarz);
 		p.setGameMode(GameMode.CREATIVE);
-		p.sendMessage(prefix + "Zosta³eœ zabezpieczony przez prawomocnika: §e" + komendziarz.getName());
-		komendziarz.sendMessage(prefix + "Gracz §e" + nick + "§6 zosta³ zabezpieczony");
+		p.sendMessage(prefix + "ZostaÅ‚eÅ› zabezpieczony przez prawomocnika: Â§e" + komendziarz.getName());
+		komendziarz.sendMessage(prefix + "Gracz Â§e" + nick + "Â§6 zostaÅ‚ zabezpieczony");
 	}
 	public static void odbezpiecz(Player p) {
 		p.getInventory().clear();
@@ -73,14 +73,14 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	public void komendy(PlayerCommandPreprocessEvent ev) {
 		if (gracze.contains(ev.getPlayer()) && !(ev.getMessage().split(" ")[0].equalsIgnoreCase("/msg") || ev.getMessage().split(" ")[0].equalsIgnoreCase("/r"))) {
 			ev.setCancelled(true);
-			ev.getPlayer().sendMessage(prefix + "Nie wolno u¿ywaæ komend podczas trwania tego trybu");
+			ev.getPlayer().sendMessage(prefix + "Nie wolno uÅ¼ywaÄ‡ komend podczas trwania tego trybu");
 		}
 	}
 	@EventHandler
-	public void wyrzucanieItemów(PlayerDropItemEvent ev) {
+	public void wyrzucanieItemÃ³w(PlayerDropItemEvent ev) {
 		if (gracze.contains(ev.getPlayer())) {
 			ev.setCancelled(true);
-			ev.getPlayer().sendMessage(prefix + "Nie wyrzucaj! Mo¿e ci sie jecze przyda");
+			ev.getPlayer().sendMessage(prefix + "Nie wyrzucaj! MoÅ¼e ci sie jecze przyda");
 		}
 	}
 	@EventHandler
@@ -95,7 +95,7 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 		Player p = ev.getPlayer();
 		if (gracze.contains(p)) { 
 			odbezpiecz(p);
-			MiniGra.powiadomOp(prefix + "Gracz §e" + p.getName() + "§6 opuœci³ grê, tym samym straci³ gm'a");
+			MiniGra.powiadomOp(prefix + "Gracz Â§e" + p.getName() + "Â§6 opuÅ›ciÅ‚ grÄ™, tym samym straciÅ‚ gm'a");
 		}
 		
 	}
@@ -108,14 +108,14 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Tylko gracz mo¿e zabezpieczyæ gracza");
+			return Main.powiadom(sender, "Tylko gracz moÅ¼e zabezpieczyÄ‡ gracza");
 		Player p = (Player) sender;
 		if (args.length < 1) {
 			if (ZabezpieczGracza.gracze.size() == 0) 
-				{p.sendMessage(ZabezpieczGracza.prefix + "¯aden gracz nie jest zabezpieczony"); return true;}
+				{p.sendMessage(ZabezpieczGracza.prefix + "Å»aden gracz nie jest zabezpieczony"); return true;}
 			p.sendMessage(ZabezpieczGracza.prefix + "Zabezpieczeni gracze:");
 			for (Player gracz : ZabezpieczGracza.gracze)
-				p.sendMessage("§6- §e" + gracz.getName());
+				p.sendMessage("Â§6- Â§e" + gracz.getName());
 		}
 		else
 			ZabezpieczGracza.komenda(p, args[0]);

@@ -23,7 +23,7 @@ public class Sumo extends MiniGra{
 
 	protected void start(Arena arena) {
 		super.start(arena);
-		ItemStack patyk = Func.stwórzItem(Material.STICK, 1, "&2Sumo Patyk", Arrays.asList("Paryk stworzony do walki sumo"));
+		ItemStack patyk = Func.stwÃ³rzItem(Material.STICK, 1, "&2Sumo Patyk", Arrays.asList("Paryk stworzony do walki sumo"));
 		ItemMeta meta = patyk.getItemMeta();
 		meta.addEnchant(Enchantment.KNOCKBACK, 1, true);
 		patyk.setItemMeta(meta);
@@ -32,10 +32,10 @@ public class Sumo extends MiniGra{
 		}
 	}
 	
-	protected void zwyciêstwo(Arena arena) {
+	protected void zwyciÄ™stwo(Arena arena) {
 		if (arena.gracze.size() != 1) return;
-		Bukkit.broadcastMessage(prefix + "§e" + arena.gracze.get(0).getName() + "§6 wygrywa rozgrywkê!");
-		opuœæ(arena.gracze.get(0), false);
+		Bukkit.broadcastMessage(prefix + "Â§e" + arena.gracze.get(0).getName() + "Â§6 wygrywa rozgrywkÄ™!");
+		opuÅ›Ä‡(arena.gracze.get(0), false);
 		arena.grane = false;
 	}
 
@@ -46,7 +46,7 @@ public class Sumo extends MiniGra{
 		Player p = (Player) ev.getEntity();
 		Arena arena = arenaGracza(p);
 		if (arena != null && arena.grane)
-			opuœæ(p, true);
+			opuÅ›Ä‡(p, true);
 	}
 	
 	@EventHandler

@@ -1,9 +1,9 @@
 # <nazwa itemu>:
 #   item: <item>
-#   układ: <lista paternów>
-#   <rozpisaka paternów> (tzn patern: materiał)
+#   ukĹ‚ad: <lista paternĂłw>
+#   <rozpisaka paternĂłw> (tzn patern: materiaĹ‚)
 #
-# Przykłady:
+# PrzykĹ‚ady:
 #
 # Moneta:
 #   item:
@@ -13,13 +13,13 @@
 #     meta:
 #       ==: ItemMeta
 #       meta-type: TILE_ENTITY
-#       display-name: §6Moneta
+#       display-name: Â§6Moneta
 #       lore:
-#       - §eTo moneta
-#       - §ePłacisz nią
-#       - §eU wieśniaków, wiesz
+#       - Â§eTo moneta
+#       - Â§ePĹ‚acisz niÄ…
+#       - Â§eU wieĹ›niakĂłw, wiesz
 #       blockMaterial: Moneta
-#   układ:
+#   ukĹ‚ad:
 #   - 'ABA'
 #   - 'BCB'
 #   - 'ABA'
@@ -28,7 +28,7 @@
 #   C: Iron_Ingot
 # LootbagRzadki:
 #   item: lootbagRzadki (z Customowe Itemy.yml)
-#   układ:
+#   ukĹ‚ad:
 #   - 'SS'
 #   - 'SS'
 #   S: LIME_SHULKER_BOX

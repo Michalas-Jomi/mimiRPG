@@ -17,17 +17,17 @@ public class Config {
 	private YamlConfiguration plik;
 	public File f;
 	
-	private String sciezkaJarDomyúlny = null;
+	private String sciezkaJarDomy≈õlny = null;
 	private String sciezka;
 	
 	public Config(String nazwa) {
 		this.sciezka = "plugins/"+Main.plugin.getDescription().getName()+"/" + nazwa + ".yml";
-		this.sciezkaJarDomyúlny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
-		prze≥aduj();
+		this.sciezkaJarDomy≈õlny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
+		prze≈Çaduj();
 	}
 	public Config(File plik) {
 		this.sciezka = plik.getPath();
-		prze≥aduj();
+		prze≈Çaduj();
 	}
 	
 	public void ustaw(String sciezka, Object obj) {
@@ -43,18 +43,18 @@ public class Config {
 		}
 		if (item instanceof ItemStack)
 			for (Entry<String, ItemStack> en : Baza.itemy.entrySet())
-				if (Func.porÛwnaj(en.getValue(), (ItemStack) item))
+				if (Func.por√≥wnaj(en.getValue(), (ItemStack) item))
 					return en.getKey() + " " + ((ItemStack) item).getAmount();
 		return item;
 	}
-	public boolean ustawDomyúlne(String sciezka, Object obj) {
+	public boolean ustawDomy≈õlne(String sciezka, Object obj) {
 		if (wczytaj(sciezka) == null) {
 			ustaw(sciezka, obj);
 			return true;
 		}
 		return false;
 	}
-	public boolean ustaw_zapiszDomyúlne(String sciezka, Object obj) {
+	public boolean ustaw_zapiszDomy≈õlne(String sciezka, Object obj) {
 		if (wczytaj(sciezka) == null) {
 			ustaw_zapisz(sciezka, obj);
 			return true;
@@ -71,7 +71,7 @@ public class Config {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		prze≥aduj();
+		prze≈Çaduj();
 	}
 
 	public Set<String> klucze(boolean wszystkie){
@@ -88,10 +88,10 @@ public class Config {
 	public String  wczytajStr	 (Object... sciezka) { return Func.koloruj((String) wczytaj(sciezka));}
 
 	@SuppressWarnings("unchecked")
-	public <T> T wczytajLubDomyúlna(String sciezka, T domyúlna) {
+	public <T> T wczytajLubDomy≈õlna(String sciezka, T domy≈õlna) {
 		Object obj = wczytaj(sciezka);
 		if (obj == null)
-			return domyúlna;
+			return domy≈õlna;
 		return (T) obj;
 	}
 	public List<String> wczytajListe(Object... sciezka){
@@ -125,7 +125,7 @@ public class Config {
 	public Napis wczytajNapis(Object... sciezka) {
 		return _napis(wczytaj(sciezka));
 	}
-	public List<Napis> wczytajListeNapisÛw(Object... sciezka){
+	public List<Napis> wczytajListeNapis√≥w(Object... sciezka){
 		List<Napis> lista = Lists.newArrayList();
 		Object obj = wczytaj(sciezka);
 		if (obj != null)
@@ -142,14 +142,14 @@ public class Config {
 		return null;
 	}
 	
-	private void stwÛrz() {
+	private void stw√≥rz() {
 		File dir = new File(sciezka.substring(0, sciezka.lastIndexOf("/")));
 		if (!dir.exists())
 			dir.mkdirs();
 		
 		f = new File(sciezka);
 		if (f.exists()) return;
-		if (!Func.wyjmijPlik(sciezkaJarDomyúlny, sciezka)) {
+		if (!Func.wyjmijPlik(sciezkaJarDomy≈õlny, sciezka)) {
 			try {
 				f.createNewFile();
 				String path = f.getAbsolutePath();
@@ -160,8 +160,8 @@ public class Config {
 			}
 		}
 	}
-	public void prze≥aduj() {
-		stwÛrz();
+	public void prze≈Çaduj() {
+		stw√≥rz();
 		plik = YamlConfiguration.loadConfiguration(f);
 	}
 	
@@ -169,7 +169,7 @@ public class Config {
 		return Func.listToString(sciezka, 0, ".");
 	}
 
-	public boolean usuÒ() {
+	public boolean usu≈Ñ() {
 		return f.delete();
 	}
 }

@@ -41,17 +41,17 @@ public class Menurpg extends Komenda implements Listener{
 		new Atrybut(p, m, "Zdrowie", 			10, 1,    40, 5_000,  inv, Attribute.GENERIC_MAX_HEALTH, 		 	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjEyNjZiNzQ4MjQyMTE1YjMwMzcwOGQ1OWNlOWQ1NTIzYjdkNzljMTNmNmRiNGViYzkxZGQ0NzIwOWViNzU5YyJ9fX0=");
 		new Atrybut(p, m, "Pancerz", 			11, 0.2,  5,  10_000, inv, Attribute.GENERIC_ARMOR, 				"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjUyNTU5ZjJiY2VhZDk4M2Y0YjY1NjFjMmI1ZjJiNTg4ZjBkNjExNmQ0NDY2NmNlZmYxMjAyMDc5ZDI3Y2E3NCJ9fX0=");
 		new Atrybut(p, m, "Obrazenia", 		  	16, 0.1,  5,  15_000, inv, Attribute.GENERIC_ATTACK_DAMAGE, 		"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTBkZmM4YTM1NjNiZjk5NmY1YzFiNzRiMGIwMTViMmNjZWIyZDA0Zjk0YmJjZGFmYjIyOTlkOGE1OTc5ZmFjMSJ9fX0=");
-		new Atrybut(p, m, "Szybkoœæ ataku", 	15, 0.1,  6,  30_000, inv, Attribute.GENERIC_ATTACK_SPEED, 			"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzdlNmM0MGY2OGI3NzVmMmVmY2Q3YmQ5OTE2YjMyNzg2OWRjZjI3ZTI0Yzg1NWQwYTE4ZTA3YWMwNGZlMSJ9fX0=");
-		new Atrybut(p, m, "Odpornoœæ na odrzut",13, 0.01, 0.2,50_000, inv, Attribute.GENERIC_KNOCKBACK_RESISTANCE,	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZlNjY4ZTBkMzE0MTk3OGI4YWUyN2JmMjExYjAxYjQ0ZjEwNmI5ZDY0NzQxN2I4NTIwYTBhZGJjZjJlZjM1ZiJ9fX0=");
+		new Atrybut(p, m, "SzybkoÅ›Ä‡ ataku", 	15, 0.1,  6,  30_000, inv, Attribute.GENERIC_ATTACK_SPEED, 			"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzdlNmM0MGY2OGI3NzVmMmVmY2Q3YmQ5OTE2YjMyNzg2OWRjZjI3ZTI0Yzg1NWQwYTE4ZTA3YWMwNGZlMSJ9fX0=");
+		new Atrybut(p, m, "OdpornoÅ›Ä‡ na odrzut",13, 0.01, 0.2,50_000, inv, Attribute.GENERIC_KNOCKBACK_RESISTANCE,	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZlNjY4ZTBkMzE0MTk3OGI4YWUyN2JmMjExYjAxYjQ0ZjEwNmI5ZDY0NzQxN2I4NTIwYTBhZGJjZjJlZjM1ZiJ9fX0=");
 		mapa.put(p.getName(), m);
 		
-		// Wykoñczenie
-		Wype³nijSloty(inv);
+		// WykoÅ„czenie
+		WypeÅ‚nijSloty(inv);
 		p.openInventory(inv);
 	}
 	
 	@EventHandler
-	public void klikniêcie(InventoryClickEvent ev) {
+	public void klikniÄ™cie(InventoryClickEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("menu RPG")) return;
 		
 		Player p = (Player) ev.getWhoClicked();
@@ -60,13 +60,13 @@ public class Menurpg extends Komenda implements Listener{
 		if (slot < 0 || slot >= 27) return;
 		
 		if (ev.getCurrentItem().getType().equals(Material.PLAYER_HEAD))
-			mapa.get(p.getName()).get(ev.getCurrentItem().getItemMeta().getDisplayName()).klikniêty();
+			mapa.get(p.getName()).get(ev.getCurrentItem().getItemMeta().getDisplayName()).klikniÄ™ty();
 		ev.setCancelled(true);
 	}
 	
-	private static void Wype³nijSloty(Inventory inv) {
+	private static void WypeÅ‚nijSloty(Inventory inv) {
 		ItemStack item;
-		item = Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, 1, "&4Menu", Arrays.asList("&fTutaj mo¿esz ulepszaæ", "&fswoje statystyki"));
+		item = Func.stwÃ³rzItem(Material.RED_STAINED_GLASS_PANE, 1, "&4Menu", Arrays.asList("&fTutaj moÅ¼esz ulepszaÄ‡", "&fswoje statystyki"));
 		for (int i=0; i<27; i++) {
 			if (inv.getItem(i) == null)
 				inv.setItem(i, item);
@@ -83,7 +83,7 @@ public class Menurpg extends Komenda implements Listener{
 		if (sender instanceof Player)
 			dajInv((Player) sender);
 		else
-			sender.sendMessage("Tylko Gracz mo¿e z tego korzystaæ");
+			sender.sendMessage("Tylko Gracz moÅ¼e z tego korzystaÄ‡");
 		return false;
 	}
 }
@@ -91,20 +91,20 @@ public class Menurpg extends Komenda implements Listener{
 class Atrybut extends ItemStack {
 	public static String prefix = Func.koloruj("&2[&aRPG&2] &6");
 	private Attribute atrybut;
-	private double maxIloœæ;
+	private double maxIloÅ›Ä‡;
 	private double przyrost;
 	private int bazowaCena;
-	private double domyœlna;
+	private double domyÅ›lna;
 	private Inventory inv;
 	private String nazwa;
 	private int slot;
 	private Player p;
 	
-	public Atrybut(Player gracz, HashMap<String, Atrybut> mapa, String Nazwa, int Slot, double Przyrost, double MaxIloœæ, int BazowaCena, Inventory Inv, Attribute Atrybut, String url) {
+	public Atrybut(Player gracz, HashMap<String, Atrybut> mapa, String Nazwa, int Slot, double Przyrost, double MaxIloÅ›Ä‡, int BazowaCena, Inventory Inv, Attribute Atrybut, String url) {
 		super(Material.PLAYER_HEAD);
-		domyœlna = domysnaWartoscAtrybutu(Atrybut);
+		domyÅ›lna = domysnaWartoscAtrybutu(Atrybut);
 		bazowaCena = BazowaCena;
-		maxIloœæ = MaxIloœæ;
+		maxIloÅ›Ä‡ = MaxIloÅ›Ä‡;
 		przyrost = Przyrost;
 		atrybut = Atrybut;
 		nazwa = Nazwa;
@@ -121,13 +121,13 @@ class Atrybut extends ItemStack {
 		inv.setItem(slot, this);
 	}
 	
-	public void klikniêty() {
+	public void klikniÄ™ty() {
 		double at = p.getAttribute(atrybut).getBaseValue();
-		if (at >= maxIloœæ) return;
-		int exp = Poziom.policzCa³yExp(p);
+		if (at >= maxIloÅ›Ä‡) return;
+		int exp = Poziom.policzCaÅ‚yExp(p);
 		int ile = przeliczCene();
 		if (exp < ile) {
-			p.sendMessage(prefix + "Posiadasz jedynie§e " + Func.IntToString(exp) + " §6expa.");
+			p.sendMessage(prefix + "Posiadasz jedynieÂ§e " + Func.IntToString(exp) + " Â§6expa.");
 			return;
 		}
 		p.giveExp(-ile);
@@ -136,7 +136,7 @@ class Atrybut extends ItemStack {
 	}
 	
 	private int przeliczCene() {
-		int akt = (int) ((p.getAttribute(atrybut).getBaseValue() - domyœlna) / przyrost);
+		int akt = (int) ((p.getAttribute(atrybut).getBaseValue() - domyÅ›lna) / przyrost);
 		int ile = bazowaCena;
 		ile += bazowaCena * akt;
 		return ile;
@@ -159,15 +159,15 @@ class Atrybut extends ItemStack {
 	
 	private void ustawOpis() {
 		SkullMeta meta = (SkullMeta) this.getItemMeta();
-		double at = Func.zaokr¹glij(p.getAttribute(atrybut).getBaseValue(), 2);
-		String nextlvl = "Nastêpny poziom: §e" + Func.zaokr¹glij(at+przyrost, 2);
-		String cenaexp = "Potrzebny exp: §e" + Func.IntToString(przeliczCene());
-		if (at >= maxIloœæ) {
-			nextlvl = "§6§oOsi¹gniêto ju¿ maksymalny poziom";
+		double at = Func.zaokrÄ…glij(p.getAttribute(atrybut).getBaseValue(), 2);
+		String nextlvl = "NastÄ™pny poziom: Â§e" + Func.zaokrÄ…glij(at+przyrost, 2);
+		String cenaexp = "Potrzebny exp: Â§e" + Func.IntToString(przeliczCene());
+		if (at >= maxIloÅ›Ä‡) {
+			nextlvl = "Â§6Â§oOsiÄ…gniÄ™to juÅ¼ maksymalny poziom";
 			cenaexp = null;
 		}
-		meta.setLore(Arrays.asList("Zwiêksza " + nazwa.toLowerCase(), 
-				  "Aktualny poziom: §e" + at, nextlvl, cenaexp));
+		meta.setLore(Arrays.asList("ZwiÄ™ksza " + nazwa.toLowerCase(), 
+				  "Aktualny poziom: Â§e" + at, nextlvl, cenaexp));
 		this.setItemMeta(meta);
 		
 	}

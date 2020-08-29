@@ -21,15 +21,15 @@ import me.jomi.mimiRPG.Komenda;
 
 public class DrabinaPlus extends Komenda implements Listener, Instrukcja {
 	public static final String prefix = Func.prefix("Drabina+");
-	final ItemStack drabina = Func.po³ysk(Func.stwórzItem(Material.LADDER, "§6Drabina§l+", "§bPostaw jedn¹ a siêgniesz nieba"));
+	final ItemStack drabina = Func.poÅ‚ysk(Func.stwÃ³rzItem(Material.LADDER, "Â§6DrabinaÂ§l+", "Â§bPostaw jednÄ… a siÄ™gniesz nieba"));
 	public DrabinaPlus() {
 		super("drabina+", prefix + "/drabina+ (gracz)");
 	}
 
 	@Override
 	public void info(CommandSender p, int strona) {
-		p.sendMessage("Drabina ta postawiona w jednym miejscu buduje sie samodzielnie zarówno w góre i w dó³,");
-		p.sendMessage("tak d³ugo a¿ osi¹gnie limit œwiata, lub trafi na przeszkode");
+		p.sendMessage("Drabina ta postawiona w jednym miejscu buduje sie samodzielnie zarÃ³wno w gÃ³re i w dÃ³Å‚,");
+		p.sendMessage("tak dÅ‚ugo aÅ¼ osiÄ…gnie limit Å›wiata, lub trafi na przeszkode");
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class DrabinaPlus extends Komenda implements Listener, Instrukcja {
 	@EventHandler(priority=EventPriority.HIGH)
 	public void stawianie(BlockPlaceEvent ev) {
 		if (ev.isCancelled()) return;
-		if (Func.porównaj(ev.getItemInHand(), drabina)) {
+		if (Func.porÃ³wnaj(ev.getItemInHand(), drabina)) {
 			Consumer<Integer> buduj = przyrost -> {
 				Location loc = ev.getBlock().getLocation();
 				while (loc.getBlockY() <= 255 && loc.getBlockY() >= 0) {

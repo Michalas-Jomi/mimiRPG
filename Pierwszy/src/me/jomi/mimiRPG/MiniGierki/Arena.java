@@ -12,7 +12,7 @@ import me.jomi.mimiRPG.Config;
 
 public class Arena {
 	public List<Player> gracze = Lists.newArrayList();
-	public List<Boolean> g³osy = Lists.newArrayList();
+	public List<Boolean> gÅ‚osy = Lists.newArrayList();
 	public boolean sprawdzoneLokacje = false;
 	public Location start;
 	public Location koniec;
@@ -43,17 +43,17 @@ public class Arena {
 				return i;
 		return -1;
 	}
-	protected void policzG³osy(MiniGra gra) {
+	protected void policzGÅ‚osy(MiniGra gra) {
 		if (grane) return;
 		int g = 0;
-		for (boolean b : g³osy)
+		for (boolean b : gÅ‚osy)
 			if (b)
 				g += 1;
 		for (Player gracz : gracze)	{
 			gracz.playSound(gracz.getLocation(), Sound.BLOCK_END_PORTAL_FRAME_FILL, .4f, 1);
-			gracz.sendMessage(gra.prefix + "G³osy na rozpoczêcie gry " + g + "/" + Math.max(g³osy.size(), 2));
+			gracz.sendMessage(gra.prefix + "GÅ‚osy na rozpoczÄ™cie gry " + g + "/" + Math.max(gÅ‚osy.size(), 2));
 		}
-		if (g == g³osy.size() && g >= 2)
+		if (g == gÅ‚osy.size() && g >= 2)
 			gra.start(this);
 	}
 }

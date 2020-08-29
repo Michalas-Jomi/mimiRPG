@@ -16,26 +16,26 @@ import me.jomi.mimiRPG.Main;
 
 public class UstawAttr extends Komenda {
 	public UstawAttr() {
-	    super("ustawattr", prefix + "/ustawAttr <Atrybut> [gracz] [wartoœæ]");
+	    super("ustawattr", prefix + "/ustawAttr <Atrybut> [gracz] [wartoÅ›Ä‡]");
 	}
 
-	public static String prefix = "§2[§aUstaw Atrybut§2] §6";
+	public static String prefix = "Â§2[Â§aUstaw AtrybutÂ§2] Â§6";
 	
 	private static Attribute dajAttr(String nazwa) {
 		switch(nazwa){
 		case "Zdrowie":
 		case "hp":
 			return Attribute.GENERIC_MAX_HEALTH;
-		case "Obra¿enia":
+		case "ObraÅ¼enia":
 		case "dmg":
 			return Attribute.GENERIC_ATTACK_DAMAGE;
 		case "Pancerz":
 		case "def":
 			return Attribute.GENERIC_ARMOR;
-		case "Prêdkoœæ_ataku":
+		case "PrÄ™dkoÅ›Ä‡_ataku":
 		case "atsp":
 			return Attribute.GENERIC_ATTACK_SPEED;
-		case "Odpornoœæ_na_odrzut":
+		case "OdpornoÅ›Ä‡_na_odrzut":
 		case "knock":
 			return Attribute.GENERIC_KNOCKBACK_RESISTANCE;
 		default:
@@ -46,7 +46,7 @@ public class UstawAttr extends Komenda {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return utab(args, "Zdrowie", "Obra¿enia", "Pancerz", "Prêdkoœæ_ataku", "Odpornoœæ_na_odrzut");
+			return utab(args, "Zdrowie", "ObraÅ¼enia", "Pancerz", "PrÄ™dkoÅ›Ä‡_ataku", "OdpornoÅ›Ä‡_na_odrzut");
 		if (args.length >= 3)
 			return Lists.newArrayList();
 		return null;
@@ -59,7 +59,7 @@ public class UstawAttr extends Komenda {
 
 		Attribute attr = dajAttr(args[0]);
 		if (attr == null) {
-			p.sendMessage(prefix + "Nie poprawna nazwa atrybutu: §e" + args[0]);
+			p.sendMessage(prefix + "Nie poprawna nazwa atrybutu: Â§e" + args[0]);
 			return true;
 		}
 		
@@ -67,7 +67,7 @@ public class UstawAttr extends Komenda {
 		if (args.length >= 2) {
 			gracz = Bukkit.getPlayer(args[1]);
 			if (!Bukkit.getOnlinePlayers().contains(gracz)) {
-				p.sendMessage(prefix + "Gracz §e" + args[1] + "§6 nie jest online");
+				p.sendMessage(prefix + "Gracz Â§e" + args[1] + "Â§6 nie jest online");
 				return true;
 			};
 		}
@@ -79,9 +79,9 @@ public class UstawAttr extends Komenda {
 		double ile = 0;
 		if (args.length >= 3) {
 			try {
-				ile = Func.zaokr¹glij(Double.parseDouble(args[2].trim()), 2);
+				ile = Func.zaokrÄ…glij(Double.parseDouble(args[2].trim()), 2);
 			} catch(NumberFormatException er) {
-				p.sendMessage(prefix + "§e" + args[2] + "§6 nie jest poprawn¹ liczb¹");
+				p.sendMessage(prefix + "Â§e" + args[2] + "Â§6 nie jest poprawnÄ… liczbÄ…");
 				return true;
 			}
 		}
@@ -90,11 +90,11 @@ public class UstawAttr extends Komenda {
 		switch (args.length) {
 		case 1:
 		case 2:
-			p.sendMessage(prefix + "Atrybut §e" + args[0] + "§6 gracza §e" + gracz.getName()  + "§6 wynosi §e" + Func.zaokr¹glij(gracz.getAttribute(attr).getBaseValue(), 2));
+			p.sendMessage(prefix + "Atrybut Â§e" + args[0] + "Â§6 gracza Â§e" + gracz.getName()  + "Â§6 wynosi Â§e" + Func.zaokrÄ…glij(gracz.getAttribute(attr).getBaseValue(), 2));
 			return true;
 		case 3:
 			gracz.getAttribute(attr).setBaseValue(ile);
-			p.sendMessage(prefix + "Ustawiono atrybut §e" + args[0] + "§6 gracza §e" + gracz.getName() + "§6 na §e" + ile);
+			p.sendMessage(prefix + "Ustawiono atrybut Â§e" + args[0] + "Â§6 gracza Â§e" + gracz.getName() + "Â§6 na Â§e" + ile);
 			return true;
 		}
 		return false;

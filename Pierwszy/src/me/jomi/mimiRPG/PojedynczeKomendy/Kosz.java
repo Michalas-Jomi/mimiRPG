@@ -17,17 +17,17 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import me.jomi.mimiRPG.Zegar;
 
-public class Kosz extends Komenda implements Prze³adowalny, Zegar {
-	private static Inventory inv = Bukkit.createInventory(null, 6*9, "§1§lKosz");
+public class Kosz extends Komenda implements PrzeÅ‚adowalny, Zegar {
+	private static Inventory inv = Bukkit.createInventory(null, 6*9, "Â§1Â§lKosz");
 	private static List<ItemStack> kolejka = Lists.newArrayList();
 	
 	private static int maxTimer;
 	private static int timer;
 	
-	private static int ¿ywotnoœæ;
+	private static int Å¼ywotnoÅ›Ä‡;
 	
 	private static String msgPoCzyszczeniu;
 	private static String msgOstrzegawcze;
@@ -54,17 +54,17 @@ public class Kosz extends Komenda implements Prze³adowalny, Zegar {
 		kolejka.clear();
 		for (World w : Bukkit.getWorlds())
 			for (Entity en : w.getEntitiesByClasses(CraftItem.class))
-				if (en.getTicksLived() > ¿ywotnoœæ) {
+				if (en.getTicksLived() > Å¼ywotnoÅ›Ä‡) {
 					CraftItem item = (CraftItem) en;
 					kolejka.add(item.getItemStack());
 					item.remove();
 				}
 		if (!msgPoCzyszczeniu.isEmpty())
 			Bukkit.broadcastMessage(msgPoCzyszczeniu.replace("{liczba}", "" + kolejka.size()));
-		wrzuæItemy();
+		wrzuÄ‡Itemy();
 	}
 	
-	private static void wrzuæItemy() {
+	private static void wrzuÄ‡Itemy() {
 		while (inv.firstEmpty() != -1 && !kolejka.isEmpty()) {
 			inv.addItem(kolejka.get(0));
 			kolejka.remove(0);
@@ -72,16 +72,16 @@ public class Kosz extends Komenda implements Prze³adowalny, Zegar {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		maxTimer = Main.ust.wczytajInt("Kosz", "timer");
 		timer = maxTimer;
-		¿ywotnoœæ = Main.ust.wczytajInt("Kosz", "zywotnosc") * 20;
+		Å¼ywotnoÅ›Ä‡ = Main.ust.wczytajInt("Kosz", "zywotnosc") * 20;
 		msgPoCzyszczeniu = Func.koloruj(Main.ust.wczytajStr("Kosz", "msgPoCzyszczeniu"));
 		msgOstrzegawcze  = Func.koloruj(Main.ust.wczytajStr("Kosz", "msgOstrzegawcze"));
 		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz", "ostrzerzenia");
 	}
 	public String raport() {
-		return "§6Kosz: §e" + (maxTimer != -1 ? (maxTimer + "s §6 miêdzy czyszczeniami") : "§cWy³aczony");
+		return "Â§6Kosz: Â§e" + (maxTimer != -1 ? (maxTimer + "s Â§6 miÄ™dzy czyszczeniami") : "Â§cWyÅ‚aczony");
 	}
 
 	@Override
@@ -92,10 +92,10 @@ public class Kosz extends Komenda implements Prze³adowalny, Zegar {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Jesteœ zbyt wa¿ny by grzebaæ siê w œmieciach");
+			return Main.powiadom(sender, "JesteÅ› zbyt waÅ¼ny by grzebaÄ‡ siÄ™ w Å›mieciach");
 		Player p = (Player) sender;
-		if (maxTimer <= -1) return Main.powiadom(p, "§cKosz jest wy³¹czony");
-		wrzuæItemy();
+		if (maxTimer <= -1) return Main.powiadom(p, "Â§cKosz jest wyÅ‚Ä…czony");
+		wrzuÄ‡Itemy();
 		p.openInventory(inv);
 		return true;
 	}

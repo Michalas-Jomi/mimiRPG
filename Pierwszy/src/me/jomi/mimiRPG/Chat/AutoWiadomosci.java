@@ -9,43 +9,43 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Prze≥adowalny;
+import me.jomi.mimiRPG.Prze≈Çadowalny;
 import me.jomi.mimiRPG.Zegar;
 
-public class AutoWiadomosci implements Prze≥adowalny, Zegar {
-	private List<Napis> wiadomoúci = Lists.newArrayList();
-	private List<Napis> doWys≥ania = Lists.newArrayList();
+public class AutoWiadomosci implements Prze≈Çadowalny, Zegar {
+	private List<Napis> wiadomo≈õci = Lists.newArrayList();
+	private List<Napis> doWys≈Çania = Lists.newArrayList();
 	private int timer = 0;
 	private Napis ostatnia = null;
 	
 	public int czas() {
 		if (timer >= 0)
-			wyúlij();
+			wy≈õlij();
 		return timer;
 	}
 	
-	public void prze≥aduj() { 
-		wiadomoúci.clear();
-		doWys≥ania.clear();
-		wiadomoúci = Main.ust.wczytajListeNapisÛw("AutoWiadomosci", "wiadomoúci");
-		doWys≥ania = Lists.newArrayList(wiadomoúci);
+	public void prze≈Çaduj() { 
+		wiadomo≈õci.clear();
+		doWys≈Çania.clear();
+		wiadomo≈õci = Main.ust.wczytajListeNapis√≥w("AutoWiadomosci", "wiadomo≈õci");
+		doWys≈Çania = Lists.newArrayList(wiadomo≈õci);
 		timer = Main.ust.wczytajInt("AutoWiadomosci", "czas") * 20;
 	}
 	public String raport() {
-		return "ß6Atomatyczne Wiadomoúci: ße" + wiadomoúci.size();
+		return "¬ß6Atomatyczne Wiadomo≈õci: ¬ße" + wiadomo≈õci.size();
 	}
 	
-	public void wyúlij() {
-		if (wiadomoúci.size() <= 0) return;
+	public void wy≈õlij() {
+		if (wiadomo≈õci.size() <= 0) return;
 		if (Bukkit.getOnlinePlayers().size() <= 0) return;
 		int i;
-		do i = Func.losuj(0, doWys≥ania.size()-1); 
-			while(doWys≥ania.size() > 1 && doWys≥ania.get(i).equals(ostatnia));
-		ostatnia = doWys≥ania.get(i);
-		ostatnia.wyúwietlWszystkim();
-		doWys≥ania.remove(i);
-		if (doWys≥ania.isEmpty())
-			doWys≥ania = Lists.newArrayList(wiadomoúci);
+		do i = Func.losuj(0, doWys≈Çania.size()-1); 
+			while(doWys≈Çania.size() > 1 && doWys≈Çania.get(i).equals(ostatnia));
+		ostatnia = doWys≈Çania.get(i);
+		ostatnia.wy≈õwietlWszystkim();
+		doWys≈Çania.remove(i);
+		if (doWys≈Çania.isEmpty())
+			doWys≈Çania = Lists.newArrayList(wiadomo≈õci);
 	}
 
 }

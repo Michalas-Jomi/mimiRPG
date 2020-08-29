@@ -20,10 +20,10 @@ import net.minecraft.server.v1_16_R1.PathfinderGoalSelector;
 
 public class Farmer extends Minion{
 
-	private static ItemStack he³m 	 = Func.dajG³ówkê("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjc3ZDQxNWY5YmFhNGZhNGI1ZTA1OGY1YjgxYmY3ZjAwM2IwYTJjOTBhNDgzMWU1M2E3ZGJjMDk4NDFjNTUxMSJ9fX0=");
-	private static ItemStack klata 	 = Func.stwórzItem(Material.IRON_CHESTPLATE);
-	private static ItemStack spodnie = Func.stwórzItem(Material.LEATHER_LEGGINGS);
-	private static ItemStack buty 	 = Func.stwórzItem(Material.LEATHER_BOOTS);
+	private static ItemStack heÅ‚m 	 = Func.dajGÅ‚Ã³wkÄ™("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjc3ZDQxNWY5YmFhNGZhNGI1ZTA1OGY1YjgxYmY3ZjAwM2IwYTJjOTBhNDgzMWU1M2E3ZGJjMDk4NDFjNTUxMSJ9fX0=");
+	private static ItemStack klata 	 = Func.stwÃ³rzItem(Material.IRON_CHESTPLATE);
+	private static ItemStack spodnie = Func.stwÃ³rzItem(Material.LEATHER_LEGGINGS);
+	private static ItemStack buty 	 = Func.stwÃ³rzItem(Material.LEATHER_BOOTS);
 	
 	protected boolean sadzenie = false;
 	
@@ -44,11 +44,11 @@ public class Farmer extends Minion{
 		sadzenie = (boolean) config.wczytaj("sadzenie");
 	}
 	public Farmer(Location loc, String stworzyciel) {
-		super(loc, stworzyciel, "§aFarmer");
+		super(loc, stworzyciel, "Â§aFarmer");
 	}
 	public Farmer(Player p, ItemStack item) {
 		super(p, item);
-		sadzenie = item.getItemMeta().getLore().get(10).split(" ")[1].startsWith("§a");
+		sadzenie = item.getItemMeta().getLore().get(10).split(" ")[1].startsWith("Â§a");
 	}
 	protected void init() {}
 	protected void zrespMoba() {
@@ -65,10 +65,10 @@ public class Farmer extends Minion{
 	}
 	
 	protected void ubierz() {
-		ubierz(he³m, klata, spodnie, buty);
+		ubierz(heÅ‚m, klata, spodnie, buty);
 	}
 	
-	protected void idzDoNastêpnej() {
+	protected void idzDoNastÄ™pnej() {
 		Location blok = new Location(loc.getWorld(), locX(), locY(), locZ()).add(0, .2, 0);
 		blok.add(-2, 0, -2);
 		for (int z=0; z<5; z++) {
@@ -109,7 +109,7 @@ public class Farmer extends Minion{
 			}
 			l.add(-3, 0, 1);
 		}
-		podnieœItemy(2.5, 2, 2.5);
+		podnieÅ›Itemy(2.5, 2, 2.5);
 	}
 	protected void wykop(Block b) {
 		Material mat = b.getType();
@@ -140,31 +140,31 @@ public class Farmer extends Minion{
 		if (mimiTick(true)) {
 			Location l = new Location(loc.getWorld(), locX(), locY(), locZ()).add(0, .2, 0);
 			wykop(l);
-			idzDoNastêpnej();
+			idzDoNastÄ™pnej();
 		}
 	}
 	
-	protected void ulepszeniaOdœwie¿(Inventory inv){
-		super.ulepszeniaOdœwie¿(inv);
+	protected void ulepszeniaOdÅ›wieÅ¼(Inventory inv){
+		super.ulepszeniaOdÅ›wieÅ¼(inv);
 		ustawItem(inv, 22, Material.WHEAT_SEEDS, "&2Sadzenie", Func.BooleanToString(sadzenie, Arrays.asList("&aZakupione"), Arrays.asList("&cNie Zakupione", "&3Cena: &e" + Func.IntToString(ulepszanieSadzenieCena) + "$")));
 		}
-	public boolean klikniêcie(Player p, InventoryClickEvent ev) {
+	public boolean klikniÄ™cie(Player p, InventoryClickEvent ev) {
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))
 			return false;
-		if (ev.getView().getTitle().equals("§4§lUlepszenia")) {
-			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("§2Sadzenie")) {
+		if (ev.getView().getTitle().equals("Â§4Â§lUlepszenia")) {
+			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("Â§2Sadzenie")) {
 				if (sadzenie) return true;
 				if (Main.econ.getBalance(p) >= ulepszanieSadzenieCena) {
 					Main.econ.withdrawPlayer(p, ulepszanieSadzenieCena);
 					sadzenie = true;
-					ulepszeniaOdœwie¿(ev.getInventory());
+					ulepszeniaOdÅ›wieÅ¼(ev.getInventory());
 				} else
-					p.sendMessage(prefix + "Nie staæ ciê na to");
+					p.sendMessage(prefix + "Nie staÄ‡ ciÄ™ na to");
 				return true;
 			}
 		}
-		return super.klikniêcie(p, ev);
+		return super.klikniÄ™cie(p, ev);
 	}
 
 }

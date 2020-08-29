@@ -21,10 +21,10 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 import net.milkbowl.vault.economy.EconomyResponse;
 
-public class Targ extends Komenda implements Listener, Prze³adowalny{
+public class Targ extends Komenda implements Listener, PrzeÅ‚adowalny{
 	public static Config config = new Config("configi/targ");
 	private static List<ItemStack> Itemy = Lists.newArrayList();
 	private static HashMap<String, List<ItemStack>> menu = new HashMap<>();
@@ -34,39 +34,39 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 	public static int limitOfert = 5;
 	public static int maxCena = 10_000_000;
 	public Targ() {
-	    super("wystaw", prefix + "/wystaw <cena> [iloœæ]");
+	    super("wystaw", prefix + "/wystaw <cena> [iloÅ›Ä‡]");
 		ustawKomende("targ", null, null);
-		prze³aduj();
+		przeÅ‚aduj();
 	}
 	@SuppressWarnings("unchecked")
-	public void prze³aduj() {
-		config.prze³aduj();
+	public void przeÅ‚aduj() {
+		config.przeÅ‚aduj();
 		// wczytywanie graczy z pliku
 		gracze = (List<String>) config.wczytaj("gracze");
 		if (gracze == null)
 			gracze = Lists.newArrayList();
 		
-		// wczytywanie itemów z pliku
+		// wczytywanie itemÃ³w z pliku
 		Itemy = Lists.newArrayList();
 		for (String nick : gracze)
 			Itemy.addAll((List<ItemStack>) config.wczytaj(nick));
 	}
 	public String raport() {
-		return "§6Itemy Targu: §e" + Itemy.size();
+		return "Â§6Itemy Targu: Â§e" + Itemy.size();
 	}
-	private static ItemStack przetwórzItem(ItemStack item, double cena, String gracz) {
+	private static ItemStack przetwÃ³rzItem(ItemStack item, double cena, String gracz) {
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
 		if (lore == null)
 			lore = Lists.newArrayList();
 		lore.add("");
-		lore.add("§6Cena: §e" + cena + "$");
-		lore.add("§6Sprzedawca: §e" + gracz);
+		lore.add("Â§6Cena: Â§e" + cena + "$");
+		lore.add("Â§6Sprzedawca: Â§e" + gracz);
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		return item;
 	}
-	private static ItemStack odtwórzItem(ItemStack item) {
+	private static ItemStack odtwÃ³rzItem(ItemStack item) {
 		if (item == null) return null;
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
@@ -78,34 +78,34 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 	}
 	private static boolean dajMenu(Player p) {
 		if (!Main.ekonomia) {
-			p.sendMessage(prefix + "Ta komenda nie dzia³a poprawnie! wpisz §e/raport §6aby dowiedzieæ siê wiêcej");
+			p.sendMessage(prefix + "Ta komenda nie dziaÅ‚a poprawnie! wpisz Â§e/raport Â§6aby dowiedzieÄ‡ siÄ™ wiÄ™cej");
 			return true;
 		}
-		Inventory inv = Bukkit.createInventory(p, 6*9,"§6§lTarg");
+		Inventory inv = Bukkit.createInventory(p, 6*9,"Â§6Â§lTarg");
 		List<ItemStack> lista = Lists.newArrayList();
 		lista.addAll(Itemy);
 		menu.put(p.getName(), lista);
 		
-		ItemStack brak = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§6§2 ", null);
-		inv.setItem(49, Func.dajG³ówkê("§6Odœwie¿", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0=", null));
-		inv.setItem(46, Func.dajG³ówkê("§6Poka¿ tylko w³asne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0=", null));
-		inv.setItem(45, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Poprzednia strona", null));
-		inv.setItem(53, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Nastêpna strona",	  null));
+		ItemStack brak = Func.stwÃ³rzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Â§6Â§2 ", null);
+		inv.setItem(49, Func.dajGÅ‚Ã³wkÄ™("Â§6OdÅ›wieÅ¼", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0=", null));
+		inv.setItem(46, Func.dajGÅ‚Ã³wkÄ™("Â§6PokaÅ¼ tylko wÅ‚asne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0=", null));
+		inv.setItem(45, Func.stwÃ³rzItem(Material.WRITABLE_BOOK, 1, "Â§6Poprzednia strona", null));
+		inv.setItem(53, Func.stwÃ³rzItem(Material.WRITABLE_BOOK, 1, "Â§6NastÄ™pna strona",	  null));
 		for (int i=47; i<9*6-1; i++)
 			if (inv.getItem(i) == null)
 				inv.setItem(i, brak);
 		p.openInventory(inv);
-		zmieñStrone(p, 0, true);
+		zmieÅ„Strone(p, 0, true);
 		return true;
 	}
-	private static void zmieñStrone(Player p, int strona, boolean pierwsze) {
+	private static void zmieÅ„Strone(Player p, int strona, boolean pierwsze) {
 		if (strona < 0) return;
 		List<ItemStack> lista = menu.get(p.getName());
 		int max = lista.size();
 		if (!pierwsze)
 			if (strona*45 > max) return;
 		Inventory inv = p.getOpenInventory().getInventory(0);
-		ItemStack brakTowaru = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§6§2 ", null);
+		ItemStack brakTowaru = Func.stwÃ³rzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "Â§6Â§2 ", null);
 		strony.put(p.getName(), strona);
 		for (int i=0; i<5*9; i++)
 			inv.setItem(i, brakTowaru);
@@ -118,7 +118,7 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	private void kup(Player p, ItemStack item) {
 		if (!Itemy.contains(item)) {
-			p.sendMessage(prefix + "Tego przedmiotu nie ma ju¿ na targu");
+			p.sendMessage(prefix + "Tego przedmiotu nie ma juÅ¼ na targu");
 			return;
 		}
 		List<String> lore = item.getItemMeta().getLore();
@@ -132,7 +132,7 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 		s = s.substring(2, s.length()-1);
 		double cena = Func.Double(s, -1);
 		if (cena > Main.econ.getBalance(p)) {
-			p.sendMessage(prefix + "Nie staæ ciê na to");
+			p.sendMessage(prefix + "Nie staÄ‡ ciÄ™ na to");
 			return;
 		}
 		if (p.getInventory().firstEmpty() == -1) {
@@ -142,12 +142,12 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 		EconomyResponse r = Main.econ.withdrawPlayer(p, cena);
 		Main.econ.depositPlayer(sprzedawca, cena);
         if(r.transactionSuccess()) {
-        	p.sendMessage(String.format(prefix + "Kupi³eœ przedmiot od gracza §e%s§6 za §e%s$§6 zosta³o ci §e%s$", sprzedawca, Func.DoubleToString(r.amount), Func.DoubleToString(r.balance)));
+        	p.sendMessage(String.format(prefix + "KupiÅ‚eÅ› przedmiot od gracza Â§e%sÂ§6 za Â§e%s$Â§6 zostaÅ‚o ci Â§e%s$", sprzedawca, Func.DoubleToString(r.amount), Func.DoubleToString(r.balance)));
         	Player sp = Bukkit.getPlayer(sprzedawca);
         	if (sp != null && sp.isOnline())
-        		sp.sendMessage(String.format(prefix + "Gracz §e%s§6 kupi³ od ciebie przedmiot za §e%s$", p.getName(), Func.DoubleToString(r.amount)));
+        		sp.sendMessage(String.format(prefix + "Gracz Â§e%sÂ§6 kupiÅ‚ od ciebie przedmiot za Â§e%s$", p.getName(), Func.DoubleToString(r.amount)));
         } else {
-            p.sendMessage(String.format(prefix + "Wyst¹pi³ problem: §c%s", r.errorMessage));
+            p.sendMessage(String.format(prefix + "WystÄ…piÅ‚ problem: Â§c%s", r.errorMessage));
             return;
         }
         Itemy.remove(item);
@@ -159,39 +159,39 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 			config.ustaw_zapisz(sprzedawca, null);
 		} else
 			config.ustaw_zapisz(sprzedawca, of);
-		p.getInventory().addItem(odtwórzItem(item));
-		odœwie¿Oferte(p);
+		p.getInventory().addItem(odtwÃ³rzItem(item));
+		odÅ›wieÅ¼Oferte(p);
 	}
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	private static void wystawItem(Player p, double cena) {
 		ItemStack item = p.getItemInHand();
 		String nick = p.getName();
 		if (item == null || item.getType().equals(Material.AIR))
-			{p.sendMessage(prefix + "Musisz trzymaæ coœ w rêce aby tego u¿yæ"); return;}
+			{p.sendMessage(prefix + "Musisz trzymaÄ‡ coÅ› w rÄ™ce aby tego uÅ¼yÄ‡"); return;}
 		if (cena < 1)
-			{p.sendMessage(prefix + "Nie mo¿esz sprzedaæ nic za mniej ni¿ §e1$"); return;}
+			{p.sendMessage(prefix + "Nie moÅ¼esz sprzedaÄ‡ nic za mniej niÅ¼ Â§e1$"); return;}
 		if (cena > maxCena)
-			{p.sendMessage(prefix + "Nie mo¿esz sprzedaæ nic za wiêcej ni¿ §e" + maxCena + "$"); return;}
+			{p.sendMessage(prefix + "Nie moÅ¼esz sprzedaÄ‡ nic za wiÄ™cej niÅ¼ Â§e" + maxCena + "$"); return;}
 		List<ItemStack> oferty = (List<ItemStack>) config.wczytaj(nick);
 		if (oferty == null)
 			oferty = Lists.newArrayList();
 		if (oferty.size() >= limitOfert)
-			{p.sendMessage(prefix + "Osi¹gniêto ju¿ limit ofert"); return;}
+			{p.sendMessage(prefix + "OsiÄ…gniÄ™to juÅ¼ limit ofert"); return;}
 		if (!gracze.contains(nick)) {
 			gracze.add(nick);
 			config.ustaw_zapisz("gracze", gracze);
 		}
-		item = przetwórzItem(item, cena, nick);
+		item = przetwÃ³rzItem(item, cena, nick);
 		Itemy.add(item);
 		oferty.add(item);
 		config.ustaw_zapisz(nick, oferty);
 		p.setItemInHand(new ItemStack(Material.AIR));
-		p.sendMessage(prefix + "Wystawiono item za §e" + Func.DoubleToString(cena) + "$");
+		p.sendMessage(prefix + "Wystawiono item za Â§e" + Func.DoubleToString(cena) + "$");
 	}
 	@SuppressWarnings("unchecked")
 	private void wycofajItem(Player p, ItemStack item) {
 		if (p.getInventory().firstEmpty() == -1)
-			{p.sendMessage(prefix + "Twój ekwipunek jest pe³ny"); return;}
+			{p.sendMessage(prefix + "TwÃ³j ekwipunek jest peÅ‚ny"); return;}
 		String nick = p.getName();
 		List<ItemStack> oferty = (List<ItemStack>) config.wczytaj(nick);
 		oferty.remove(item);
@@ -203,19 +203,19 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 			config.ustaw_zapisz(nick, oferty);
 		Itemy.remove(item);
 		p.sendMessage(prefix + "Wycofano item");
-		p.getInventory().addItem(odtwórzItem(item));
-		if (p.getOpenInventory().getTitle().equals("§6§lTwoje oferty"))
-			poka¿SwojeOferty(p);
+		p.getInventory().addItem(odtwÃ³rzItem(item));
+		if (p.getOpenInventory().getTitle().equals("Â§6Â§lTwoje oferty"))
+			pokaÅ¼SwojeOferty(p);
 		else
-			odœwie¿Oferte(p);
+			odÅ›wieÅ¼Oferte(p);
 	}
-	private void odœwie¿Oferte(Player p) {
+	private void odÅ›wieÅ¼Oferte(Player p) {
 		dajMenu(p);
 	}
 	@SuppressWarnings("unchecked")
-	private void poka¿SwojeOferty(Player p) {
-		Inventory inv = Bukkit.createInventory(p, 18, "§6§lTwoje oferty");
-		ItemStack nic = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§aKliknij item aby go wycofaæ", null);
+	private void pokaÅ¼SwojeOferty(Player p) {
+		Inventory inv = Bukkit.createInventory(p, 18, "Â§6Â§lTwoje oferty");
+		ItemStack nic = Func.stwÃ³rzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "Â§aKliknij item aby go wycofaÄ‡", null);
 		for (int i=0; i<17; i++)
 			inv.setItem(i, nic);
 		int i = 0;
@@ -226,43 +226,43 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 				i++;
 			}
 		}
-		inv.setItem(17, Func.dajG³ówkê("§6Powrót do targu", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0=", null));
+		inv.setItem(17, Func.dajGÅ‚Ã³wkÄ™("Â§6PowrÃ³t do targu", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0=", null));
 		p.openInventory(inv);
 	}
 	
 	@EventHandler
-	public void klikniêcie(InventoryClickEvent ev) {
+	public void klikniÄ™cie(InventoryClickEvent ev) {
 		Player p = (Player) ev.getWhoClicked();
 		ItemStack item = ev.getCurrentItem();
 		int slot = ev.getRawSlot();
 		switch (ev.getView().getTitle()) {
-		case "§6§lTarg":
+		case "Â§6Â§lTarg":
 			if (slot >= 6*9 || slot < 0) return;
 			ev.setCancelled(true);
 			String nazwa = item.getItemMeta().getDisplayName();
-			if (nazwa.equals("§6§2 ")) return;
+			if (nazwa.equals("Â§6Â§2 ")) return;
 			if (slot < 5*9) {kup(p, item); return;}
 			switch(nazwa) {
-			case "§6Poprzednia strona":
-				zmieñStrone(p, strony.get(p.getName())-1, false);
+			case "Â§6Poprzednia strona":
+				zmieÅ„Strone(p, strony.get(p.getName())-1, false);
 				break;
-			case "§6Nastêpna strona":
-				zmieñStrone(p, strony.get(p.getName())+1, false);
+			case "Â§6NastÄ™pna strona":
+				zmieÅ„Strone(p, strony.get(p.getName())+1, false);
 				break;
-			case "§6Odœwie¿":
-				odœwie¿Oferte(p);
+			case "Â§6OdÅ›wieÅ¼":
+				odÅ›wieÅ¼Oferte(p);
 				break;
-			case "§6Poka¿ tylko w³asne towary":
-				poka¿SwojeOferty(p);
+			case "Â§6PokaÅ¼ tylko wÅ‚asne towary":
+				pokaÅ¼SwojeOferty(p);
 				break;
 			}
 			return;
-		case "§6§lTwoje oferty":
+		case "Â§6Â§lTwoje oferty":
 			if (slot >= 18 || slot < 0) return;
 			ev.setCancelled(true);
 			if (slot == 17) 
 				dajMenu(p);
-			else if (!item.getItemMeta().getDisplayName().equals("§aKliknij item aby go wycofaæ"))
+			else if (!item.getItemMeta().getDisplayName().equals("Â§aKliknij item aby go wycofaÄ‡"))
 				wycofajItem(p, item);
 			return;
 		}
@@ -285,7 +285,7 @@ public class Targ extends Komenda implements Listener, Prze³adowalny{
 		String cena = args[0];
 		
 		if (!Main.ekonomia) {
-			p.sendMessage(prefix + "Ta komenda nie dzia³a poprawnie! wpisz §e/raport §6aby dowiedzieæ siê wiêcej");
+			p.sendMessage(prefix + "Ta komenda nie dziaÅ‚a poprawnie! wpisz Â§e/raport Â§6aby dowiedzieÄ‡ siÄ™ wiÄ™cej");
 			return true;
 		}
 		double koszt = Func.Double(cena, -1);

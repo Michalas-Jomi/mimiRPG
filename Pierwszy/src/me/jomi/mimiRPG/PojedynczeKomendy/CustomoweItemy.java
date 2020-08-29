@@ -24,7 +24,7 @@ public class CustomoweItemy extends Komenda {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return uzupe³nijTabComplete(Func.listToString(args, 0), Lists.newArrayList(Baza.itemy.keySet()));
+			return uzupeÅ‚nijTabComplete(Func.listToString(args, 0), Lists.newArrayList(Baza.itemy.keySet()));
 		return null;
 	}
 
@@ -55,7 +55,7 @@ public class CustomoweItemy extends Komenda {
 				sender.sendMessage(prefix + Func.msg("Niepoprawny item: %s.", item));
 			else {
 				if (p.getInventory().firstEmpty() == -1)
-					sender.sendMessage(prefix + Func.msg("Ekwipunek gracz %s jest pe³ny", nick));
+					sender.sendMessage(prefix + Func.msg("Ekwipunek gracz %s jest peÅ‚ny", nick));
 				else {	
 					p.getInventory().addItem(_item);
 					sender.sendMessage(prefix + Func.msg("Dano %s customowy item %s.", nick, item));
@@ -66,7 +66,7 @@ public class CustomoweItemy extends Komenda {
 	}
 
 	public static String raport() {
-		return "§6CustomoweItemy: §e" + Baza.itemy.size();
+		return "Â§6CustomoweItemy: Â§e" + Baza.itemy.size();
 	}
 	
 }

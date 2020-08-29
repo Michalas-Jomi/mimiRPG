@@ -16,20 +16,20 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class RTP extends Komenda implements Prze³adowalny {
+public class RTP extends Komenda implements PrzeÅ‚adowalny {
 	public static final String prefix = Func.prefix("RTP");
 	
 	private static final HashMap<String, List<Material>> mapa = new HashMap<>();
 	
 	public RTP() {
-		super("rtp", prefix + "/rtp <zasiêg> (selektor) (filtr)");
+		super("rtp", prefix + "/rtp <zasiÄ™g> (selektor) (filtr)");
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		mapa.clear();
 		ConfigurationSection sekcja = Main.ust.sekcja("rtp");
 		if (sekcja != null)
@@ -41,7 +41,7 @@ public class RTP extends Komenda implements Prze³adowalny {
 			}
 	}
 	public String raport() {
-		return "§6Filtry rtp: §e" + mapa.size();
+		return "Â§6Filtry rtp: Â§e" + mapa.size();
 	}
 
 	@Override
@@ -55,13 +55,13 @@ public class RTP extends Komenda implements Prze³adowalny {
 		case 3:
 			lista = Lists.newArrayList(mapa.keySet());
 		}
-		return uzupe³nijTabComplete(args[args.length-1], lista);
+		return uzupeÅ‚nijTabComplete(args[args.length-1], lista);
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
-		int zasiêg = 1;
+		int zasiÄ™g = 1;
 		Entity teleportowany = null;
 		if (sender instanceof Entity)
 			teleportowany = (Entity) sender;
@@ -77,41 +77,41 @@ public class RTP extends Komenda implements Prze³adowalny {
 		case 2:
 			List<Entity> en = Bukkit.selectEntities(sender, args[1]);
 			if (en.isEmpty())
-				return Main.powiadom(sender, prefix + "¯aden byt nie odpowiada podanym kryteriom " + args[1]);
+				return Main.powiadom(sender, prefix + "Å»aden byt nie odpowiada podanym kryteriom " + args[1]);
 			teleportowany = en.get(0);
 		case 1:
-			zasiêg = Func.Int(args[0], -1);
-			if (zasiêg <= -1)
-				return Main.powiadom(sender, prefix + "Niepoprawny zasiêg");
+			zasiÄ™g = Func.Int(args[0], -1);
+			if (zasiÄ™g <= -1)
+				return Main.powiadom(sender, prefix + "Niepoprawny zasiÄ™g");
 		}
 		if (teleportowany == null)
-			return Main.powiadom(sender, prefix + "/rtp <zasiêg> <selektor> (filtr)");
-		teleportowany.teleport(losuj(teleportowany.getLocation(), zasiêg, filtr));
-		teleportowany.sendMessage(prefix + "Zosta³eœ przeteleportowany");
+			return Main.powiadom(sender, prefix + "/rtp <zasiÄ™g> <selektor> (filtr)");
+		teleportowany.teleport(losuj(teleportowany.getLocation(), zasiÄ™g, filtr));
+		teleportowany.sendMessage(prefix + "ZostaÅ‚eÅ› przeteleportowany");
 		return true;
 	}
 	
-	public static Location losuj(Location œrodek, int zasiêg, List<Material> zablokowane) {
+	public static Location losuj(Location Å›rodek, int zasiÄ™g, List<Material> zablokowane) {
 		if (zablokowane == null) zablokowane = Lists.newArrayList();
-		Location _œrodek = œrodek;
-		int przejœcia = 0;
+		Location _Å›rodek = Å›rodek;
+		int przejÅ›cia = 0;
 		do {
-		œrodek = _œrodek.clone();
-		œrodek.setX(((int) œrodek.getX()) + Func.losuj(-zasiêg, zasiêg));
-		œrodek.setZ(((int) œrodek.getZ()) + Func.losuj(-zasiêg, zasiêg));
-		œrodek.setY(255);
+		Å›rodek = _Å›rodek.clone();
+		Å›rodek.setX(((int) Å›rodek.getX()) + Func.losuj(-zasiÄ™g, zasiÄ™g));
+		Å›rodek.setZ(((int) Å›rodek.getZ()) + Func.losuj(-zasiÄ™g, zasiÄ™g));
+		Å›rodek.setY(255);
 		
-		while (œrodek.getBlock().getType().isAir() && œrodek.getBlockY() > 0)
-			œrodek.add(0, -1, 0);
+		while (Å›rodek.getBlock().getType().isAir() && Å›rodek.getBlockY() > 0)
+			Å›rodek.add(0, -1, 0);
 		
-		if (++przejœcia >= 2000) {
-			Main.plugin.getLogger().warning("Brak bloków w zasiêgu rtp" + 
-						_œrodek.getBlockX() + " " + _œrodek.getBlockY() + " " + _œrodek.getBlockZ());
-			return _œrodek;
+		if (++przejÅ›cia >= 2000) {
+			Main.plugin.getLogger().warning("Brak blokÃ³w w zasiÄ™gu rtp" + 
+						_Å›rodek.getBlockX() + " " + _Å›rodek.getBlockY() + " " + _Å›rodek.getBlockZ());
+			return _Å›rodek;
 		}
-		} while (œrodek.getBlockY() <= 0 || zablokowane.contains(œrodek.getBlock().getType()));
+		} while (Å›rodek.getBlockY() <= 0 || zablokowane.contains(Å›rodek.getBlock().getType()));
 		
-		return œrodek.add(0.5, 1, 0.5);
+		return Å›rodek.add(0.5, 1, 0.5);
 	}
 
 }

@@ -30,7 +30,7 @@ public class NowyEkwipunek {
 		for (int i=0; i<9*4+5; i++) 
 			mapa.get(nick).add(inv.getItem(i));
 		
-		mapaExpa.put(nick, Poziom.policzCa³yExp(p));
+		mapaExpa.put(nick, Poziom.policzCaÅ‚yExp(p));
 		
 		
 		inv.clear();

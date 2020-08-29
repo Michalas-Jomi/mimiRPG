@@ -31,31 +31,31 @@ public class EdytorTabliczek extends Komenda implements Listener{
 	private static void ustaw(Player p, Sign blok) {
 		mapa.put(p.getName(), blok);
 		
-		Napis msg = new Napis("\n\n§6§l-----§6|§l> §1§lEdytor Tabliczek §6§l <§6|§l-----\n");
+		Napis msg = new Napis("\n\nÂ§6Â§l-----Â§6|Â§l> Â§1Â§lEdytor Tabliczek Â§6Â§l <Â§6|Â§l-----\n");
 		for (int i=0; i<4; i++) {
 			String linia = blok.getLine(i);
-			Napis n = new Napis("§e§l-> §0" + dajLinie(linia) + "\n", Action.SUGGEST_COMMAND, "/edytujtabliczke " + i + " " + linia.replace("&", "&&").replace("§", "&"));
+			Napis n = new Napis("Â§eÂ§l-> Â§0" + dajLinie(linia) + "\n", Action.SUGGEST_COMMAND, "/edytujtabliczke " + i + " " + linia.replace("&", "&&").replace("Â§", "&"));
 			msg.dodaj(n);
 		}
 		String typ = blok.getType().toString().toLowerCase();
 		for (String _typ : Arrays.asList("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "crimson", "warped")) {
-			String kolor = "§6";
+			String kolor = "Â§6";
 			if (typ.startsWith(_typ))
-				kolor = "§e";
+				kolor = "Â§e";
 			Napis n = new Napis(kolor + "[" + _typ + "] ", Action.RUN_COMMAND, "/edytujtabliczke typ " + _typ);
 			msg.dodaj(n);
 		}
 		msg.dodaj("\n");
-		msg.wyœwietl(p);
+		msg.wyÅ›wietl(p);
 	}
 	private static String dajLinie(String linia) {
 		if (linia == null || linia.equals(""))
-			return "§6brak lini";
+			return "Â§6brak lini";
 		return linia;
 	}
 	
 	@EventHandler
-	public void klikniêcieBloku(PlayerInteractEvent ev) {
+	public void klikniÄ™cieBloku(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
 		if (!p.hasPermission("mimiRPG.edytujtabliczke") || !p.isSneaking()) return;
 		
@@ -74,12 +74,12 @@ public class EdytorTabliczek extends Komenda implements Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Gracz w œwiecie, Konsole we wszechœwiecie, jesteœ zbyt potê¿ny SORY");
+			return Main.powiadom(sender, prefix + "Gracz w Å›wiecie, Konsole we wszechÅ›wiecie, jesteÅ› zbyt potÄ™Å¼ny SORY");
 		Player p = (Player) sender;
-		if (!mapa.containsKey(p.getName())) return Main.powiadom(p, prefix + "Nie wybra³eœ ¿adnej tabliczki");
+		if (!mapa.containsKey(p.getName())) return Main.powiadom(p, prefix + "Nie wybraÅ‚eÅ› Å¼adnej tabliczki");
 		if (args.length < 1) return Main.powiadom(p, prefix + "Nie podano numeru lini");
 		if (args[0].equals("typ"))
-			if (args.length < 2) return Main.powiadom(p, prefix + "Nieprawid³owy typ tabliczki");
+			if (args.length < 2) return Main.powiadom(p, prefix + "NieprawidÅ‚owy typ tabliczki");
 			else {
 				String typ = args[1];
 				Sign blok = mapa.get(p.getName());

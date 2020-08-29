@@ -14,33 +14,33 @@ import me.jomi.mimiRPG.Func;
 
 public class WeryfikacjaPelnoletnosci implements Listener{
 	
-	private static Inventory inv = Bukkit.createInventory(null, 27, "§4Wstêp tylko dla §ldoros³ych!");
-	private static String prefix = "§2[§a18+§2] §6";
+	private static Inventory inv = Bukkit.createInventory(null, 27, "Â§4WstÄ™p tylko dla Â§ldorosÅ‚ych!");
+	private static String prefix = "Â§2[Â§a18+Â§2] Â§6";
 	
 	public WeryfikacjaPelnoletnosci() {
-		ItemStack item = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&9Czy masz ukoñczone 18 lat?", null);
+		ItemStack item = Func.stwÃ³rzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&9Czy masz ukoÅ„czone 18 lat?", null);
 		for (int i=0; i<27; i++)
 			inv.setItem(i, item);
-		inv.setItem(11, Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, 1, "&a&lTAK", null));
-		inv.setItem(15, Func.stwórzItem(Material.RED_STAINED_GLASS_PANE,  1, "&c&lNIE", null));
+		inv.setItem(11, Func.stwÃ³rzItem(Material.LIME_STAINED_GLASS_PANE, 1, "&a&lTAK", null));
+		inv.setItem(15, Func.stwÃ³rzItem(Material.RED_STAINED_GLASS_PANE,  1, "&c&lNIE", null));
 	}
 	
 	@EventHandler
 	public void wybor(InventoryClickEvent ev) {
-		if (ev.getView().getTitle().equals("§4Wstêp tylko dla §ldoros³ych!")) {
+		if (ev.getView().getTitle().equals("Â§4WstÄ™p tylko dla Â§ldorosÅ‚ych!")) {
 			ev.setCancelled(true);
 			ItemStack item = ev.getCurrentItem();
 			if (item == null) return;
 			Player p = (Player) ev.getWhoClicked();
 			switch(item.getItemMeta().getDisplayName()) {
-			case "§a§lTAK":
+			case "Â§aÂ§lTAK":
 				p.closeInventory();
-				p.sendMessage(prefix + "Przyznano dostêp");
+				p.sendMessage(prefix + "Przyznano dostÄ™p");
 				p.chat("/warp burdeltp");
 				return;
-			case "§c§lNIE":
+			case "Â§cÂ§lNIE":
 				p.closeInventory();
-				p.sendMessage(prefix + "¯¹danie odrzucone");
+				p.sendMessage(prefix + "Å»Ä…danie odrzucone");
 				return;
 			}
 		}

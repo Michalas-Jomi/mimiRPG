@@ -29,24 +29,24 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 
 public class PaintBall extends MiniGra{
-	private ItemStack œnie¿ka = Func.stwórzItem(Material.SNOWBALL, 8, "&1Pocisk", null);
-	private ItemStack Dczerwona  = Func.stwórzItem(Material.RED_WOOL,  1, "&cWybierz dru¿ynê czerwon¹",  null);
-	private ItemStack Dniebieska = Func.stwórzItem(Material.BLUE_WOOL, 1, "&9Wybierz dru¿ynê niebieska", null);
-	private ItemStack DWczerwona  = Func.stwórzItem(Material.RED_WOOL,  1, "&cWybra³eœ dru¿ynê czerwon¹",  null);
-	private ItemStack DWniebieska = Func.stwórzItem(Material.BLUE_WOOL, 1, "&9Wybra³eœ dru¿ynê niebiesk¹", null);
-	private ItemStack Kask = Func.dajG³ówkê("&bKask Paintballowca", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjkzN2VhZGM1M2MzOWI5Njg4Y2MzOTY1NWQxYjc4ZmQ2MTJjMWNkNjI1YzJhODk2MzhjNWUyNzIxNmM2ZTRkIn19fQ==", null);
-	private ItemStack Tczerwona  = kolorowaZbroja(Material.LEATHER_CHESTPLATE, "§bPaintballowa Tunika", 255, 0, 0);
-	private ItemStack Tniebieska = kolorowaZbroja(Material.LEATHER_CHESTPLATE, "§bPaintballowa Tunika", 0, 0, 255);
-	private ItemStack Sczerwone  = kolorowaZbroja(Material.LEATHER_LEGGINGS,   "§bPaintballowe Spodnie",255, 0, 0);
-	private ItemStack Sniebieskie= kolorowaZbroja(Material.LEATHER_LEGGINGS,   "§bPaintballowe Spodnie",0, 0, 255);
-	private ItemStack Bczerwone  = kolorowaZbroja(Material.LEATHER_BOOTS, 	   "§bPaintballowe Buty", 	255, 0, 0);
-	private ItemStack Bniebieskie= kolorowaZbroja(Material.LEATHER_BOOTS, 	   "§bPaintballowe Buty", 	0, 0, 255);
+	private ItemStack Å›nieÅ¼ka = Func.stwÃ³rzItem(Material.SNOWBALL, 8, "&1Pocisk", null);
+	private ItemStack Dczerwona  = Func.stwÃ³rzItem(Material.RED_WOOL,  1, "&cWybierz druÅ¼ynÄ™ czerwonÄ…",  null);
+	private ItemStack Dniebieska = Func.stwÃ³rzItem(Material.BLUE_WOOL, 1, "&9Wybierz druÅ¼ynÄ™ niebieska", null);
+	private ItemStack DWczerwona  = Func.stwÃ³rzItem(Material.RED_WOOL,  1, "&cWybraÅ‚eÅ› druÅ¼ynÄ™ czerwonÄ…",  null);
+	private ItemStack DWniebieska = Func.stwÃ³rzItem(Material.BLUE_WOOL, 1, "&9WybraÅ‚eÅ› druÅ¼ynÄ™ niebieskÄ…", null);
+	private ItemStack Kask = Func.dajGÅ‚Ã³wkÄ™("&bKask Paintballowca", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjkzN2VhZGM1M2MzOWI5Njg4Y2MzOTY1NWQxYjc4ZmQ2MTJjMWNkNjI1YzJhODk2MzhjNWUyNzIxNmM2ZTRkIn19fQ==", null);
+	private ItemStack Tczerwona  = kolorowaZbroja(Material.LEATHER_CHESTPLATE, "Â§bPaintballowa Tunika", 255, 0, 0);
+	private ItemStack Tniebieska = kolorowaZbroja(Material.LEATHER_CHESTPLATE, "Â§bPaintballowa Tunika", 0, 0, 255);
+	private ItemStack Sczerwone  = kolorowaZbroja(Material.LEATHER_LEGGINGS,   "Â§bPaintballowe Spodnie",255, 0, 0);
+	private ItemStack Sniebieskie= kolorowaZbroja(Material.LEATHER_LEGGINGS,   "Â§bPaintballowe Spodnie",0, 0, 255);
+	private ItemStack Bczerwone  = kolorowaZbroja(Material.LEATHER_BOOTS, 	   "Â§bPaintballowe Buty", 	255, 0, 0);
+	private ItemStack Bniebieskie= kolorowaZbroja(Material.LEATHER_BOOTS, 	   "Â§bPaintballowe Buty", 	0, 0, 255);
 	private List<Player> czerwoni  = Lists.newArrayList();
 	private List<Player> niebiescy = Lists.newArrayList();
 	private List<Location> Sczerwoni;
 	private List<Location> Sniebiescy;	
-	private boolean koñczenie;
-	private int pktKoñczenie = 20;
+	private boolean koÅ„czenie;
+	private int pktKoÅ„czenie = 20;
 	private int Cpkt;
 	private int Npkt;
 	private Arena arena;
@@ -72,18 +72,18 @@ public class PaintBall extends MiniGra{
 		return item;
 	}
 	
-	protected void zwyciêstwo(Arena arena) {}
+	protected void zwyciÄ™stwo(Arena arena) {}
 	
 	public boolean dolacz(Player p) {
 		if (arena.gracze.contains(p) && !(niebiescy.contains(p) || czerwoni.contains(p))) {
-			p.sendMessage(prefix + "Najpierw wybierz swoj¹ dru¿ynê zanim zag³osujesz");
+			p.sendMessage(prefix + "Najpierw wybierz swojÄ… druÅ¼ynÄ™ zanim zagÅ‚osujesz");
 			return true;
 		}
 		if (super.dolacz(p)) return true;
-		dajWybór(p);
+		dajWybÃ³r(p);
 		return false;
 	}
-	private void dajWybór(Player p) {
+	private void dajWybÃ³r(Player p) {
 		Inventory inv = p.getInventory();
 		inv.setItem(1, Dczerwona);
 		inv.setItem(2, Dniebieska);
@@ -91,8 +91,8 @@ public class PaintBall extends MiniGra{
 		else if (niebiescy.contains(p)) inv.setItem(2, DWniebieska);
 	}
 	
-	public void opuœæ(Player p, boolean komunikat) {
-		super.opuœæ(p, komunikat);
+	public void opuÅ›Ä‡(Player p, boolean komunikat) {
+		super.opuÅ›Ä‡(p, komunikat);
 		niebiescy.remove(p);
 		czerwoni.remove(p);
 		koniec();
@@ -101,15 +101,15 @@ public class PaintBall extends MiniGra{
 	protected void start(Arena arena) {
 		if (!(niebiescy.size() + czerwoni.size() == arena.gracze.size())) return;
 		if (niebiescy.size() == 0 || czerwoni.size() == 0) {
-			powiadom("Aby rozpocz¹æ rozgrywkê w ka¿dej dru¿ynie musi byæ przynajmniej 1 gracz", arena.gracze);
+			powiadom("Aby rozpoczÄ…Ä‡ rozgrywkÄ™ w kaÅ¼dej druÅ¼ynie musi byÄ‡ przynajmniej 1 gracz", arena.gracze);
 			return;
 		}
 		Cpkt = 0;
 		Npkt = 0;
 		super.start(arena);
-		koñczenie = false;
+		koÅ„czenie = false;
 		for (Player p : arena.gracze) {
-			dajŒnie¿ke(p);
+			dajÅšnieÅ¼ke(p);
 			zresp(p);
 		}
 		PlayerInventory inv;
@@ -127,47 +127,47 @@ public class PaintBall extends MiniGra{
 			inv.setLeggings(Sniebieskie);
 			inv.setBoots(Bniebieskie);
 		}
-		pktKoñczenie = niebiescy.size() + czerwoni.size();
-		pktKoñczenie *= 5;
+		pktKoÅ„czenie = niebiescy.size() + czerwoni.size();
+		pktKoÅ„czenie *= 5;
 	}
 	
 	protected void koniec() {
-		if (!arena.grane || koñczenie) return;
+		if (!arena.grane || koÅ„czenie) return;
 		String wygrana = "";
-		if (Cpkt >= pktKoñczenie || niebiescy.size() == 0) 
-			wygrana = "§cCzerwonych§6";
-		else if (Npkt >= pktKoñczenie || czerwoni.size() == 0)
-			wygrana = "§9Niebieskich§6";
+		if (Cpkt >= pktKoÅ„czenie || niebiescy.size() == 0) 
+			wygrana = "Â§cCzerwonychÂ§6";
+		else if (Npkt >= pktKoÅ„czenie || czerwoni.size() == 0)
+			wygrana = "Â§9NiebieskichÂ§6";
 		if (wygrana.equals("")) return;
-		koñczenie = true;
-		Bukkit.broadcastMessage(prefix + "Wygra³a dru¿yna " + wygrana + "!");
+		koÅ„czenie = true;
+		Bukkit.broadcastMessage(prefix + "WygraÅ‚a druÅ¼yna " + wygrana + "!");
 		String w = "";
 		for (Player p : czerwoni)
-			w += "§c" + p.getName() + "§f, ";
+			w += "Â§c" + p.getName() + "Â§f, ";
 		for (Player p : niebiescy)
-			w += "§9" + p.getName() + "§f, ";
-		Bukkit.broadcastMessage("§6Gracze: " + w.substring(0, w.length()-4));
+			w += "Â§9" + p.getName() + "Â§f, ";
+		Bukkit.broadcastMessage("Â§6Gracze: " + w.substring(0, w.length()-4));
 		while (arena.gracze.size() > 0) {
 			arena.gracze.get(0).playSound(arena.gracze.get(0).getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, .3f, 1);
-			opuœæ(arena.gracze.get(0), false);
+			opuÅ›Ä‡(arena.gracze.get(0), false);
 		}
 		arena.grane = false;
 	}
 	protected void zbij(Player p, Player strzelec) {
 		if ((czerwoni.contains(p) && czerwoni.contains(strzelec)) || (niebiescy.contains(p) && niebiescy.contains(strzelec))) return;
-		String kolor  = "§9";
-		String kolor2 = "§c";
+		String kolor  = "Â§9";
+		String kolor2 = "Â§c";
 		int pkt = Cpkt+1;
 		if (czerwoni.contains(p)) {
 			Npkt += 1;
 			pkt = Npkt;
-			kolor  = "§c";
-			kolor2 = "§9";
+			kolor  = "Â§c";
+			kolor2 = "Â§9";
 		}
 		else
 			Cpkt += 1;
 		p.getWorld().spawnParticle(Particle.SPIT, p.getLocation().add(new Vector(0, 1.5, 0)), 20, .4, .6, .4, .1);
-		powiadom(kolor2 + strzelec.getName() + "§6 zestrzeli³ gracza " + kolor + p.getName() + "§6! (" + kolor2 + pkt + "§6/" + kolor2 + pktKoñczenie + "§6)", arena.gracze);
+		powiadom(kolor2 + strzelec.getName() + "Â§6 zestrzeliÅ‚ gracza " + kolor + p.getName() + "Â§6! (" + kolor2 + pkt + "Â§6/" + kolor2 + pktKoÅ„czenie + "Â§6)", arena.gracze);
 		koniec();
 		zresp(p);
 		p.playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 0.4f, 1);
@@ -180,32 +180,32 @@ public class PaintBall extends MiniGra{
 		else
 			p.teleport(Sniebiescy.get(Func.losuj(0, Sniebiescy.size()-1)));
 	}
-	protected void wybierzDru¿yne(Player p, List<Player> dru¿yna) {
-		if ((czerwoni.contains(p) && dru¿yna.equals(czerwoni)) || (niebiescy.contains(p) && dru¿yna.equals(niebiescy))) {
-			p.sendMessage(prefix + "Nale¿ysz ju¿ do tej dru¿yny");
+	protected void wybierzDruÅ¼yne(Player p, List<Player> druÅ¼yna) {
+		if ((czerwoni.contains(p) && druÅ¼yna.equals(czerwoni)) || (niebiescy.contains(p) && druÅ¼yna.equals(niebiescy))) {
+			p.sendMessage(prefix + "NaleÅ¼ysz juÅ¼ do tej druÅ¼yny");
 			return;
 		}
 		czerwoni.remove(p);
 		niebiescy.remove(p);
-		dru¿yna.add(p);
-		String d = "§cCzerwonej";
+		druÅ¼yna.add(p);
+		String d = "Â§cCzerwonej";
 		ItemStack tunika = Tczerwona;
-		if (dru¿yna.equals(niebiescy)) {
-			d = "§9Niebieskiej";
+		if (druÅ¼yna.equals(niebiescy)) {
+			d = "Â§9Niebieskiej";
 			tunika = Tniebieska;
 		}
 		p.getInventory().setChestplate(tunika);
 		p.playSound(p.getLocation(), Sound.BLOCK_TRIPWIRE_CLICK_ON, .4f, 1);
-		powiadom("Gracz §e" + p.getName() + "§6 do³¹czy³ do dru¿yny " + d, arena.gracze);
+		powiadom("Gracz Â§e" + p.getName() + "Â§6 doÅ‚Ä…czyÅ‚ do druÅ¼yny " + d, arena.gracze);
 		for (Player gracz : arena.gracze)
 			if (!gracz.equals(p))
 				gracz.playSound(gracz.getLocation(), Sound.ENTITY_ENDER_EYE_DEATH, .4f, 1);
-		for (boolean b : arena.g³osy)
+		for (boolean b : arena.gÅ‚osy)
 			if (!b) return;
-		arena.policzG³osy(this);
+		arena.policzGÅ‚osy(this);
 	}
-	protected void dajŒnie¿ke(Player p) {
-		p.getInventory().setItem(4, œnie¿ka);
+	protected void dajÅšnieÅ¼ke(Player p) {
+		p.getInventory().setItem(4, Å›nieÅ¼ka);
 	}
 	public void ustawLokacje(Player p, String args[]) {
 		if (args[1].equals("czerwoni")) {
@@ -215,10 +215,10 @@ public class PaintBall extends MiniGra{
 				Sczerwoni.add(p.getLocation());
 			config.ustaw_zapisz(nazwa + ".czerwoni", Sczerwoni);
 			if (Sczerwoni.size() == 0) {
-				p.sendMessage(prefix + "Usuniêto wszystkie lokalizacje respu dru¿yny §cczerwonej");
+				p.sendMessage(prefix + "UsuniÄ™to wszystkie lokalizacje respu druÅ¼yny Â§cczerwonej");
 				return;
 			}
-			p.sendMessage(prefix + "Dodano now¹ lokalizacjê respu dru¿yny §cczerwonej");
+			p.sendMessage(prefix + "Dodano nowÄ… lokalizacjÄ™ respu druÅ¼yny Â§cczerwonej");
 			return;
 		} 
 		else if (args[1].equals("niebiescy")) {
@@ -228,55 +228,55 @@ public class PaintBall extends MiniGra{
 				Sniebiescy.add(p.getLocation());
 			config.ustaw_zapisz(nazwa + ".niebiescy", Sniebiescy);
 			if (Sniebiescy.size() == 0) {
-				p.sendMessage(prefix + "Usuniêto wszystkie lokalizacje respu dru¿yny §9niebieskiej");
+				p.sendMessage(prefix + "UsuniÄ™to wszystkie lokalizacje respu druÅ¼yny Â§9niebieskiej");
 				return;
 			}
-			p.sendMessage(prefix + "Dodano now¹ lokalizacjê respu dru¿yny §9niebieskiej");
+			p.sendMessage(prefix + "Dodano nowÄ… lokalizacjÄ™ respu druÅ¼yny Â§9niebieskiej");
 			return;
 		} 
 		else
 			super.ustawLokacje(p, args);
 	}
 	@SuppressWarnings("unchecked")
-	public void prze³aduj() {
-		super.prze³aduj();
+	public void przeÅ‚aduj() {
+		super.przeÅ‚aduj();
 		
 		Sczerwoni  = (List<Location>) config.wczytaj(nazwa + ".czerwoni");
 		Sniebiescy = (List<Location>) config.wczytaj(nazwa + ".niebiescy");
 		
-		if (Sczerwoni  == null) {powiadomOp(prefix + "§cNie ustawiono jeszcze §4¿adnej§c lokacji respu dla dru¿yny Czerwonej");   Sczerwoni  = Lists.newArrayList();}
-		if (Sniebiescy == null) {powiadomOp(prefix + "§cNie ustawiono jeszcze §4¿adnej§c lokacji respu dla dru¿yny Niebieskiej"); Sniebiescy = Lists.newArrayList();}
+		if (Sczerwoni  == null) {powiadomOp(prefix + "Â§cNie ustawiono jeszcze Â§4Å¼adnejÂ§c lokacji respu dla druÅ¼yny Czerwonej");   Sczerwoni  = Lists.newArrayList();}
+		if (Sniebiescy == null) {powiadomOp(prefix + "Â§cNie ustawiono jeszcze Â§4Å¼adnejÂ§c lokacji respu dla druÅ¼yny Niebieskiej"); Sniebiescy = Lists.newArrayList();}
 	
 		if (!areny.obiekty.isEmpty())
 			arena = areny.obiekty.get(0);
 		else
-			powiadomOp(prefix + "§cNie ustawiono ¿adnej areny");
+			powiadomOp(prefix + "Â§cNie ustawiono Å¼adnej areny");
 	}
 	
 	@EventHandler
-	public void u¿ycie(PlayerInteractEvent ev) {
+	public void uÅ¼ycie(PlayerInteractEvent ev) {
 		if (arena == null) return;
 		Player p = ev.getPlayer();
 		if (!(arena.gracze.contains(p) && ev.getItem() != null)) return;
 		if (ev.getItem().getType().equals(Material.SNOWBALL)) {
 			if (ev.getAction().toString().startsWith("RIGHT"))
-				dajŒnie¿ke(p);
+				dajÅšnieÅ¼ke(p);
 			else
 				ev.setCancelled(true);
 			return;
 		}
-		super.u¿ycie(ev);
+		super.uÅ¼ycie(ev);
 		if (!arena.grane) {
 			switch (ev.getItem().getType()) {
 			case RED_WOOL:
-				wybierzDru¿yne(p, czerwoni);
+				wybierzDruÅ¼yne(p, czerwoni);
 				ev.setCancelled(true);
-				dajWybór(p);
+				dajWybÃ³r(p);
 				return;
 			case BLUE_WOOL:
-				wybierzDru¿yne(p, niebiescy);
+				wybierzDruÅ¼yne(p, niebiescy);
 				ev.setCancelled(true);
-				dajWybór(p);
+				dajWybÃ³r(p);
 				return;
 			default:
 				break;
@@ -296,10 +296,10 @@ public class PaintBall extends MiniGra{
 	public void komendy(PlayerCommandPreprocessEvent ev) {
 		if (arena == null) return;
 		if (arena.gracze.contains(ev.getPlayer())) {
-			String[] s³owa = ev.getMessage().split(" ");
-			if (s³owa[0].equalsIgnoreCase("/tc")) {
-				if (czerwoni.contains(ev.getPlayer())) 	powiadom("§b" + ev.getPlayer().getName() + "§7: §r" + Func.listToString(s³owa, 1), czerwoni);
-				else 									powiadom("§b" + ev.getPlayer().getName() + "§7: §r" + Func.listToString(s³owa, 1), niebiescy);
+			String[] sÅ‚owa = ev.getMessage().split(" ");
+			if (sÅ‚owa[0].equalsIgnoreCase("/tc")) {
+				if (czerwoni.contains(ev.getPlayer())) 	powiadom("Â§b" + ev.getPlayer().getName() + "Â§7: Â§r" + Func.listToString(sÅ‚owa, 1), czerwoni);
+				else 									powiadom("Â§b" + ev.getPlayer().getName() + "Â§7: Â§r" + Func.listToString(sÅ‚owa, 1), niebiescy);
 				ev.setCancelled(true);
 				return;
 			}

@@ -37,9 +37,9 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.MenuStronne;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Menu extends Komenda implements Listener, Prze³adowalny {
+public class Menu extends Komenda implements Listener, PrzeÅ‚adowalny {
 	private static JSONObject plik;
 	private static HashMap<String, HashMap<Integer, MenuItem>> mapaItemow = new HashMap<>();
 	private static HashMap<String, MenuStronne> mapaMenuStronnych = new HashMap<>();
@@ -53,7 +53,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 	private static void dajMenu(Player p, String Menu) {
 		if (!mapa.containsKey(Menu))
 			wczytajMenu(Menu);
-		mapa.get(Menu).otwórz(p);
+		mapa.get(Menu).otwÃ³rz(p);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -62,7 +62,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		JSONArray menu = (JSONArray) plik.get(Menu);
 		
 		Iterator<JSONObject> iterator = menu.iterator();
-		int rzêdy 	 = (int) (long) iterator.next().get("rzedy");
+		int rzÄ™dy 	 = (int) (long) iterator.next().get("rzedy");
 		
 		while (iterator.hasNext()) {
 			JSONObject obj = iterator.next();
@@ -95,7 +95,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 			}
 			
 			if (id.equals("PLAYER_HEAD") && obj.containsKey("value")) 
-				item = Func.dajG³ówkê(nazwa, url, lore);
+				item = Func.dajGÅ‚Ã³wkÄ™(nazwa, url, lore);
 			else {
 				ItemMeta meta = item.getItemMeta();
 				if (nazwa != null)
@@ -111,7 +111,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 			itemy.add(menuItem);
 			
 		}
-		mapa.put(Menu, new MenuInv(rzêdy*9, itemy, Menu));
+		mapa.put(Menu, new MenuInv(rzÄ™dy*9, itemy, Menu));
 	}		
 	
 	public static String zamienPierwsze(String wyraz, String co, String naCo) {
@@ -133,31 +133,31 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		p.closeInventory();
 		if (komenda.contains("{gracz}")) {
 			mapaKomend.put(p.getName(), komenda);
-			wybórGracza(p);
+			wybÃ³rGracza(p);
 		} else if (komenda.contains("{liczba}")) {
 			mapaKomend.put(p.getName(), komenda);
-			wybórLiczby(p, "");
+			wybÃ³rLiczby(p, "");
 		}
 		else
 			p.chat(komenda);
 	}
 	
-	ItemStack[] numery = {	Func.dajG³ówkê("&41", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGQyNDU0ZTRjNjdiMzIzZDViZTk1M2I1YjNkNTQxNzRhYTI3MTQ2MDM3NGVlMjg0MTBjNWFlYWUyYzExZjUifX19", null),
-							Func.dajG³ówkê("&42", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjEzYjc3OGM2ZTUxMjgwMjQyMTRmODU5YjRmYWRjNzczOGM3YmUzNjdlZTRiOWI4ZGJhZDc5NTRjZmYzYSJ9fX0=", null),
-							Func.dajG³ówkê("&43", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMDMxZjY2YmUwOTUwNTg4NTk4ZmVlZWE3ZTZjNjc3OTM1NWU1N2NjNmRlOGI5MWE0NDM5MWIyZTlmZDcyIn19fQ==", null),
-							Func.dajG³ówkê("&44", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTViYzQyYzY5ODQ2YzNkYTk1MzFhYzdkYmEyYjU1MzYzZjhmOTQ3MjU3NmUxN2Q0MjNiN2E5YjgxYzkxNTEifX19", null),
-							Func.dajG³ówkê("&45", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGYzZjU2NWE4ODkyOGVlNWE5ZDY4NDNkOTgyZDc4ZWFlNmI0MWQ5MDc3ZjJhMWU1MjZhZjg2N2Q3OGZiIn19fQ==", null),
-							Func.dajG³ówkê("&46", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzVkYTFjYjZjNGMyMzcxMDIyNGI0ZjRlOGQ2ZmZjZjhiNGI1NWY3ZmU4OTFjMTIwNGFmNzQ4NWNmMjUyYTFkOCJ9fX0=", null),
-							Func.dajG³ówkê("&47", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWY0ZTdhNWNmNWI1YTRkMmZmNGZiMDQzM2IxYTY4NzUxYWExMmU5YTAyMWQzOTE4ZTkyZTIxOWE5NTNiIn19fQ==", null),
-							Func.dajG³ówkê("&48", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTY4MzQ0MGM2NDQ3YzE5NWFhZjc2NGUyN2ExMjU5MjE5ZTkxYzZkOGFiNmJkODlhMTFjYThkMmNjNzk5ZmE4In19fQ==", null),
-							Func.dajG³ówkê("&49", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjg5NzdhZGVkZmE2YzgxYTY3ZjgyNWVhMzdjNGQ1YWE5MGRmZTNjMmE3MmRkOTg3OTFmNDUyMWUxZGEzNiJ9fX0=", null),
-							Func.dajG³ówkê("&4Anuluj", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzRkZmQ5NjYzYzNlZTRkMzQxZDk3ZmFhYzVmYTcwZDIxM2VhZmIxNDgxM2FmMjBkNGE0MjUzNDIyNDIxNDJmIn19fQ==", null),
-							Func.dajG³ówkê("&40", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODViZDFlNjEzZmYzMmI1MjNjY2Y5ZTU3NGNjMzExYjc5OGMyYjNhNjgyOGYwZjcxYTI1NGM5OTVlNmRiOGU1In19fQ==", null),
-							Func.dajG³ówkê("&4Zatwierdz", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmY5ZDlkZTYyZWNhZTliNzk4NTU1ZmQyM2U4Y2EzNWUyNjA1MjkxOTM5YzE4NjJmZTc5MDY2Njk4Yzk1MDhhNyJ9fX0=", null)};
-	ItemStack zablokowany = Func.stwórzItem(Material.GRAY_STAINED_GLASS_PANE, 1, "&cPodaj Liczbê", null);
-	private void wybórLiczby(Player p, String liczba) {
-		//Inventory inv = Bukkit.createInventory(p, InventoryType.ANVIL, "Wartoœæ");
-		Inventory inv = Bukkit.createInventory(p, 36, "§2§l§oLiczba:§4§l " + liczba);
+	ItemStack[] numery = {	Func.dajGÅ‚Ã³wkÄ™("&41", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGQyNDU0ZTRjNjdiMzIzZDViZTk1M2I1YjNkNTQxNzRhYTI3MTQ2MDM3NGVlMjg0MTBjNWFlYWUyYzExZjUifX19", null),
+							Func.dajGÅ‚Ã³wkÄ™("&42", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjEzYjc3OGM2ZTUxMjgwMjQyMTRmODU5YjRmYWRjNzczOGM3YmUzNjdlZTRiOWI4ZGJhZDc5NTRjZmYzYSJ9fX0=", null),
+							Func.dajGÅ‚Ã³wkÄ™("&43", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMDMxZjY2YmUwOTUwNTg4NTk4ZmVlZWE3ZTZjNjc3OTM1NWU1N2NjNmRlOGI5MWE0NDM5MWIyZTlmZDcyIn19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&44", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTViYzQyYzY5ODQ2YzNkYTk1MzFhYzdkYmEyYjU1MzYzZjhmOTQ3MjU3NmUxN2Q0MjNiN2E5YjgxYzkxNTEifX19", null),
+							Func.dajGÅ‚Ã³wkÄ™("&45", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGYzZjU2NWE4ODkyOGVlNWE5ZDY4NDNkOTgyZDc4ZWFlNmI0MWQ5MDc3ZjJhMWU1MjZhZjg2N2Q3OGZiIn19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&46", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzVkYTFjYjZjNGMyMzcxMDIyNGI0ZjRlOGQ2ZmZjZjhiNGI1NWY3ZmU4OTFjMTIwNGFmNzQ4NWNmMjUyYTFkOCJ9fX0=", null),
+							Func.dajGÅ‚Ã³wkÄ™("&47", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWY0ZTdhNWNmNWI1YTRkMmZmNGZiMDQzM2IxYTY4NzUxYWExMmU5YTAyMWQzOTE4ZTkyZTIxOWE5NTNiIn19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&48", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTY4MzQ0MGM2NDQ3YzE5NWFhZjc2NGUyN2ExMjU5MjE5ZTkxYzZkOGFiNmJkODlhMTFjYThkMmNjNzk5ZmE4In19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&49", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjg5NzdhZGVkZmE2YzgxYTY3ZjgyNWVhMzdjNGQ1YWE5MGRmZTNjMmE3MmRkOTg3OTFmNDUyMWUxZGEzNiJ9fX0=", null),
+							Func.dajGÅ‚Ã³wkÄ™("&4Anuluj", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzRkZmQ5NjYzYzNlZTRkMzQxZDk3ZmFhYzVmYTcwZDIxM2VhZmIxNDgxM2FmMjBkNGE0MjUzNDIyNDIxNDJmIn19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&40", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODViZDFlNjEzZmYzMmI1MjNjY2Y5ZTU3NGNjMzExYjc5OGMyYjNhNjgyOGYwZjcxYTI1NGM5OTVlNmRiOGU1In19fQ==", null),
+							Func.dajGÅ‚Ã³wkÄ™("&4Zatwierdz", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmY5ZDlkZTYyZWNhZTliNzk4NTU1ZmQyM2U4Y2EzNWUyNjA1MjkxOTM5YzE4NjJmZTc5MDY2Njk4Yzk1MDhhNyJ9fX0=", null)};
+	ItemStack zablokowany = Func.stwÃ³rzItem(Material.GRAY_STAINED_GLASS_PANE, 1, "&cPodaj LiczbÄ™", null);
+	private void wybÃ³rLiczby(Player p, String liczba) {
+		//Inventory inv = Bukkit.createInventory(p, InventoryType.ANVIL, "WartoÅ›Ä‡");
+		Inventory inv = Bukkit.createInventory(p, 36, "Â§2Â§lÂ§oLiczba:Â§4Â§l " + liczba);
 		int nr = 0;
 		for (int y=0; y<36; y+=9)
 			for (int x=3; x<6; x++)
@@ -169,8 +169,8 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		p.openInventory(inv);
 	}
 	@SuppressWarnings("deprecation")
-	private void wybórGracza(Player p) {
-		MenuStronne menu = new MenuStronne(4, "§e§lWybierz Gracza");
+	private void wybÃ³rGracza(Player p) {
+		MenuStronne menu = new MenuStronne(4, "Â§eÂ§lWybierz Gracza");
 		SkullMeta Cmeta;
 		ItemStack item;
 		for (Player gracz : Bukkit.getOnlinePlayers()) {
@@ -182,13 +182,13 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 			item.setItemMeta(Cmeta);
 			menu.itemy.add(item);
 		}
-		menu.odœwie¿();
+		menu.odÅ›wieÅ¼();
 		mapaMenuStronnych.put(p.getName(), menu);
 		p.openInventory(menu.inv);
 	}
 
 	boolean poprawne = false;
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		JSONParser parser = new JSONParser();
 		mapa.clear();
 		mapaItemow.clear();
@@ -202,7 +202,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		}
 	}
 	public String raport() {
-		return "§6menu.json: " + (poprawne ? "§aPoprawny" : "§cNie poprawny");
+		return "Â§6menu.json: " + (poprawne ? "Â§aPoprawny" : "Â§cNie poprawny");
 	}
 
 	@EventHandler
@@ -210,22 +210,22 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		if (ev.getAction().toString().startsWith("LEFT")) return;
 		ItemStack item = ev.getItem();
 		if (item == null) return;
-		if (item.getItemMeta().getDisplayName().equalsIgnoreCase("§2Menu")) {
+		if (item.getItemMeta().getDisplayName().equalsIgnoreCase("Â§2Menu")) {
 			ev.getPlayer().chat("/menu");
 			ev.setCancelled(true);
 		}
 	}
 	@EventHandler
-	public void klikniêcie(InventoryClickEvent ev) {
+	public void klikniÄ™cie(InventoryClickEvent ev) {
 		int slot = ev.getRawSlot();
 		if (slot >= ev.getInventory().getSize() || slot < 0) return;
 		Player p = (Player) ev.getWhoClicked();
-		String tytu³ = ev.getView().getTitle();
-		String[] tytu³Splited = tytu³.split(" ");
+		String tytuÅ‚ = ev.getView().getTitle();
+		String[] tytuÅ‚Splited = tytuÅ‚.split(" ");
 		Inventory inv = ev.getInventory();
-		if (tytu³Splited[0].equals("Menu")) {
+		if (tytuÅ‚Splited[0].equals("Menu")) {
 			ev.setCancelled(true);
-			String nazwa = tytu³Splited[1];
+			String nazwa = tytuÅ‚Splited[1];
 			if (!mapaItemow.containsKey(nazwa)) return;
 			MenuItem item;
 			if (mapaItemow.get(nazwa).containsKey(slot))
@@ -240,7 +240,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 					wykonaj(p, item.komenda);
 			}
 			
-		} else if (tytu³.equals("§e§lWybierz Gracza")) {
+		} else if (tytuÅ‚.equals("Â§eÂ§lWybierz Gracza")) {
 			ev.setCancelled(true);
 			
 			ItemStack item = inv.getItem(slot);
@@ -251,7 +251,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 					mapaMenuStronnych.get(p.getName()).poprzedniaStrona();
 					return;
 				case 8:
-					mapaMenuStronnych.get(p.getName()).nastêpnaStrona();
+					mapaMenuStronnych.get(p.getName()).nastÄ™pnaStrona();
 					return;
 				}
 				return;				
@@ -262,7 +262,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 				wykonaj(p, zamienPierwsze(komenda, "{gracz}", gracz));
 			}
 			
-		} else if (tytu³Splited[0].equals("§2§l§oLiczba:§4§l")) {
+		} else if (tytuÅ‚Splited[0].equals("Â§2Â§lÂ§oLiczba:Â§4Â§l")) {
 			if (slot < 36) {
 				ev.setCancelled(true);
 				ItemStack item = ev.getCurrentItem();
@@ -270,24 +270,24 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 					String wyraz = item.getItemMeta().getDisplayName().substring(2);
 					switch (wyraz) {
 					case "Anuluj":
-						if (tytu³.split(" ").length == 1)
+						if (tytuÅ‚.split(" ").length == 1)
 							p.closeInventory();
 						else
-							wybórLiczby(p, "");
+							wybÃ³rLiczby(p, "");
 						break;
 					case "Zatwierdz":
-						if (tytu³.split(" ").length == 1) {
-							p.sendMessage("§4Nie podano ¿adnej liczby");
+						if (tytuÅ‚.split(" ").length == 1) {
+							p.sendMessage("Â§4Nie podano Å¼adnej liczby");
 							break;
 						}
 						String komenda = mapaKomend.get(p.getName());
-						wykonaj(p, zamienPierwsze(komenda, "{liczba}", tytu³Splited[1]));
+						wykonaj(p, zamienPierwsze(komenda, "{liczba}", tytuÅ‚Splited[1]));
 						break;
 					default:
-						if (tytu³.split(" ").length == 1)
-							wybórLiczby(p, wyraz);
+						if (tytuÅ‚.split(" ").length == 1)
+							wybÃ³rLiczby(p, wyraz);
 						else
-							wybórLiczby(p, tytu³Splited[1] + wyraz);
+							wybÃ³rLiczby(p, tytuÅ‚Splited[1] + wyraz);
 						break;
 					}
 				}
@@ -296,7 +296,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 	}
 	
 	
-	// Niezale¿na metoda, jest tu bo jest krótka xD
+	// NiezaleÅ¼na metoda, jest tu bo jest krÃ³tka xD
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void blokadaSkrzynekNaZwierzetach(PlayerInteractEntityEvent ev) {
@@ -317,7 +317,7 @@ public class Menu extends Komenda implements Listener, Prze³adowalny {
 		if (sender instanceof Player)
 			dajMenu((Player) sender, "Skyblock");
 		else
-			sender.sendMessage("Tylko gracz mo¿e korzystaæ z menu");
+			sender.sendMessage("Tylko gracz moÅ¼e korzystaÄ‡ z menu");
 		return true;
 	}
 
@@ -337,36 +337,36 @@ class MenuInv {
 		
 		for (int i=0; i<itemy.size(); i++) {
 			ItemMeta meta = itemy.get(i).item.getItemMeta();
-			if (meta.hasDisplayName() && sprawdzZawartoœæ(meta.getDisplayName())) {
+			if (meta.hasDisplayName() && sprawdzZawartoÅ›Ä‡(meta.getDisplayName())) {
 				specjalne.add(i);
 				continue;
 			}
 			if (meta.hasLore()) 
 				for (String linia : meta.getLore())
-					if (sprawdzZawartoœæ(linia)) {
+					if (sprawdzZawartoÅ›Ä‡(linia)) {
 						specjalne.add(i);
 						continue;
 					}
 		}
 	}
 	
-	public void otwórz(Player p) {
+	public void otwÃ³rz(Player p) {
 		Inventory inv = Bukkit.createInventory(null, wielkosc, "Menu " + menu);
 		for (int i=1; i<itemy.size(); i++)
-			umieœæItem(p, inv, i);
+			umieÅ›Ä‡Item(p, inv, i);
 		for (int i=0; i<wielkosc; i++)
 			if (inv.getItem(i) == null)
-				umieœæItem(p, inv, 0, i);
+				umieÅ›Ä‡Item(p, inv, 0, i);
 		p.openInventory(inv);
 	}
-	private void umieœæItem(Player p, Inventory inv, int i) {
-		umieœæItem(p, inv, i, itemy.get(i).slot);
+	private void umieÅ›Ä‡Item(Player p, Inventory inv, int i) {
+		umieÅ›Ä‡Item(p, inv, i, itemy.get(i).slot);
 	}
-	private void umieœæItem(Player p, Inventory inv, int i, int slot) {
+	private void umieÅ›Ä‡Item(Player p, Inventory inv, int i, int slot) {
 		if (!sprawdzPermisje(p, itemy.get(i))) return;
 		ItemStack item = itemy.get(i).item;
 		if (specjalne.contains(i))
-			item = podmieñCa³oœæ(p, item);
+			item = podmieÅ„CaÅ‚oÅ›Ä‡(p, item);
 		inv.setItem(slot, item);
 	}
 
@@ -375,31 +375,31 @@ class MenuInv {
 		return p.hasPermission(item.permisja);
 	}
 	
-	private ItemStack podmieñCa³oœæ(Player p, ItemStack item) {
+	private ItemStack podmieÅ„CaÅ‚oÅ›Ä‡(Player p, ItemStack item) {
 		ItemStack w = item.clone();
 		ItemMeta meta = w.getItemMeta();
 		if (meta.hasDisplayName())
-			meta.setDisplayName(podmieñLinie(p, meta.getDisplayName()));
+			meta.setDisplayName(podmieÅ„Linie(p, meta.getDisplayName()));
 		if (meta.hasLore()) {
 			List<String> lore = meta.getLore();
 			for (int i=0; i<lore.size(); i++) 
-				lore.set(i, podmieñLinie(p, lore.get(i)));
+				lore.set(i, podmieÅ„Linie(p, lore.get(i)));
 			meta.setLore(lore);
 		}
 		w.setItemMeta(meta);
 		return w;
 	}
-	private boolean sprawdzZawartoœæ(String text) {
+	private boolean sprawdzZawartoÅ›Ä‡(String text) {
 		if (Main.ekonomia && text.contains("{kasa}"))
 			return true;
 		if (text.contains("{exp}") || text.contains("{nick}"))
 			return true;
 		return false;
 	}
-	private String podmieñLinie(Player p, String text) {
+	private String podmieÅ„Linie(Player p, String text) {
 		String w = text;
 		if (w.contains("{exp}"))
-			w = w.replace("{exp}", Func.IntToString(Poziom.policzCa³yExp(p)));
+			w = w.replace("{exp}", Func.IntToString(Poziom.policzCaÅ‚yExp(p)));
 		if (w.contains("{nick}"))
 			w = w.replace("{nick}", p.getName());
 		if (Main.ekonomia)

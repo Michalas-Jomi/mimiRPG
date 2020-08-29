@@ -18,16 +18,16 @@ public abstract class Komenda implements TabExecutor {
 	public Komenda(String komenda) {
 		ustawKomende(komenda, null, null);
 	}
-	public Komenda(String komenda, String uøycie) {
-		ustawKomende(komenda, uøycie, null);
+	public Komenda(String komenda, String u≈ºycie) {
+		ustawKomende(komenda, u≈ºycie, null);
 	}
-	public Komenda(String komenda, String uøycie, String... aliasy) {
-		ustawKomende(komenda, uøycie, Lists.newArrayList(aliasy));
+	public Komenda(String komenda, String u≈ºycie, String... aliasy) {
+		ustawKomende(komenda, u≈ºycie, Lists.newArrayList(aliasy));
 	}
 	
-	protected void ustawKomende(String komenda, String uøycie, List<String> aliasy) {
-		if (uøycie == null)
-			uøycie = "/" + komenda;
+	protected void ustawKomende(String komenda, String u≈ºycie, List<String> aliasy) {
+		if (u≈ºycie == null)
+			u≈ºycie = "/" + komenda;
 		try {
 	    	Field fCommandMap = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 	        fCommandMap.setAccessible(true);
@@ -35,18 +35,18 @@ public abstract class Komenda implements TabExecutor {
 	        Object commandMapObject = fCommandMap.get(Bukkit.getPluginManager());
 	        if (commandMapObject instanceof CommandMap) {
 	            CommandMap commandMap = (CommandMap) commandMapObject;
-	    		commandMap.register(Main.plugin.getName(), komenda(komenda, uøycie, aliasy));
+	    		commandMap.register(Main.plugin.getName(), komenda(komenda, u≈ºycie, aliasy));
 	        }
 	    } catch (NoSuchFieldException | IllegalAccessException e) {
-	    	Main.log("ßcNie uda≥o sie StworzyÊ komendy " + komenda);
+	    	Main.log("¬ßcNie uda≈Ço sie Stworzyƒá komendy " + komenda);
 	    	return;
 	    }
 		PluginCommand cmd = Main.plugin.getCommand(komenda);
 		cmd.setTabCompleter(this);
 		cmd.setExecutor(this);
-		cmd.setUsage(uøycie);
+		cmd.setUsage(u≈ºycie);
 	}
-	private PluginCommand komenda(String nazwa, String uøycie, List<String> aliasy) {
+	private PluginCommand komenda(String nazwa, String u≈ºycie, List<String> aliasy) {
 		try {
 			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			c.setAccessible(true);
@@ -55,9 +55,9 @@ public abstract class Komenda implements TabExecutor {
 			try { 
 				prefix = (String) this.getClass().getDeclaredField("prefix").get(null);
 			} catch (NoSuchFieldException e) {}
-			komenda.setPermissionMessage(prefix + "ßcNie masz uprawnieÒ ziomuú");
+			komenda.setPermissionMessage(prefix + "¬ßcNie masz uprawnie≈Ñ ziomu≈õ");
 			komenda.setPermission((Main.plugin.getName() + "." + nazwa).toLowerCase());
-			komenda.setUsage(uøycie);
+			komenda.setUsage(u≈ºycie);
 			if (aliasy != null)
 				komenda.setAliases(aliasy);
 			return komenda;
@@ -73,15 +73,15 @@ public abstract class Komenda implements TabExecutor {
 	public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 
 	protected List<String> utab(String[] wpisane, String... Podpowiedzi) {
-		return uzupe≥nijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
+		return uzupe≈ÇnijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
 	}
 	protected List<String> utab(String[] wpisane, Iterable<String> Podpowiedzi) {
-		return uzupe≥nijTabComplete(wpisane, Podpowiedzi);
+		return uzupe≈ÇnijTabComplete(wpisane, Podpowiedzi);
 	}
-	protected List<String> uzupe≥nijTabComplete(String[] wpisane, Iterable<String> Podpowiedzi) {
-		return uzupe≥nijTabComplete(Func.ostatni(wpisane), Podpowiedzi);
+	protected List<String> uzupe≈ÇnijTabComplete(String[] wpisane, Iterable<String> Podpowiedzi) {
+		return uzupe≈ÇnijTabComplete(Func.ostatni(wpisane), Podpowiedzi);
 	}
-	protected List<String> uzupe≥nijTabComplete(String wpisane, Iterable<String> Podpowiedzi) {
+	protected List<String> uzupe≈ÇnijTabComplete(String wpisane, Iterable<String> Podpowiedzi) {
     	List<String> lista = Lists.newArrayList();
     	wpisane = wpisane.toLowerCase();
 		for (String podpowiedz : Podpowiedzi)

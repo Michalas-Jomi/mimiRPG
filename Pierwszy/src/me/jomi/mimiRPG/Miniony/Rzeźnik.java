@@ -24,25 +24,25 @@ import net.minecraft.server.v1_16_R1.EntitySheep;
 import net.minecraft.server.v1_16_R1.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.v1_16_R1.PathfinderGoalNearestAttackableTarget;
 
-public class RzeŸnik extends Minion{
+public class RzeÅºnik extends Minion{
 
-	private static ItemStack he³m 	 = Func.dajG³ówkê("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIyMDA3OTgzMjY4NGE2NmJiMmRjY2I3Yzg5ZjNlMTQ5NzFmNjk0YWY0YTE3NzQ1YTBlZmZkOWI5ZGZiZDUwNCJ9fX0=");
-	private static ItemStack klata 	 = Func.stwórzItem(Material.GOLDEN_CHESTPLATE);
-	private static ItemStack spodnie = Func.stwórzItem(Material.LEATHER_LEGGINGS);
-	private static ItemStack buty 	 = Func.stwórzItem(Material.LEATHER_BOOTS);
+	private static ItemStack heÅ‚m 	 = Func.dajGÅ‚Ã³wkÄ™("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzIyMDA3OTgzMjY4NGE2NmJiMmRjY2I3Yzg5ZjNlMTQ5NzFmNjk0YWY0YTE3NzQ1YTBlZmZkOWI5ZGZiZDUwNCJ9fX0=");
+	private static ItemStack klata 	 = Func.stwÃ³rzItem(Material.GOLDEN_CHESTPLATE);
+	private static ItemStack spodnie = Func.stwÃ³rzItem(Material.LEATHER_LEGGINGS);
+	private static ItemStack buty 	 = Func.stwÃ³rzItem(Material.LEATHER_BOOTS);
 
 	private boolean atakuje = false;	
 	
-	public RzeŸnik(Config config) {
+	public RzeÅºnik(Config config) {
 		super(config);
 	}
 	protected void init(Config config) {
 		staty.add(new Statystyka(config, "dmg"));
 	}
-	public RzeŸnik(Location loc, String stworzyciel) {
-		super(loc, stworzyciel, "§cRzeŸnik");
+	public RzeÅºnik(Location loc, String stworzyciel) {
+		super(loc, stworzyciel, "Â§cRzeÅºnik");
 	}
-	public RzeŸnik(Player p, ItemStack item) {
+	public RzeÅºnik(Player p, ItemStack item) {
 		super(p, item);
 		staty.add(new Statystyka(item.getItemMeta().getLore().get(10)));
 	}
@@ -68,19 +68,19 @@ public class RzeŸnik extends Minion{
 	public void zamknij(Player p, Inventory inv, boolean menu) {
 		super.zamknij(p, inv, menu);
 		if (mimiTick(false))
-			w³¹czAtakZwierz¹t();
+			wÅ‚Ä…czAtakZwierzÄ…t();
 	}
-	public void otwórz(Player p) {
-		super.otwórz(p);
-		wy³¹czAtakZwierz¹t();
+	public void otwÃ³rz(Player p) {
+		super.otwÃ³rz(p);
+		wyÅ‚Ä…czAtakZwierzÄ…t();
 	}
-	private void wy³¹czAtakZwierz¹t() {
+	private void wyÅ‚Ä…czAtakZwierzÄ…t() {
 		if (!atakuje) return;
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(-20);
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
 		atakuje = false;
 	}
-	private void w³¹czAtakZwierz¹t() {
+	private void wÅ‚Ä…czAtakZwierzÄ…t() {
 		if (atakuje) return;
 		ustawDmg();
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.23);
@@ -88,36 +88,36 @@ public class RzeŸnik extends Minion{
 	}
 	
 	protected void ubierz() {
-		ubierz(he³m, klata, spodnie, buty);
+		ubierz(heÅ‚m, klata, spodnie, buty);
 	}
 	protected void mimiTick() {
 		if (mimiTick(true)) {
-			podnieœItemy(1.5, 1, 1.5);
-			w³¹czAtakZwierz¹t();
+			podnieÅ›Itemy(1.5, 1, 1.5);
+			wÅ‚Ä…czAtakZwierzÄ…t();
 		} else 
-			wy³¹czAtakZwierz¹t();
+			wyÅ‚Ä…czAtakZwierzÄ…t();
 	}
 
 	protected void ustawDmg() {
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(staty.get(3).akt);
 	}
 	
-	protected void ulepszeniaOdœwie¿(Inventory inv){
-		super.ulepszeniaOdœwie¿(inv);
-		ustawItem(inv, 15, Material.IRON_SWORD, "&2Atak", Arrays.asList("&3Aktualny dmg: &e"   + staty.get(3).str(), "&3Nastêpny poziom: &e" + staty.get(3).str2(), staty.get(3).strCena()));
+	protected void ulepszeniaOdÅ›wieÅ¼(Inventory inv){
+		super.ulepszeniaOdÅ›wieÅ¼(inv);
+		ustawItem(inv, 15, Material.IRON_SWORD, "&2Atak", Arrays.asList("&3Aktualny dmg: &e"   + staty.get(3).str(), "&3NastÄ™pny poziom: &e" + staty.get(3).str2(), staty.get(3).strCena()));
 	}
-	public boolean klikniêcie(Player p, InventoryClickEvent ev) {
+	public boolean klikniÄ™cie(Player p, InventoryClickEvent ev) {
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))
 			return false;
-		if (ev.getView().getTitle().equals("§4§lUlepszenia"))
-			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("§2Atak"))
+		if (ev.getView().getTitle().equals("Â§4Â§lUlepszenia"))
+			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("Â§2Atak"))
 				if (staty.get(3).ulepsz(p)) {
-					ulepszeniaOdœwie¿(ev.getInventory());
+					ulepszeniaOdÅ›wieÅ¼(ev.getInventory());
 					ustawDmg();
 					return true;
 				}
-		return super.klikniêcie(p, ev);
+		return super.klikniÄ™cie(p, ev);
 	}
 
 }

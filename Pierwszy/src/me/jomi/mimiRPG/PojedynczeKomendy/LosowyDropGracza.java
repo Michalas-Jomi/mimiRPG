@@ -21,7 +21,7 @@ import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
 public class LosowyDropGracza extends Komenda implements Listener {
-	public static String prefix = Func.prefix("Drop po œmierci");
+	public static String prefix = Func.prefix("Drop po Å›mierci");
 	public static ItemStack nic = new ItemStack(Material.AIR);
 
 	public LosowyDropGracza() {
@@ -29,23 +29,23 @@ public class LosowyDropGracza extends Komenda implements Listener {
 		ustawKomende("ustawdropwzwyz", null, null);
 	}
 	
-	private static boolean komenda(CommandSender p, String args[], boolean koniecznieWiêksza) {
+	private static boolean komenda(CommandSender p, String args[], boolean koniecznieWiÄ™ksza) {
 		if (args.length == 0)
-			return Main.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: §e" + Gracze.gracz(p.getName()).dropPoŒmierci + "%");
+			return Main.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: Â§e" + Gracze.gracz(p.getName()).dropPoÅšmierci + "%");
 		else {
 			Player p2 = Bukkit.getPlayer(args[0]);
 			if (p2 == null || !p2.isOnline())
-				return Main.powiadom(p, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
+				return Main.powiadom(p, prefix + "Niepoprawna nazwa gracza: Â§e" + args[0]);
 			if (args.length == 1)
-				return Main.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza §e" + args[0] + " §6: §e" + Gracze.gracz(p.getName()).dropPoŒmierci + "%");
+				return Main.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza Â§e" + args[0] + " Â§6: Â§e" + Gracze.gracz(p.getName()).dropPoÅšmierci + "%");
 			else {
 				int liczba = Func.Int(args[1], -1);
 				if (liczba < 0)
-					return Main.powiadom(p, prefix + "Niepoprawna liczba: §e" + args[1]);
+					return Main.powiadom(p, prefix + "Niepoprawna liczba: Â§e" + args[1]);
 				else {
 					liczba = Math.min(liczba, 100);
-					if (koniecznieWiêksza)
-						ustawWiêkszy(p, args[0], liczba);
+					if (koniecznieWiÄ™ksza)
+						ustawWiÄ™kszy(p, args[0], liczba);
 					else
 						ustaw(p, args[0], liczba);
 					return true;
@@ -54,34 +54,34 @@ public class LosowyDropGracza extends Komenda implements Listener {
 		}
 	}
 
-	public static void zwiêksz(CommandSender p, String nick, int ile) {
-		int s = Math.min(100, Gracze.gracz(nick).dropPoŒmierci + ile);
+	public static void zwiÄ™ksz(CommandSender p, String nick, int ile) {
+		int s = Math.min(100, Gracze.gracz(nick).dropPoÅšmierci + ile);
 		ustaw(p, nick, s);
 	}
 	public static void ustaw(CommandSender p, String nick, int szansa) {
 		Gracz gracz = Gracze.gracz(nick);
-		gracz.dropPoŒmierci = szansa;
-		gracz.config.ustaw_zapisz("dropPoŒmierci", szansa);
+		gracz.dropPoÅšmierci = szansa;
+		gracz.config.ustaw_zapisz("dropPoÅšmierci", szansa);
 		Player p2 = Bukkit.getPlayer(nick);
-		p2.sendMessage(prefix + "Za poœrednictwem §e" + p.getName() + " §6 twoja szansa na nie wypadanie itemów to teraz: §e" + szansa + "%");
-		p.sendMessage(prefix + "Ustawiono graczowi §e" +  p2.getName() + "§6 szansa na nie wypadania itemów na: §e" + szansa + "%");	
+		p2.sendMessage(prefix + "Za poÅ›rednictwem Â§e" + p.getName() + " Â§6 twoja szansa na nie wypadanie itemÃ³w to teraz: Â§e" + szansa + "%");
+		p.sendMessage(prefix + "Ustawiono graczowi Â§e" +  p2.getName() + "Â§6 szansa na nie wypadania itemÃ³w na: Â§e" + szansa + "%");	
 	}
-	public static void ustawWiêkszy(CommandSender p, String nick, int szansa) {
+	public static void ustawWiÄ™kszy(CommandSender p, String nick, int szansa) {
 		Gracz gracz = Gracze.gracz(nick);
-		if (gracz.dropPoŒmierci < szansa)
+		if (gracz.dropPoÅšmierci < szansa)
 			ustaw(p, nick, szansa);
 		else
-			p.sendMessage(prefix + Func.msg("Drop gracza %s %s% >= %s%", nick, gracz.dropPoŒmierci, szansa));
+			p.sendMessage(prefix + Func.msg("Drop gracza %s %s% >= %s%", nick, gracz.dropPoÅšmierci, szansa));
 	}
 	
 	@EventHandler(priority=EventPriority.HIGH)
-	public void œmieræGracza(PlayerDeathEvent ev) {
+	public void Å›mierÄ‡Gracza(PlayerDeathEvent ev) {
 		if (ev.getKeepInventory())
 			return;
 		
 		Player p = ev.getEntity();
 		PlayerInventory inv = p.getInventory();
-		int szansa = Gracze.gracz(p.getName()).dropPoŒmierci;
+		int szansa = Gracze.gracz(p.getName()).dropPoÅšmierci;
 		if (szansa == 0) return;
 		
 		ev.setKeepInventory(true);

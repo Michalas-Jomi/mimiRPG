@@ -13,9 +13,9 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Funkcje extends Komenda implements Prze³adowalny {
+public class Funkcje extends Komenda implements PrzeÅ‚adowalny {
 	public static final String prefix = Func.prefix("Funkcje");
 	private HashMap<String, Funkcja> mapa = new HashMap<>();
 	
@@ -25,7 +25,7 @@ public class Funkcje extends Komenda implements Prze³adowalny {
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return uzupe³nijTabComplete(args.length == 1 ? args[0] : "Ala ma kota", Lists.newArrayList(mapa.keySet()));
+		return uzupeÅ‚nijTabComplete(args.length == 1 ? args[0] : "Ala ma kota", Lists.newArrayList(mapa.keySet()));
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -39,12 +39,12 @@ public class Funkcje extends Komenda implements Prze³adowalny {
 				sender.sendMessage(prefix + Func.msg("Funkcja %s przyjmuje %s parametry, podano %s", nazwa, func.parametry, args.length-1));
 		}
 		else
-			sender.sendMessage(prefix + "Niepoprawna Funkcja §e" + nazwa);
+			sender.sendMessage(prefix + "Niepoprawna Funkcja Â§e" + nazwa);
 		return true;
 	}
 
 	private final List<Funkcja> funkcje = Lists.newArrayList();
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		funkcje.clear();
 		File folder = new File("plugins/"+Main.plugin.getName()+"/funkcje");
 		if (!folder.exists())
@@ -52,7 +52,7 @@ public class Funkcje extends Komenda implements Prze³adowalny {
 		skanuj(folder);
 	}
 	public String raport() {
-		return "§6Funkcje: §e" + mapa.size();
+		return "Â§6Funkcje: Â§e" + mapa.size();
 	}
 	private void skanuj(File folder) {
 		for (File plik : folder.listFiles())
@@ -88,9 +88,9 @@ class Funkcja {
 	}
 	
 	public void wykonaj(CommandSender p, String[] parametry) {
-		nastêpna(p, 0, parametry);
+		nastÄ™pna(p, 0, parametry);
 	}
-	private void nastêpna(CommandSender p, int nr, String[] parametry) {
+	private void nastÄ™pna(CommandSender p, int nr, String[] parametry) {
 		if (nr >= komendy.length)
 			return;
 		String komenda = komendy[nr];
@@ -99,12 +99,12 @@ class Funkcja {
 		if (komenda.startsWith(">czekaj")) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 	            public void run() {
-	                nastêpna(p, nr+1, parametry);
+	                nastÄ™pna(p, nr+1, parametry);
 	            }
 	        }, Func.Int(komenda.split(" ")[1], 0));
 			return;
 		}
 		Bukkit.getServer().dispatchCommand(p, komenda);
-		nastêpna(p, nr+1, parametry);
+		nastÄ™pna(p, nr+1, parametry);
 	}
 }

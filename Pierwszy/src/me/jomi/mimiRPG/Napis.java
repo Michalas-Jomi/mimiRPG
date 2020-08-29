@@ -28,14 +28,14 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class Napis implements ConfigurationSerializable {
 	private TextComponent txt;
 	
-	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treœæ) {
+	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treÅ›Ä‡) {
 		txt = new TextComponent(tekst);
-		this.clickEvent(akcja, treœæ);
+		this.clickEvent(akcja, treÅ›Ä‡);
 		this.hover(hover);
 	}
-	public Napis(String tekst, ClickEvent.Action akcja, String treœæ) {
+	public Napis(String tekst, ClickEvent.Action akcja, String treÅ›Ä‡) {
 		txt = new TextComponent(tekst);
-		this.clickEvent(akcja, treœæ);
+		this.clickEvent(akcja, treÅ›Ä‡);
 	}
 	public Napis(String tekst, String hover, String executowanaKomenda) {
 		txt = new TextComponent(tekst);
@@ -57,8 +57,8 @@ public class Napis implements ConfigurationSerializable {
 		TextComponent[] h = {new TextComponent(tekst)};
 		txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, h));
 	}
-	public void clickEvent(ClickEvent.Action akcja, String treœæ) {
-		txt.setClickEvent(new ClickEvent(akcja, treœæ));
+	public void clickEvent(ClickEvent.Action akcja, String treÅ›Ä‡) {
+		txt.setClickEvent(new ClickEvent(akcja, treÅ›Ä‡));
 	}
 
 	public void dodaj(String co) {
@@ -71,58 +71,58 @@ public class Napis implements ConfigurationSerializable {
 		txt.addExtra(co);
 	}
 	
-	public void wyœwietl(CommandSender p) {
+	public void wyÅ›wietl(CommandSender p) {
 		if (p instanceof Player) p.spigot().sendMessage(txt);
 		else 					 p.sendMessage(this.toString());
 	}
-	public void wyœwietlWszystkim() {
+	public void wyÅ›wietlWszystkim() {
 		for (Player p : Bukkit.getOnlinePlayers())
-			wyœwietl(p);
-		wyœwietl(Bukkit.getConsoleSender());
+			wyÅ›wietl(p);
+		wyÅ›wietl(Bukkit.getConsoleSender());
 	}
 	
 	
-	public static Napis osi¹gniêcie(String datapack, String osi¹gniêcie) {
-		String sciezka = "world/datapacks/"+datapack+"/data/"+datapack+"/advancements/"+osi¹gniêcie+".json";
+	public static Napis osiÄ…gniÄ™cie(String datapack, String osiÄ…gniÄ™cie) {
+		String sciezka = "world/datapacks/"+datapack+"/data/"+datapack+"/advancements/"+osiÄ…gniÄ™cie+".json";
 		JSONObject plik;
 		JSONParser parser = new JSONParser();
 		try {
 			InputStreamReader in = new InputStreamReader(new FileInputStream(sciezka), "UTF-8");
 			plik = (JSONObject) parser.parse(new BufferedReader(in));
 			JSONObject display = (JSONObject) plik.get("display");
-			String nazwa = _osi¹gniêcie((JSONObject) display.get("title"));
-			String opis  = _osi¹gniêcie((JSONObject) display.get("description"));
+			String nazwa = _osiÄ…gniÄ™cie((JSONObject) display.get("title"));
+			String opis  = _osiÄ…gniÄ™cie((JSONObject) display.get("description"));
 			return new Napis(nazwa, nazwa + "\n" + opis);
 		} catch (IOException | ParseException e) {
 			Bukkit.getLogger().warning("Nie poprawny plik " + sciezka);
 			e.printStackTrace();
 		}
-		return new Napis("Osi¹gniêcie");
+		return new Napis("OsiÄ…gniÄ™cie");
 	}
 	@SuppressWarnings("unchecked")
-	private static String _osi¹gniêcie(JSONObject obj) {
+	private static String _osiÄ…gniÄ™cie(JSONObject obj) {
 		if (obj == null) return "";
-		String w = (String) obj.getOrDefault("text", "Osi¹gniêcie");
+		String w = (String) obj.getOrDefault("text", "OsiÄ…gniÄ™cie");
 		ChatColor kolor = ChatColor.valueOf(((String) obj.getOrDefault("color", "white")).toUpperCase());
 		String pref = kolor + "";
 		Object bold = obj.get("bold");
 		if (bold != null && (boolean) bold)
-			pref += "§l";
+			pref += "Â§l";
 		return pref + w;
 	}
 	
 	public static Napis item(ItemStack item) {
 		net.minecraft.server.v1_16_R1.ItemStack item2;
 		item2 = CraftItemStack.asNMSCopy(item);
-		Napis n = new Napis("§b[§9"+item.getAmount()+"§3x§b " +
-				(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()+"§b]§r"));
+		Napis n = new Napis("Â§b[Â§9"+item.getAmount()+"Â§3xÂ§b " +
+				(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()+"Â§b]Â§r"));
 		TextComponent[] b = {new TextComponent("{id:\""+item.getType().toString().toLowerCase()+"\",Count:1,tag:"+item2.getOrCreateTag()+"}")};
 		n.txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, b));
 		return n;
 	}
 	
 	public String toString() {
-		return txt.toLegacyText() + "§r";
+		return txt.toLegacyText() + "Â§r";
 	}
 	public Napis clone() {
 		Napis n = new Napis();

@@ -18,7 +18,7 @@ public class Kolejka<E> {
 		obiekty = Lists.newArrayList(lista);
 	}
 	
-	public E nastêpny() {
+	public E nastÄ™pny() {
 		E e = obiekty.get(0);
 		obiekty.remove(0);
 		return e;
@@ -26,8 +26,8 @@ public class Kolejka<E> {
 	public void dodaj(E e) {
 		obiekty.add(e);
 	}
-	public E nastêpny_wróæ() {
-		E e = nastêpny();
+	public E nastÄ™pny_wrÃ³Ä‡() {
+		E e = nastÄ™pny();
 		dodaj(e);
 		return e;
 	}

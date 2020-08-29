@@ -20,7 +20,7 @@ public class OneShotOneKill extends MiniGra{
 	private boolean ochrona = true;
 
 	public OneShotOneKill() {
-		super("Zastrzel lub Zgiñ", "OneShotOneKill");
+		super("Zastrzel lub ZgiÅ„", "OneShotOneKill");
 	}
 	
 	protected void start(Arena arena) {
@@ -28,7 +28,7 @@ public class OneShotOneKill extends MiniGra{
 		PotionEffect efekt = new PotionEffect(PotionEffectType.SPEED, 400, 9, false, false, false);
 		PotionEffect efekt2 = new PotionEffect(PotionEffectType.JUMP, 300400, 2, false, false, false);
 		for (Player p : arena.gracze) {
-			p.sendMessage(prefix + "Ochrona startowa bêdzie aktywna przez §e20 sekund");
+			p.sendMessage(prefix + "Ochrona startowa bÄ™dzie aktywna przez Â§e20 sekund");
 			p.addPotionEffect(efekt);
 			p.addPotionEffect(efekt2);
 		}
@@ -36,26 +36,26 @@ public class OneShotOneKill extends MiniGra{
 		    public void run() {
 		    	if (!arena.grane) return;
 		    	ochrona = false;
-				ItemStack ³uk = Func.stwórzItem(Material.BOW, 1, "&2Taktyczny ³uk", Arrays.asList("Zastrzel nim wszystkich przeciwników!"));
+				ItemStack Å‚uk = Func.stwÃ³rzItem(Material.BOW, 1, "&2Taktyczny Å‚uk", Arrays.asList("Zastrzel nim wszystkich przeciwnikÃ³w!"));
 				PotionEffect efekt = new PotionEffect(PotionEffectType.SPEED, 300000, 2, false, false, false);
-				ItemStack strza³a = Func.stwórzItem(Material.ARROW, 1, "&2Taktyczna Strza³a", null);
-				ItemMeta meta = ³uk.getItemMeta();
+				ItemStack strzaÅ‚a = Func.stwÃ³rzItem(Material.ARROW, 1, "&2Taktyczna StrzaÅ‚a", null);
+				ItemMeta meta = Å‚uk.getItemMeta();
 				meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-				³uk.setItemMeta(meta);
+				Å‚uk.setItemMeta(meta);
 				for (Player p : arena.gracze) {
 					p.addPotionEffect(efekt);
-					p.getInventory().setItem(4, ³uk);
-					p.getInventory().setItem(22, strza³a);
+					p.getInventory().setItem(4, Å‚uk);
+					p.getInventory().setItem(22, strzaÅ‚a);
 					p.sendMessage(prefix + "Koniec ochrony, do walki!");
 				}
 		    }
 		}, 405);
 	}
 	
-	protected void zwyciêstwo(Arena arena) {
+	protected void zwyciÄ™stwo(Arena arena) {
 		if (arena.gracze.size() != 1) return;
-		Bukkit.broadcastMessage(prefix + "§e" + arena.gracze.get(0).getName() + "§6 wygrywa rozgrywkê!");
-		opuœæ(arena.gracze.get(0), false);
+		Bukkit.broadcastMessage(prefix + "Â§e" + arena.gracze.get(0).getName() + "Â§6 wygrywa rozgrywkÄ™!");
+		opuÅ›Ä‡(arena.gracze.get(0), false);
 		ochrona = true;
 		arena.grane = false;
 	}
@@ -66,7 +66,7 @@ public class OneShotOneKill extends MiniGra{
 		Player p = (Player) ev.getHitEntity();
 		
 		if (arenaGracza(p) != null)
-			opuœæ(p, true);
+			opuÅ›Ä‡(p, true);
 	}
 	
 }

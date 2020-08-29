@@ -32,16 +32,16 @@ import com.mojang.authlib.properties.Property;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {
-		return "§2[§a" + nazwa + "§2]§6 ";
+		return "Â§2[Â§a" + nazwa + "Â§2]Â§6 ";
 	}
-	public static String msg(String tekst, Object... uzupe³nienia) {
-		for (Object u : uzupe³nienia)
-			tekst = tekst.replaceFirst("%s", "§e" + u + "§6");
-		return "§6" + tekst + "§6";
+	public static String msg(String tekst, Object... uzupeÅ‚nienia) {
+		for (Object u : uzupeÅ‚nienia)
+			tekst = tekst.replaceFirst("%s", "Â§e" + u + "Â§6");
+		return "Â§6" + tekst + "Â§6";
 	}
 	
 	public static String DoubleToString(double liczba) {
-		String ca³oœci = IntToString((int) liczba);
+		String caÅ‚oÅ›ci = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
 		String reszta = "";
 		if (r != 0)
@@ -52,7 +52,7 @@ public abstract class Func {
 			}
 			else
 				reszta += (""+r).substring(1);
-		return ca³oœci + reszta;
+		return caÅ‚oÅ›ci + reszta;
 	}
 	public static List<String> BooleanToString(boolean bool, List<String> tak, List<String> nie) {
 		return bool ? tak : nie;
@@ -99,14 +99,14 @@ public abstract class Func {
 		return s.toString();
 	}
 	
-	public static double Double(String liczba, double domyœlna) {
+	public static double Double(String liczba, double domyÅ›lna) {
 		if (liczba.contains("."))
 			try {
 				return Double.parseDouble(liczba.trim());
 			} catch(NumberFormatException er) {
-				return domyœlna;
+				return domyÅ›lna;
 			}
-		return Int(liczba, (int) domyœlna);
+		return Int(liczba, (int) domyÅ›lna);
 	}
 	public static int Int(String liczba, int domyslna) {
 		try {
@@ -118,27 +118,27 @@ public abstract class Func {
 	
 	public static String koloruj(String text) {
 		if (text == null) return null;
-		text = kolorkiRGB(przejœcia(text));
-		return text.replace("&", "§").replace("§§", "&");
+		text = kolorkiRGB(przejÅ›cia(text));
+		return text.replace("&", "Â§").replace("Â§Â§", "&");
 	}
-	public static String przejœcia(String text) {
+	public static String przejÅ›cia(String text) {
 		while (text.contains("&%")) {
 			int index = text.indexOf("&%");
 			String m = text.substring(index+2);
 			if (m.contains("&"))
 				m = m.substring(0, m.indexOf("&"));
-			if (m.contains("§"))
-				m = m.substring(0, m.indexOf("§"));
+			if (m.contains("Â§"))
+				m = m.substring(0, m.indexOf("Â§"));
 			try {
-				String przejœcie = przejœcie(m);
-				text = text.substring(0, index) + przejœcie + text.substring(index + 2 + m.length());
+				String przejÅ›cie = przejÅ›cie(m);
+				text = text.substring(0, index) + przejÅ›cie + text.substring(index + 2 + m.length());
 			} catch (IndexOutOfBoundsException | NumberFormatException e) {
 				text = text.substring(0, index) + text.substring(index + 2);
 			}
 		}
 		return text;
 	}
-	private static String przejœcie(String text) {
+	private static String przejÅ›cie(String text) {
 		String hex1 = text.substring(0, 6);
 		if (text.charAt(6) != '-')
 			throw new IndexOutOfBoundsException();
@@ -166,10 +166,10 @@ public abstract class Func {
 		StringBuilder w = new StringBuilder();
 		Consumer<Integer> hex = liczba -> {
 			String _hex = (Integer.toHexString(liczba)+'0');
-			w.append('§').append(_hex.charAt(0)).append('§').append(_hex.charAt(1));
+			w.append('Â§').append(_hex.charAt(0)).append('Â§').append(_hex.charAt(1));
 		};
 		for (char znak : text.toCharArray()) {
-			w.append("§x");
+			w.append("Â§x");
 			hex.accept(rakt); hex.accept(gakt);	hex.accept(bakt);
 			rakt += rskok;	  gakt += gskok;	bakt += bskok;
 			w.append(znak);
@@ -198,21 +198,21 @@ public abstract class Func {
 	      throw new NumberFormatException("Invalid hex length"); 
 	    Color.decode("#" + hexColor);
 	    
-	    StringBuilder assembledColorCode = new StringBuilder("§x");
+	    StringBuilder assembledColorCode = new StringBuilder("Â§x");
 	    for (char curChar : hexColor.toCharArray())
-	      assembledColorCode.append("§").append(curChar); 
+	      assembledColorCode.append("Â§").append(curChar); 
 	    return assembledColorCode.toString();
 	  }
 	public static String odkoloruj(String text) {
 		if (text == null) return null;
-		return text.replace("&", "&&").replace("§", "&");
+		return text.replace("&", "&&").replace("Â§", "&");
 	}
-	public static String usuñKolor(String text) {
+	public static String usuÅ„Kolor(String text) {
 		StringBuilder strB = new StringBuilder();
-		boolean pomiñ = false;
+		boolean pomiÅ„ = false;
 		for (char znak : text.toCharArray()) {
-			if (pomiñ || znak == '§') {
-				pomiñ = !pomiñ;
+			if (pomiÅ„ || znak == 'Â§') {
+				pomiÅ„ = !pomiÅ„;
 				continue;
 			}
 			strB.append(znak);
@@ -220,7 +220,7 @@ public abstract class Func {
 		return strB.toString();
 	}
 	
-	public static ItemStack po³ysk(ItemStack item) {
+	public static ItemStack poÅ‚ysk(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
 		meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
 		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -266,29 +266,29 @@ public abstract class Func {
 		item.setItemMeta(meta);
 		return item;
 	}
-	public static ItemStack stwórzItem(Material materia³) {
-		return stwórzItem(materia³, 1, null, null);
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚) {
+		return stwÃ³rzItem(materiaÅ‚, 1, null, null);
 	}
-	public static ItemStack stwórzItem(Material materia³, String nazwa) {
-		return stwórzItem(materia³, 1, nazwa, null);
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, String nazwa) {
+		return stwÃ³rzItem(materiaÅ‚, 1, nazwa, null);
 	}
-	public static ItemStack stwórzItem(Material materia³, String nazwa, String... lore) {
-		return stwórzItem(materia³, 1, nazwa, Lists.newArrayList(lore));
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, String nazwa, String... lore) {
+		return stwÃ³rzItem(materiaÅ‚, 1, nazwa, Lists.newArrayList(lore));
 	}
-	public static ItemStack stwórzItem(Material materia³, String nazwa, List<String> lore) {
-		return stwórzItem(materia³, 1, nazwa, lore);
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, String nazwa, List<String> lore) {
+		return stwÃ³rzItem(materiaÅ‚, 1, nazwa, lore);
 	}
-	public static ItemStack stwórzItem(Material materia³, int iloœæ) {
-		return stwórzItem(materia³, iloœæ, null, null);
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, int iloÅ›Ä‡) {
+		return stwÃ³rzItem(materiaÅ‚, iloÅ›Ä‡, null, null);
 	}
-	public static ItemStack stwórzItem(Material materia³, int iloœæ, String nazwa) {
-		return stwórzItem(materia³, iloœæ, nazwa, null);
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, int iloÅ›Ä‡, String nazwa) {
+		return stwÃ³rzItem(materiaÅ‚, iloÅ›Ä‡, nazwa, null);
 	}
-	public static ItemStack stwórzItem(Material materia³, int iloœæ, String nazwa, List<String> lore) {
+	public static ItemStack stwÃ³rzItem(Material materiaÅ‚, int iloÅ›Ä‡, String nazwa, List<String> lore) {
 		ItemStack item;
 		ItemMeta meta;
 		
-		item = new ItemStack(materia³, iloœæ);
+		item = new ItemStack(materiaÅ‚, iloÅ›Ä‡);
 		meta = item.getItemMeta();
 		
 		// Nazwa
@@ -302,7 +302,7 @@ public abstract class Func {
 			meta.setLore(lore);
 		}
 		
-		// Wykoñczenie
+		// WykoÅ„czenie
         item.setItemMeta(meta);
         return item;
 	}
@@ -316,13 +316,13 @@ public abstract class Func {
 			return true;
 		}
 	}
-	public static ItemStack dajG³ówkê(String url) {
-		return dajG³ówkê(null, url, null);
+	public static ItemStack dajGÅ‚Ã³wkÄ™(String url) {
+		return dajGÅ‚Ã³wkÄ™(null, url, null);
 	}
-	public static ItemStack dajG³ówkê(String nazwa, String url) {
-		return dajG³ówkê(nazwa, url, null);
+	public static ItemStack dajGÅ‚Ã³wkÄ™(String nazwa, String url) {
+		return dajGÅ‚Ã³wkÄ™(nazwa, url, null);
 	}
-	public static ItemStack dajG³ówkê(String nazwa, String url, List<String> lore) {
+	public static ItemStack dajGÅ‚Ã³wkÄ™(String nazwa, String url, List<String> lore) {
 		ItemStack item;
 		SkullMeta meta;
 		
@@ -351,7 +351,7 @@ public abstract class Func {
         return item;	
 	}
 	
-	public static boolean porównaj(ItemStack item1, ItemStack item2) {
+	public static boolean porÃ³wnaj(ItemStack item1, ItemStack item2) {
 		ItemStack item1c = item1.clone();
 		ItemStack item2c = item2.clone();
 		item1c.setAmount(1);
@@ -362,7 +362,7 @@ public abstract class Func {
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
-	public static double zaokr¹glij(double liczba, int miejsca) {
+	public static double zaokrÄ…glij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);
 		liczba  = (double) (int) liczba;
 		liczba /= Math.pow(10, miejsca);
@@ -394,7 +394,7 @@ public abstract class Func {
 			return false;
 		}
 	}
-	public static boolean przenieœPlik(String co, String gdzie) {
+	public static boolean przenieÅ›Plik(String co, String gdzie) {
 		return new File(co).renameTo(new File(gdzie));
 	}
 	public static String czytajPlik(File plik) {
@@ -407,7 +407,7 @@ public abstract class Func {
 		    }
 		    reader.close();
 		    } catch (FileNotFoundException e) {
-		    	Main.plugin.getLogger().warning("B³¹d w trakcie czytania pliku " + plik.getAbsolutePath());
+		    	Main.plugin.getLogger().warning("BÅ‚Ä…d w trakcie czytania pliku " + plik.getAbsolutePath());
 		    }
 		return w.isEmpty() ? w : w.substring(1);
 	}

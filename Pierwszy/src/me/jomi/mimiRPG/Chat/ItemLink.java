@@ -22,21 +22,21 @@ public class ItemLink implements Listener {
 		
 		if (msg.contains("[i]")) {
 			int i = msg.indexOf("[i]");
-			String[] czêœci = {msg.substring(0, i), msg.substring(i+3, msg.length())};
+			String[] czÄ™Å›ci = {msg.substring(0, i), msg.substring(i+3, msg.length())};
 			ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 			if (item == null || item.getType().isAir()) {
-				ev.getPlayer().sendMessage(Func.prefix("Item Link") + "§cnie mo¿esz podlinkowaæ powietrza");
+				ev.getPlayer().sendMessage(Func.prefix("Item Link") + "Â§cnie moÅ¼esz podlinkowaÄ‡ powietrza");
 				return;
 			}
 			Napis itemLink = Napis.item(item);
-			String format = "§7"+ev.getPlayer().getDisplayName()+"§8:§r ";
+			String format = "Â§7"+ev.getPlayer().getDisplayName()+"Â§8:Â§r ";
 			Napis n = new Napis(format);
-			n.dodaj(czêœci[0]);
+			n.dodaj(czÄ™Å›ci[0]);
 			n.dodaj(itemLink);
-			n.dodaj(znajdzKolor(format + czêœci[0]) + Func.listToString(czêœci, 1, "[i]"));
+			n.dodaj(znajdzKolor(format + czÄ™Å›ci[0]) + Func.listToString(czÄ™Å›ci, 1, "[i]"));
 			for (Player p : ev.getRecipients())
-				n.wyœwietl(p);
-			Main.log("format wiadomoœci: " + Func.odkoloruj(ev.getFormat()));
+				n.wyÅ›wietl(p);
+			Main.log("format wiadomoÅ›ci: " + Func.odkoloruj(ev.getFormat()));
 			Bukkit.getConsoleSender().sendMessage(n.toString());
 			ev.setCancelled(true);
 		}
@@ -48,13 +48,13 @@ public class ItemLink implements Listener {
 		char[] array = msg.toCharArray();
 		if (msg.length() >= 2)
 			for(int i=array.length-2; i>0; i--)
-				if (array[i] == '§') {
+				if (array[i] == 'Â§') {
 					char symbol = array[i+1];
-					w = "§" + Character.toString(symbol) + w;
+					w = "Â§" + Character.toString(symbol) + w;
 					if (kolory.contains(symbol))
 						return w;
 				}
-		return "§r";
+		return "Â§r";
 	}
 	
 }

@@ -16,7 +16,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Zegar;
 
 public class Glosowanie extends Komenda implements Zegar {
-	public static final String prefix = Func.prefix("G³osowanie");
+	public static final String prefix = Func.prefix("GÅ‚osowanie");
 
 	public static final HashMap<String, _Glosowanie> mapa = new HashMap<>();
 	
@@ -33,7 +33,7 @@ public class Glosowanie extends Komenda implements Zegar {
 	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return uzupe³nijTabComplete(Func.listToString(args, 0), Lists.newArrayList(mapa.keySet()));
+		return uzupeÅ‚nijTabComplete(Func.listToString(args, 0), Lists.newArrayList(mapa.keySet()));
 	}
 	@Override
 	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
@@ -48,39 +48,39 @@ public class Glosowanie extends Komenda implements Zegar {
 				p.sendMessage("" + glosowanie);
 			break;
 		case "s":
-		case "stwórz":
+		case "stwÃ³rz":
 			if (!p.hasPermission("mimiRPG.vote.stworz")) {
-				p.sendMessage(prefix + "nie masz uprawnieñ do stworzenia g³osowania");
+				p.sendMessage(prefix + "nie masz uprawnieÅ„ do stworzenia gÅ‚osowania");
 				break;
 			}
 			if (args.length < 4) {
-				p.sendMessage(prefix + "/vote stwórz <potrzebne g³osy> <czas w minutach> <nazwa g³osowania>");
+				p.sendMessage(prefix + "/vote stwÃ³rz <potrzebne gÅ‚osy> <czas w minutach> <nazwa gÅ‚osowania>");
 				break;
 			}
 			String nazwa = Func.listToString(args, 3);
-			if (Arrays.asList("stwórz", "s").contains(args[3])) {
-				p.sendMessage(prefix + nazwa + " nie jest prawid³ow¹ nazw¹ g³osowania");
+			if (Arrays.asList("stwÃ³rz", "s").contains(args[3])) {
+				p.sendMessage(prefix + nazwa + " nie jest prawidÅ‚owÄ… nazwÄ… gÅ‚osowania");
 				break;
 			}
-			int potrzebneG³osy = Func.Int(args[1], -1);
+			int potrzebneGÅ‚osy = Func.Int(args[1], -1);
 			int czas = Func.Int(args[2], -1);
-			if (potrzebneG³osy <= 0 || czas <= 0) {
-				p.sendMessage(prefix + "/vote stwórz <potrzebne g³osy> <czas w minutach> <nazwa g³osowania>");
+			if (potrzebneGÅ‚osy <= 0 || czas <= 0) {
+				p.sendMessage(prefix + "/vote stwÃ³rz <potrzebne gÅ‚osy> <czas w minutach> <nazwa gÅ‚osowania>");
 				break;
 			}
 			if (mapa.containsKey(nazwa)) {
-				p.sendMessage(prefix + "G³osowanie o tej nazwie ju¿ istnieje");
+				p.sendMessage(prefix + "GÅ‚osowanie o tej nazwie juÅ¼ istnieje");
 				break;
 			}
-			new _Glosowanie(p, potrzebneG³osy, czas, nazwa);
+			new _Glosowanie(p, potrzebneGÅ‚osy, czas, nazwa);
 			break;
 		default:
 			String nazwaG = Func.listToString(args, 0);
 			_Glosowanie glosowanie = mapa.get(nazwaG);
 			if (glosowanie != null)
-				glosowanie.zag³osuj(p);
+				glosowanie.zagÅ‚osuj(p);
 			else
-				p.sendMessage(prefix + "Niepoprawna nazwa g³osowania §e" + nazwaG);
+				p.sendMessage(prefix + "Niepoprawna nazwa gÅ‚osowania Â§e" + nazwaG);
 		}
 		return true;
 	}
@@ -89,20 +89,20 @@ public class Glosowanie extends Komenda implements Zegar {
 class _Glosowanie {
 	public static final String prefix = Glosowanie.prefix;
 	
-	private int potrzebneG³osy;
+	private int potrzebneGÅ‚osy;
 	private int czas;
 	private String nazwa;
-	private final List<String> g³osuj¹cy = Lists.newArrayList();
-	private boolean zakoñczone = false;
+	private final List<String> gÅ‚osujÄ…cy = Lists.newArrayList();
+	private boolean zakoÅ„czone = false;
 	
-	_Glosowanie(CommandSender p, int potrzebneG³osy, int czas, String nazwa) {
+	_Glosowanie(CommandSender p, int potrzebneGÅ‚osy, int czas, String nazwa) {
 
 		this.czas = czas * 60;
-		this.potrzebneG³osy = potrzebneG³osy;
+		this.potrzebneGÅ‚osy = potrzebneGÅ‚osy;
 		this.nazwa = nazwa;
 		Glosowanie.mapa.put(nazwa, this);
-		Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 Utworzy³ nowe g³osowanie §e" + nazwa +
-				"§6, które wygaœnie za "+ _czas() +" u¿yj §e§o/vote " + nazwa + "§6 aby zag³osowaæ");
+		Bukkit.broadcastMessage(prefix + "Â§e" + p.getName() + "Â§6 UtworzyÅ‚ nowe gÅ‚osowanie Â§e" + nazwa +
+				"Â§6, ktÃ³re wygaÅ›nie za "+ _czas() +" uÅ¼yj Â§eÂ§o/vote " + nazwa + "Â§6 aby zagÅ‚osowaÄ‡");
 	}
 	
 	private String _czas() {
@@ -120,28 +120,28 @@ class _Glosowanie {
 	}
 	public void czas() {
 		czas -= 1;
-		if (zakoñczone) 
+		if (zakoÅ„czone) 
 			return;
 		if (czas <= 0) {
-			Bukkit.broadcastMessage(prefix + "G³osowanie §e" + nazwa + "§6 dobieg³o koñca, §cnie uzyskano potrzebnej liczby g³osów§6, " + g³osuj¹cy.size() + "/" + potrzebneG³osy);
+			Bukkit.broadcastMessage(prefix + "GÅ‚osowanie Â§e" + nazwa + "Â§6 dobiegÅ‚o koÅ„ca, Â§cnie uzyskano potrzebnej liczby gÅ‚osÃ³wÂ§6, " + gÅ‚osujÄ…cy.size() + "/" + potrzebneGÅ‚osy);
 			Glosowanie.mapa.remove(nazwa);
 			return;
 		}
 	}
-	public void zag³osuj(CommandSender p) {
-		if (g³osuj¹cy.contains(p.getName())) {
-			p.sendMessage(prefix + "Ju¿ zag³osowa³eœ na to");
+	public void zagÅ‚osuj(CommandSender p) {
+		if (gÅ‚osujÄ…cy.contains(p.getName())) {
+			p.sendMessage(prefix + "JuÅ¼ zagÅ‚osowaÅ‚eÅ› na to");
 		} else {
-			g³osuj¹cy.add(p.getName());
-			Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 zag³osowa³ na §e" + this);
-			if (g³osuj¹cy.size() >= potrzebneG³osy) {
-				Bukkit.broadcastMessage(prefix + "G³osowanie §e" + nazwa + " §6 zosta³o zakoñczone §aPomyœlnie");
+			gÅ‚osujÄ…cy.add(p.getName());
+			Bukkit.broadcastMessage(prefix + "Â§e" + p.getName() + "Â§6 zagÅ‚osowaÅ‚ na Â§e" + this);
+			if (gÅ‚osujÄ…cy.size() >= potrzebneGÅ‚osy) {
+				Bukkit.broadcastMessage(prefix + "GÅ‚osowanie Â§e" + nazwa + " Â§6 zostaÅ‚o zakoÅ„czone Â§aPomyÅ›lnie");
 				Glosowanie.mapa.remove(nazwa);
-				zakoñczone = true;
+				zakoÅ„czone = true;
 			}
 		}
 	}
 	public String toString() {
-		return nazwa + "§6 zosta³o jeszcze §e" + _czas() + " §6" + g³osuj¹cy.size() + "/" + potrzebneG³osy;
+		return nazwa + "Â§6 zostaÅ‚o jeszcze Â§e" + _czas() + " Â§6" + gÅ‚osujÄ…cy.size() + "/" + potrzebneGÅ‚osy;
 	}
 }

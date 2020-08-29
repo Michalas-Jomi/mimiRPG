@@ -30,17 +30,17 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 
 public class Patrzeq extends Komenda implements Listener{
-	public static String prefix = Func.prefix("Podglπd Ekwipunku");
+	public static String prefix = Func.prefix("PodglƒÖd Ekwipunku");
 	
 	private static HashMap<String, String> mapa = new HashMap<>();
-	private static ItemStack brakSlotu = Func.stwÛrzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&2Brak slotu", Arrays.asList("ßaPo lewej masz po koleji", "ß6Buty ßeSpodnie ß6Klate ßeHe≥m ß6Lewπ rÍkÍ"));
+	private static ItemStack brakSlotu = Func.stw√≥rzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&2Brak slotu", Arrays.asList("¬ßaPo lewej masz po koleji", "¬ß6Buty ¬ßeSpodnie ¬ß6Klate ¬ßeHe≈Çm ¬ß6LewƒÖ rƒôkƒô"));
 
 	public Patrzeq() {
 	    super("patrzeq", prefix + "/patrzeq <gracz>");
 	    Main.dodajPermisje("patrzeq.modyfikuj");
 	}
-	// Odúwieøa podanemu obserwatorowi
-	private static void odúwieø(String nick) {
+	// Od≈õwie≈ºa podanemu obserwatorowi
+	private static void od≈õwie≈º(String nick) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
 				Player p = Bukkit.getPlayer(nick);
@@ -53,37 +53,37 @@ public class Patrzeq extends Komenda implements Listener{
 		    }
 		}, 1);
 	}
-	// Odúwieøa wszystkim obserwatorom podanego gracza
-	private boolean odúwieøWszystkim(String imie) {
+	// Od≈õwie≈ºa wszystkim obserwatorom podanego gracza
+	private boolean od≈õwie≈ºWszystkim(String imie) {
 		if (mapa.containsKey(imie)) {
 			if (Bukkit.getPlayer(mapa.get(imie)).hasPermission("mimiRPG.patrzeq"))
 				return true;
-			odúwieøGracza(mapa.get(imie), imie);
+			od≈õwie≈ºGracza(mapa.get(imie), imie);
 			return false;
 		}
 		if (mapa.containsValue(imie))
 			for (String nick: mapa.keySet())
 				if (mapa.get(nick).equals(imie))
-					odúwieø(nick);
+					od≈õwie≈º(nick);
 		return false;
 	}
-	// Odúwieøa ekwipunek gracza wzglÍdem obserwatora
-	private void odúwieøGracza(String gracz, String obserwator) {
+	// Od≈õwie≈ºa ekwipunek gracza wzglƒôdem obserwatora
+	private void od≈õwie≈ºGracza(String gracz, String obserwator) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
 		    	PlayerInventory Pinv = Bukkit.getPlayer(gracz).getInventory();
 				Inventory inv = Bukkit.getPlayer(obserwator).getOpenInventory().getInventory(0);
 				for (int i=0; i<4*9+5; i++) 
 					Pinv.setItem(i, inv.getItem(i));
-				odúwieøWszystkim(gracz);
+				od≈õwie≈ºWszystkim(gracz);
 		    }
 		}, 1);
 	}
 	
 	
 	// Przetwarza nr slotu z otwartego eq na skrzynie
-	private static int przetwÛrz(int slot, boolean przewarzaÊ) {
-		if (!przewarzaÊ) return slot;
+	private static int przetw√≥rz(int slot, boolean przewarzaƒá) {
+		if (!przewarzaƒá) return slot;
 		if (slot == 45)
 			return 40;
 		if (slot < 9) 
@@ -98,29 +98,29 @@ public class Patrzeq extends Komenda implements Listener{
 			return slot - 36;
 		return slot;
 	}
-	// odúwieøa slot w ekwipunku
-	private void odúwieøSlot(int slot, Inventory Pinv, Inventory inv, boolean przewarzaÊ) {
+	// od≈õwie≈ºa slot w ekwipunku
+	private void od≈õwie≈ºSlot(int slot, Inventory Pinv, Inventory inv, boolean przewarzaƒá) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 		    public void run() {
-		    	int i = przetwÛrz(slot, przewarzaÊ);
+		    	int i = przetw√≥rz(slot, przewarzaƒá);
 		    	if (i == -1 || i >= 4*9+5) return;
 		    	Pinv.setItem(i, inv.getItem(i));
 		    }
 		}, 1);
 	}
-	// odúwieøa slot graczowi
-	private boolean odúwieøSlotGracz(String nick, int slot, Inventory inv) {
+	// od≈õwie≈ºa slot graczowi
+	private boolean od≈õwie≈ºSlotGracz(String nick, int slot, Inventory inv) {
 		if (!mapa.containsKey(nick)) return false;
 		if (Bukkit.getPlayer(mapa.get(nick)).hasPermission("mimiRPG.patrzeq.modyfikuj")) return true;
-		odúwieøSlot(slot, Bukkit.getPlayer(mapa.get(nick)).getInventory(), inv, false);
+		od≈õwie≈ºSlot(slot, Bukkit.getPlayer(mapa.get(nick)).getInventory(), inv, false);
 		return false;
 	}
-	// odúwieøa slot obserwatorom gracza
-	private boolean odúwieøSlotObserwator(String nick, int slot) {
+	// od≈õwie≈ºa slot obserwatorom gracza
+	private boolean od≈õwie≈ºSlotObserwator(String nick, int slot) {
 		if (!mapa.containsValue(nick)) return false;
 		for (String obserwator : mapa.keySet())
 			if (mapa.get(obserwator).equals(nick))
-				odúwieøSlot(slot, Bukkit.getPlayer(obserwator).getOpenInventory().getInventory(0), Bukkit.getPlayer(nick).getInventory(), true);
+				od≈õwie≈ºSlot(slot, Bukkit.getPlayer(obserwator).getOpenInventory().getInventory(0), Bukkit.getPlayer(nick).getInventory(), true);
 		return false;
 	}
 	
@@ -141,13 +141,13 @@ public class Patrzeq extends Komenda implements Listener{
 			{ev.setCancelled(true); return;}
 		List<ClickType> typy = Arrays.asList(ClickType.SHIFT_LEFT, ClickType.SHIFT_RIGHT, ClickType.NUMBER_KEY);
 		if (typy.contains(ev.getClick())) {
-			if (odúwieøWszystkim(nick))
+			if (od≈õwie≈ºWszystkim(nick))
 				ev.setCancelled(true);
 			return;
 		}
-		if (odúwieøSlotGracz(nick, slot, ev.getInventory()))
+		if (od≈õwie≈ºSlotGracz(nick, slot, ev.getInventory()))
 			{ev.setCancelled(true); return;}
-	if (odúwieøSlotObserwator(nick, slot))
+	if (od≈õwie≈ºSlotObserwator(nick, slot))
 		{ev.setCancelled(true); return;}
 	}
 	@EventHandler
@@ -159,11 +159,11 @@ public class Patrzeq extends Komenda implements Listener{
 			return;
 		for (int slot : ev.getRawSlots()) {
 			if (slot >= 45 || slot < 0) continue;
-			if (odúwieøSlotGracz(nick, slot, ev.getInventory())){
+			if (od≈õwie≈ºSlotGracz(nick, slot, ev.getInventory())){
 				ev.setCancelled(true);
 				return;
 			}
-			if (odúwieøSlotObserwator(nick, slot)) {
+			if (od≈õwie≈ºSlotObserwator(nick, slot)) {
 				ev.setCancelled(true);
 				return;
 			}
@@ -171,16 +171,16 @@ public class Patrzeq extends Komenda implements Listener{
 	}
 	@EventHandler
 	public void upuszczanie(PlayerDropItemEvent ev) {
-		odúwieøWszystkim(ev.getPlayer().getName());
+		od≈õwie≈ºWszystkim(ev.getPlayer().getName());
 	}
 	@EventHandler
 	public void umieranie(PlayerDeathEvent ev) {
-		odúwieøWszystkim(ev.getEntity().getName());
+		od≈õwie≈ºWszystkim(ev.getEntity().getName());
 	}
 	@EventHandler
 	public void podnoszenie(EntityPickupItemEvent ev) {
 		if (ev.getEntity() instanceof Player)
-			odúwieøWszystkim(ev.getEntity().getName());
+			od≈õwie≈ºWszystkim(ev.getEntity().getName());
 	}
 	
 	@EventHandler
@@ -190,7 +190,7 @@ public class Patrzeq extends Komenda implements Listener{
 			for (Object it : mapa.keySet().toArray())
 				if (mapa.get(it).equals(nick)) {
 					Player p = Bukkit.getPlayer((String) it);
-					p.sendMessage(prefix + "Gracz ße" + nick + "ß6 w≥aúnie wszed≥ w stan offline");
+					p.sendMessage(prefix + "Gracz ¬ße" + nick + "¬ß6 w≈Ça≈õnie wszed≈Ç w stan offline");
 					p.closeInventory();
 					mapa.remove(p.getName());
 				}
@@ -221,18 +221,18 @@ public class Patrzeq extends Komenda implements Listener{
 			return true;
 		}
 		if (!Bukkit.getOnlinePlayers().contains(p)) {
-			obserwator.sendMessage(prefix + "Gracz ße" + p.getName() + "ß6 nie jest online");
+			obserwator.sendMessage(prefix + "Gracz ¬ße" + p.getName() + "¬ß6 nie jest online");
 			return true;
 		}
 		if (p.hasPermission("mimiRPG.patrzeq.modyfikuj")) {
-			obserwator.sendMessage(prefix + "Nie moøesz podglπdaÊ gracza ße" + p.getName());
+			obserwator.sendMessage(prefix + "Nie mo≈ºesz podglƒÖdaƒá gracza ¬ße" + p.getName());
 			return true;
 		}
-		Inventory inv = Bukkit.createInventory(obserwator, 5*9, "Podlπd Ekwipunku");
+		Inventory inv = Bukkit.createInventory(obserwator, 5*9, "PodlƒÖd Ekwipunku");
 		obserwator.openInventory(inv);
 		
 		mapa.put(obserwator.getName(), nick);
-		odúwieø(obserwator.getName());
+		od≈õwie≈º(obserwator.getName());
 		return true;
 	}
 }

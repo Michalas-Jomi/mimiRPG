@@ -1,19 +1,19 @@
 @@@@@@@@@
 
-Do komend z tego pluginu permisja wygląda naztępująco: mimirpg.<komenda>
-to oznacza że do "/sklep" permisja jest "mimirpg.sklep", a do "/ujeżdzaj" jest "mimirpg.ujeżdzaj"
+Do komend z tego pluginu permisja wyglÄ…da naztÄ™pujÄ…co: mimirpg.<komenda>
+to oznacza ĹĽe do "/sklep" permisja jest "mimirpg.sklep", a do "/ujeĹĽdzaj" jest "mimirpg.ujeĹĽdzaj"
 
 
-Często opisuje coś używając specjalnej nazwy
-Słowniczek:
+CzÄ™sto opisuje coĹ› uĹĽywajÄ…c specjalnej nazwy
+SĹ‚owniczek:
 @
 Napis
 
 Schemat _1_
 
 text: 'text' #wymagane
-hover: 'text po najechaniu myszką' #opcjonalne
-akcja: RUN_COMMAND / SUGGEST_COMMAND / COPY_TO_CLIPBOARD / OPEN_URL #opcjonalne domyślnie RUN_COMMAND
+hover: 'text po najechaniu myszkÄ…' #opcjonalne
+akcja: RUN_COMMAND / SUGGEST_COMMAND / COPY_TO_CLIPBOARD / OPEN_URL #opcjonalne domyĹ›lnie RUN_COMMAND
 komenda: '/komenda' #opcjonalne
 extra: #opcjonalne
   drugi Napis
@@ -24,45 +24,45 @@ Schemat _2_
 Aliasy: 
   hover - h | komenda - k | RUN_COMMAND - r
   SUGGEST_COMMAND - s | COPY_TO_CLIPBOARD - c | OPEN_URL - o
-przykład: 
- '&2Spawn pod ||&a/spawn||hover: &dKliknij aby sie przeteleportować||komenda<Run_Command>: /spawn'
- '&2Spawn pod ||&a/spawn||h: &dKliknij aby się przeteleportować||k<r>: /spawn'
+przykĹ‚ad: 
+ '&2Spawn pod ||&a/spawn||hover: &dKliknij aby sie przeteleportowaÄ‡||komenda<Run_Command>: /spawn'
+ '&2Spawn pod ||&a/spawn||h: &dKliknij aby siÄ™ przeteleportowaÄ‡||k<r>: /spawn'
 
 @
 item
 org.bukkit.ItemStack
-najłatwiej jest wrzucić item do plecaka i skopiować z configu plecaka
+najĹ‚atwiej jest wrzuciÄ‡ item do plecaka i skopiowaÄ‡ z configu plecaka
 
 @@@@@@@@@@@@@@@@@
-Koniec Słowniczka
+Koniec SĹ‚owniczka
 @@@@@@@@@@@@@@@@@
 
 @
 Funkcje
 
 w configu
-wszystkie pliki .txt w plugins.mimirpg/funkcje i katalogach podrzędnych są traktowane jako "Funkcje"
-nazwa pliku (nielicząć końcówki .txt) to nazwa funkcji
+wszystkie pliki .txt w plugins.mimirpg/funkcje i katalogach podrzÄ™dnych sÄ… traktowane jako "Funkcje"
+nazwa pliku (nieliczÄ…Ä‡ koĹ„cĂłwki .txt) to nazwa funkcji
 
-każda linia w pliku to pojedyńcza komenda wywoływane przez wpisyjącego komende
-różnią się od zwykłych .MCFUNCTION tym że posiadają opcje delay'u i parametry
+kaĹĽda linia w pliku to pojedyĹ„cza komenda wywoĹ‚ywane przez wpisyjÄ…cego komende
+rĂłĹĽniÄ… siÄ™ od zwykĹ‚ych .MCFUNCTION tym ĹĽe posiadajÄ… opcje delay'u i parametry
 
 delay:
-">czekaj <ticki>" 20 ticków = 1 sekunda
-np ">czekaj 20" - funkcja zaczeka sekunde przed następną komendą
-   ">czekak 1200" - funkcja zaczeka minute przed następną komendą
+">czekaj <ticki>" 20 tickĂłw = 1 sekunda
+np ">czekaj 20" - funkcja zaczeka sekunde przed nastÄ™pnÄ… komendÄ…
+   ">czekak 1200" - funkcja zaczeka minute przed nastÄ™pnÄ… komendÄ…
 
 parametry:
-w funkcjach możesz dać parametry
-Funkcja sama wykryje ile ich w sobie ma i będzie dokładnie tyle wymagała
-numeruje się je od 1, symbolami %1% %2% %3% %4%...
-dla przykładu
+w funkcjach moĹĽesz daÄ‡ parametry
+Funkcja sama wykryje ile ich w sobie ma i bÄ™dzie dokĹ‚adnie tyle wymagaĹ‚a
+numeruje siÄ™ je od 1, symbolami %1% %2% %3% %4%...
+dla przykĹ‚adu
 funkcja test1(nazwa pliku test1.txt)
 1) "say Ala ma kota" 					po wpisaniu "/func test1" 				wykona "[Server] Ala ma kota"
 2) "say %1% ma kota" 					po wpisaniu "/func test1 Ola" 			wykona "[Server] Ola ma kota"
-3) "execute as @e[%1%] run say %2%" 	po wpisaniu "/func test1 type=cow Muuu" wykona "[Cow] Muuu" x ileś razy
-   "say Byty z %1% zrobiły %2%"														   "[Server] Byty type=cow zrobiły Muuu"
-4) "wykonajwszystkim piszjako {gracz} Admin daj opa" - tą sprawdz sam (/func test1)
+3) "execute as @e[%1%] run say %2%" 	po wpisaniu "/func test1 type=cow Muuu" wykona "[Cow] Muuu" x ileĹ› razy
+   "say Byty z %1% zrobiĹ‚y %2%"														   "[Server] Byty type=cow zrobiĹ‚y Muuu"
+4) "wykonajwszystkim piszjako {gracz} Admin daj opa" - tÄ… sprawdz sam (/func test1)
 
 
 
@@ -70,23 +70,23 @@ funkcja test1(nazwa pliku test1.txt)
 Sklep
 
 w configu
-wszystkie pliki .yml w plugins/mimirpg/sklep i katalogach podrzędnych są traktowane jako "strony" 
-nazwa pliku (nielicząc końcówki .yml) to id strony
+wszystkie pliki .yml w plugins/mimirpg/sklep i katalogach podrzÄ™dnych sÄ… traktowane jako "strony" 
+nazwa pliku (nieliczÄ…c koĹ„cĂłwki .yml) to id strony
 
 Budowa strony
 
-nazwa: <nazwa wyświetlająca się jako nazwa strony(Ekwipunku)> # opcjonalne
-rzędy: <liczba od 1 do 6 określająca ilość rzędów strony> # opcjonalne domyślnie 6
+nazwa: <nazwa wyĹ›wietlajÄ…ca siÄ™ jako nazwa strony(Ekwipunku)> # opcjonalne
+rzÄ™dy: <liczba od 1 do 6 okreĹ›lajÄ…ca iloĹ›Ä‡ rzÄ™dĂłw strony> # opcjonalne domyĹ›lnie 6
 <nr slota>:
-  ilość: <ilość kupowanego/sprzedawanego przedmiotu> # opcjonalne domyślnie 1
-  cena kupna: <cena za <item> w ilości <ilość> dla kupującego> # opcjonalne
-  cena sprzedarzy: <cena za <item> w ilości <ilość> dla sprzedającego> # opcjonalne
-  strona: <nazwa strony> # opcjonalne, przenosi na wskazaną strone, anuluje pozostałe opcjonalne parametry
+  iloĹ›Ä‡: <iloĹ›Ä‡ kupowanego/sprzedawanego przedmiotu> # opcjonalne domyĹ›lnie 1
+  cena kupna: <cena za <item> w iloĹ›ci <iloĹ›Ä‡> dla kupujÄ…cego> # opcjonalne
+  cena sprzedarzy: <cena za <item> w iloĹ›ci <iloĹ›Ä‡> dla sprzedajÄ…cego> # opcjonalne
+  strona: <nazwa strony> # opcjonalne, przenosi na wskazanÄ… strone, anuluje pozostaĹ‚e opcjonalne parametry
   item: <item>
   
-Użycie w grze
+UĹĽycie w grze
 kontrola jest pod /mimipomoc Sklep
-jedyne co nie jest tam uwzględnione to to iż samo "/sklep" jest traktowane jako "/sklep Główna", o ile strona "Główna" istnieje
+jedyne co nie jest tam uwzglÄ™dnione to to iĹĽ samo "/sklep" jest traktowane jako "/sklep GĹ‚Ăłwna", o ile strona "GĹ‚Ăłwna" istnieje
 
 
 @@@@@@@@@

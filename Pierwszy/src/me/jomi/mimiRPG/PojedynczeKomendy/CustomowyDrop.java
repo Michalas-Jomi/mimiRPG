@@ -19,9 +19,9 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class CustomowyDrop implements Listener, Prze³adowalny{
+public class CustomowyDrop implements Listener, PrzeÅ‚adowalny{
 
 	public static final Config configBloki = new Config("Customowy Drop Bloki");
 	public static final Config configMoby  = new Config("Customowy Drop Moby");
@@ -30,29 +30,29 @@ public class CustomowyDrop implements Listener, Prze³adowalny{
 	
 	private static int _bloki;
 	private static int _moby;
-	public void prze³aduj() {
+	public void przeÅ‚aduj() {
 		mapa.clear();
 		
-		_prze³aduj(configBloki);
+		_przeÅ‚aduj(configBloki);
 		_bloki = 0;
 		for (List<Drop> lista : mapa.values())
 			_bloki += lista.size();
 		
-		_prze³aduj(configMoby);
+		_przeÅ‚aduj(configMoby);
 		int wszystko = 0;
 		for (List<Drop> lista : mapa.values())
 			wszystko += lista.size();
 		_moby = wszystko - _bloki;
 	}
 	public String raport() {
-		return "§6Customowe Dropy z bloków: §e" + _bloki + 
-		 "\n" + "§6Customowe Dropy z mobów: §e" + _moby;
+		return "Â§6Customowe Dropy z blokÃ³w: Â§e" + _bloki + 
+		 "\n" + "Â§6Customowe Dropy z mobÃ³w: Â§e" + _moby;
 			
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void _prze³aduj(Config config) {
-		config.prze³aduj();
+	private static void _przeÅ‚aduj(Config config) {
+		config.przeÅ‚aduj();
 
 		for (String typ : config.klucze(false)) {
 			List<Object> lista = (List<Object>) config.wczytaj(typ);
@@ -75,30 +75,30 @@ public class CustomowyDrop implements Listener, Prze³adowalny{
 		if (ev.getPlayer().getGameMode().equals(GameMode.CREATIVE)) return;
 		String mat = ev.getBlock().getType().toString();
 		if (!mapa.containsKey(mat)) return;
-		ItemStack narzêdzie = ev.getPlayer().getInventory().getItemInMainHand();
-		if (narzêdzie != null && narzêdzie.hasItemMeta() && narzêdzie.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)) return;
+		ItemStack narzÄ™dzie = ev.getPlayer().getInventory().getItemInMainHand();
+		if (narzÄ™dzie != null && narzÄ™dzie.hasItemMeta() && narzÄ™dzie.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)) return;
 		if (ev.isDropItems()) {
 			Location loc = ev.getBlock().getLocation();
 			for (Drop drop : mapa.get(mat)) {
-				drop.dropnij(loc, narzêdzie.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
-				if (drop.wy³¹czPierwotny)
+				drop.dropnij(loc, narzÄ™dzie.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
+				if (drop.wyÅ‚Ä…czPierwotny)
 					ev.setDropItems(false);
 			}
 		}
 	}
 	@EventHandler(priority=EventPriority.HIGHEST)
-	public void œmieræMoba(EntityDeathEvent ev) {
+	public void Å›mierÄ‡Moba(EntityDeathEvent ev) {
 		final String typ = ev.getEntityType().toString();
 		final LivingEntity mob = ev.getEntity();
 		if (mapa.containsKey(typ))
 			for (Drop drop : mapa.get(typ)) 
 				if (drop.warunek(mob)) {
-					ItemStack broñ = mob.getKiller() != null ? mob.getKiller().getInventory().getItemInMainHand() : null;
+					ItemStack broÅ„ = mob.getKiller() != null ? mob.getKiller().getInventory().getItemInMainHand() : null;
 					int lvl = 0;
-					if (broñ != null)
-						lvl = broñ.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+					if (broÅ„ != null)
+						lvl = broÅ„.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 					Location loc = mob.getLocation();
-					if (drop.wy³¹czPierwotny)
+					if (drop.wyÅ‚Ä…czPierwotny)
 						ev.getDrops().clear();
 					drop.dropnij(loc, lvl);
 				}
@@ -107,13 +107,13 @@ public class CustomowyDrop implements Listener, Prze³adowalny{
 
 class Drop {
 	List<Item> itemy = Lists.newArrayList();
-	boolean wy³¹czPierwotny;
-	ItemStack itemNaG³owie;
+	boolean wyÅ‚Ä…czPierwotny;
+	ItemStack itemNaGÅ‚owie;
 	String imie;
 	
-	public Drop(boolean wy³¹czPierwotny, ItemStack itemNaG³owie, String imie) {
-		this.wy³¹czPierwotny = wy³¹czPierwotny;
-		this.itemNaG³owie = itemNaG³owie;
+	public Drop(boolean wyÅ‚Ä…czPierwotny, ItemStack itemNaGÅ‚owie, String imie) {
+		this.wyÅ‚Ä…czPierwotny = wyÅ‚Ä…czPierwotny;
+		this.itemNaGÅ‚owie = itemNaGÅ‚owie;
 		if (imie != null)
 			imie = Func.koloruj(imie);
 		this.imie = imie;
@@ -124,7 +124,7 @@ class Drop {
 		ItemStack glowa = mob.getEquipment().getHelmet();
 		if (glowa == null || glowa.getType().isAir())
 			glowa = null;
-		if (itemNaG³owie != null && !itemNaG³owie.equals(glowa))
+		if (itemNaGÅ‚owie != null && !itemNaGÅ‚owie.equals(glowa))
 			return false;
 		return true;
 	}
@@ -133,31 +133,31 @@ class Drop {
 	}
 	public void dropnij(Location loc, int lvl) {
 		for (Item item : itemy)
-			item.upuœæ(loc, lvl);
+			item.upuÅ›Ä‡(loc, lvl);
 	}
 
 	public String toString() {
-		return String.format("§rDrop(imie=%s)", Func.odkoloruj(imie));
+		return String.format("Â§rDrop(imie=%s)", Func.odkoloruj(imie));
 	}
 	
 }
 
 class Item {
-	private int pe³ne;
+	private int peÅ‚ne;
 	private double szansa;
 	private ItemStack item;
 	private double bonusEnch;
 	
 	public Item(double szansa, double bonusEnch, ItemStack item) {
 		this.item = item;
-		pe³ne = (int) szansa;
+		peÅ‚ne = (int) szansa;
 		this.bonusEnch = bonusEnch;
-		this.szansa =  szansa - pe³ne;
+		this.szansa =  szansa - peÅ‚ne;
 	}
 	
-	public void upuœæ(Location loc, int lvl) {
+	public void upuÅ›Ä‡(Location loc, int lvl) {
 		double szansa = this.szansa + (lvl * bonusEnch);
-		for (int i=0; i<pe³ne; i++)
+		for (int i=0; i<peÅ‚ne; i++)
 			if (Math.random() <= szansa)
 				loc.getWorld().dropItem(loc, item);
 	}

@@ -18,23 +18,23 @@ import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Prze³adowalny;
+import me.jomi.mimiRPG.PrzeÅ‚adowalny;
 
-public class Plecak extends Komenda implements Listener, Prze³adowalny{
+public class Plecak extends Komenda implements Listener, PrzeÅ‚adowalny{
 	private static ItemStack zablokowanySlot = wezZablokowanySlot();
 	public static Config config = new Config("configi/plecaki");
 	
 	public Plecak() {
 		super("plecak");
 	}
-	public void prze³aduj() {
-		config.prze³aduj();
+	public void przeÅ‚aduj() {
+		config.przeÅ‚aduj();
 	}
 	public String raport() {
-		return "§6Plecaki: §e" + config.klucze(false).size();
+		return "Â§6Plecaki: Â§e" + config.klucze(false).size();
 	}
 	
-	public static void ustawieniaDomyœlne(Player p) {
+	public static void ustawieniaDomyÅ›lne(Player p) {
 		String imie = p.getName();
 		if (config.wczytaj(imie + ".sloty") == null)
 			config.ustaw_zapisz(imie + ".sloty", 2); 
@@ -44,8 +44,8 @@ public class Plecak extends Komenda implements Listener, Prze³adowalny{
 		
 	}
 
-	private static boolean otwórz(Player p) {
-		ustawieniaDomyœlne(p);
+	private static boolean otwÃ³rz(Player p) {
+		ustawieniaDomyÅ›lne(p);
 		p.openInventory(wczytaj_eq(p.getName()));
 		return true;
 	}
@@ -57,7 +57,7 @@ public class Plecak extends Komenda implements Listener, Prze³adowalny{
 	}
 
 	@EventHandler
-	public static void klikniêcie(InventoryClickEvent ev) {
+	public static void klikniÄ™cie(InventoryClickEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		
 		Player p = (Player) ev.getWhoClicked();
@@ -71,7 +71,7 @@ public class Plecak extends Komenda implements Listener, Prze³adowalny{
 	public static void ulepsz(Player p, String imie) {
 		int sloty = (int) config.wczytaj(imie + ".sloty");
 		if (sloty >= 6*9) 
-			{p.sendMessage("Osi¹gniêto ju¿ maksymalny poziom plecaka"); return;}
+			{p.sendMessage("OsiÄ…gniÄ™to juÅ¼ maksymalny poziom plecaka"); return;}
 		config.ustaw_zapisz(imie + ".sloty", sloty+1);
 	}
 	
@@ -98,7 +98,7 @@ public class Plecak extends Komenda implements Listener, Prze³adowalny{
 		return ((int)(x / 9))*9+9;
 	}
 	private static ItemStack wezZablokowanySlot() {
-		ItemStack item = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot Niedostêpny", Arrays.asList("Mo¿na odblokowaæ pod komend¹", "/menu"));
+		ItemStack item = Func.stwÃ³rzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot NiedostÄ™pny", Arrays.asList("MoÅ¼na odblokowaÄ‡ pod komendÄ…", "/menu"));
 		return item;
 	}
 	@Override
@@ -108,9 +108,9 @@ public class Plecak extends Komenda implements Listener, Prze³adowalny{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
-			otwórz((Player) sender);
+			otwÃ³rz((Player) sender);
 		else
-			sender.sendMessage("I co ja moge zrobiæ?");
+			sender.sendMessage("I co ja moge zrobiÄ‡?");
 		return true;
 	}
 	

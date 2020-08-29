@@ -2,9 +2,9 @@ package me.jomi.mimiRPG;
 
 import java.util.HashMap;
 
-public interface Prze³adowalny {
-	public static final HashMap<String, Prze³adowalny> prze³adowalne = new HashMap<>();
+public interface PrzeÅ‚adowalny {
+	public static final HashMap<String, PrzeÅ‚adowalny> przeÅ‚adowalne = new HashMap<>();
 	
-	public void prze³aduj();
+	public void przeÅ‚aduj();
 	public String raport();
 }
