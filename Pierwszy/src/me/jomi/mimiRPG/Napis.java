@@ -61,11 +61,13 @@ public class Napis implements ConfigurationSerializable {
 		txt.setClickEvent(new ClickEvent(akcja, treść));
 	}
 
-	public void dodaj(String co) {
+	public Napis dodaj(String co) {
 		txt.addExtra(co);
+		return this;
 	}
-	public void dodaj(Napis co) {
+	public Napis dodaj(Napis co) {
 		txt.addExtra(co.txt);
+		return this;
 	}
 	public void dodaj(TextComponent co) {
 		txt.addExtra(co);

@@ -11,6 +11,7 @@ import me.jomi.mimiRPG.Chat.KolorPisania;
 import me.jomi.mimiRPG.Chat.KomendyInfo;
 import me.jomi.mimiRPG.Chat.Mi;
 import me.jomi.mimiRPG.Chat.PiszJako;
+import me.jomi.mimiRPG.Chat.Pomoc;
 import me.jomi.mimiRPG.Chat.Przyjaciele;
 import me.jomi.mimiRPG.Chat.WykonajWszystkim;
 import me.jomi.mimiRPG.Edytory.EdytorTabliczek;
@@ -29,7 +30,7 @@ CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.clas
 EdytorTabliczek.class, EdytujItem.class, Funkcje.class, Głowa.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
-Plecak.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
+Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
 Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
 Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 	

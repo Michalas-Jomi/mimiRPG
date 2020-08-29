@@ -1,0 +1,15 @@
+# <nazwa> : <Napis>
+#
+
+sklep: 
+  - '§9PPM §c- §bKupujesz'
+  - '§9Shift + PPM §c- §bKupujesz możliwie dużo'
+  - '§9LPM §c- §bSprzedajesz'
+  - '§9Shift + LPM §c- §bSprzedajesz możliwie dużo'
+  - '§9/sklep <strona>'
+
+drabina+:
+  - '§9Drabina ta postawiona w jednym miejscu'
+  - '§9buduje sie samodzielnie zarówno w góre i w dół,'
+  - '§9tak długo aż osiągnie limit świata,'
+  - '§9lub trafi na przeszkode'

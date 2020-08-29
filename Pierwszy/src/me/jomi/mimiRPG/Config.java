@@ -129,12 +129,23 @@ public class Config {
 		List<Napis> lista = Lists.newArrayList();
 		Object obj = wczytaj(sciezka);
 		if (obj != null)
-			for (Object napis : (List<?>) obj)
-				lista.add(_napis(napis));
+			if (obj instanceof List)
+				for (Object napis : (List<?>) obj)
+					lista.add(_napis(napis));
+			else
+				lista.add(_napis(obj));
 		return lista;
 	}
 	@SuppressWarnings("unchecked")
 	private Napis _napis(Object obj) {
+		if (obj instanceof List) {
+			Napis n = new Napis();
+			for (Object napis : (List<?>) obj)
+				n.dodaj(_napis(napis)).dodaj("\n");
+			return n;
+		}
+		if (obj instanceof Napis)
+			return (Napis) obj;
 		if (obj instanceof String)
 			return Napis.wczytaj((String) obj);
 		if (obj instanceof Map)

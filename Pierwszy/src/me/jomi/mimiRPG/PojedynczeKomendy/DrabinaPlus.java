@@ -16,20 +16,13 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Instrukcja;
 import me.jomi.mimiRPG.Komenda;
 
-public class DrabinaPlus extends Komenda implements Listener, Instrukcja {
+public class DrabinaPlus extends Komenda implements Listener {
 	public static final String prefix = Func.prefix("Drabina+");
 	final ItemStack drabina = Func.połysk(Func.stwórzItem(Material.LADDER, "§6Drabina§l+", "§bPostaw jedną a sięgniesz nieba"));
 	public DrabinaPlus() {
 		super("drabina+", prefix + "/drabina+ (gracz)");
-	}
-
-	@Override
-	public void info(CommandSender p, int strona) {
-		p.sendMessage("Drabina ta postawiona w jednym miejscu buduje sie samodzielnie zarówno w góre i w dół,");
-		p.sendMessage("tak długo aż osiągnie limit świata, lub trafi na przeszkode");
 	}
 
 	@Override
