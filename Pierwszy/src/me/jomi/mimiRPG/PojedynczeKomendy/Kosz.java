@@ -40,6 +40,7 @@ public class Kosz extends Komenda implements Prze³adowalny, Zegar {
 	
 	public int czas() {
 		if (maxTimer <= -1) return 20;
+		if (Bukkit.getOnlinePlayers().size() <= 0) return 20;
 		timer -= 1;
         if (timer <= 0) {
         	timer = maxTimer;

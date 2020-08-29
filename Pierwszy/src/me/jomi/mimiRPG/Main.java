@@ -36,9 +36,6 @@ public class Main extends JavaPlugin {
 	// Blokada zabijania Invulnerable mobów jest w Klasie KolorPisania
 	
 	// TODO blok przyciągający itemy
-	// TODO drabinki 0-255
-	
-	// TODO info opisujące wszystko
 	
     public static Permission perms = null;
     public static Economy econ = null;
@@ -85,8 +82,8 @@ public class Main extends JavaPlugin {
 				zarejestruj(minigra);
 		}
 		
-		for (Class<?> klasa : Arrays.asList(Antylog.class, AutoWiadomosci.class, ChatGrupowy.class,
-CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, Budownik.class, 
+		for (Class<?> klasa : Arrays.asList(Antylog.class, AutoWiadomosci.class, Budownik.class, ChatGrupowy.class,
+CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
 EdytorTabliczek.class, EdytujItem.class, Funkcje.class, Głowa.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,

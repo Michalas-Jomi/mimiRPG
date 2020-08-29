@@ -2,6 +2,8 @@ package me.jomi.mimiRPG.Chat;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
+
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
@@ -35,6 +37,7 @@ public class AutoWiadomosci implements Prze³adowalny, Zegar {
 	
 	public void wyœlij() {
 		if (wiadomoœci.size() <= 0) return;
+		if (Bukkit.getOnlinePlayers().size() <= 0) return;
 		int i;
 		do i = Func.losuj(0, doWys³ania.size()-1); 
 			while(doWys³ania.size() > 1 && doWys³ania.get(i).equals(ostatnia));
