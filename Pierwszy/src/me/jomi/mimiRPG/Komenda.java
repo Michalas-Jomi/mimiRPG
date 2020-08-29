@@ -51,17 +51,21 @@ public abstract class Komenda implements TabExecutor {
 			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			c.setAccessible(true);
 			PluginCommand komenda = c.newInstance(nazwa, Main.plugin);
+			String prefix = Func.prefix("Komenda");
+			try { 
+				prefix = (String) this.getClass().getDeclaredField("prefix").get(null);
+			} catch (NoSuchFieldException e) {}
+			komenda.setPermissionMessage(prefix + "§cNie masz uprawnieñ ziomuœ");
 			komenda.setPermission((Main.plugin.getName() + "." + nazwa).toLowerCase());
 			komenda.setUsage(u¿ycie);
 			if (aliasy != null)
 				komenda.setAliases(aliasy);
 			return komenda;
 		} catch (Exception e) {
-			Main.log("Problem przy komendzie:", nazwa);
+			Main.error("Problem przy komendzie:", nazwa);
 		}
 		return null;
 	}
-	
 	
 	@Override
 	public abstract List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args);

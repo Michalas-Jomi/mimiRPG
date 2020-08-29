@@ -11,9 +11,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -87,11 +85,7 @@ public class Main extends JavaPlugin {
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
         // Wiadomość braku dostępu do komendy
-        String pref = Func.prefix("Komenda");
-        for (Command cmd : PluginCommandYamlParser.parse(this))
-        	cmd.setPermissionMessage(pref + "§cNie masz uprawnień ziomuś");
 
-        
         Main.dodajPermisje("powiadomienia");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
         

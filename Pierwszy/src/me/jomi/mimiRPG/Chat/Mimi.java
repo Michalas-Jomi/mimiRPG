@@ -29,7 +29,8 @@ public class Mimi extends Komenda {
 		p.sendMessage("§2ⓜⓘⓜⓘⓇⓅⒼ");
 		p.sendMessage("");
 		p.sendMessage("§ePlugin w całości napisany przezemnie");
-		p.sendMessage("§ePonadto jest to mój pierwszy plugin więc");
+		p.sendMessage("§ePonadto jest to mój pierwszy plugin");
+		p.sendMessage("§eI pierwsze zetknięcie z programowaniem w Javie więc");
 		p.sendMessage("§eSię sporo przy nim nauczyłem");
 		p.sendMessage("§1§l~~§9Michałas§1§l~~");
 		p.sendMessage("");

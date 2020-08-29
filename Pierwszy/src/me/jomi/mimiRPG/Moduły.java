@@ -23,7 +23,6 @@ import me.jomi.mimiRPG.PojedynczeKomendy.*;
 public class Modu³y implements Prze³adowalny {
 	private static ConfigurationSection modu³y;
 	int w³¹czone = 0;
-	int wy³¹czone = 0;
 	
 	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Budownik.class, ChatGrupowy.class, 
 CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
@@ -51,13 +50,11 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 					if (sekcja.getBoolean(nazwa)) {
 						Main.zarejestruj(klasa.newInstance());
 						w³¹czone++;
-					} else
-						wy³¹czone++;
+					}
 				else if (modu³y != null && !modu³y.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
 					Main.zarejestruj(klasa.newInstance());
 					modu³y.set(nazwa, true);
 					w³¹czone++;
-					wy³¹czone--;
 					Main.log("§aW³¹czono Modu³: " + nazwa);
 					prze³adowaæ = true;
 				}
@@ -70,7 +67,7 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 
 	@Override
 	public String raport() {
-		return "§6W³¹czone Modu³y: §e" + w³¹czone + "§6/§e" + (w³¹czone + wy³¹czone);
+		return "§6W³¹czone Modu³y: §e" + w³¹czone + "§6/§e" + klasy.length;
 	}
 
 	public static boolean w³¹czony(String modu³) {

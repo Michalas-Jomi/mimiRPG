@@ -1,3 +1,9 @@
+@@@@@@@@@
+
+Do komend z tego pluginu permisja wygląda naztępująco: mimirpg.<komenda>
+to oznacza że do "/sklep" permisja jest "mimirpg.sklep", a do "/ujeżdzaj" jest "mimirpg.ujeżdzaj"
+
+
 Często opisuje coś używając specjalnej nazwy
 Słowniczek:
 @
@@ -32,6 +38,35 @@ Koniec Słowniczka
 @@@@@@@@@@@@@@@@@
 
 @
+Funkcje
+
+w configu
+wszystkie pliki .txt w plugins.mimirpg/funkcje i katalogach podrzędnych są traktowane jako "Funkcje"
+nazwa pliku (nielicząć końcówki .txt) to nazwa funkcji
+
+każda linia w pliku to pojedyńcza komenda wywoływane przez wpisyjącego komende
+różnią się od zwykłych .MCFUNCTION tym że posiadają opcje delay'u i parametry
+
+delay:
+">czekaj <ticki>" 20 ticków = 1 sekunda
+np ">czekaj 20" - funkcja zaczeka sekunde przed następną komendą
+   ">czekak 1200" - funkcja zaczeka minute przed następną komendą
+
+parametry:
+w funkcjach możesz dać parametry
+Funkcja sama wykryje ile ich w sobie ma i będzie dokładnie tyle wymagała
+numeruje się je od 1, symbolami %1% %2% %3% %4%...
+dla przykładu
+funkcja test1(nazwa pliku test1.txt)
+1) "say Ala ma kota" 					po wpisaniu "/func test1" 				wykona "[Server] Ala ma kota"
+2) "say %1% ma kota" 					po wpisaniu "/func test1 Ola" 			wykona "[Server] Ola ma kota"
+3) "execute as @e[%1%] run say %2%" 	po wpisaniu "/func test1 type=cow Muuu" wykona "[Cow] Muuu" x ileś razy
+   "say Byty z %1% zrobiły %2%"														   "[Server] Byty type=cow zrobiły Muuu"
+4) "wykonajwszystkim piszjako {gracz} Admin daj opa" - tą sprawdz sam (/func test1)
+
+
+
+@
 Sklep
 
 w configu
@@ -54,3 +89,4 @@ kontrola jest pod /mimipomoc Sklep
 jedyne co nie jest tam uwzględnione to to iż samo "/sklep" jest traktowane jako "/sklep Główna", o ile strona "Główna" istnieje
 
 
+@@@@@@@@@
