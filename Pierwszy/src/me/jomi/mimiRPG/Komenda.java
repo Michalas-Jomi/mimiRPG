@@ -25,20 +25,27 @@ public abstract class Komenda implements TabExecutor {
 		ustawKomende(komenda, użycie, Lists.newArrayList(aliasy));
 	}
 	
+	/**
+	 * Tworzy komendę i ustawia jej executora na ten Objekt
+	 * 
+	 * @param komenda nazwa komendy
+	 * @param użycie info wyświetlane gdy onCommand zwróci false, dodaje prefix
+	 * @param aliasy lista alternatywnych nazw dla komendy
+	 * 
+	 */
 	protected void ustawKomende(String komenda, String użycie, List<String> aliasy) {
 		if (użycie == null)
 			użycie = "/" + komenda;
 		try {
 	    	Field fCommandMap = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 	        fCommandMap.setAccessible(true);
-	        
 	        Object commandMapObject = fCommandMap.get(Bukkit.getPluginManager());
 	        if (commandMapObject instanceof CommandMap) {
 	            CommandMap commandMap = (CommandMap) commandMapObject;
 	    		commandMap.register(Main.plugin.getName(), komenda(komenda, użycie, aliasy));
 	        }
-	    } catch (NoSuchFieldException | IllegalAccessException e) {
-	    	Main.log("§cNie udało sie Stworzyć komendy " + komenda);
+	    } catch (Exception e) {
+	    	Main.error("Nie udało sie Stworzyć komendy " + komenda);
 	    	return;
 	    }
 		PluginCommand cmd = Main.plugin.getCommand(komenda);
@@ -46,29 +53,49 @@ public abstract class Komenda implements TabExecutor {
 		cmd.setExecutor(this);
 		cmd.setUsage(użycie);
 	}
-	private PluginCommand komenda(String nazwa, String użycie, List<String> aliasy) {
-		try {
-			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
-			c.setAccessible(true);
-			PluginCommand komenda = c.newInstance(nazwa, Main.plugin);
-			String prefix = Func.prefix("Komenda");
-			try { 
-				prefix = (String) this.getClass().getDeclaredField("prefix").get(null);
-			} catch (NoSuchFieldException e) {}
-			komenda.setPermissionMessage(prefix + "§cNie masz uprawnień ziomuś");
-			komenda.setPermission((Main.plugin.getName() + "." + nazwa).toLowerCase());
-			komenda.setUsage(użycie);
-			if (aliasy != null)
-				komenda.setAliases(aliasy);
-			return komenda;
-		} catch (Exception e) {
-			Main.error("Problem przy komendzie:", nazwa);
+	private PluginCommand komenda(String nazwa, String użycie, List<String> aliasy) throws Exception {
+		Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
+		c.setAccessible(true);
+		PluginCommand komenda = c.newInstance(nazwa, Main.plugin);
+		String prefix;
+		try { 
+			prefix = (String) this.getClass().getDeclaredField("prefix").get(null);
+		} catch (NoSuchFieldException e) {
+			prefix = Func.prefix(this.getClass().getSimpleName());
 		}
-		return null;
+		komenda.setPermissionMessage(prefix + "§cNie masz uprawnień ziomuś");
+		komenda.setPermission((Main.plugin.getName() + "." + nazwa).toLowerCase());
+		if (!użycie.startsWith(prefix))
+			użycie = prefix + użycie;
+		komenda.setUsage(użycie);
+		if (aliasy != null)
+			komenda.setAliases(aliasy);
+		return komenda;
 	}
 	
+	/**
+	 * Wywoływana przy wpisywaniu komendy
+	 * 
+	 * @param sender wpisujący komendę
+	 * @param cmd Objekt Komendy
+	 * @param label dokładna forma wpisanej komendy
+	 * @param args Tablica wpisanych argumentów
+	 * 
+	 * @return lista słów wyświetlanych pod tabem
+	 */
 	@Override
 	public abstract List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args);
+	/**
+	 * Wowołana po wpisaniu komendy
+	 * 
+	 * @param sender wpisujący komendę
+	 * @param cmd Objekt Komendy
+	 * @param label dokładna forma wpisanej komendy
+	 * @param args Tablica wpisanych argumentów
+	 * 
+	 * @return jeśli zwrócone zostanie false </br>
+	 * sender zobaczy cmd.getPermissionMessage();
+	 */
 	@Override
 	public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 

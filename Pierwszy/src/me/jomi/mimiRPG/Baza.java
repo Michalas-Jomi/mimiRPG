@@ -5,7 +5,7 @@ import java.util.HashMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
-public class Baza{
+public class Baza {
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static ConfigurationSection grupy;

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.MiniGierki;
+package me.jomi.mimiRPG.MiniGierki.Stare;
 
 import java.util.HashMap;
 import java.util.List;

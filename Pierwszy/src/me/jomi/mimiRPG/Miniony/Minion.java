@@ -228,7 +228,6 @@ public abstract class Minion extends EntityZombie {
 		zapisz();
 	}
 	
-	
 	protected abstract void ubierz();
 	protected void ubierz(ItemStack hełm, ItemStack klata, ItemStack spodnie, ItemStack buty) {
 		EntityEquipment eq = ((LivingEntity) getBukkitEntity()).getEquipment();

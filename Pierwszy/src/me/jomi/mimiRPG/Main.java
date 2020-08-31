@@ -17,7 +17,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.MiniGierki.*;
+import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
+import me.jomi.mimiRPG.MiniGierki.Stare.Minigry;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
@@ -77,7 +78,6 @@ public class Main extends JavaPlugin {
 			new Przeładuj();
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
-        // Wiadomość braku dostępu do komendy
 
         Main.dodajPermisje("powiadomienia");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
@@ -153,10 +153,22 @@ public class Main extends JavaPlugin {
 		logger.severe(logprefix + Func.listToString(msg, 0));
 	}
 
+	/**
+	 * Dodaje permisje do pluginu
+	 * 
+	 * @param permisje 
+	 *  Dowolna ilość permisji
+	 * 
+	 */
 	public static void dodajPermisje(String... permisje) {
 		PluginManager pluginManager = plugin.getServer().getPluginManager();
-		for (String permisja : permisje)
-			pluginManager.addPermission(new org.bukkit.permissions.Permission((plugin.getName() + '.' + permisja).toLowerCase()));
+		for (String permisja : permisje) {
+			permisja = permisja.toLowerCase();
+			String plugin = Main.plugin.getName().toLowerCase();
+			if (!permisja.startsWith(plugin + '.'))
+				permisja = plugin + '.' + permisja;
+			pluginManager.addPermission(new org.bukkit.permissions.Permission(permisja));
+		}
 	}
 	
 	public static boolean włączonyModół(Class<?> modół) {

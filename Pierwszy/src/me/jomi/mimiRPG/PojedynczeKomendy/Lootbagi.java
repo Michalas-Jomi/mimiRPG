@@ -31,7 +31,7 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.MiniGierki.MiniGra;
+import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class Lootbagi extends Komenda implements Listener, Przeładowalny{

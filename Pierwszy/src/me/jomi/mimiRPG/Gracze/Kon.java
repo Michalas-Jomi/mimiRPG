@@ -85,6 +85,8 @@ public class Kon {
 		kon.setHealth(20);
 
 		p.sendMessage(Koniki.prefix + Func.msg("Przywołałeś swojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", Koniki.czas(gracz.koń.zapas)));
+		//EntityHorse e = ((EntityHorse)((CraftEntity) kon).getHandle());
+		//e.goalSelector = new PathfinderGoalSelector(e.getWorld().getMethodProfilerSupplier());
 		
 		ustawMały();
 		ustawStyl();

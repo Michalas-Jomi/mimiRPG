@@ -28,7 +28,7 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.MiniGierki.MiniGra;
+import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
 
 public class Osiągnięcia implements Listener, Przeładowalny{
 	public static final String prefix = Func.prefix("Osiągnięcia");
