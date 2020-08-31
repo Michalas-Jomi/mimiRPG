@@ -15,92 +15,58 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.Gracze.Gracze;
 
-public class Plecak extends Komenda implements Listener, Przeładowalny{
-	private static ItemStack zablokowanySlot = wezZablokowanySlot();
-	public static Config config = new Config("configi/plecaki");
+public class Plecak extends Komenda implements Listener {
+	private static ItemStack zablokowanySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot Niedostępny", Arrays.asList("Można odblokować pod komendą", "/menu"));
 	
 	public Plecak() {
 		super("plecak");
 	}
-	public void przeładuj() {
-		config.przeładuj();
-	}
-	public String raport() {
-		return "§6Plecaki: §e" + config.klucze(false).size();
-	}
-	
-	public static void ustawieniaDomyślne(Player p) {
-		String imie = p.getName();
-		if (config.wczytaj(imie + ".sloty") == null)
-			config.ustaw_zapisz(imie + ".sloty", 2); 
-		if (config.wczytaj(imie + ".itemy") == null) {
-			config.ustaw_zapisz(imie + ".itemy", config.wczytaj("BrakItemowSlotmimiRPGSLot"));
-		}
-		
-	}
 
 	private static boolean otwórz(Player p) {
-		ustawieniaDomyślne(p);
-		p.openInventory(wczytaj_eq(p.getName()));
+		List<ItemStack> itemy = Gracze.gracz(p.getName()).plecak;
+		while (itemy.size() < 3)
+			itemy.add(null);
+		int sloty = itemy.size();
+		int do9 = sloty % 9 == 0 ? sloty : sloty / 9 * 9 + 9;
+		Inventory inv = Bukkit.createInventory(p, do9, "plecak");
+		for (int i=0	; i<sloty ; i++) inv.setItem(i, itemy.get(i));
+		for (int i=sloty; i<do9	  ; i++) inv.setItem(i, zablokowanySlot);
+		p.openInventory(inv);
 		return true;
 	}
 	@EventHandler
 	public static void zamknij(InventoryCloseEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
-		Player p = (Player) ev.getPlayer();
-		zapisz_eq(ev.getInventory(), p.getName());
+		Gracz gracz = Gracze.gracz(ev.getPlayer().getName());
+		for (int i=0; i<gracz.plecak.size(); i++)
+			gracz.plecak.set(i, ev.getInventory().getItem(i));
+		gracz.zapisz("plecak");
 	}
-
 	@EventHandler
 	public static void kliknięcie(InventoryClickEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		
 		Player p = (Player) ev.getWhoClicked();
-		int sloty = (int) config.wczytaj(p.getName() + ".sloty");
+		int sloty = Gracze.gracz(p.getName()).plecak.size();
 		
-		if (ev.getRawSlot() >= sloty && ev.getRawSlot() < do9(sloty))
+		if (ev.getRawSlot() >= sloty && ev.getRawSlot() < ev.getInventory().getSize())
 			ev.setCancelled(true);
-		return;
 	}
 	
 	public static void ulepsz(Player p, String imie) {
-		int sloty = (int) config.wczytaj(imie + ".sloty");
+		Gracz gracz = Gracze.gracz(imie);
+		int sloty = gracz.plecak.size();
 		if (sloty >= 6*9) 
 			{p.sendMessage("Osiągnięto już maksymalny poziom plecaka"); return;}
-		config.ustaw_zapisz(imie + ".sloty", sloty+1);
+		gracz.plecak.add(null);
+		gracz.zapisz("plecak");
 	}
 	
-	public static int wczytaj_sloty(Player p) {
-		return (int) config.wczytaj(p.getName() + ".sloty");
-	}
-	private static Inventory wczytaj_eq(String imie) {
-		int sloty = (int) config.wczytaj(imie + ".sloty");
-		Inventory inv = Bukkit.createInventory(Bukkit.getPlayer(imie), do9(sloty), "plecak");
-		for (int i=0; i<sloty; i++)
-			inv.setItem(i, config.wczytajItem(imie + ".itemy." + i));
-		for (int i=sloty; i<do9(sloty); i++)
-			inv.setItem(i, zablokowanySlot);
-		return inv;
-	}
-	private static void zapisz_eq(Inventory inv, String imie) {
-		int sloty = (int) config.wczytaj(imie + ".sloty");
-		for (int i=0; i<sloty; i++) 
-			config.ustaw(imie + ".itemy." + i, inv.getItem(i));
-		config.zapisz();
-	}
-	private static int do9(int x) {
-		if (x % 9 == 0) return x;
-		return ((int)(x / 9))*9+9;
-	}
-	private static ItemStack wezZablokowanySlot() {
-		ItemStack item = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot Niedostępny", Arrays.asList("Można odblokować pod komendą", "/menu"));
-		return item;
-	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return null;

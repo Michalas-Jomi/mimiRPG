@@ -156,8 +156,7 @@ public class Main extends JavaPlugin {
 	/**
 	 * Dodaje permisje do pluginu
 	 * 
-	 * @param permisje 
-	 *  Dowolna ilość permisji
+	 * @param permisje Dowolna ilość permisji
 	 * 
 	 */
 	public static void dodajPermisje(String... permisje) {

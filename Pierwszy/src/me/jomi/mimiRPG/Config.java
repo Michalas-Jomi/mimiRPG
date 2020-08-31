@@ -102,8 +102,9 @@ public class Config {
 	@SuppressWarnings("unchecked")
 	public List<ItemStack> wczytajItemy(Object... sciezka) {
 		List<ItemStack> lista = Lists.newArrayList();
-		List<Object> _lista = (List<Object>) wczytaj(sciezka);
-		for (Object obj : _lista)
+		Object objListy = wczytaj(sciezka);
+		if (objListy == null) return lista;
+		for (Object obj : (List<Object>) objListy)
 			lista.add(item(obj));
 		return lista;
 	}
