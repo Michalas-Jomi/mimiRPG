@@ -23,6 +23,7 @@ public class Funkcje extends Komenda implements Przeładowalny {
 		super("funkcja", null, "func");
 	}
 	
+	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return uzupełnijTabComplete(args.length == 1 ? args[0] : "Ala ma kota", Lists.newArrayList(mapa.keySet()));
@@ -32,20 +33,18 @@ public class Funkcje extends Komenda implements Przeładowalny {
 		if (args.length <= 0) return Main.powiadom(sender, prefix + "/funkcja <nazwa> [parametry]");
 		String nazwa = args[0];
 		Funkcja func = mapa.get(nazwa);
-		if (func != null) {
+		if (func != null)
 			if (args.length-1 == func.parametry)
 				func.wykonaj(sender, args);
 			else 
 				sender.sendMessage(prefix + Func.msg("Funkcja %s przyjmuje %s parametry, podano %s", nazwa, func.parametry, args.length-1));
-		}
 		else
 			sender.sendMessage(prefix + "Niepoprawna Funkcja §e" + nazwa);
 		return true;
 	}
 
-	private final List<Funkcja> funkcje = Lists.newArrayList();
 	public void przeładuj() {
-		funkcje.clear();
+		mapa.clear();
 		File folder = new File("plugins/"+Main.plugin.getName()+"/funkcje");
 		if (!folder.exists())
 			folder.mkdirs();

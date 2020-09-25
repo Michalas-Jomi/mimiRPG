@@ -81,11 +81,11 @@ public class Config {
 		return plik.getConfigurationSection(sc(sciezka));
 	}
 	
-	public Object  wczytaj		 (Object... sciezka) { return     plik.get(sc(sciezka));}
-	public int 	   wczytajInt	 (Object... sciezka) { return (int)    wczytaj(sciezka);}
-	public double  wczytajDouble (Object... sciezka) { return (double) wczytaj(sciezka);}
-	public boolean wczytajBoolean(Object... sciezka) { return (boolean)wczytaj(sciezka);}
-	public String  wczytajStr	 (Object... sciezka) { return Func.koloruj((String) wczytaj(sciezka));}
+	public Object  wczytaj		 (Object... sciezka) {return     plik.get(sc(sciezka));}
+	public int 	   wczytajInt	 (Object... sciezka) {return (int)	wczytaj(sciezka);}
+	public double  wczytajDouble (Object... sciezka) {return (double) wczytaj(sciezka);}
+	public boolean wczytajBoolean(Object... sciezka) {return (boolean)wczytaj(sciezka);}
+	public String  wczytajStr	 (Object... sciezka) {return Func.koloruj((String) wczytaj(sciezka));}
 
 	@SuppressWarnings("unchecked")
 	public <T> T wczytajLubDomyślna(String sciezka, T domyślna) {

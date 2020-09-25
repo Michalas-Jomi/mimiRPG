@@ -1,7 +1,7 @@
 #TYP:
 #  - pierwotnyDrop: (true / false)
 #    ime: CustomName # opcjonalne
-#    glowa: item na gĹ‚owie # opcjonalne
+#    glowa: item na głowie # opcjonalne
 #  - rolle1.szansa1
 #  - bonusEnch1
 #  - item1
@@ -9,12 +9,12 @@
 #  - bonusEnch2
 #  - item2
 #
-#  JeĹ›li potrzebujesz daÄ‡ kilka tabel jednemu mobowi
-#  uĹĽyj w jego typie "x" (xZOMBIE, xxZOMBIE)
+#  Jeśli potrzebujesz dać kilka tabel jednemu mobowi
+#  użyj w jego typie "x" (xZOMBIE, xxZOMBIE)
 #
 ZOMBIE:
   - pierwotnyDrop: true
-    ime: '&aPrzykĹ‚adowy zombie'
+    ime: '&aPrzykładowy zombie'
     glowa: 
       ==: org.bukkit.inventory.ItemStack
       v: 2230

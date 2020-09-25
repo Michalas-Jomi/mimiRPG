@@ -24,7 +24,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.HorseInventory;
 import org.bukkit.inventory.ItemStack;
-
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -32,6 +31,7 @@ import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
+import me.jomi.mimiRPG.Gracze.Kon;
 
 public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static final String prefix = Func.prefix("Koniki");
@@ -46,12 +46,13 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	
 	public int czas() {
 		for (Gracz gracz : Gracze.mapa.values())
-			gracz.koń.sprawdz();
+			if (gracz.kon != null)
+				gracz.kon.sprawdz();
 		return 400;
 	}
 	
-	private static int maxCzas;
-	private static final HashMap<Material, Integer> mapa = new HashMap<>(); 
+	private int maxCzas;
+	private final HashMap<Material, Integer> mapa = new HashMap<>(); 
 	public void przeładuj() {
 		mapa.clear();
 		ConfigurationSection sekcja = Main.ust.sekcja("Koniki.jedzenie");
@@ -87,7 +88,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
-			Gracze.gracz(sender.getName()).koń.przywołaj();
+			przywołaj(Gracze.gracz(sender.getName()));
 		else
 			sender.sendMessage("Tylko gracz może tego użyć");
 		return true;
@@ -106,7 +107,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setCancelled(true);
 				return;
 			}
-			if (!Gracze.gracz(kon.getMetadata("mimiKon").get(0).asString()).koń.nakarmiony()) {
+			if (!Gracze.gracz(kon.getMetadata("mimiKon").get(0).asString()).kon.nakarmiony()) {
 				p.sendMessage(prefix + "Ten Konik jest zbyt głodny aby mógł cie wozić");
 				ev.setCancelled(true);
 				return;
@@ -127,6 +128,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (!(ev.getRightClicked() instanceof Horse)) return;
 		Horse kon = (Horse) ev.getRightClicked();
 		Player p = ev.getPlayer();
+		if (!kon.hasMetadata("mimiKon")) return;
 		if (ev.getPlayer().isSneaking() && !kon.isAdult())
 			otwórz(p, kon, ev);
 		else {
@@ -135,17 +137,17 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 				int ile = mapa.get(item.getType());
 				ev.setCancelled(true);
 				Gracz gracz = Gracze.gracz(kon.getMetadata("mimiKon").get(0).asString());
-				if (gracz.koń.zapas >= System.currentTimeMillis() / 1000 + maxCzas) {
+				if (gracz.kon.zapas >= System.currentTimeMillis() / 1000 + maxCzas) {
 					p.sendMessage(prefix + "Ten Konik jest już najedzony");
 					return;
 				}
-				gracz.koń.nakarm(ile);
+				gracz.kon.nakarm(ile);
 				item.setAmount(item.getAmount() - 1);
 				if (!gracz.p.getName().equals(p.getName())) {
-					p.sendMessage(prefix + Func.msg("Nakarmiłeś Konika gracza %s może on jezdzić na nim jeszcze %s bez karmienia", gracz.p.getName(), czas(gracz.koń.zapas)));
-					gracz.p.sendMessage(prefix + Func.msg("%s Nakarmił twojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", p.getName(), czas(gracz.koń.zapas)));
+					p.sendMessage(prefix + Func.msg("Nakarmiłeś Konika gracza %s może on jezdzić na nim jeszcze %s bez karmienia", gracz.p.getName(), czas(gracz.kon.zapas)));
+					gracz.p.sendMessage(prefix + Func.msg("%s Nakarmił twojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", p.getName(), czas(gracz.kon.zapas)));
 				} else {
-					p.sendMessage(prefix + Func.msg("Nakarmiłeś swojego Konika możesz jezdzić na nim jeszcze %s bez karmienia", czas(gracz.koń.zapas)));
+					p.sendMessage(prefix + Func.msg("Nakarmiłeś swojego Konika możesz jezdzić na nim jeszcze %s bez karmienia", czas(gracz.kon.zapas)));
 				}
 				return;
 			}
@@ -173,24 +175,39 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 			String nick = kon.getMetadata("mimiKon").get(0).asString();
 			if (p.hasPermission("mimiRPG.konik.bypass") || 
 					nick.equals(p.getName()))
-				p.openInventory(Gracze.gracz(nick).koń.inv);
+				p.openInventory(Gracze.gracz(nick).kon.inv);
 			else
 				p.sendMessage(prefix + "§4Ej! §cTo nie twój Konik ziom, nie dotykaj.");
 		}
+	}
+
+	void przywołaj(Gracz g) {
+		if (g.kon == null) {
+			new Kon(g,
+					(boolean) g.config.wczytajLubDomyślna("koń.bezgłośny", false),
+					(boolean) g.config.wczytajLubDomyślna("koń.mały", false),
+					(String) g.config.wczytajLubDomyślna("koń.kolor", "Biały"),
+					(String) g.config.wczytajLubDomyślna("koń.styl", "Brak"),
+					(int) g.config.wczytajLubDomyślna("koń.zapas", -1));
+		}
+		g.kon.przywołaj();
 	}
 	
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
 		if (ev.getView().getTitle().equals("§1§lTwój Konik"))
-			Gracze.gracz(((Player) ev.getInventory().getHolder()).getName()).koń.kliknięteEq(ev);
+			Gracze.gracz(((Player) ev.getInventory().getHolder()).getName()).kon.kliknięteEq(ev);
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		if (ev.getView().getTitle().equals("§1§lTwój Konik"))
-			Gracze.gracz(((Player) ev.getInventory().getHolder()).getName()).koń.zapisz();	
+			Gracze.gracz(((Player) ev.getInventory().getHolder()).getName()).kon.zapisz();	
 	}
 	@EventHandler
 	public void opuszczenieGry(PlayerQuitEvent ev) {
-		Gracze.gracz(ev.getPlayer().getName()).koń.usuń();
+		Kon kon = Gracze.gracz(ev.getPlayer().getName()).kon;
+		if (kon != null)
+			kon.usuń();
 	}
 }
+

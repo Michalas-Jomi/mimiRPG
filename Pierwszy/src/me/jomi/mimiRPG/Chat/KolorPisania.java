@@ -31,7 +31,6 @@ public class KolorPisania extends Komenda implements Listener {
 	    Main.dodajPermisje("przejściakolorów");
 	}
 	
-	
 	@EventHandler(priority=EventPriority.LOW)
 	public void Pisanie(AsyncPlayerChatEvent ev) {
 		if (ev.isCancelled()) return;

@@ -16,6 +16,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+
 import me.jomi.mimiRPG.Chat.*;
 import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
 import me.jomi.mimiRPG.MiniGierki.Stare.Minigry;
@@ -44,6 +47,9 @@ public class Main extends JavaPlugin {
 	public static String path;
 	
 	public static boolean ekonomia = false;
+	public static boolean worldGuard = true;
+	
+	public static StateFlag flagaStawianieBaz;
 	
 	public static Config ust;
 	public void onLoad() {
@@ -53,7 +59,15 @@ public class Main extends JavaPlugin {
 		ConfigurationSerialization.registerClass(Napis.class);
 		ConfigurationSerialization.registerClass(Grupa.class);
 		
+
 		ust = new Config("ustawienia");
+		flagaStawianieBaz = new StateFlag("StawianieBaz", true);
+		try {
+			WorldGuard.getInstance().getFlagRegistry().register(flagaStawianieBaz);
+		} catch (Exception e) {
+			worldGuard = false;
+			error("Nie wykryto WorldGuard, wyłączanie niektórych funkcji");
+		}
 	}
 	public void onEnable() {
 		ekonomia = setupVault();
@@ -157,7 +171,6 @@ public class Main extends JavaPlugin {
 	 * Dodaje permisje do pluginu
 	 * 
 	 * @param permisje Dowolna ilość permisji
-	 * 
 	 */
 	public static void dodajPermisje(String... permisje) {
 		PluginManager pluginManager = plugin.getServer().getPluginManager();

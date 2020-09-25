@@ -1,0 +1,25 @@
+ustawienia:
+  prority baz: 3
+
+# lista baz i schematów pod przedmiot
+bazy:
+  -
+    # item który postawiony wywoła postawienie bazy i schematu
+    item: 
+      ==: org.bukkit.inventory.ItemStack
+      v: 2567
+      type: OAK_LOG
+      meta:
+        ==: ItemMeta
+        meta-type: UNSPECIFIC
+        display-name: §2Baza
+
+    # ścieżka do schematu # opcjonalne
+    schemat: drewno.schem
+
+    # dane bazy # opcjonalne
+    baza:
+      nazwa: Bazunia # opcjonalne domyślnie Baza
+      dx: 3  # wymagane dla bazy
+      dz: 5  # wymagane dla bazy
+      dy: 10 # wymagane dla bazy

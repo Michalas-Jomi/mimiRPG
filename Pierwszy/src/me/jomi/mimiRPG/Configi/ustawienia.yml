@@ -2,13 +2,14 @@
 # Prefix dla konsoli w /mi
 WiadomoscConsole: '[Konsola]'
 
-# Pozwala wyĹ‚Ä…czyÄ‡ niepotrzebne czÄ™Ĺ›ci pluginu
-# Nie bÄ™dÄ… one wczytywane, ani inicjowane
-# Do wĹ‚Ä…czenia  moduĹ‚u wystarczy /przeĹ‚aduj ModuĹ‚y
-# Do wyĹ‚Ä…czenia moduĹ‚u wymagany jest restart
-ModuĹ‚y:
+# Pozwala wyłączyć niepotrzebne części pluginu
+# Nie będą one wczytywane, ani inicjowane
+# Do włączenia  modułu wystarczy /przeładuj Moduły
+# Do wyłączenia modułu wymagany jest restart
+Moduły:
   Antylog: true
   AutoWiadomosci: true
+  Bazy: true
   Budownik: true
   ChatGrupowy: true
   CustomoweCraftingi: true
@@ -19,7 +20,7 @@ ModuĹ‚y:
   EdytorTabliczek: true
   EdytujItem: true
   Funkcje: true
-  GĹ‚owa: true
+  Głowa: true
   ItemLink: true
   JednorekiBandyta: true
   KolorPisania: true
@@ -33,7 +34,7 @@ ModuĹ‚y:
   Mi: true
   Miniony: true
   Minigry: false
-  OsiÄ…gniÄ™cia: true
+  Osiągnięcia: true
   Patrzeq: true
   PiszJako: true
   Plecak: true
@@ -54,70 +55,70 @@ ModuĹ‚y:
 
 
 ###############################
-### Automatyczne WiadomoĹ›ci ###
+### Automatyczne Wiadomości ###
 
 AutoWiadomosci:
-# czas w sekundach, co ile majÄ… byÄ‡ wiadomoĹ›ci
+# czas w sekundach, co ile mają być wiadomości
   czas: 60
   # - Napis1
   # - Napis2
-  wiadomoĹ›ci:
-    - text: '&2Ustaw Auto WiadomoĹ›ci w &oplugins/mimiRPG/ustawienia.yml'
-    - text: '&2Spawn pod komendÄ… '
+  wiadomości:
+    - text: '&2Ustaw Auto Wiadomości w &oplugins/mimiRPG/ustawienia.yml'
+    - text: '&2Spawn pod komendą '
       extra:
         text: '&a/spawn'
         akcja: Run_Command
         komenda: '/spawn'
-        hover: '&5Kliknij aby siÄ™ przeteleportowaÄ‡'
-    - '&2Spawn pod ||&a/spawn||h: &dKliknij aby sie przeteleportowaÄ‡||komenda<r>: /spawn'
+        hover: '&5Kliknij aby się przeteleportować'
+    - '&2Spawn pod ||&a/spawn||h: &dKliknij aby sie przeteleportować||komenda<r>: /spawn'
 
 #############################
 ### Zablokowane Craftingi ###
 
 # - nazwaprzedmiotu
-# jeĹ›li blokujesz crafting, wystarczy /przeladuj
-# jeĹ›li odblokowywujesz crafting, musisz zrobiÄ‡ restart, lub /reload
+# jeśli blokujesz crafting, wystarczy /przeladuj
+# jeśli odblokowywujesz crafting, musisz zrobić restart, lub /reload
 ZablokowaneCraftingi:
   - shulker_box
   - shulker_box_coloring
 
 
 #########################
-### JednorÄ™ki Bandyta ###
+### Jednoręki Bandyta ###
 
 JednorekiBandyta:
-  # IloĹ›Ä‡ blokĂłw nad i pod losowanÄ… liniÄ…
-  slotyGĂłra: 1
-  slotyDĂłĹ‚: 1
+  # Ilość bloków nad i pod losowaną linią
+  slotyGóra: 1
+  slotyDół: 1
   
-  # IloĹ›Ä‡ szybkich rolli, zanim maszyna zacznie losowaÄ‡
+  # Ilość szybkich rolli, zanim maszyna zacznie losować
   wczesneRolle: 20
   
-  # iloĹ›Ä‡ tickĂłw o ktĂłre maszyna zwalnia w trakcie losowania
+  # ilość ticków o które maszyna zwalnia w trakcie losowania
   czekanieKrok: 2
-  # maksymalna i minimalna iloĹ›Ä‡ tickĂłw w losowaniu
+  # maksymalna i minimalna ilość ticków w losowaniu
   czekanieMax: 5
   czekanieMin: 20
   
-  # liczba przejĹ›Ä‡ przy ostatecznym losowaniu bloku
+  # liczba przejść przy ostatecznym losowaniu bloku
   licznikMax: 5
 
 ############
 ### Kosz ###
 
 Kosz:
-  # Czas w sekundach, do jaki jest czyszczenie itemĂłw
-  # -1 aby wyĹ‚Ä…czyÄ‡
+  # Czas w sekundach, do jaki jest czyszczenie itemów
+  # -1 aby wyłączyć
   timer: 300
   
-  # Minimalny czas w senkundach, ktĂłry item musi istnieÄ‡, aby byĹ‚ zczyszczony
+  # Minimalny czas w senkundach, który item musi istnieć, aby był zczyszczony
   zywotnosc: 5
   
   # Informacje o czyszczeniu
-  msgPoCzyszczeniu: '&b&l>> &c{liczba}&7 itemĂłw trafiĹ‚o do &a/kosz'
-  msgOstrzegawcze: '&b&l>> &7za &c{liczba}&7 sekund czyszczenie itemĂłw'
+  msgPoCzyszczeniu: '&b&l>> &c{liczba}&7 itemów trafiło do &a/kosz'
+  msgOstrzegawcze: '&b&l>> &7za &c{liczba}&7 sekund czyszczenie itemów'
   
-  # IloĹ›Ä‡ senkund przed czyszczeniem, kiedy ma byÄ‡ powiadomienie msgOstrzegawcze
+  # Ilość senkund przed czyszczeniem, kiedy ma być powiadomienie msgOstrzegawcze
   ostrzerzenia: [60, 10]
 
 
@@ -125,23 +126,23 @@ Kosz:
 ### Spawnery ###
 
 Spawnery:
-  # Maksymalna iloĹ›Ä‡ mobĂłw konkretnego typu w zasiÄ™gu spawnera
+  # Maksymalna ilość mobów konkretnego typu w zasięgu spawnera
   MaxNearbyEntities: 6
-  # Wymagany Gracz w zasiÄ™gu spawnera
+  # Wymagany Gracz w zasięgu spawnera
   RequiredPlayerRange: 16
   # Czas w tickach na najszybsze zrespienie sie moba
   MinSpawnDelay: 200
-  # Czas w tickach na najpĂłzniejsze zrespienie sie moba
+  # Czas w tickach na najpózniejsze zrespienie sie moba
   MaxSpawnDelay: 800
-  # Maksymalna iloĹ›Ä‡ mobĂłw ze spawnera
+  # Maksymalna ilość mobów ze spawnera
   SpawnCount: 4
-  # ZasiÄ™g spawnera
+  # Zasięg spawnera
   SpawnRange: 4
 
   # <id moba>: <polska nazwa>
-  # Moby nieuwzglÄ™dnione tu, nie bÄ™dÄ… tĹ‚umaczone
-  # ani wyĹ›wietlaÄ‡ siÄ™ pod tabem
-  tĹ‚umaczenia:
+  # Moby nieuwzględnione tu, nie będą tłumaczone
+  # ani wyświetlać się pod tabem
+  tłumaczenia:
     blaze: blaze
     cat: kot
     chicken: kurczak
@@ -151,18 +152,18 @@ Spawnery:
     evoker: evoker
     ghast: ghast
     guardian: guardian
-    horse: koĹ„
-    iron_golem: ĹĽelazny golem
+    horse: koń
+    iron_golem: żelazny golem
     magma_cube: kostka magmy
     parrot: papuga
-    pig: Ĺ›winia
-    rabbit: zajÄ…c
+    pig: świnia
+    rabbit: zając
     sheep: owca
     skeleton: szkielet
     slime: szlam
-    snowman: baĹ‚wan
-    spider: pajÄ…k
-    squid: kaĹ‚amarnica
+    snowman: bałwan
+    spider: pająk
+    squid: kałamarnica
     strider: strider
     vindicator: windykator
     wither_skeleton: witherowy szkielet
@@ -174,7 +175,7 @@ Spawnery:
 ### Przyjaciele ###
 
 Przyjaciele:
-# Napis dla kaĹĽdego gracza oddzielnie
+# Napis dla każdego gracza oddzielnie
 # {nick} w komendzie oznacza nick przyjaciela
   online:
   - text: '&6[pw] '
@@ -182,18 +183,18 @@ Przyjaciele:
     akcja: SUGGEST_COMMAND
     komenda: '/msg {nick} '
   - text: '&6[tp] '
-    hover: Teleportuj siÄ™ do przyjaciela
+    hover: Teleportuj się do przyjaciela
     akcja: RUN_COMMAND
     komenda: /tpa {nick}
   offline: []
   zawsze: 
   - text: '&c[x] '
-    hover: UsuĹ„ przyjaciela
+    hover: Usuń przyjaciela
     akcja: RUN_COMMAND
     komenda: /przyjaciele u {nick}
-# Napis ktĂłry jest zawsze
-  ogĂłlne:
-  - '&6[w] ||hover: Napisz do wszystkich przyjaciĂłĹ‚||komenda<SUGGEST_COMMAND>: /przyjaciele w '
+# Napis który jest zawsze
+  ogólne:
+  - '&6[w] ||hover: Napisz do wszystkich przyjaciół||komenda<SUGGEST_COMMAND>: /przyjaciele w '
   - text: '&6[+] '
     hover: Dodaj nowego przyjaciela
     akcja: SUGGEST_COMMAND
@@ -203,16 +204,16 @@ Przyjaciele:
 ### Miniony ###
 
 Miniony:
-  # <nazwa itemu>: <iloĹ›Ä‡ jedzenia>
+  # <nazwa itemu>: <ilość jedzenia>
   jedzenie:
     BAKED_POTATO: 15.0
 
 ##################
-### UjeĹĽdzanie ###
+### Ujeżdzanie ###
 
 ujezdzanie:
-  # maksymalna odlegĹ‚oĹ›Ä‡ na siadanie
-  maxOdlegĹ‚oĹ›Ä‡: 5.0
+  # maksymalna odległość na siadanie
+  maxOdległość: 5.0
 
 ##############
 ### Koniki ###
@@ -221,7 +222,7 @@ Koniki:
   # Maksywamlna liczba minut
   maxCzas: 180
   
-  # <nazwa itemu>: <iloĹ›Ä‡ dodatkowych minut>
+  # <nazwa itemu>: <ilość dodatkowych minut>
   jedzenie:
     Wheat: 1
     Carrot: 5
@@ -235,7 +236,7 @@ Koniki:
 # Random TelePort
 # Losowy Teleport
 rtp:
-  # <nazwa zestawu omijanych blokĂłw (filtr)>:
+  # <nazwa zestawu omijanych bloków (filtr)>:
   #   - <id bloku1>
   #   - <id bloku2>
   #   ...

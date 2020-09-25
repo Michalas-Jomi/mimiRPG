@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG;
 
+import java.util.function.Function;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -15,7 +17,7 @@ public class Moduły implements Przeładowalny {
 	private static ConfigurationSection moduły;
 	int włączone = 0;
 	
-	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Budownik.class, ChatGrupowy.class, 
+	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class, ChatGrupowy.class, 
 CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
 EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
@@ -34,15 +36,22 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 	
 	public void włącz(ConfigurationSection sekcja) {
 		boolean przeładować = false;
+		Function<Class<?>, Boolean> warunek = klasa -> {
+			try {
+				return (boolean) klasa.getMethod("warunekModułu").invoke(null);
+			} catch (Exception e) {
+				return true;
+			}
+		};
 		for (Class<?> klasa : klasy)
 			try {
 				String nazwa = klasa.getSimpleName();
 				if (moduły == null)
-					if (sekcja.getBoolean(nazwa)) {
+					if (sekcja.getBoolean(nazwa) && warunek.apply(klasa)) {
 						Main.zarejestruj(klasa.newInstance());
 						włączone++;
 					}
-				else if (moduły != null && !moduły.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
+				else if (moduły != null && !moduły.getBoolean(nazwa) && sekcja.getBoolean(nazwa) && warunek.apply(klasa)) {
 					Main.zarejestruj(klasa.newInstance());
 					moduły.set(nazwa, true);
 					włączone++;

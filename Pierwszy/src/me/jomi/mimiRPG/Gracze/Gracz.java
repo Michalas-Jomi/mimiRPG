@@ -11,13 +11,13 @@ import me.jomi.mimiRPG.Main;
 public class Gracz {
 	public Config config;
 	public Player p;
-	
+
 	public int dropPoŚmierci;
 	public String kolorPisania;
 	public List<String> przyjaciele;
 	public List<ItemStack> plecak;
 	
-	public Kon koń;
+	public Kon kon;
 	
 	public Gracz(Player p) {
 		this.p = p;
@@ -29,14 +29,14 @@ public class Gracz {
 		przyjaciele   = config.wczytajListe("przyjaciele");
 		plecak 		  = config.wczytajItemy("plecak");
 		
-		koń = new Kon(this,
+		if (config.klucze(false).contains("koń"))
+			kon = new Kon(this,
 				(boolean) config.wczytajLubDomyślna("koń.bezgłośny", false),
 				(boolean) config.wczytajLubDomyślna("koń.mały", false),
 				(String) config.wczytajLubDomyślna("koń.kolor", "Biały"),
 				(String) config.wczytajLubDomyślna("koń.styl", "Brak"),
 				(int) config.wczytajLubDomyślna("koń.zapas", -1));
 	}
-	
 
 	public void zapisz(String co) {
 		try {

@@ -2,5 +2,5 @@ name: mimiRPG
 version: 1.0
 author: Michalas
 api-version: 1.16
-softdepend: [Vault]
+softdepend: [Vault, WorldGuard, WorldEdit]
 main: me.jomi.mimiRPG.Main

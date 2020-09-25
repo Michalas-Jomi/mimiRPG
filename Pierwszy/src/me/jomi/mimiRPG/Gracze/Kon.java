@@ -6,9 +6,9 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -20,16 +20,16 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 
 public class Kon {
 	public Inventory inv;
-	private static final int slotyEq = 3*9;
-	private static final int slotMały = 4*9 + 1;
-	private static final int slotBezgłośny = 4*9 + 3;
-	private static final int slotKolor = 4*9 + 5;
-	private static final int slotStyl = 4*9 + 7;
+	private static final int slotyEq 		= 3*9;
+	private static final int slotMały 		= 4*9 + 1;
+	private static final int slotStyl 		= 4*9 + 7;
+	private static final int slotKolor 		= 4*9 + 5;
+	private static final int slotBezgłośny 	= 4*9 + 3;
 	
 	private static final ItemStack itemMały = Func.stwórzItem(Material.EGG, "§6Rozmiar", "§eMały");
 	private static final ItemStack itemDuży = Func.stwórzItem(Material.EGG, "§6Rozmiar", "§eDuży");
 	
-	private static final ItemStack itemBezgłośny 	= Func.stwórzItem(Material.BONE, "§6Dzwięk", "§6Bezgłośny");
+	private static final ItemStack itemBezgłośny 	= Func.stwórzItem(Material.BONE, 		 "§6Dzwięk", "§6Bezgłośny");
 	private static final ItemStack itemNieBezgłośny = Func.stwórzItem(Material.CREEPER_HEAD, "§6Dzwięk", "§6Normalny");
 	
 	
@@ -53,6 +53,8 @@ public class Kon {
 		this.zapas = zapas;
 		this.mały = mały;
 		this.p = gracz.p;
+		
+		gracz.kon = this;
 		
 		nrKolor = znajdz(kolory, this.kolor);
 		nrStyl = znajdz(style, this.styl);
@@ -84,7 +86,7 @@ public class Kon {
 		kon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
 		kon.setHealth(20);
 
-		p.sendMessage(Koniki.prefix + Func.msg("Przywołałeś swojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", Koniki.czas(gracz.koń.zapas)));
+		p.sendMessage(Koniki.prefix + Func.msg("Przywołałeś swojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", Koniki.czas(gracz.kon.zapas)));
 		//EntityHorse e = ((EntityHorse)((CraftEntity) kon).getHandle());
 		//e.goalSelector = new PathfinderGoalSelector(e.getWorld().getMethodProfilerSupplier());
 		
