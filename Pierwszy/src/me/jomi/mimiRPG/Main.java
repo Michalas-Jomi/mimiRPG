@@ -17,6 +17,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 
 import me.jomi.mimiRPG.Chat.*;
@@ -47,9 +48,10 @@ public class Main extends JavaPlugin {
 	public static String path;
 	
 	public static boolean ekonomia = false;
-	public static boolean worldGuard = true;
 	
+	public static WorldGuardPlugin rg;
 	public static StateFlag flagaStawianieBaz;
+	public static StateFlag flagaC4;
 	
 	public static Config ust;
 	public void onLoad() {
@@ -58,14 +60,15 @@ public class Main extends JavaPlugin {
 		
 		ConfigurationSerialization.registerClass(Napis.class);
 		ConfigurationSerialization.registerClass(Grupa.class);
-		
 
 		ust = new Config("ustawienia");
-		flagaStawianieBaz = new StateFlag("StawianieBaz", true);
 		try {
+			rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
+			flagaStawianieBaz = new StateFlag("StawianieBaz", true);
 			WorldGuard.getInstance().getFlagRegistry().register(flagaStawianieBaz);
+			flagaC4 = new StateFlag("C4", false);
+			WorldGuard.getInstance().getFlagRegistry().register(flagaC4);
 		} catch (Exception e) {
-			worldGuard = false;
 			error("Nie wykryto WorldGuard, wyłączanie niektórych funkcji");
 		}
 	}
