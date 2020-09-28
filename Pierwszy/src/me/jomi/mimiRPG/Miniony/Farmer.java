@@ -14,9 +14,9 @@ import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
-import net.minecraft.server.v1_16_R1.EntityHuman;
-import net.minecraft.server.v1_16_R1.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R1.PathfinderGoalSelector;
+import net.minecraft.server.v1_16_R2.EntityHuman;
+import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 public class Farmer extends Minion{
 

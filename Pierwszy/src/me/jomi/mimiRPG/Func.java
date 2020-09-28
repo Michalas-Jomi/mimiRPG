@@ -95,7 +95,7 @@ public abstract class Func {
 		int i=0;
 		for (Object obj : lista)
 			if (i++ > start)
-				s.append(wstawka).append(obj.toString());
+				s.append(wstawka).append(obj == null ? null : obj.toString());
 		return s.toString();
 	}
 	
@@ -359,6 +359,18 @@ public abstract class Func {
 		return item1c.equals(item2c);
 	}
 	
+	public static boolean losuj(double szansa) {
+		double rand = Math.random();
+		return 0 < rand && rand <= szansa;
+	}
+	/**
+	 * losuje liczbe z zakresu min - max (włącznie)
+	 * 
+	 * @param min minimalna możliwa wylosowana liczba
+	 * @param max maksywamlna możliwa wylosowana liczba
+	 * 
+	 * @return liczba z przedziału <min, max>
+	 */
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}

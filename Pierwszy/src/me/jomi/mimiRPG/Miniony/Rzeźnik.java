@@ -14,15 +14,15 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
-import net.minecraft.server.v1_16_R1.EntityChicken;
-import net.minecraft.server.v1_16_R1.EntityCow;
-import net.minecraft.server.v1_16_R1.EntityHuman;
-import net.minecraft.server.v1_16_R1.EntityPig;
-import net.minecraft.server.v1_16_R1.EntityPolarBear;
-import net.minecraft.server.v1_16_R1.EntityRabbit;
-import net.minecraft.server.v1_16_R1.EntitySheep;
-import net.minecraft.server.v1_16_R1.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R1.PathfinderGoalNearestAttackableTarget;
+import net.minecraft.server.v1_16_R2.EntityChicken;
+import net.minecraft.server.v1_16_R2.EntityCow;
+import net.minecraft.server.v1_16_R2.EntityHuman;
+import net.minecraft.server.v1_16_R2.EntityPig;
+import net.minecraft.server.v1_16_R2.EntityPolarBear;
+import net.minecraft.server.v1_16_R2.EntityRabbit;
+import net.minecraft.server.v1_16_R2.EntitySheep;
+import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
 
 public class Rzeźnik extends Minion{
 

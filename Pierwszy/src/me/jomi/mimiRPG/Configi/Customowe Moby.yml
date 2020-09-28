@@ -1,0 +1,28 @@
+### Ustawienia
+
+# maksymalna ilość kratek od gracza gdy respi się mob
+odległość od gracza: 50
+# czas w sekundach co ile jest próba zrespawnienia mobów przy graczacg
+czas odświeżania: 120
+# szansa na to że mob sie zrespi
+szansa zrespawnowania: .2
+
+### Customowe Moby
+
+# Schemat _mob_
+#   Typ: <typ moba> # opcjonalne domyślnie ZOMBIE
+#   Imie: <imie> # opcjonalne
+#   Imie zawsze widoczne: <True / False> # opcjonalne domyślnie False
+#   NBT: <nbt> # nbttag dla moba # opcjonalne
+#   Atrybuty:
+#     <nazwa atrybutu>: <wartość>
+#   Itemki:
+#     Głowa: <item> # opcjonalne
+#     Klata: <item> # opcjonalne
+#     Spodnie: <item> # opcjonalne
+#     Buty: <item> # opcjonalne
+#     Ręka: <item> # opcjonalne
+#     Lewa Ręka: <item> # opcjonalne
+#   Rumak: _mob_
+
+Moby: # _mob_

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -116,8 +117,15 @@ public class Config {
 		if (item instanceof ItemStack)
 			return (ItemStack) item;
 		String[] wejscie = ((String) item).split(" ");
-		if (!Baza.itemy.containsKey(wejscie[0])) return null;
-			ItemStack _item = Baza.itemy.get(wejscie[0]).clone();
+		ItemStack _item;
+		if (!Baza.itemy.containsKey(wejscie[0])) {
+			try {
+				_item = new ItemStack(Material.valueOf(wejscie[0].toUpperCase()));
+			} catch (Exception e) {
+				return null;
+			}
+		} else
+			_item = Baza.itemy.get(wejscie[0]).clone();
 		if (wejscie.length >= 2)
 			_item.setAmount(Func.Int(wejscie[1], 1));
 		return _item;

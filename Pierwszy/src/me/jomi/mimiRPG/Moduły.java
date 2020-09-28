@@ -1,6 +1,6 @@
 package me.jomi.mimiRPG;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,7 +18,7 @@ public class Moduły implements Przeładowalny {
 	int włączone = 0;
 	
 	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class, ChatGrupowy.class, 
-CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, Czapka.class, DrabinaPlus.class, 
+CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, CustomoweMoby.class, Czapka.class, DrabinaPlus.class, 
 EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
@@ -35,32 +35,35 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
 	}
 	
 	public void włącz(ConfigurationSection sekcja) {
-		boolean przeładować = false;
-		Function<Class<?>, Boolean> warunek = klasa -> {
+		Consumer<Class<?>> włączModuł = klasa -> {
+			boolean warunek;
 			try {
-				return (boolean) klasa.getMethod("warunekModułu").invoke(null);
+				warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
 			} catch (Exception e) {
-				return true;
+				warunek = true;
+			}
+			if (warunek) {
+				try {
+					Main.zarejestruj(klasa.newInstance());
+					włączone++;
+				} catch (InstantiationException | IllegalAccessException e) {
+					Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
+				}
 			}
 		};
-		for (Class<?> klasa : klasy)
-			try {
-				String nazwa = klasa.getSimpleName();
-				if (moduły == null)
-					if (sekcja.getBoolean(nazwa) && warunek.apply(klasa)) {
-						Main.zarejestruj(klasa.newInstance());
-						włączone++;
-					}
-				else if (moduły != null && !moduły.getBoolean(nazwa) && sekcja.getBoolean(nazwa) && warunek.apply(klasa)) {
-					Main.zarejestruj(klasa.newInstance());
-					moduły.set(nazwa, true);
-					włączone++;
-					przeładować = true;
-					Main.log("§aWłączono Moduł: " + nazwa);
-				}
-			} catch (InstantiationException | IllegalAccessException e) {
-				Main.log("§cProblem przy tworzeniu:", klasa.getSimpleName());
+		boolean przeładować = false;
+		for (Class<?> klasa : klasy) {
+			String nazwa = klasa.getSimpleName();
+			if (moduły == null) {
+				if (sekcja.getBoolean(nazwa))
+					włączModuł.accept(klasa);
+			} else if (!moduły.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
+				włączModuł.accept(klasa);
+				moduły.set(nazwa, true);
+				przeładować = true;
+				Main.log("§aWłączono Moduł: " + nazwa);
 			}
+		}
 		if (przeładować)
 			Bukkit.getServer().reloadData();
 	}

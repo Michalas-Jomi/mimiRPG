@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,6 +23,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 
 public class Napis implements ConfigurationSerializable {
@@ -54,8 +55,8 @@ public class Napis implements ConfigurationSerializable {
 	}
 	
 	public void hover(String tekst) {
-		TextComponent[] h = {new TextComponent(tekst)};
-		txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, h));
+		Text t = new Text(tekst);
+		txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, t));
 	}
 	public void clickEvent(ClickEvent.Action akcja, String treść) {
 		txt.setClickEvent(new ClickEvent(akcja, treść));
@@ -114,11 +115,11 @@ public class Napis implements ConfigurationSerializable {
 	}
 	
 	public static Napis item(ItemStack item) {
-		net.minecraft.server.v1_16_R1.ItemStack item2;
+		net.minecraft.server.v1_16_R2.ItemStack item2;
 		item2 = CraftItemStack.asNMSCopy(item);
 		Napis n = new Napis("§b[§9"+item.getAmount()+"§3x§b " +
 				(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()+"§b]§r"));
-		TextComponent[] b = {new TextComponent("{id:\""+item.getType().toString().toLowerCase()+"\",Count:1,tag:"+item2.getOrCreateTag()+"}")};
+		Text b = new Text("{id:\""+item.getType().toString().toLowerCase()+"\",Count:1,tag:"+item2.getOrCreateTag()+"}");
 		n.txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, b));
 		return n;
 	}
@@ -194,7 +195,7 @@ public class Napis implements ConfigurationSerializable {
 	public Map<String, Object> serialize() {
 		Map<String, Object> mapa = new HashMap<>();
 		mapa.put("text", txt.getText());
-		mapa.put("hover", txt.getHoverEvent().getValue()[0].toLegacyText());
+		mapa.put("hover", txt.getHoverEvent().getContents().get(0).toString());
 		mapa.put("komenda", txt.getClickEvent().getValue());
 		mapa.put("akcja", txt.getClickEvent().getAction().toString());
 		return mapa;

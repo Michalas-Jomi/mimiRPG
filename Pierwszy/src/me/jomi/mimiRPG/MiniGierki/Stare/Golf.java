@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftChicken;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftChicken;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.EntityType;
