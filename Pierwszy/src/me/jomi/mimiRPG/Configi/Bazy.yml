@@ -1,5 +1,22 @@
+# Ustawienia
 ustawienia:
   prority baz: 3
+
+# Ustawnienia c4
+# Bloki nieuwzględnione zamieniają sie w AIR
+c4:
+  # blok o typie typ1 zamienia się przy wybuchu w typ2
+  # <typ1>: <typ2>
+  NETHERITE_BLOCK: IRON_BLOCK
+  IRON_BLOCK: STONE
+  STONE: OAK_PLANKS
+  CRIMSON_DOOR: DARK_OAK_DOOR
+  DARK_OAK_DOOR: SPRUCE_DOOR
+  SPRUCE_DOOR: OAK_DOOR
+  # bloki których c4 nie rusza
+  niezniszczalne:
+    - GRASS_BLOCK
+    - BEDROCK
 
 # lista baz i schematów pod przedmiot
 bazy:
@@ -23,3 +40,11 @@ bazy:
       dx: 3  # wymagane dla bazy
       dz: 5  # wymagane dla bazy
       dy: 10 # wymagane dla bazy
+
+	# c4 # opcjonalne 
+    # jeśli jest baza i schemat nie funkcjonują
+    c4:
+      # zasięg w jakim c4 może zniszczyć bloki
+      zasięg: 3.5
+      # czas w tickach po jakim wybuchnie
+      czas: 40

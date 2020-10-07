@@ -14,13 +14,13 @@ Moduły:
   ChatGrupowy: true
   CustomoweCraftingi: true
   CustomoweItemy: true
+  CustomoweMoby: true
   CustomowyDrop: true
   Czapka: true
   DrabinaPlus: true
   EdytorTabliczek: true
   EdytujItem: true
   Funkcje: true
-  Głowa: true
   ItemLink: true
   JednorekiBandyta: true
   KolorPisania: true
@@ -32,12 +32,13 @@ Moduły:
   Menu: true
   Menurpg: true
   Mi: true
-  Miniony: true
   Minigry: false
+  Miniony: true
   Osiągnięcia: true
   Patrzeq: true
   PiszJako: true
   Plecak: true
+  Pomoc: true
   Poziom: true
   Przyjaciele: true
   RTP: true

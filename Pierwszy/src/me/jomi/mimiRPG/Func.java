@@ -21,6 +21,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,6 +41,12 @@ public abstract class Func {
 		return "§6" + tekst + "§6";
 	}
 	
+	public static Inventory CloneInv(Inventory inv, String nazwa) {
+		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
+		for (int i=0; i<inv.getSize(); i++)
+			_inv.setItem(i, inv.getItem(i));
+		return _inv;
+	}
 	public static String DoubleToString(double liczba) {
 		String całości = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
@@ -260,6 +267,17 @@ public abstract class Func {
 		item.setItemMeta(meta);
 		return item;
 	}
+	public static ItemStack wstawLore(ItemStack item, String linia, int nrLini) {
+		ItemMeta meta = item.getItemMeta();
+		List<String> lore = meta.getLore();
+		if (lore == null) lore = Lists.newArrayList();
+		while (nrLini >= lore.size())
+			lore.add("");
+		lore.add(nrLini, linia);
+		meta.setLore(lore);
+		item.setItemMeta(meta);
+		return item;
+	}
 	public static ItemStack nazwij(ItemStack item, String nazwa) {
 		ItemMeta meta = item.getItemMeta();
 		meta.setDisplayName(nazwa);
@@ -453,5 +471,9 @@ public abstract class Func {
 			lista.add(napis.substring(0, i));
 			napis = napis.substring(i + regex.length());
 		}
+	}
+
+	public static void opóznij(int ticki, Runnable lambda) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
 	}
 }

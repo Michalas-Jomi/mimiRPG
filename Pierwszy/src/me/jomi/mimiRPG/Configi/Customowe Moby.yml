@@ -12,7 +12,7 @@ szansa zrespawnowania: .2
 # Schemat _mob_
 #   Typ: <typ moba> # opcjonalne domyślnie ZOMBIE
 #   Imie: <imie> # opcjonalne
-#   Imie zawsze widoczne: <True / False> # opcjonalne domyślnie False
+#   Imie zawsze widoczne: <true / false> # opcjonalne domyślnie false
 #   NBT: <nbt> # nbttag dla moba # opcjonalne
 #   Atrybuty:
 #     <nazwa atrybutu>: <wartość>
@@ -24,5 +24,9 @@ szansa zrespawnowania: .2
 #     Ręka: <item> # opcjonalne
 #     Lewa Ręka: <item> # opcjonalne
 #   Rumak: _mob_
+#
 
-Moby: # _mob_
+Moby: 
+#  <nazwa moba>: _mob_
+
+

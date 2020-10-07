@@ -16,6 +16,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.iridium.iridiumskyblock.IridiumSkyblock;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -49,12 +50,16 @@ public class Main extends JavaPlugin {
 	public static String path;
 	
 	public static boolean ekonomia = false;
+	public static boolean iridiumSkyblock = false;
 	
 	public static WorldGuardPlugin rg;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
 	public static StringFlag flagaCustomoweMoby;
 	
+	private void brakPluginu(String plugin) {
+		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
+	}
 	public static Config ust;
 	public void onLoad() {
 		plugin = this;
@@ -77,13 +82,18 @@ public class Main extends JavaPlugin {
 			WorldGuard.getInstance().getFlagRegistry().register(flagaCustomoweMoby);
 			
 		} catch (Exception e) {
-			error("Nie wykryto WorldGuard, wyłączanie niektórych funkcji");
+			brakPluginu("WorldGuard");
 		}
 	}
 	public void onEnable() {
 		ekonomia = setupVault();
         if (!ekonomia)
-        	error("Nie wykryto Vault! Wyłączanie niektórych funkcji");
+			brakPluginu("Vault");
+        try {
+        	iridiumSkyblock = IridiumSkyblock.getInstance() != null;
+        } catch (Exception e) {
+			brakPluginu("IridiumSkyblock");
+        }
         
 		new Baza();
 		zarejestruj(new Gracze());

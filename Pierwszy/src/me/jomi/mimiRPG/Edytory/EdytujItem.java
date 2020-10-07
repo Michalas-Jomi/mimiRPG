@@ -12,6 +12,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +33,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.TextComponent;
 
 
-public class EdytujItem extends Komenda {
+public class EdytujItem extends Komenda implements Listener {
 	public EdytujItem() {
 	    super("edytujitem", prefix + "/edytujItem (nazwa | lore | enchant | modifire | unbreakable | ukryj)", "ei");
 	}
@@ -60,8 +64,8 @@ public class EdytujItem extends Komenda {
 			else 				 klucz = args[2];
 			
 			if (args.length == 5) {
-				p.chat("/ei modifire " + args[3] + " " + args[2] + " " + args[4]);
-				p.chat("/ei edytorEdytuje modifire " + klucz);
+				p.chat("/edytujitem modifire " + args[3] + " " + args[2] + " " + args[4]);
+				p.chat("/edytujitem edytorEdytuje modifire " + klucz);
 				return true;
 			}
 
@@ -80,7 +84,7 @@ public class EdytujItem extends Komenda {
 						w = Func.DoubleToString(wartość*100) + "%";
 					}
 				}
-				dodajTekst(msg, Action.SUGGEST_COMMAND, "§6§l-> §d" + at + " §a" + plus + w + "\n", "/ei edytorEdytuje modifire " + klucz + " " + at + " ");
+				dodajTekst(msg, Action.SUGGEST_COMMAND, "§6§l-> §d" + at + " §a" + plus + w + "\n", "/edytujitem edytorEdytuje modifire " + klucz + " " + at + " ");
 			}
 			
 			msg.addExtra("\n");
@@ -89,17 +93,17 @@ public class EdytujItem extends Komenda {
 				kolor = "§6";
 				if (slot.equals(klucz))
 					kolor = "§e";
-				dodajTekst(msg, Action.RUN_COMMAND, kolor + "[" + slot + "] ", "/ei edytorEdytuje modifire " + slot);
+				dodajTekst(msg, Action.RUN_COMMAND, kolor + "[" + slot + "] ", "/edytujitem edytorEdytuje modifire " + slot);
 			}
 
-			dodajTekst(msg, Action.RUN_COMMAND, "§6[←]\n", "/ei e");
+			dodajTekst(msg, Action.RUN_COMMAND, "§6[←]\n", "/edytujitem e");
 			
 			p.spigot().sendMessage(msg);
 			break;
 		case "enchant":
 			if (args.length >= 5 && args[2].equals(">>")) {
-				p.chat("/ei enchant " + args[3] + " " + args[4]);
-				p.chat("/ei edytorEdytuje enchant");
+				p.chat("/edytujitem enchant " + args[3] + " " + args[4]);
+				p.chat("/edytujitem edytorEdytuje enchant");
 				return true;
 			}
 			msg = new TextComponent("\n\n§5§lEnchanty\n");
@@ -112,10 +116,10 @@ public class EdytujItem extends Komenda {
 				Enchantment enchant = dajEnchant(nazwa);
 				if (meta.hasEnchant(enchant))
 					lvl = "§a(" + meta.getEnchantLevel(enchant) + ")";
-				dodajTekst(msg, Action.SUGGEST_COMMAND, kolor + nazwa  + lvl + " ", "/ei edytorEdytuje enchant >> " + nazwa + " ");
+				dodajTekst(msg, Action.SUGGEST_COMMAND, kolor + nazwa  + lvl + " ", "/edytujitem edytorEdytuje enchant >> " + nazwa + " ");
 				if (!b) msg.addExtra("\n");
 			}
-			dodajTekst(msg, Action.RUN_COMMAND, " §6[←]", "/ei e");
+			dodajTekst(msg, Action.RUN_COMMAND, " §6[←]", "/edytujitem e");
 			p.spigot().sendMessage(msg);
 			break;
 		case "lore":
@@ -124,23 +128,23 @@ public class EdytujItem extends Komenda {
 			switch(klucz) {
 			case "usuwanie":
 				if (args.length < 4) return false;
-				p.chat("/ei lore usuń " + args[3]);
-				p.chat("/ei edytorEdytuje lore usuń");
+				p.chat("/edytujitem lore usuń " + args[3]);
+				p.chat("/edytujitem edytorEdytuje lore usuń");
 				return true;
 			case "ustaw>>":
 				if (args.length < 5) return false;
-				p.chat("/ei lore ustaw " + Func.listToString(args, 3));
-				p.chat("/ei edytorEdytuje lore ustaw");
+				p.chat("/edytujitem lore ustaw " + Func.listToString(args, 3));
+				p.chat("/edytujitem edytorEdytuje lore ustaw");
 				return true;
 			case "wstaw>>":
 				if (args.length < 5) return false;
-				p.chat("/ei lore wstaw " + Func.listToString(args, 3));
-				p.chat("/ei edytorEdytuje lore wstaw");
+				p.chat("/edytujitem lore wstaw " + Func.listToString(args, 3));
+				p.chat("/edytujitem edytorEdytuje lore wstaw");
 				return true;
 			case "dodaj>>":
 				if (args.length < 4) return false;
-				p.chat("/ei lore dodaj " + Func.listToString(args, 3));
-				p.chat("/ei edytorEdytuje lore");
+				p.chat("/edytujitem lore dodaj " + Func.listToString(args, 3));
+				p.chat("/edytujitem edytorEdytuje lore");
 				return true;
 			}
 			msg = new TextComponent("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n§5§lLore\n");
@@ -149,13 +153,13 @@ public class EdytujItem extends Komenda {
 				for (int i=0; i<meta.getLore().size(); i++)
 					switch (klucz) {
 					case "ustaw":
-						dodajTekst(msg, Action.SUGGEST_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/ei edytorEdytuje lore ustaw>> " + (i + 1) + " " + lore.get(i).replace("§", "&"));
+						dodajTekst(msg, Action.SUGGEST_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/edytujitem edytorEdytuje lore ustaw>> " + (i + 1) + " " + lore.get(i).replace("§", "&"));
 						break;
 					case "usuń":
-						dodajTekst(msg, Action.RUN_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/ei edytorEdytuje lore usuwanie " + (i + 1));
+						dodajTekst(msg, Action.RUN_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/edytujitem edytorEdytuje lore usuwanie " + (i + 1));
 						break;
 					case "wstaw":
-						dodajTekst(msg, Action.SUGGEST_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/ei edytorEdytuje lore wstaw>> " + (i + 1) + " ");
+						dodajTekst(msg, Action.SUGGEST_COMMAND, "§e§l- §5" + lore.get(i) + "\n", "/edytujitem edytorEdytuje lore wstaw>> " + (i + 1) + " ");
 						break;
 					}
 				msg.addExtra("\n");
@@ -163,11 +167,11 @@ public class EdytujItem extends Komenda {
 					kolor = "§6";
 					if (klucz.equals(nazwa))
 						kolor = "§e";
-					dodajTekst(msg, Action.RUN_COMMAND, kolor + "[" + nazwa + "] ", "/ei edytorEdytuje lore " + nazwa);
+					dodajTekst(msg, Action.RUN_COMMAND, kolor + "[" + nazwa + "] ", "/edytujitem edytorEdytuje lore " + nazwa);
 				}
 			}
-			dodajTekst(msg, Action.SUGGEST_COMMAND, "§6[dodaj] ", "/ei edytorEdytuje lore dodaj>> ");
-			dodajTekst(msg, Action.RUN_COMMAND, "§6[←]\n", "/ei e");
+			dodajTekst(msg, Action.SUGGEST_COMMAND, "§6[dodaj] ", "/edytujitem edytorEdytuje lore dodaj>> ");
+			dodajTekst(msg, Action.RUN_COMMAND, "§6[←]\n", "/edytujitem e");
 			
 			p.spigot().sendMessage(msg);
 			break;
@@ -190,7 +194,7 @@ public class EdytujItem extends Komenda {
 		if (odśwież)
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 			    public void run() {
-					p.chat("/ei e");
+					p.chat("/edytujitem e");
 			    }
 			}, 1);
 		return true;
@@ -207,19 +211,19 @@ public class EdytujItem extends Komenda {
 				kolor = "§c";
 				if (meta.hasItemFlag(dajFlage(flaga)))
 					kolor = "§a";
-				dodajTekst(msg, Action.RUN_COMMAND, "\n§e§l- " + kolor + flaga, "/ei edytorEdytuje ukryj " + flaga);
+				dodajTekst(msg, Action.RUN_COMMAND, "\n§e§l- " + kolor + flaga, "/edytujitem edytorEdytuje ukryj " + flaga);
 			}
 			msg.addExtra("\n\n");
 			
-			dodajTekst(msg, Action.SUGGEST_COMMAND, "§e[nazwa] ", "/ei nazwa " + (meta.hasDisplayName() ? Func.odkoloruj(meta.getDisplayName()) : ""));
+			dodajTekst(msg, Action.SUGGEST_COMMAND, "§e[nazwa] ", "/edytujitem nazwa " + (meta.hasDisplayName() ? Func.odkoloruj(meta.getDisplayName()) : ""));
 			
 			for (String nazwa : Arrays.asList("enchant", "lore", "modifire"))
-				dodajTekst(msg, Action.RUN_COMMAND, "§e[" + nazwa + "] ", "/ei edytorEdytuje " + nazwa);
+				dodajTekst(msg, Action.RUN_COMMAND, "§e[" + nazwa + "] ", "/edytujitem edytorEdytuje " + nazwa);
 
 			kolor = "§c";
 			if (meta.isUnbreakable())
 				kolor = "§a";
-			dodajTekst(msg, Action.RUN_COMMAND, kolor + "[Unbreakable]", "/ei edytorEdytuje unbreakable");
+			dodajTekst(msg, Action.RUN_COMMAND, kolor + "[Unbreakable]", "/edytujitem edytorEdytuje unbreakable");
 			
 			
 			msg.addExtra("\n");
@@ -424,6 +428,22 @@ public class EdytujItem extends Komenda {
 			this.slot = slot;
 		}
 		
+	}
+	
+	@EventHandler(priority = EventPriority.LOW)
+	public void onCommandPreProcess(PlayerCommandPreprocessEvent ev) {
+		Command cmd = Main.plugin.getCommand("edytujitem");
+		if (!ev.getPlayer().hasPermission(cmd.getPermission()))
+			return;
+		String msg = ev.getMessage().substring(1);
+		List<String> nazwy = cmd.getAliases();
+		nazwy.add(cmd.getName());
+		for (String nazwa : nazwy)
+			if (msg.startsWith(nazwa)) {
+				ev.setCancelled(true);
+				onCommand(ev.getPlayer(), cmd, nazwa, msg.substring(nazwa.length()+1).split(" "));
+				return;
+			}
 	}
 	
 	@Override

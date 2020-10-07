@@ -1,8 +1,9 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attributable;
@@ -14,10 +15,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -25,13 +27,15 @@ import com.sk89q.worldguard.WorldGuard;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
-public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
+
+public class CustomoweMoby implements Zegar, Przeładowalny {
 	public static boolean warunekModułu() {
 		return Main.rg != null;
 	}
@@ -40,19 +44,33 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	int czas_odświeżania_ticki;
 	double szansa_zrespawnowania_dla_gracza;
 	
+	final HashMap<String, Mob> mapaMobów = new HashMap<>();
+	
 	final Config config = new Config("Customowe Moby");
 	
 	@Override
 	public void przeładuj() {
 		config.przeładuj();
-		// TODO dodać szablon
+		
 		odległość_od_gracza 			 = config.wczytajLubDomyślna("odległość od gracza", 	50);
 		czas_odświeżania_ticki 			 = config.wczytajLubDomyślna("czas odświeżania", 	 	120) * 20;
 		szansa_zrespawnowania_dla_gracza = config.wczytajLubDomyślna("szansa zrespawnowania", .02);
+		
+		mapaMobów.clear();
+		ConfigurationSection sekcja = config.sekcja("Moby");
+		if (sekcja != null)
+			for (String nazwa : sekcja.getKeys(false)) {
+				try {
+					mapaMobów.put(nazwa, new Mob(sekcja.getConfigurationSection(nazwa)));
+				} catch (Exception e) {
+					Main.warn("Niepoprawny mob " + nazwa + " w Customowe Moby.yml");
+				}
+			}
+		
 	}
 	@Override
 	public String raport() {
-		return ""; // TODO raport
+		return "§6Customwe Moby: §e" + mapaMobów.size();
 	}
 	
 	@Override
@@ -98,125 +116,120 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		String[] typy = _typy.split(",");
 		String typ = typy[Func.losuj(0, typy.length-1)];
 		
-		zresp(loc.add(.5, 0, .5), "Moby." + typ + ".");
-		//ulepszMoba(mob, );
+		zresp(loc.add(.5, 0, .5), typ);
+	}
+	
+	Entity zresp(Location loc, String co) {
+		return mapaMobów.get(co).zresp(loc);
+	}
+}
+
+// TODO mnożnik respu
+class Mob {
+	EntityType typ;
+	List<Krotka<Attribute, Double>> atrybuty;
+	List<Krotka<EquipmentSlot, ItemStack>> eq;
+	NBTTagCompound tag = new NBTTagCompound();
+	Mob rumak;
+	public Mob(ConfigurationSection sekcja) {
+		typ = EntityType.valueOf(sekcja.getString("Typ", "Zombie").toUpperCase());
 		
-		/*
-		 * Moby:
-		 *   <nazwa>:
-		 *     Typ: typMoba
-		 *     imie: string 
-		 *     imie zawsze widoczne: boolean
-		 *     Atrybuty:
-		 *       <attr1>: double
-		 *     Itemki:
-		 *       Głowa: item
-		 *       Klata: item
-		 *       Spodnie: item
-		 *       Buty: item
-		 *       Prawa ręka: item
-		 *       Lewa ręka: item
-		 *     Rumak:
-		 *       Typ: typMoba
-		 *       Atrybuty:
-		 *         ...
-		 *       Itemki:
-		 *         ...
-		 * 
-		 * 
-		 * 
-		 * 
-		 * odległość od gracza: int
-		 * czas odświeżania: int
-		 * szansa zrespawnowania: double
-		 * 
-		 * 
-		 */
+		try {
+			tag = MojangsonParser.parse(sekcja.getString("NBT", "{}"));
+		} catch (CommandSyntaxException e) {
+			Main.warn("Niepoprawny nbttag " + sekcja.getCurrentPath() + " w Customowe Moby.yml");
+		}
 		
+		if (sekcja.contains("Imie"))
+			tag.setString("CustomName", "'" + Func.koloruj(sekcja.getString("Imie")) + "'"); // TODO sprawdzić
+		if (sekcja.contains("Imie zawsze widoczne"))
+			tag.setBoolean("CustomNameVisible", sekcja.getBoolean("Imie zawsze widoczne")); // TODO sprawdzić
+		if (tag.isEmpty())
+			tag = null;
+		
+		ConfigurationSection _sekcja = sekcja.getConfigurationSection("Atrybuty");
+		if (_sekcja != null) {
+			atrybuty = Lists.newArrayList();
+			for (String attr : _sekcja.getKeys(false))
+				atrybuty.add(Krotka.stwórz(Attribute.valueOf(attr.toUpperCase()), _sekcja.getDouble(attr)));
+		}
+		
+		_sekcja = sekcja.getConfigurationSection("Itemki");
+		if (_sekcja != null) {
+			eq = Lists.newArrayList();
+			for (Entry<String, Object> en : _sekcja.getValues(false).entrySet())
+				eq.add(Krotka.stwórz(EquipmentSlot.valueOf(slot(en.getKey())), Config.item(en.getValue())));
+		}
+		
+		if (sekcja.contains("Rumak"))
+			rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
 		
 	}
 	
-	Entity zresp(Location loc, String scieżka) {
-		UnaryOperator<String> slot = nazwa -> {
-			switch(nazwa.toLowerCase()) {
-			case "głowa":
-			case "glowa": 
-				return "HEAD";
-			case "klata":
-			case "napiersnik":
-			case "napierśnik":
-				return "CHEST";
-			case "spodnie":
-				return "LEGS";
-			case "buty":
-				return "FEET";
-			case "ręka":
-			case "reka":
-			case "prawa ręka":
-			case "prawa reka":
-				return "HAND";
-			case "lewa ręka":
-			case "lewa reka":
-			case "druga ręka":
-			case "druga reka":
-				return "OFF_HAND";
-			}
-			return nazwa.toUpperCase();
-		};
+	
+	Entity zresp(Location loc) {
+		Entity mob = loc.getWorld().spawnEntity(loc, typ);
 		
-		ConfigurationSection sekcja;
-		
-		Entity mob = loc.getWorld().spawnEntity(loc, EntityType.valueOf(config.wczytajLubDomyślna(scieżka + "Typ", "Zombie").toUpperCase()));
-		
-		String imie = config.wczytajStr(scieżka + "Imie");
-		if (imie != null)
-			mob.setCustomName(imie);
-		mob.setCustomNameVisible(config.wczytajLubDomyślna(scieżka + "Imie zawsze widoczne", false));
-		
-		String nbt = config.wczytajStr(scieżka + "NBT");
-		if (nbt != null) {
-			NBTTagCompound tag = new NBTTagCompound();
-			try {
-				tag = MojangsonParser.parse(nbt);
-			} catch (CommandSyntaxException e) {} // TODO pliczek z problemami albo komenda /problemy z jednym wystąpieniem tego albo ten syntax na przeładowaniu
-			
-			if (!tag.isEmpty()) {
-				NBTTagCompound tagStary = new NBTTagCompound();
-				((CraftEntity) mob).getHandle().save(tagStary);
-				for (String klucz : tag.getKeys())
-					tagStary.set(klucz, tag.get(klucz));
-				((CraftEntity) mob).getHandle().load(tagStary);
-			}
+		if (tag != null) {
+			NBTTagCompound tagStary = new NBTTagCompound();
+			((CraftEntity) mob).getHandle().save(tagStary);
+			for (String klucz : tag.getKeys())
+				tagStary.set(klucz, tag.get(klucz));
+			((CraftEntity) mob).getHandle().load(tagStary);
 		}
+		
 		if (mob instanceof Attributable) {
 			Attributable mobAtt = (Attributable) mob;
-			sekcja = config.sekcja(scieżka + "Atrybuty");
-			if (sekcja != null) {
-				for (String attr : sekcja.getKeys(false))
-					mobAtt.getAttribute(Attribute.valueOf(attr)).setBaseValue(sekcja.getDouble(attr));
+			if (atrybuty != null) {
+				for (Krotka<Attribute, Double> krotka : atrybuty)
+					mobAtt.getAttribute(krotka.a).setBaseValue(krotka.b);
 				if (mob instanceof Damageable)
 					((Damageable) mob).setHealth(mobAtt.getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue());
 			}
 		}
+		
 		if (mob instanceof LivingEntity) {
-			EntityEquipment eq = ((LivingEntity) mob).getEquipment();
-			sekcja = config.sekcja(scieżka + "Itemki");
-			if (sekcja != null)
-				for (String _slot : sekcja.getKeys(false))
-					eq.setItem(EquipmentSlot.valueOf(slot.apply(_slot)), config.wczytajItem(scieżka + "Itemki." + _slot));
+			EntityEquipment eqMoba = ((LivingEntity) mob).getEquipment();
+			if (eq != null)
+				for (Krotka<EquipmentSlot, ItemStack> krotka : eq)
+					if (krotka.b != null)
+						eqMoba.setItem(krotka.a, krotka.b.clone());
 		}
 		
-		sekcja = config.sekcja(scieżka + "Rumak");
-		if (sekcja != null) {
-			zresp(loc, scieżka + "Rumak.").addPassenger(mob);
-		}
-		
+		if (rumak != null)
+			rumak.zresp(loc).addPassenger(mob);
 		
 		return mob;
 	}
+	
+
+	String slot(String nazwa) {
+		switch(nazwa.toLowerCase()) {
+		case "głowa":
+		case "glowa": 
+			return "HEAD";
+		case "klata":
+		case "napiersnik":
+		case "napierśnik":
+			return "CHEST";
+		case "spodnie":
+			return "LEGS";
+		case "buty":
+			return "FEET";
+		case "ręka":
+		case "reka":
+		case "prawa ręka":
+		case "prawa reka":
+			return "HAND";
+		case "lewa ręka":
+		case "lewa reka":
+		case "druga ręka":
+		case "druga reka":
+			return "OFF_HAND";
+		}
+		return nazwa.toUpperCase();
+	}
 }
-
-
 
 
 

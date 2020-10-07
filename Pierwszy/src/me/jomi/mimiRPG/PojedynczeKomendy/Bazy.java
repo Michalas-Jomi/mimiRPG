@@ -262,6 +262,7 @@ public class Bazy implements Listener, Przeładowalny {
 		File file = new File(scieżka);
 		ClipboardFormat format = ClipboardFormats.findByFile(file);
 		try (ClipboardReader reader = format.getReader(new FileInputStream(file));
+				@SuppressWarnings("deprecation") // TODO deprecation
 				EditSession editSession = WorldEdit.getInstance().getEditSessionFactory()
 						.getEditSession(BukkitAdapter.adapt(świat), -1)) {
 			Operations.complete(

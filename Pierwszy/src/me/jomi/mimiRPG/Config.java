@@ -22,7 +22,7 @@ public class Config {
 	private String sciezka;
 	
 	public Config(String nazwa) {
-		this.sciezka = "plugins/"+Main.plugin.getDescription().getName()+"/" + nazwa + ".yml";
+		this.sciezka = Main.path + nazwa + ".yml";
 		this.sciezkaJarDomyślny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
 		przeładuj();
 	}
