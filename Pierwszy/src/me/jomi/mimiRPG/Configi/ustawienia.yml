@@ -4,8 +4,7 @@ WiadomoscConsole: '[Konsola]'
 
 # Pozwala wyłączyć niepotrzebne części pluginu
 # Nie będą one wczytywane, ani inicjowane
-# Do włączenia  modułu wystarczy /przeładuj Moduły
-# Do wyłączenia modułu wymagany jest restart
+# wyłączanie modółów bez restartu jest możliwe, ale nie zalecane
 Moduły:
   Antylog: true
   AutoWiadomosci: true

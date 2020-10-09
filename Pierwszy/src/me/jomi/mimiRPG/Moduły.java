@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG;
 
+import java.util.HashMap;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
@@ -14,8 +15,9 @@ import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.*;
 
 public class Moduły implements Przeładowalny {
-	private static ConfigurationSection moduły;
 	int włączone = 0;
+	
+	static final HashMap<String, Klasa> mapa = new HashMap<>();
 	
 	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class, ChatGrupowy.class, 
 CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, CustomoweMoby.class, Czapka.class, DrabinaPlus.class, 
@@ -30,11 +32,10 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 	public void przeładuj() {
 		ConfigurationSection sekcja = Main.ust.sekcja("Moduły");
 		włącz(sekcja);
-		if (moduły == null) 
-			moduły = sekcja;
 	}
 	
 	public void włącz(ConfigurationSection sekcja) {
+		włączone = 0;
 		Consumer<Class<?>> włączModuł = klasa -> {
 			boolean warunek;
 			try {
@@ -44,7 +45,7 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 			}
 			if (warunek) {
 				try {
-					Main.zarejestruj(klasa.newInstance());
+					mapa.get(klasa.getSimpleName()).włącz();
 					włączone++;
 				} catch (InstantiationException | IllegalAccessException e) {
 					Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
@@ -54,14 +55,20 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 		boolean przeładować = false;
 		for (Class<?> klasa : klasy) {
 			String nazwa = klasa.getSimpleName();
-			if (moduły == null) {
-				if (sekcja.getBoolean(nazwa))
-					włączModuł.accept(klasa);
-			} else if (!moduły.getBoolean(nazwa) && sekcja.getBoolean(nazwa)) {
+			if (!mapa.containsKey(nazwa))
+				mapa.put(nazwa, new Klasa(klasa));
+			Klasa _klasa = mapa.get(nazwa);
+			boolean w = _klasa.włączony;
+			if (sekcja.getBoolean(nazwa)) {
 				włączModuł.accept(klasa);
-				moduły.set(nazwa, true);
-				przeładować = true;
-				Main.log("§aWłączono Moduł: " + nazwa);
+				if (!w && _klasa.inst instanceof Komenda)
+					przeładować = true;
+				if (!w && Main.pluginEnabled)
+					Main.log("§aWłączono Moduł: " + nazwa);
+			} else {
+				mapa.get(klasa.getSimpleName()).wyłącz();
+				if (w && Main.pluginEnabled)
+					Main.log("§cWyłączono Moduł: " + nazwa);
 			}
 		}
 		if (przeładować)
@@ -74,8 +81,33 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 	}
 
 	public static boolean włączony(String moduł) {
-		Object obj = moduły.get(moduł);
-		return obj == null ? false : (boolean) obj;
+		Klasa obj = mapa.get(moduł);
+		return obj == null ? false : obj.włączony;
+	}
+	
+}
+
+class Klasa {
+	Class<?> klasa;
+	Object inst;
+	boolean włączony = false;
+	Klasa(Class<?> klasa) {
+		this.klasa = klasa;
+	}
+	
+	Object włącz() throws InstantiationException, IllegalAccessException {
+		if (włączony) return inst;
+		if (inst == null)
+			inst = klasa.newInstance();
+		Main.zarejestruj(inst);
+		włączony = true;
+		return inst;
+	}
+	void wyłącz() {
+		if (!włączony) return;
+		if (inst != null)
+			Main.wyrejestruj(inst);
+		włączony = false;
 	}
 	
 }

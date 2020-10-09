@@ -15,6 +15,8 @@ import org.bukkit.plugin.Plugin;
 import com.google.common.collect.Lists;
 
 public abstract class Komenda implements TabExecutor {
+	List<PluginCommand> _komendy = Lists.newArrayList();
+	boolean _zarejestrowane_komendy = true;
 	public Komenda(String komenda) {
 		ustawKomende(komenda, null, null);
 	}
@@ -70,6 +72,7 @@ public abstract class Komenda implements TabExecutor {
 		komenda.setUsage(użycie);
 		if (aliasy != null)
 			komenda.setAliases(aliasy);
+		_komendy.add(komenda);
 		return komenda;
 	}
 	

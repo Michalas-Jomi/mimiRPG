@@ -20,6 +20,13 @@ public interface Zegar {
 	static void zarejestruj(Zegar zegar) {
 		zegary.add(new _Zegar(zegar));
 	}
+	static void wyrejestruj(Zegar zegar) {
+		for (int i=0; i<zegary.size(); i++)
+			if (zegary.get(i).zegar.getClass().getSimpleName().equals(zegar.getClass().getSimpleName())) {
+				zegary.remove(i);
+				return;
+			}
+	}
 	
 	int czas();
 }

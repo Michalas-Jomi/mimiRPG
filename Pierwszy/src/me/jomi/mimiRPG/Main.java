@@ -5,12 +5,17 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -52,10 +57,14 @@ public class Main extends JavaPlugin {
 	public static boolean ekonomia = false;
 	public static boolean iridiumSkyblock = false;
 	
+	public static boolean pluginEnabled = false;
+	
 	public static WorldGuardPlugin rg;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
 	public static StringFlag flagaCustomoweMoby;
+	
+	public static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
 	
 	private void brakPluginu(String plugin) {
 		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
@@ -119,6 +128,7 @@ public class Main extends JavaPlugin {
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
+		pluginEnabled = true;
 	}
 	static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
@@ -130,6 +140,27 @@ public class Main extends JavaPlugin {
 			Przeładowalny.przeładowalne.put(obj.getClass().getSimpleName(), p);
 			p.przeładuj();
 		}
+		if (obj instanceof Komenda && !((Komenda) obj)._zarejestrowane_komendy) {
+			for (PluginCommand cmd : ((Komenda) obj)._komendy) {
+				cmd.setTabCompleter((Komenda) obj);
+				cmd.setExecutor((Komenda) obj);
+				((Komenda) obj)._zarejestrowane_komendy = true;
+			}
+		}
+	}
+	static void wyrejestruj(Object obj) {
+		if (obj instanceof Listener)
+			HandlerList.unregisterAll((Listener) obj);
+		if (obj instanceof Zegar)
+			Zegar.wyrejestruj((Zegar) obj);
+		if (obj instanceof Przeładowalny)
+			Przeładowalny.przeładowalne.remove(obj.getClass().getSimpleName());
+		if (obj instanceof Komenda && ((Komenda) obj)._zarejestrowane_komendy)
+			for (PluginCommand cmd : ((Komenda) obj)._komendy) {
+				cmd.setTabCompleter(wyłączonyExecutor);
+				cmd.setExecutor(wyłączonyExecutor);
+				((Komenda) obj)._zarejestrowane_komendy = false;
+			}
 	}
 	public void onDisable() {
 		for (Player p : Bukkit.getOnlinePlayers())
@@ -207,4 +238,19 @@ public class Main extends JavaPlugin {
 	public static boolean włączonyModół(Class<?> modół) {
 		return Moduły.włączony(modół.getSimpleName());
 	}
+}
+
+class WyłączonyExecutor implements TabExecutor {
+
+	@Override
+	public boolean onCommand(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
+		arg0.sendMessage("§cTa komenda jest aktualnie wyłączona");
+		return true;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
+		return null;
+	}
+	
 }
