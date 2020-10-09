@@ -91,7 +91,7 @@ public class Main extends JavaPlugin {
 			brakPluginu("Vault");
         try {
         	iridiumSkyblock = IridiumSkyblock.getInstance() != null;
-        } catch (Exception e) {
+        } catch (NoClassDefFoundError e) {
 			brakPluginu("IridiumSkyblock");
         }
         

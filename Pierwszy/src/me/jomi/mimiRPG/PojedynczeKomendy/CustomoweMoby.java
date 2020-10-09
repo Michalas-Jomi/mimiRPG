@@ -116,11 +116,8 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 		String[] typy = _typy.split(",");
 		String typ = typy[Func.losuj(0, typy.length-1)];
 		
-		zresp(loc.add(.5, 0, .5), typ);
-	}
-	
-	Entity zresp(Location loc, String co) {
-		return mapaMobów.get(co).zresp(loc);
+		if (mapaMobów.containsKey(typ))
+			mapaMobów.get(typ).zresp(loc.add(.5, 0, .5));
 	}
 }
 

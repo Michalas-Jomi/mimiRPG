@@ -22,8 +22,10 @@ import org.json.simple.parser.ParseException;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ItemTag;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.api.chat.hover.content.Item;
 
 
 public class Napis implements ConfigurationSerializable {
@@ -115,11 +117,13 @@ public class Napis implements ConfigurationSerializable {
 	}
 	
 	public static Napis item(ItemStack item) {
-		net.minecraft.server.v1_16_R2.ItemStack item2;
-		item2 = CraftItemStack.asNMSCopy(item);
+		net.minecraft.server.v1_16_R2.ItemStack item2 = CraftItemStack.asNMSCopy(item);
 		Napis n = new Napis("§b[§9"+item.getAmount()+"§3x§b " +
-				(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()+"§b]§r"));
-		Text b = new Text("{id:\""+item.getType().toString().toLowerCase()+"\",Count:1,tag:"+item2.getOrCreateTag()+"}");
+			(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString() + "§b]§r"));
+		Item b = new Item(
+				item.getType().toString().toLowerCase(),
+				item.getAmount(),
+				ItemTag.ofNbt(item2.getOrCreateTag().toString()));
 		n.txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, b));
 		return n;
 	}

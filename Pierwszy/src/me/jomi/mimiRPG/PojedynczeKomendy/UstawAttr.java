@@ -64,15 +64,13 @@ public class UstawAttr extends Komenda {
 		}
 		
 		Player gracz = null;
-		if (args.length >= 2) {
-			gracz = Bukkit.getPlayer(args[1]);
-			if (!Bukkit.getOnlinePlayers().contains(gracz)) {
-				p.sendMessage(prefix + "Gracz §e" + args[1] + "§6 nie jest online");
-				return true;
-			};
-		}
 		if (p instanceof Player)
 			gracz = (Player) p;
+		if (args.length >= 2) {
+			gracz = Bukkit.getPlayer(args[1]);
+			if (gracz == null) 
+				return Main.powiadom(p, prefix + "Gracz §e" + args[1] + "§6 nie jest online");
+		}
 		if (gracz == null)
 			return Main.powiadom(p, prefix + "Konsole jest ponad tym");
 		

@@ -41,7 +41,7 @@ bazy:
       dz: 5  # wymagane dla bazy
       dy: 10 # wymagane dla bazy
 
-	# c4 # opcjonalne 
+    # c4 # opcjonalne 
     # jeśli jest baza i schemat nie funkcjonują
     c4:
       # zasięg w jakim c4 może zniszczyć bloki

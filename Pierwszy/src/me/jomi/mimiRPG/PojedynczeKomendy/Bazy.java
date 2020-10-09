@@ -235,7 +235,7 @@ public class Bazy implements Listener, Przeładowalny {
 			}
 			
 			// Baza/Schemat
-			boolean zabierz = Baza.wczytaj(x, y, z, świat, item, ev, 
+			boolean zabierz = mimiBaza.wczytaj(x, y, z, świat, item, ev, 
 					(Map<String, Object>) mapa.get("baza")) != null;
 			
 			if (mapa.containsKey("schemat") && !blokuj && 
@@ -282,9 +282,9 @@ public class Bazy implements Listener, Przeładowalny {
 	}
 }
 
-class Baza {
+class mimiBaza {
 	Player p;
-	Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
+	mimiBaza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 		p = właściciel;
 		ProtectedCuboidRegion region = new ProtectedCuboidRegion(
 				String.format("Bazax%sy%sz%s%s", x, y, z, p.getName()),
@@ -300,7 +300,7 @@ class Baza {
 		region.setFlag(Main.flagaC4, 		   StateFlag.State.ALLOW);
 	}
 	
-	static Baza wczytaj(int x, int y, int z, World świat, ItemStack item, BlockPlaceEvent ev, Map<String, Object> mapa) {
+	static mimiBaza wczytaj(int x, int y, int z, World świat, ItemStack item, BlockPlaceEvent ev, Map<String, Object> mapa) {
 		if (mapa == null) return null;
 		int dx = (int) mapa.get("dx");
 		int dy = (int) mapa.get("dy");
@@ -312,7 +312,7 @@ class Baza {
 				);
 		if (Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
 				.getApplicableRegions(region).testState(null, Main.flagaStawianieBaz))
-			return new Baza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
+			return new mimiBaza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
 		Bazy.inst.blokuj = true;
 		ev.getPlayer().sendMessage(Bazy.prefix + "Nie możesz tu postawić swojej bazy");
 		return null;

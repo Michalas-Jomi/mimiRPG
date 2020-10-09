@@ -44,7 +44,7 @@ public abstract class Func {
 	public static Inventory CloneInv(Inventory inv, String nazwa) {
 		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
 		for (int i=0; i<inv.getSize(); i++)
-			_inv.setItem(i, inv.getItem(i));
+			_inv.setItem(i, inv.getItem(i).clone());
 		return _inv;
 	}
 	public static String DoubleToString(double liczba) {
@@ -391,6 +391,12 @@ public abstract class Func {
 	 */
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
+	}
+	public static <T> T losuj(List<T> lista) {
+		return lista.get(losuj(0, lista.size()-1));
+	}
+	public static int losujWZasięg(int max) {
+		return Func.losuj(0, max-1);
 	}
 	public static double zaokrąglij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);

@@ -95,9 +95,12 @@ public class ChatGrupowy extends Komenda implements Listener {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 2) return null;
-		List<String> lista = Arrays.asList("stwórz", "lista", "zaproś", "wyrzuć", "opuść", "ogólny");
-		if (sender.hasPermission("mimiRPG.chatGrupowy.podgladaj"))
-			lista.addAll(Arrays.asList("lista w", "podglądaj"));
+		List<String> lista;
+		if (sender.hasPermission("mimiRPG.chatGrupowy.podgladaj")) {
+			lista = Arrays.asList("podglądaj", "lista w", "stwórz", "lista", "zaproś", "wyrzuć", "opuść", "ogólny");
+			return uzupełnijTabComplete(Func.listToString(args, 0), lista);
+		}
+		lista = Arrays.asList("stwórz", "lista", "zaproś", "wyrzuć", "opuść", "ogólny");
 		return uzupełnijTabComplete(Func.listToString(args, 0), lista);
 	}
 

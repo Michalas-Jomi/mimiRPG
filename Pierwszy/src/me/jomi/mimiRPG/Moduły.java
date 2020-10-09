@@ -24,7 +24,7 @@ KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
 Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
 Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
-Wyplac.class, ZabezpieczGracza.class, ZamienEq.class};
+Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 	
 	@Override
 	public void przeładuj() {
