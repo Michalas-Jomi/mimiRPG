@@ -126,50 +126,48 @@ Kosz:
 ### Spawnery ###
 
 Spawnery:
-  # Maksymalna ilość mobów konkretnego typu w zasięgu spawnera
-  MaxNearbyEntities: 6
-  # Wymagany Gracz w zasięgu spawnera
-  RequiredPlayerRange: 16
-  # Czas w tickach na najszybsze zrespienie sie moba
-  MinSpawnDelay: 200
-  # Czas w tickach na najpózniejsze zrespienie sie moba
-  MaxSpawnDelay: 800
-  # Maksymalna ilość mobów ze spawnera
-  SpawnCount: 4
-  # Zasięg spawnera
-  SpawnRange: 4
+  # ilość rzędów panela
+  rzędy: 6
+  # liczba wolnych kratek po bokach
+  marginesy: 2
+  
+  # ulepszanie nie wymusza wykupywania wszystkich tierów po kolei, umożliwia wykupywanie niższych tierów
+  ulepszenia:
+    # zasięg w jakim spawner respi moby (SpawnRange)
+    # poziom + 1
+    Zasięg:
+      item: prismarine_shard
+      slot: 10
+      koszty: [100, 200.5, 300, 400]
+      # zasięg w jakim musi być gracz aby spawner działał (RequiredPlayerRange)
+      # poziom * mnożnik
+      mnożnik: 4
+    
+    # maksymalna ilość respionych mobów na raz (SpawnCount)
+    # poziom
+    Liczebność:
+      item: prismarine_crystals
+      slot: 19
+      koszty: [100, 200, 250, 300, 500]
+      # maksymalna ilość zrespionych mobów w pobliżu (MaxNearbyEntities)
+      # poziom * mnożnik
+      mnożnik: 2.3
+      # opis na itemie
+      opis:
+        - '&dLiczebność to fajna sprawa jest'
+    
+    # szybkość respienia mobów (MaxSpawnDelay / MinSpawnDelay)
+    Szybkość:
+      item: sugar
+      slot: 28
+      koszty: [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+      # ilość ujmowanych sekund na poziom (MaxSpawnDelay)
+      # (poziom - 1) * mnożnik
+      mnożnik: 5
+      # najszybsze możliwe zrespienia moba
+      # MinSpawnDelay = MaxSpawnDelay / dzielnik
+      dzielnik: 4
 
-  # <id moba>: <polska nazwa>
-  # Moby nieuwzględnione tu, nie będą tłumaczone
-  # ani wyświetlać się pod tabem
-  tłumaczenia:
-    blaze: blaze
-    cat: kot
-    chicken: kurczak
-    cow: krowa
-    creeper: creeper
-    enderman: enderman
-    evoker: evoker
-    ghast: ghast
-    guardian: guardian
-    horse: koń
-    iron_golem: żelazny golem
-    magma_cube: kostka magmy
-    parrot: papuga
-    pig: świnia
-    rabbit: zając
-    sheep: owca
-    skeleton: szkielet
-    slime: szlam
-    snowman: bałwan
-    spider: pająk
-    squid: kałamarnica
-    strider: strider
-    vindicator: windykator
-    wither_skeleton: witherowy szkielet
-    zoglin: zoglin
-    zombie: zombie
-    zombified_piglin: zzombifikowany piglin
 
 ###################
 ### Przyjaciele ###

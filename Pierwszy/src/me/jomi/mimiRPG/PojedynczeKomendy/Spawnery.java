@@ -3,15 +3,14 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.function.Consumer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R2.block.CraftCreatureSpawner;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
@@ -20,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
@@ -32,7 +32,6 @@ import org.bukkit.inventory.ItemStack;
 import com.iridium.iridiumskyblock.User;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -44,7 +43,7 @@ import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
 
 public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Spawner");
-	Config config = new Config("Spawnery");
+	
 	ItemStack pustySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§9§l ");
 	Inventory inv;
 	int sloty;
@@ -56,56 +55,52 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		Main.dodajPermisje("spawnery.bypass");
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void przeładuj() {
-		config.przeładuj();
-		
-		sloty = 9 * Math.max(1, Math.min(6, config.wczytajLubDomyślna("Panel.rzędy", 6)));
+		sloty = 9 * Math.max(1, Math.min(6, Main.ust.wczytajLubDomyślna("Spawnery.rzędy", 6)));
 		
 		inv = Bukkit.createInventory(null, sloty, "§9§lSpawner");
 		for (int i=0; i<sloty; i++)
 			inv.setItem(i, pustySlot);
 		
-		ConfigurationSection sekcja = config.sekcja("Panel.ulepszenia");
-		if (sekcja != null)
-			for (Entry<String, Object> entry : sekcja.getValues(false).entrySet()) {
-				int slot = Func.Int(entry.getKey(), -1);
-				if (slot <= -1 || slot >= sloty)
-					Main.warn("Niepoprawy nr slotu " + entry.getKey() + " w Spawnery.yml");
-				else {
-					MemorySection mapa = (MemorySection) entry.getValue();
-					
-					ItemStack item = Config.item(mapa.get("item"));
-					if (item == null) item = new ItemStack(Material.SPAWNER);
-					
-					double koszt = (double) mapa.get("koszt", 100d);
-					
-					int wartość = (int) mapa.get("wartość", 1);
-					
-					String parametr = (String) mapa.get("parametr", "");
-					// TODO poprawność parametru sprawdzić
-					
-					inv.setItem(slot, Func.stwórzItem(item.getType(), wartość, "§b" + parametr, Arrays.asList(
+		int marginesy = Main.ust.wczytajInt("Spawnery.marginesy");
+		Consumer<String> ulepszenia = typ -> {
+			String sc = "Spawnery.ulepszenia." + typ + ".";
+			int slot = Main.ust.wczytajInt(sc + "slot");
+			if (slot <= -1 || slot >= sloty)
+				Main.warn("Niepoprawy nr slotu " + slot + " w Spawnery.yml");
+			else {
+				ItemStack item = Main.ust.wczytajItem(sc + "item");
+				if (item == null) item = new ItemStack(Material.SPAWNER);
+				
+				List<Double> koszty = Func.nieNullList((List<Double>) Main.ust.wczytaj(sc + "koszty"));
+				
+				for (int wartość=1; slot<sloty && !koszty.isEmpty(); slot++) {
+					if (slot % 9 + 1 <= marginesy || slot % 9 + 1 > 9 - marginesy) continue;
+					Object obj = koszty.remove(0);
+					double koszt = obj instanceof Double ? (double) obj : (int) obj;
+					ItemStack _item = Func.stwórzItem(item.getType(), wartość, "§b" + typ, Arrays.asList(
 							"§6Koszt:§e " + koszt + "$",
-							"§6Poziom:§e " + wartość)));
+							"§6Poziom:§e " + wartość++));
+					for (String linia : Main.ust.wczytajListe(sc + "opis"))
+						Func.dodajLore(_item, Func.koloruj(linia));
+					inv.setItem(slot, _item);
 				}
+				if (!koszty.isEmpty())
+					Main.warn("Nie można zmieścić wszystkich ulepszeń w panelu, zmień początkowe sloty lub marginesy Spawnery.yml " + sc);
 			}
-		
-		/*
-		 * slot:
-		 *   item: item
-		 *   koszt: koszt
-		 *   parametr: Liczebność/Zasięg/Szybkość
-		 *   wartość: int
-		 * 
-		 * 
-		 */
+		};
+
+		ulepszenia.accept("Liczebność");
+		ulepszenia.accept("Szybkość");
+		ulepszenia.accept("Zasięg");
 	}
 	@Override
 	public String raport() {
 		int x = 0;
 		try {
-			x = config.sekcja("Panel.ulepszenia").getKeys(false).size();
+			x = Main.ust.sekcja("Spawnery.ulepszenia").getKeys(false).size();
 		} catch (Exception e) {}
 		return "§6wczytane ulepszenia: §e" + x;
 	}
@@ -126,7 +121,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 				ench = poziom == spawner.getSpawnRange() - 1;
 				break;
 			case "§bSzybkość":
-				ench = poziom == -spawner.getMaxSpawnDelay() / 100 + 9;
+				ench = poziom == (800 - spawner.getMaxSpawnDelay()) / (20 * mnożnik("Szybkość")) + 1;
 				break;
 			}
 			if (ench) {
@@ -158,26 +153,34 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		int poziom = item.getAmount();
-		
+
+		double mnożnik;
 		switch (item.getItemMeta().getDisplayName()) {
 		case "§bLiczebność":
 			spawner.setSpawnCount(poziom + 1);
-			spawner.setMaxNearbyEntities((int) ((poziom + 1) * 2.3));
+			mnożnik = mnożnik("Liczebność");
+			spawner.setMaxNearbyEntities((int) ((poziom + 1) * mnożnik));
 			break;
 		case "§bZasięg":
 			spawner.setSpawnRange(poziom + 2);
-			spawner.setRequiredPlayerRange((poziom + 2) * 4);
+			mnożnik = mnożnik("Zasięg");
+			spawner.setRequiredPlayerRange((int) ((poziom + 1) * mnożnik));
 			break;
 		case "§bSzybkość":
-			int maxSpawnDeley = 900 - (poziom + 1) * 5*20;
-			spawner.setMaxSpawnDelay(maxSpawnDeley);
-			spawner.setMinSpawnDelay(maxSpawnDeley / 4);
+			mnożnik = mnożnik("Szybkość");
+			double maxSpawnDeley = 800 - poziom * mnożnik*20;;
+			spawner.setMaxSpawnDelay((int) maxSpawnDeley);
+			mnożnik = Main.ust.wczytajDouble("Spawnery.ulepszenia.Szybkość.dzielnik");
+			spawner.setMinSpawnDelay((int) (maxSpawnDeley / mnożnik));
 			break;
 		}
 		spawner.update();
 		edytuj(p, spawner);
 	}
-	
+	double mnożnik(String typ) {
+		return Main.ust.wczytajDouble("Spawnery.ulepszenia." + typ + ".mnożnik");
+		
+	}
 	
 	@EventHandler
 	public void stawianie(BlockPlaceEvent ev) {
@@ -190,8 +193,6 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 																			.getHandle().getTileEntity(blockPos);
 		_spawner.load(_spawner.getBlock(), tag);
 	}
-	
-	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenie(BlockBreakEvent ev) {
 		if (!ev.getBlock().getType().equals(Material.SPAWNER)) return;
@@ -232,6 +233,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 	@EventHandler
 	public void klikanieSpawnera(PlayerInteractEvent ev) {
+		if (!ev.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
 		Block blok = ev.getClickedBlock();
 		if (blok == null) return;
 		if (!ev.getPlayer().isSneaking()) return;
@@ -240,8 +242,10 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		Player p = ev.getPlayer();
 		
 		if (p.hasPermission("mimirpg.spawnery.bypass") || 
-				(Main.iridiumSkyblock && User.getUser(p).getIsland().isInIsland(spawner.getLocation())))
+				(Main.iridiumSkyblock && User.getUser(p).getIsland().isInIsland(spawner.getLocation()))) {
 			edytuj(p, spawner);
+			ev.setCancelled(true);
+		}
 	}
 	
 	@EventHandler
@@ -261,14 +265,11 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		panele.remove(ev.getPlayer().getName());
 	}
 
-	
-	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO completer
+		// TODO completer i polski nazwy
 		return null;
 	}
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
@@ -289,8 +290,9 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		
 		try {
 			Func.dajItem(p, dajItem(args[0], 1, 1, 1, MojangsonParser.parse(
-					"{SpawnData:{id:\""+args[0].toLowerCase()+"\"},MaxNearbyEntities:2,MinSpawnDelay:200,"
-							+ "SpawnRange:2,MaxSpawnDelay:800,RequiredPlayerRange:8,SpawnCount:1}")));
+					String.format("{SpawnData:{id:\"minecraft:%s\"},MaxNearbyEntities:%ss,"
+							+ "MinSpawnDelay:200s,SpawnRange:2s,MaxSpawnDelay:800s,RequiredPlayerRange:%ss,SpawnCount:1s}",
+							args[0].toLowerCase(), (int) mnożnik("Liczebność"), (int) mnożnik("Zasięg")))));
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();
 		}
@@ -299,172 +301,36 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 }
 
-
-
-
-
-
-// Stare spawnery (bezpieczne)
-/*import java.util.HashMap;
-import java.util.List;
-
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R2.block.CraftCreatureSpawner;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.inventory.ItemStack;
-
-import com.google.common.collect.Lists;
-
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Przeładowalny;
-import net.minecraft.server.v1_16_R2.BlockPosition;
-import net.minecraft.server.v1_16_R2.NBTTagCompound;
-import net.minecraft.server.v1_16_R2.NBTTagList;
-import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
-
-public class Spawnery extends Komenda implements Listener, Przeładowalny {
-	public static final String prefix = Func.prefix("Spawner");
-	private static final HashMap<String, String> mapa = new HashMap<>();
-	private static final List<String> tłumaczenia = Lists.newArrayList();
-	private static final List<String> typy = Lists.newArrayList();
-	
-	private static int MaxNearbyEntities;
-	private static int MaxSpawnDelay;
-	private static int SpawnCount;
-	private static int SpawnRange;
-	private static int MinSpawnDelay;
-	private static int RequiredPlayerRange;
-	
-	public Spawnery() {
-		super("spawner");
-		for (EntityType en : EntityType.values())
-			typy.add(en.toString());
-	}
-	public void przeładuj() {
-		mapa.clear();
-		tłumaczenia.clear();
-		Config config = Main.ust;
-		for (String klucz : config.sekcja("Spawnery", "tłumaczenia").getKeys(false)) {
-				String wartość = config.wczytajStr("Spawnery", "tłumaczenia", klucz);
-				if (!typy.contains(klucz.toUpperCase()))
-					Main.plugin.getLogger().warning(prefix + "Nie odnaleziono moba " + klucz);
-				mapa.put(klucz, wartość);
-				mapa.put(wartość, klucz);
-				tłumaczenia.add(wartość);
-			}
-		SpawnCount 			= (int) config.wczytaj("Spawnery", "SpawnCount");
-		SpawnRange 			= (int) config.wczytaj("Spawnery", "SpawnRange");
-		MinSpawnDelay 		= (int) config.wczytaj("Spawnery", "MinSpawnDelay");
-		MaxSpawnDelay 		= (int) config.wczytaj("Spawnery", "MaxSpawnDelay");
-		MaxNearbyEntities 	= (int) config.wczytaj("Spawnery", "MaxNearbyEntities");
-		RequiredPlayerRange = (int) config.wczytaj("Spawnery", "RequiredPlayerRange");
-	}
-	public String raport() {
-		return "§6Spawnery: §e" + tłumaczenia.size();
-	}
-	
-	private static String dajNazwe(String klucz) {
-		if (mapa.containsKey(klucz))
-			return mapa.get(klucz);
-		return klucz;
-	}
-	
-	@EventHandler(priority=EventPriority.HIGH)
-	public void stwianieBloków(BlockPlaceEvent ev) {
-		if (ev.isCancelled() || ev.getBlock() == null || !(ev.getBlock().getState() instanceof CraftCreatureSpawner)) return;
-		CraftCreatureSpawner sspawner = (CraftCreatureSpawner) ev.getBlock().getState();
-		ItemStack item = ev.getItemInHand();
-		if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
-		List<String> lore = item.getItemMeta().getLore();
-		if (lore.size() < 3) return;
-		if (!lore.get(0).equals("§bNiezwykły blok")) return;
-		if (!lore.get(1).equals("§bWokół niego pojawiają się moby")) return;
-		String nazwa = lore.get(2).split(" to§d ")[1];
- 		sspawner.setRequiredPlayerRange(RequiredPlayerRange);
- 		sspawner.setMaxNearbyEntities(MaxNearbyEntities);
- 		sspawner.setMaxSpawnDelay(MaxSpawnDelay);
- 		sspawner.setMinSpawnDelay(MinSpawnDelay);
- 		sspawner.setSpawnCount(SpawnCount);
- 		sspawner.setSpawnRange(SpawnRange);
-		sspawner.update();
- 		
- 		BlockPosition blockPos = new BlockPosition(ev.getBlock().getX(), ev.getBlock().getY(), ev.getBlock().getZ());
- 		TileEntityMobSpawner spawner = (TileEntityMobSpawner) ((CraftWorld) sspawner.getWorld()).getHandle().getTileEntity(blockPos);
- 		NBTTagCompound spawnerTag = spawner.b();
- 		
- 		NBTTagCompound spawnData = new NBTTagCompound();
- 		spawnData.setString("id", dajNazwe(nazwa));
- 		
- 		NBTTagList attributes = new NBTTagList();
- 		attributes.add(dajAtrybut("generic.movement_speed", 0));
- 		attributes.add(dajAtrybut("generic.attack_damage", 0));
- 		spawnData.set("Attributes", attributes);
- 		
- 		spawnerTag.set("SpawnData", spawnData);
- 		spawner.load(spawner.getBlock(), spawnerTag);
-	}
-	private static NBTTagCompound dajAtrybut(String nazwa, double wartość) {
-		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setString("Name", "minecraft:" + nazwa);
-		nbt.setDouble("Base", wartość);
-		return nbt;
-	}
-	@EventHandler(priority=EventPriority.HIGH)
-	public void niszczenieBloków(BlockBreakEvent ev) {
-		Block blok = ev.getBlock();
-		if (blok == null || blok.getState() == null || ev.isCancelled() || !(blok.getState() instanceof CraftCreatureSpawner)) return;
-		Player p = ev.getPlayer();
-		if (p != null && p.getGameMode().equals(GameMode.CREATIVE)) return;
-		ev.setDropItems(false);
-		ev.setExpToDrop(0);
-		CraftCreatureSpawner spawner = (CraftCreatureSpawner) blok.getState();
-		ItemStack item = dajSpawner(spawner.getCreatureTypeName());
-		if (p != null && p.getInventory().firstEmpty() != -1)
-			p.getInventory().addItem(item);
-		else
-			blok.getWorld().dropItem(blok.getLocation(), item);
-	}
-	
-	private static ItemStack dajSpawner(String nazwa) {
-		if (!tłumaczenia.contains(nazwa))
-			nazwa = dajNazwe(nazwa);
-		ItemStack item = Func.stwórzItem(Material.SPAWNER, 1, "§cSpawner " + nazwa);
-		Func.dodajLore(item, "§bNiezwykły blok");
-		Func.dodajLore(item, "§bWokół niego pojawiają się moby");
-		Func.dodajLore(item, "§bTroche dziwne że wszystkie to§d " + nazwa);
-		return item;
-	}
-	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return uzupełnijTabComplete(args, tłumaczenia);
-	}
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Tylko gracz może stworzyć spawner");
-		Player p = (Player) sender;
-		
-		if (args.length < 1) return Main.powiadom(p, prefix + "Brak nazwy moba");
-		String nazwa = Func.listToString(args, 0);
-		if (!mapa.containsKey(nazwa))
-			p.sendMessage(prefix + "§cNie odnaleziono spawnera w bazie danych, upewnij się że wszystko jest ok");
-		Func.dajItem(p, dajSpawner(nazwa));
-		return true;
-	}
-	
-	
-}*/
+/*
+  # <id moba>: <polska nazwa>
+  # Moby nieuwzględnione tu, nie będą tłumaczone
+  # ani wyświetlać się pod tabem
+  tłumaczenia:
+    blaze: blaze
+    cat: kot
+    chicken: kurczak
+    cow: krowa
+    creeper: creeper
+    enderman: enderman
+    evoker: evoker
+    ghast: ghast
+    guardian: guardian
+    horse: koń
+    iron_golem: żelazny golem
+    magma_cube: kostka magmy
+    parrot: papuga
+    pig: świnia
+    rabbit: zając
+    sheep: owca
+    skeleton: szkielet
+    slime: szlam
+    snowman: bałwan
+    spider: pająk
+    squid: kałamarnica
+    strider: strider
+    vindicator: windykator
+    wither_skeleton: witherowy szkielet
+    zoglin: zoglin
+    zombie: zombie
+    zombified_piglin: zzombifikowany piglin
+*/

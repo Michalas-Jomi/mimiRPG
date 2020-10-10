@@ -82,11 +82,11 @@ public class Config {
 		return plik.getConfigurationSection(sc(sciezka));
 	}
 	
-	public Object  wczytaj		 (Object... sciezka) {return     plik.get(sc(sciezka));}
-	public int 	   wczytajInt	 (Object... sciezka) {return (int)	wczytaj(sciezka);}
-	public double  wczytajDouble (Object... sciezka) {return (double) wczytaj(sciezka);}
-	public boolean wczytajBoolean(Object... sciezka) {return (boolean)wczytaj(sciezka);}
-	public String  wczytajStr	 (Object... sciezka) {return Func.koloruj((String) wczytaj(sciezka));}
+	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}
+	public int 	   wczytajInt	 (String sciezka) {return plik.getInt(sciezka);}
+	public boolean wczytajBoolean(String sciezka) {return plik.getBoolean(sciezka);}
+	public String  wczytajStr	 (String sciezka) {return Func.koloruj(plik.getString(sciezka));}
+	public double  wczytajDouble (String sciezka) {return Func.Double("" + wczytaj(sciezka), 0);}
 
 	@SuppressWarnings("unchecked")
 	public <T> T wczytajLubDomyślna(String sciezka, T domyślna) {
@@ -103,14 +103,14 @@ public class Config {
 	@SuppressWarnings("unchecked")
 	public List<ItemStack> wczytajItemy(Object... sciezka) {
 		List<ItemStack> lista = Lists.newArrayList();
-		Object objListy = wczytaj(sciezka);
+		Object objListy = wczytaj(sc(sciezka));
 		if (objListy == null) return lista;
 		for (Object obj : (List<Object>) objListy)
 			lista.add(item(obj));
 		return lista;
 	}
 	public ItemStack wczytajItem(Object... sciezka) {
-		return item(wczytaj(sciezka));
+		return item(wczytaj(sc(sciezka)));
 	}
 	public static ItemStack item(Object item) {
 		if (item == null) return null;
@@ -132,11 +132,11 @@ public class Config {
 	}
 	
 	public Napis wczytajNapis(Object... sciezka) {
-		return _napis(wczytaj(sciezka));
+		return _napis(wczytaj(sc(sciezka)));
 	}
 	public List<Napis> wczytajListeNapisów(Object... sciezka){
 		List<Napis> lista = Lists.newArrayList();
-		Object obj = wczytaj(sciezka);
+		Object obj = wczytaj(sc(sciezka));
 		if (obj != null)
 			if (obj instanceof List)
 				for (Object napis : (List<?>) obj)

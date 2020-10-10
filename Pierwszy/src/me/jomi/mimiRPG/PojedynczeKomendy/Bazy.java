@@ -295,7 +295,7 @@ class mimiBaza {
 		DefaultDomain owners = new DefaultDomain();
 		owners.addPlayer(p.getName());
 		region.setOwners(owners);
-		region.setPriority(Bazy.inst.config.wczytajInt("ustawienia", "prority baz"));
+		region.setPriority(Bazy.inst.config.wczytajInt("ustawienia.prority baz"));
 		region.setFlag(Main.flagaStawianieBaz, StateFlag.State.DENY);
 		region.setFlag(Main.flagaC4, 		   StateFlag.State.ALLOW);
 	}

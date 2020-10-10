@@ -1,6 +1,8 @@
 package me.jomi.mimiRPG;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
@@ -19,14 +21,19 @@ public class Moduły implements Przeładowalny {
 	
 	static final HashMap<String, Klasa> mapa = new HashMap<>();
 	
-	Class<?>[] klasy = {Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class, ChatGrupowy.class, 
-CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, CustomoweMoby.class, Czapka.class, DrabinaPlus.class, 
-EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
+	static final List<Class<?>> klasy = Arrays.asList(Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class,
+ChatGrupowy.class, CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, CustomoweMoby.class, Czapka.class,
+DrabinaPlus.class, EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
-Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RTP.class, Sklep.class, Spawnery.class, Targ.class,
-Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
-Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
+Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RandomoweRespy.class, RTP.class, Sklep.class, Spawnery.class,
+Targ.class, Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
+Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
+	
+	public static void dodajModuły(Class<?>... moduły) {
+		for (Class<?> klasa : moduły)
+			klasy.add(klasa);
+	}
 	
 	@Override
 	public void przeładuj() {
@@ -77,12 +84,12 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class, RandomoweRespy.class};
 
 	@Override
 	public String raport() {
-		return "§6Włączone Moduły: §e" + włączone + "§6/§e" + klasy.length;
+		return "§6Włączone Moduły: §e" + włączone + "§6/§e" + klasy.size();
 	}
 
 	public static boolean włączony(String moduł) {
-		Klasa obj = mapa.get(moduł);
-		return obj == null ? false : obj.włączony;
+		Klasa klasa = mapa.get(moduł);
+		return klasa == null ? false : klasa.włączony;
 	}
 	
 }

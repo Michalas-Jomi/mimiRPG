@@ -259,9 +259,9 @@ class _Budownik {
 	private _Budownik() {}
 	static _Budownik wczytaj(Config config, String sciezka) {
 		_Budownik budownik = new _Budownik();
-		budownik.skrzynia = (Location) config.wczytaj(sciezka, "skrzynia");
-		budownik.rog = (Location) config.wczytaj(sciezka, "rog");
-		budownik.akt = (Location) config.wczytaj(sciezka, "akt");
+		budownik.skrzynia = (Location) config.wczytaj(sciezka + ".skrzynia");
+		budownik.rog = (Location) config.wczytaj(sciezka + ".rog");
+		budownik.akt = (Location) config.wczytaj(sciezka + ".akt");
 		budownik.id = sciezka;
 		budownik.zwiększanie();
 		return budownik;

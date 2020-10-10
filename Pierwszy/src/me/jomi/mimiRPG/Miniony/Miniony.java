@@ -48,7 +48,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 	public void przeładuj() {
 		Minion.mapaJedzenia.clear();
 		for (String klucz : Main.ust.sekcja("Miniony.jedzenie").getKeys(false))
-			Minion.mapaJedzenia.put(Material.valueOf(klucz.toUpperCase()), Main.ust.wczytajDouble("Miniony.jedzenie", klucz));
+			Minion.mapaJedzenia.put(Material.valueOf(klucz.toUpperCase()), Main.ust.wczytajDouble("Miniony.jedzenie" + klucz));
 	}
 	public String raport() {
 		return "§6Potrawy minionów: §e" + Minion.mapaJedzenia.size();

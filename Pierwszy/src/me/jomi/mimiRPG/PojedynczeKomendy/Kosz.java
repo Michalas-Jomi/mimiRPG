@@ -73,12 +73,12 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
-		maxTimer = Main.ust.wczytajInt("Kosz", "timer");
+		maxTimer = Main.ust.wczytajInt("Kosz.timer");
 		timer = maxTimer;
-		żywotność = Main.ust.wczytajInt("Kosz", "zywotnosc") * 20;
-		msgPoCzyszczeniu = Func.koloruj(Main.ust.wczytajStr("Kosz", "msgPoCzyszczeniu"));
-		msgOstrzegawcze  = Func.koloruj(Main.ust.wczytajStr("Kosz", "msgOstrzegawcze"));
-		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz", "ostrzerzenia");
+		żywotność = Main.ust.wczytajInt("Kosz.zywotnosc") * 20;
+		msgPoCzyszczeniu = Func.koloruj(Main.ust.wczytajStr("Kosz.msgPoCzyszczeniu"));
+		msgOstrzegawcze  = Func.koloruj(Main.ust.wczytajStr("Kosz.msgOstrzegawcze"));
+		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz.ostrzerzenia");
 	}
 	public String raport() {
 		return "§6Kosz: §e" + (maxTimer != -1 ? (maxTimer + "s §6 między czyszczeniami") : "§cWyłaczony");

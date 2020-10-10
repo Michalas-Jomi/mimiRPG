@@ -29,7 +29,7 @@ public class AutoWiadomosci implements Przeładowalny, Zegar {
 		doWysłania.clear();
 		wiadomości = Main.ust.wczytajListeNapisów("AutoWiadomosci", "wiadomości");
 		doWysłania = Lists.newArrayList(wiadomości);
-		timer = Main.ust.wczytajInt("AutoWiadomosci", "czas") * 20;
+		timer = Main.ust.wczytajInt("AutoWiadomosci.czas") * 20;
 	}
 	public String raport() {
 		return "§6Atomatyczne Wiadomości: §e" + wiadomości.size();
