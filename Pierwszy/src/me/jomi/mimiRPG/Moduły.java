@@ -26,9 +26,9 @@ ChatGrupowy.class, CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop
 DrabinaPlus.class, EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
 Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class, PiszJako.class,
-Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RandomoweRespy.class, RTP.class, Sklep.class, Spawnery.class,
-Targ.class, Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class, Wymienianie.class,
-Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
+Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RandomoweRespy.class, RangiWysp.class, RTP.class, Sklep.class,
+Spawnery.class, Targ.class, Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class,
+Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 	
 	public static void dodajModuły(Class<?>... moduły) {
 		for (Class<?> klasa : moduły)
@@ -47,7 +47,7 @@ Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 			boolean warunek;
 			try {
 				warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
-			} catch (Exception e) {
+			} catch (Exception | NoClassDefFoundError e) {
 				warunek = true;
 			}
 			if (warunek) {

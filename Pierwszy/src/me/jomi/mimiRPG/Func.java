@@ -106,6 +106,13 @@ public abstract class Func {
 		return s.toString();
 	}
 	
+	public static double Double(Object liczba) {
+		if (liczba instanceof Double)
+			return (double) liczba;
+		if (liczba instanceof Integer)
+			return (int) liczba;
+		return Double((String) liczba, 0);
+	}
 	public static double Double(String liczba, double domyślna) {
 		if (liczba.contains("."))
 			try {
