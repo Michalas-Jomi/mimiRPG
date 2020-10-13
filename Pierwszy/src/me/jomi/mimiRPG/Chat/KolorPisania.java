@@ -107,6 +107,4 @@ public class KolorPisania extends Komenda implements Listener {
 		else 			  p.sendMessage(prefix + "Zresetowano domyślny kolor pisania gracza §e" + args[0]);	
 		return true;
 	}
-	
-	
 }

@@ -130,6 +130,14 @@ public class Config {
 			_item.setAmount(Func.Int(wejscie[1], 1));
 		return _item;
 	}
+	public static List<ItemStack> itemy(List<?> itemy) {
+		List<ItemStack> _itemy = Lists.newArrayList();
+		
+		for (Object item : itemy)
+			_itemy.add(item(item));
+		
+		return _itemy;
+	}
 	
 	public Napis wczytajNapis(Object... sciezka) {
 		return _napis(wczytaj(sc(sciezka)));

@@ -11,12 +11,14 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
@@ -400,6 +402,8 @@ public abstract class Func {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
 	public static <T> T losuj(List<T> lista) {
+		if (lista.isEmpty())
+			return null;
 		return lista.get(losuj(0, lista.size()-1));
 	}
 	public static int losujWZasięg(int max) {
@@ -488,5 +492,51 @@ public abstract class Func {
 
 	public static void opóznij(int ticki, Runnable lambda) {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
+	}
+
+	private static boolean mieściSię(double co, double x1, double x2) {
+		return  (co >= x1 && co <= x2) || 
+				(co <= x1 && co >= x2);
+	}
+	public static boolean zawiera(Location loc, Location róg1, Location róg2) {
+		return  mieściSię(loc.getX(), róg1.getX(), róg2.getX()) &&
+				mieściSię(loc.getY(), róg1.getY(), róg2.getY()) &&
+				mieściSię(loc.getZ(), róg1.getZ(), róg2.getZ());
+		
+	}
+	
+	public static String czas(int sekundy) {
+		if (sekundy <= 0) return "0 sekund";
+		int minuty 	= sekundy / 60;	sekundy	%= 60;
+		int godziny = minuty  / 60;	minuty  %= 60;
+		int dni 	= godziny / 24;	godziny %= 24;
+		
+		Function<Integer, Character> odmiana = ile -> {
+			switch (ile % 10) {
+			case 1:
+				return 'ę';
+			case 2:
+			case 3:
+			case 4:
+				return 'y';
+			default:
+				return null;
+			}
+		};
+		
+		StringBuilder w = new StringBuilder();
+		if (dni != 0)		w.append(dni)	 .append(dni == 1 ? " dzień " : " dni ");
+		if (godziny != 0) 	w.append(godziny).append(" godzin") .append(odmiana.apply(godziny)).append(' ');
+		if (minuty != 0) 	w.append(minuty) .append(" minut")  .append(odmiana.apply(minuty)) .append(' ');
+		if (sekundy != 0) 	w.append(sekundy) .append(" sekund").append(odmiana.apply(sekundy)).append(' ');
+		return w.length() == 0 ? "0 sekund" : w.substring(0, w.length()-1);
+	}
+
+	public static String permisja(String permisja) {
+		permisja = permisja.toLowerCase();
+		String plugin = Main.plugin.getName().toLowerCase();
+		if (!permisja.startsWith(plugin + '.'))
+			permisja = plugin + '.' + permisja;
+		return permisja;
 	}
 }

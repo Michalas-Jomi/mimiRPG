@@ -9,8 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.Edytory.EdytorTabliczek;
-import me.jomi.mimiRPG.Edytory.EdytujItem;
+import me.jomi.mimiRPG.Edytory.*;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Maszyny.JednorekiBandyta;
 import me.jomi.mimiRPG.Miniony.Miniony;
@@ -21,7 +20,7 @@ public class Moduły implements Przeładowalny {
 	
 	static final HashMap<String, Klasa> mapa = new HashMap<>();
 	
-	static final List<Class<?>> klasy = Arrays.asList(Antylog.class, AutoWiadomosci.class, Bazy.class, Budownik.class,
+	static final List<Class<?>> klasy = Arrays.asList(Antylog.class, AutoEventy.class, AutoWiadomosci.class, Bazy.class, Budownik.class,
 ChatGrupowy.class, CustomoweCraftingi.class, CustomoweItemy.class, CustomowyDrop.class, CustomoweMoby.class, Czapka.class,
 DrabinaPlus.class, EdytorTabliczek.class, EdytujItem.class, Funkcje.class, ItemLink.class, JednorekiBandyta.class,
 KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class, Lootbagi.class, LosowyDropGracza.class,
@@ -37,8 +36,7 @@ Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 	
 	@Override
 	public void przeładuj() {
-		ConfigurationSection sekcja = Main.ust.sekcja("Moduły");
-		włącz(sekcja);
+		włącz(Main.ust.sekcja("Moduły"));
 	}
 	
 	public void włącz(ConfigurationSection sekcja) {
@@ -47,14 +45,17 @@ Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 			boolean warunek;
 			try {
 				warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
-			} catch (Exception | NoClassDefFoundError e) {
+			} catch (NoSuchMethodException e) {
 				warunek = true;
+			} catch (Throwable e) {
+				warunek = false;
 			}
+			
 			if (warunek) {
 				try {
 					mapa.get(klasa.getSimpleName()).włącz();
 					włączone++;
-				} catch (InstantiationException | IllegalAccessException e) {
+				} catch (Throwable e) {
 					Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
 				}
 			}
@@ -68,13 +69,13 @@ Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 			boolean w = _klasa.włączony;
 			if (sekcja.getBoolean(nazwa)) {
 				włączModuł.accept(klasa);
-				if (!w && _klasa.inst instanceof Komenda)
+				if (!w && _klasa.włączony && _klasa.inst instanceof Komenda)
 					przeładować = true;
-				if (!w && Main.pluginEnabled)
+				if (!w && _klasa.włączony && Main.pluginEnabled)
 					Main.log("§aWłączono Moduł: " + nazwa);
 			} else {
 				mapa.get(klasa.getSimpleName()).wyłącz();
-				if (w && Main.pluginEnabled)
+				if (w && !_klasa.włączony && Main.pluginEnabled)
 					Main.log("§cWyłączono Moduł: " + nazwa);
 			}
 		}

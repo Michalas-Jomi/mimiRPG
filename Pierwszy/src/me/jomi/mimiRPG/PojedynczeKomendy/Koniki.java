@@ -156,18 +156,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 	public static String czas(long zapas) {
-		int czas = (int) (zapas - (System.currentTimeMillis() / 1000));
-		if (czas <= 0)
-			return "0 sekund";
-		int minuty = czas / 60;
-		int godziny = minuty / 60; minuty %= 60;
-		int dni = godziny / 24; godziny %= 24;
-		
-		String w = "";
-		if (dni != 0)	 	w += dni 	+ " dni ";
-		if (godziny != 0) 	w += godziny+ " godzin ";
-		if (minuty != 0) 	w += minuty + " minut ";
-		return w.equals("") ? "0 sekund" : w;
+		return Func.czas((int) (zapas - (System.currentTimeMillis() / 1000)));
 	}
 	private void otwórz(Player p, Horse kon, Cancellable ev) {
 		if (kon.hasMetadata("mimiKon")) {

@@ -31,6 +31,12 @@ import net.md_5.bungee.api.chat.hover.content.Item;
 public class Napis implements ConfigurationSerializable {
 	private TextComponent txt;
 	
+
+	public Napis(String tekst, String hover, String treść, ClickEvent.Action akcja) {
+		txt = new TextComponent(tekst);
+		this.clickEvent(akcja, treść);
+		this.hover(hover);
+	}
 	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treść) {
 		txt = new TextComponent(tekst);
 		this.clickEvent(akcja, treść);
@@ -42,7 +48,7 @@ public class Napis implements ConfigurationSerializable {
 	}
 	public Napis(String tekst, String hover, String executowanaKomenda) {
 		txt = new TextComponent(tekst);
-		this.clickEvent(Action.RUN_COMMAND, executowanaKomenda);
+		this.clickEvent(executowanaKomenda.endsWith(">> ") ? Action.SUGGEST_COMMAND : Action.RUN_COMMAND, executowanaKomenda);
 		this.hover(hover);
 	}
 	public Napis(String tekst, String hover) {
@@ -56,24 +62,35 @@ public class Napis implements ConfigurationSerializable {
 		txt = new TextComponent("");
 	}
 	
-	public void hover(String tekst) {
+	public Napis hover(String tekst) {
 		Text t = new Text(tekst);
 		txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, t));
+		return this;
 	}
-	public void clickEvent(ClickEvent.Action akcja, String treść) {
+	public Napis clickEvent(ClickEvent.Action akcja, String treść) {
 		txt.setClickEvent(new ClickEvent(akcja, treść));
+		return this;
 	}
 
-	public Napis dodaj(String co) {
-		txt.addExtra(co);
+	public Napis dodajEnd(Napis... co) {
+		for (Napis _co : co)
+			dodaj(_co).dodaj("\n");
 		return this;
 	}
-	public Napis dodaj(Napis co) {
-		txt.addExtra(co.txt);
+	public Napis dodaj(String... co) {
+		for (String _co : co)
+			txt.addExtra(_co);
 		return this;
 	}
-	public void dodaj(TextComponent co) {
-		txt.addExtra(co);
+	public Napis dodaj(Napis... co) {
+		for (Napis _co : co)
+			txt.addExtra(_co.txt);
+		return this;
+	}
+	public Napis dodaj(TextComponent... co) {
+		for (TextComponent _co : co)
+			txt.addExtra(_co);
+		return this;
 	}
 	
 	public void wyświetl(CommandSender p) {
@@ -118,8 +135,9 @@ public class Napis implements ConfigurationSerializable {
 	
 	public static Napis item(ItemStack item) {
 		net.minecraft.server.v1_16_R2.ItemStack item2 = CraftItemStack.asNMSCopy(item);
-		Napis n = new Napis("§b[§9"+item.getAmount()+"§3x§b " +
-			(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString() + "§b]§r"));
+		Napis n = new Napis("§b[§9"+item.getAmount() + "§3x§b " +
+			(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()) 
+			+ "§b]§r");
 		Item b = new Item(
 				item.getType().toString().toLowerCase(),
 				item.getAmount(),

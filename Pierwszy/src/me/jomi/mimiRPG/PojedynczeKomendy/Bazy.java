@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -32,6 +33,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
+
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
@@ -42,6 +44,7 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.session.ClipboardHolder;
+
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.Flags;
@@ -58,7 +61,7 @@ import me.jomi.mimiRPG.Przeładowalny;
 
 // TODO sprawdzać poprawność pliku przy przeładowywaniu tu i u customowych zombie
 // TODO opisać config
-// TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
+// TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazyx
 public class Bazy implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;
@@ -317,7 +320,6 @@ class mimiBaza {
 		ev.getPlayer().sendMessage(Bazy.prefix + "Nie możesz tu postawić swojej bazy");
 		return null;
 	}
-	
 }
 
 

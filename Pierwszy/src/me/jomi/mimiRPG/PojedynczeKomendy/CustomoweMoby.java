@@ -3,9 +3,13 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Consumer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,9 +24,13 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
+
 import com.sk89q.worldguard.WorldGuard;
 
 import me.jomi.mimiRPG.Config;
@@ -42,11 +50,28 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 	
 	int odległość_od_gracza;
 	int czas_odświeżania_ticki;
-	double szansa_zrespawnowania_dla_gracza;
+	double dzienna_szansa_zrespawnowania_dla_gracza;
+	double nocna_szansa_zrespawnowania_dla_gracza;
 	
 	final HashMap<String, Mob> mapaMobów = new HashMap<>();
 	
 	final Config config = new Config("Customowe Moby");
+	
+	final Set<Material> czapki 	= Sets.newConcurrentHashSet();
+	final Set<Material> klaty 	= Sets.newConcurrentHashSet();
+	final Set<Material> spodnie = Sets.newConcurrentHashSet();
+	final Set<Material> buty 	= Sets.newConcurrentHashSet();
+	static CustomoweMoby inst;
+	public CustomoweMoby() {
+		inst = this;
+		for (String typ : new String[]{"LEATHER", "IRON", "GOLDEN", "CHAINMAIL"}) {
+			czapki.add(Material.valueOf(typ + "_HELMET"));
+			klaty.add(Material.valueOf(typ + "_CHESTPLATE"));
+			spodnie.add(Material.valueOf(typ + "_LEGGINGS"));
+			buty.add(Material.valueOf(typ + "_BOOTS"));
+		}
+		czapki.add(Material.TURTLE_HELMET);
+	}
 	
 	@Override
 	public void przeładuj() {
@@ -54,7 +79,8 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 		
 		odległość_od_gracza 			 = config.wczytajLubDomyślna("odległość od gracza", 	50);
 		czas_odświeżania_ticki 			 = config.wczytajLubDomyślna("czas odświeżania", 	 	120) * 20;
-		szansa_zrespawnowania_dla_gracza = config.wczytajLubDomyślna("szansa zrespawnowania", .02);
+		dzienna_szansa_zrespawnowania_dla_gracza = config.wczytajLubDomyślna("szansa zrespawnowania za dnia", .02);
+		nocna_szansa_zrespawnowania_dla_gracza = config.wczytajLubDomyślna("szansa zrespawnowania w nocy", .03);
 		
 		mapaMobów.clear();
 		ConfigurationSection sekcja = config.sekcja("Moby");
@@ -73,10 +99,15 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 		return "§6Customwe Moby: §e" + mapaMobów.size();
 	}
 	
+	public boolean day(World świat) {
+	    long time = świat.getTime();
+	    return time < 12300 || time > 23850;
+	}
+	
 	@Override
 	public int czas() {
 		for (Player p : Bukkit.getOnlinePlayers())
-			if (Func.losuj(szansa_zrespawnowania_dla_gracza))
+			if (Func.losuj(day(p.getWorld()) ? dzienna_szansa_zrespawnowania_dla_gracza : nocna_szansa_zrespawnowania_dla_gracza))
 				zresp(p.getLocation());
 		return czas_odświeżania_ticki;
 	}
@@ -116,18 +147,25 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 		String[] typy = _typy.split(",");
 		String typ = typy[Func.losuj(0, typy.length-1)];
 		
-		if (mapaMobów.containsKey(typ))
-			mapaMobów.get(typ).zresp(loc.add(.5, 0, .5));
+		if (mapaMobów.containsKey(typ)) {
+			Mob mob = mapaMobów.get(typ);
+			if (mob.bloki == null || mob.bloki.contains(loc.add(0, -1, 0).getBlock().getType())) {
+				if (Func.losuj(mob.szansa))
+					mob.zresp(loc.add(.5, 1, .5));
+			}
+		}
 	}
 }
 
-// TODO mnożnik respu
 class Mob {
 	EntityType typ;
 	List<Krotka<Attribute, Double>> atrybuty;
 	List<Krotka<EquipmentSlot, ItemStack>> eq;
 	NBTTagCompound tag = new NBTTagCompound();
+	List<Material> bloki;
 	Mob rumak;
+	double szansa = 1;
+	@SuppressWarnings("unchecked")
 	public Mob(ConfigurationSection sekcja) {
 		typ = EntityType.valueOf(sekcja.getString("Typ", "Zombie").toUpperCase());
 		
@@ -157,12 +195,33 @@ class Mob {
 			for (Entry<String, Object> en : _sekcja.getValues(false).entrySet())
 				eq.add(Krotka.stwórz(EquipmentSlot.valueOf(slot(en.getKey())), Config.item(en.getValue())));
 		}
-		
+	
 		if (sekcja.contains("Rumak"))
 			rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
 		
+		if (sekcja.contains("Szansa"))
+			szansa = sekcja.getDouble("Szansa");
+		
+		if (sekcja.contains("Bloki")) {
+			bloki = Lists.newArrayList();
+			for (String klucz : (List<String>) sekcja.getList("Bloki"))
+				bloki.add(Material.valueOf(klucz.toUpperCase()));
+		}
 	}
 	
+	ItemStack randItem(Set<Material> mat) {
+		if (Func.losuj(.7)) return null;
+		ItemStack item = new ItemStack(Func.losuj(Lists.newArrayList(mat)));
+		return Func.losuj(.3) ? Func.połysk(item) : item;
+	}
+	void ubierzRandomowo(LivingEntity mob) {
+		EntityEquipment _eq = mob.getEquipment();
+		ItemStack czapka = randItem(CustomoweMoby.inst.czapki);
+		_eq.setHelmet(czapka == null ? new ItemStack(Material.STONE_BUTTON) : czapka);
+		_eq.setChestplate(randItem(CustomoweMoby.inst.klaty));
+		_eq.setLeggings(randItem(CustomoweMoby.inst.spodnie));
+		_eq.setBoots(randItem(CustomoweMoby.inst.buty));
+	}
 	
 	Entity zresp(Location loc) {
 		Entity mob = loc.getWorld().spawnEntity(loc, typ);
@@ -187,10 +246,16 @@ class Mob {
 		
 		if (mob instanceof LivingEntity) {
 			EntityEquipment eqMoba = ((LivingEntity) mob).getEquipment();
-			if (eq != null)
+			if (eq == null)
+				ubierzRandomowo((LivingEntity) mob);
+			else
 				for (Krotka<EquipmentSlot, ItemStack> krotka : eq)
 					if (krotka.b != null)
 						eqMoba.setItem(krotka.a, krotka.b.clone());
+			eqMoba.setHelmetDropChance(0f);
+			eqMoba.setChestplateDropChance(0f);
+			eqMoba.setLeggingsDropChance(0f);
+			eqMoba.setBootsDropChance(0f);
 		}
 		
 		if (rumak != null)
@@ -198,7 +263,6 @@ class Mob {
 		
 		return mob;
 	}
-	
 
 	String slot(String nazwa) {
 		switch(nazwa.toLowerCase()) {

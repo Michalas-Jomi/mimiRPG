@@ -18,11 +18,13 @@ public class Gracze implements Listener, Przeładowalny {
 	private void wczytajGracza(Player p) {
 		Gracze.mapa.put(p.getName(), new Gracz(p));
 	}
+	@Override
 	public void przeładuj() {
 		mapa.clear();
 		for (Player p : Bukkit.getOnlinePlayers())
 			wczytajGracza(p);
 	}
+	@Override
 	public String raport() {
 		return "§6Gracze online: §e" + mapa.size();
 	}

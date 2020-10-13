@@ -22,9 +22,9 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.iridium.iridiumskyblock.IridiumSkyblock;
-
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 
@@ -44,7 +44,6 @@ public class Main extends JavaPlugin {
 	// Blokada zabijania Invulnerable mobów jest w Klasie KolorPisania
 	
 	// TODO blok przyciągający itemy
-	// TODO ulepszenie spawnerów
 	
     public static Permission perms = null;
     public static Economy econ = null;
@@ -60,10 +59,11 @@ public class Main extends JavaPlugin {
 	
 	public static boolean pluginEnabled = false;
 	
-	public static WorldGuardPlugin rg;
+	public static WorldGuardPlugin rg = null;
+
+	public static StringFlag flagaCustomoweMoby;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
-	public static StringFlag flagaCustomoweMoby;
 	
 	public static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
 	
@@ -79,19 +79,17 @@ public class Main extends JavaPlugin {
 		ConfigurationSerialization.registerClass(Grupa.class);
 
 		ust = new Config("ustawienia");
+		
 		try {
 			rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			
-			flagaStawianieBaz = new StateFlag("StawianieBaz", true);
-			WorldGuard.getInstance().getFlagRegistry().register(flagaStawianieBaz);
-			
-			flagaC4 = new StateFlag("C4", false);
-			WorldGuard.getInstance().getFlagRegistry().register(flagaC4);
-			
-			flagaCustomoweMoby = new StringFlag("CustomoweMoby");
-			WorldGuard.getInstance().getFlagRegistry().register(flagaCustomoweMoby);
-			
-		} catch (Exception e) {
+			for (Flag<?> flaga : new Flag<?>[]{
+				flagaStawianieBaz = new StateFlag("StawianieBaz", true),
+				flagaC4 = new StateFlag("C4", false),
+				flagaCustomoweMoby = new StringFlag("CustomoweMoby")
+			})
+				WorldGuard.getInstance().getFlagRegistry().register(flaga);
+		} catch (NoClassDefFoundError e) {
 			brakPluginu("WorldGuard");
 		}
 	}
@@ -104,6 +102,7 @@ public class Main extends JavaPlugin {
         } catch (NoClassDefFoundError e) {
 			brakPluginu("IridiumSkyblock");
         }
+        
         
 		new Baza();
 		zarejestruj(new Gracze());
@@ -131,6 +130,8 @@ public class Main extends JavaPlugin {
 		Bukkit.getConsoleSender().sendMessage(msg);
 		pluginEnabled = true;
 	}
+	
+	
 	static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
@@ -228,10 +229,7 @@ public class Main extends JavaPlugin {
 	public static void dodajPermisje(String... permisje) {
 		PluginManager pluginManager = plugin.getServer().getPluginManager();
 		for (String permisja : permisje) {
-			permisja = permisja.toLowerCase();
-			String plugin = Main.plugin.getName().toLowerCase();
-			if (!permisja.startsWith(plugin + '.'))
-				permisja = plugin + '.' + permisja;
+			permisja = Func.permisja(permisja);
 			pluginManager.addPermission(new org.bukkit.permissions.Permission(permisja));
 		}
 	}

@@ -25,7 +25,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		super("przelicz");
 	}
 
-	public boolean warunekModułu() {
+	public static boolean warunekModułu() {
 		return Main.iridiumSkyblock;
 	}
 	
