@@ -12,7 +12,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 
 public class ItemLink implements Listener {
@@ -29,14 +28,13 @@ public class ItemLink implements Listener {
 				return;
 			}
 			Napis itemLink = Napis.item(item);
-			String format = "§7"+ev.getPlayer().getDisplayName()+"§8:§r ";
+			String format = "§7" + ev.getPlayer().getDisplayName() + "§8:§r ";
 			Napis n = new Napis(format);
 			n.dodaj(części[0]);
 			n.dodaj(itemLink);
 			n.dodaj(znajdzKolor(format + części[0]) + Func.listToString(części, 1, "[i]"));
 			for (Player p : ev.getRecipients())
 				n.wyświetl(p);
-			Main.log("format wiadomości: " + Func.odkoloruj(ev.getFormat()));
 			Bukkit.getConsoleSender().sendMessage(n.toString());
 			ev.setCancelled(true);
 		}

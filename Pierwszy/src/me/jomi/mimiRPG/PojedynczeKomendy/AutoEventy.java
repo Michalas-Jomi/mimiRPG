@@ -43,7 +43,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 	
 	final Config config = new Config("configi/eventy");
 	
-	final Set<String> dozwoloneKomendy = Sets.newHashSet("/msg", "/t", "/m", "tell", "/me", "/afk", "/komendyinfo", "/cg", "/vote", "");
+	final Set<String> dozwoloneKomendy = Sets.newHashSet("/autoevent", "/event", "/msg", "/t", "/m", "tell", "/me", "/afk", "/komendyinfo", "/cg", "/vote", "");
 	
 	static AutoEventy inst;
 	public AutoEventy() {
@@ -112,7 +112,6 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 					try {
 						_e.onCommand(p, args);
 					} catch (Throwable e) {
-						e.printStackTrace(); // TODO usunąć
 						p.sendMessage(EventEdytor.prefix + "§cNie zmieniaj nic przed znakiem >> ");
 					}
 				else
@@ -366,12 +365,12 @@ class EventEdytor {
 	
 	public String nazwa;
 	public RodzajEventu rodzaj;
-	public GameMode gamemode;
-	public int czas;
-	public int zbiórka;
-	public double nagroda;
-	public int min_gracze;
-	public int max_gracze;
+	public GameMode gamemode = GameMode.ADVENTURE;
+	public int czas = 10;
+	public int zbiórka = 5;
+	public double nagroda = 100;
+	public int min_gracze = 2;
+	public int max_gracze = 10;
 	public Location loc_start;
 	public Location loc_zbiórka;
 	public Location loc_meta1;
@@ -382,10 +381,26 @@ class EventEdytor {
 	EventEdytor(Player p, String nazwa) {
 		this.nazwa = nazwa;
 		this.p = p;
-		// TODO wczytywanie istniejącego
-		// TODO defaultowe wartości
-		/// TODO napracić customkolor w itemlink
+		boolean b = AutoEventy.inst.dajEventy().contains(nazwa);
+		if (b) {
+			ConfigurationSection sekcja = AutoEventy.inst.config.sekcja("eventy." + nazwa);
+			
+			czas = sekcja.getInt("czas gry");
+			nagroda = sekcja.getDouble("nagroda");
+			zbiórka = sekcja.getInt("czas zbiórki");
+			loc_start = sekcja.getLocation("start");
+			min_gracze = sekcja.getInt("min gracze");
+			max_gracze = sekcja.getInt("max gracze");
+			loc_zbiórka = sekcja.getLocation("zbiórka");
+			loc_meta1 = sekcja.getLocation("róg mety 1");
+			loc_meta2 = sekcja.getLocation("róg mety 2");
+			rodzaj = RodzajEventu.valueOf(sekcja.getString("rodzaj"));
+			itemy = Config.itemy(Func.nieNullList(sekcja.getList("itemy")));
+			gamemode  = GameMode.valueOf(sekcja.getString("gamemode").toUpperCase());
+			
+		}
 		info();
+		if (b) p.sendMessage(prefix + "Edytujesz już istniejący event");
 	}
 	
 	void info() {
