@@ -124,4 +124,7 @@ class Klasa {
 		włączony = false;
 	}
 	
+	public String toString() {
+		return "Moduły.Klasa(" + klasa.getSimpleName() + ")~" + (włączony ? "Włączona" : "Wyłączona");
+	}
 }

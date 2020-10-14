@@ -450,6 +450,7 @@ public abstract class Func {
 	}
 	public static List<String> tnij(String napis, String regex) {
 		final List<String> lista = Lists.newArrayList();
+		if (napis.isEmpty()) return lista;
 		while (true) {
 			int i = napis.indexOf(regex);
 			if (i == -1) {

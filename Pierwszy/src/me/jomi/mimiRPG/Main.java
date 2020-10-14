@@ -55,7 +55,7 @@ public class Main extends JavaPlugin {
 
 	public static JavaPlugin plugin;
 	public static Config ust;
-	public static String path;
+	public static String path;	
 	
 	private void brakPluginu(String plugin) {
 		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
