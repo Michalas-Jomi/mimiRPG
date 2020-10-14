@@ -35,12 +35,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import net.minecraft.server.v1_16_R2.BlockPosition;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
 
+@Moduł
 public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Spawner");
 	

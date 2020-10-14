@@ -10,6 +10,9 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import me.jomi.mimiRPG.Moduł;
+
+@Moduł
 public class BlockSkrzyńNaZwierzętach implements Listener {
 	@EventHandler
 	public void blokadaSkrzynekNaZwierzetach(PlayerInteractEntityEvent ev) {

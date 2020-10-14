@@ -15,7 +15,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class Poziom extends Komenda implements Listener{
 	public static String prefix = Func.koloruj("&2[&aPoziom&2]&6 ");
 	

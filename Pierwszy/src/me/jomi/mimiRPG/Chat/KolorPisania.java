@@ -19,9 +19,11 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Grupa;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
+@Moduł
 public class KolorPisania extends Komenda implements Listener {
 	public static String prefix = Func.prefix("Kolor Pisania");
 	

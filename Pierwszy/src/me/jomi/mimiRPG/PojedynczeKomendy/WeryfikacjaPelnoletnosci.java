@@ -11,7 +11,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class WeryfikacjaPelnoletnosci implements Listener{
 	
 	private static Inventory inv = Bukkit.createInventory(null, 27, "§4Wstęp tylko dla §ldorosłych!");

@@ -159,7 +159,6 @@ public class Main extends JavaPlugin {
 
 	static boolean pluginEnabled = false;
 	static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
-	
 	static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
@@ -195,7 +194,6 @@ public class Main extends JavaPlugin {
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private static final String logprefix = "[mimiRPG] ";
-	
 	public static void log(Object... msg) {
 		logger.info(logprefix + Func.listToString(msg, 0));
 	}
@@ -205,7 +203,6 @@ public class Main extends JavaPlugin {
 	public static void error(Object... msg) {
 		logger.severe(logprefix + Func.listToString(msg, 0));
 	}
-
 
 	/**
 	 * Dodaje permisje do pluginu

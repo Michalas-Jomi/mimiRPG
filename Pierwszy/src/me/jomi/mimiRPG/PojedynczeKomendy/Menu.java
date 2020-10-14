@@ -35,8 +35,10 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.MenuStronne;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class Menu extends Komenda implements Listener, Przeładowalny {
 	private static JSONObject plik;
 	private static HashMap<String, HashMap<Integer, MenuItem>> mapaItemow = new HashMap<>();

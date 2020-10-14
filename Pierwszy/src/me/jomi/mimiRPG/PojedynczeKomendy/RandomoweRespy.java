@@ -16,9 +16,11 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class RandomoweRespy extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Randomowe Respy");
 	

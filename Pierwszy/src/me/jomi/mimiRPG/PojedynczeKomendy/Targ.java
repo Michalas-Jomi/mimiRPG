@@ -21,9 +21,11 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import net.milkbowl.vault.economy.EconomyResponse;
 
+@Moduł
 public class Targ extends Komenda implements Listener, Przeładowalny{
 	public static Config config = new Config("configi/targ");
 	private static List<ItemStack> Itemy = Lists.newArrayList();

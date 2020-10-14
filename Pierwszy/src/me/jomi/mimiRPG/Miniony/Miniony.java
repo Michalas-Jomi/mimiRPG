@@ -30,8 +30,10 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class Miniony extends Komenda implements Listener, Przeładowalny {
 	public static ItemStack itemKopacz  = stwórzItem(Material.COBBLESTONE,		"§1§lMinion §1Kopacz§9",	Arrays.asList("&aUżyj tego narzędzia (PPM)", "&aAby zespawnować swojego miniona", "&bid: &dnowy"));
 	public static ItemStack itemFarmer  = stwórzItem(Material.HAY_BLOCK, 		"§1§lMinion §aFarmer§9",	Arrays.asList("&aUżyj tego narzędzia (PPM)", "&aAby zespawnować swojego miniona", "&bid: &dnowy"));

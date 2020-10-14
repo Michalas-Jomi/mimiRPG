@@ -1,42 +1,54 @@
 package me.jomi.mimiRPG;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
-import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.Edytory.*;
-import me.jomi.mimiRPG.Maszyny.Budownik;
-import me.jomi.mimiRPG.Maszyny.JednorekiBandyta;
-import me.jomi.mimiRPG.Miniony.Miniony;
-import me.jomi.mimiRPG.PojedynczeKomendy.*;
+import com.google.common.collect.Lists;
 
 public class Moduły implements Przeładowalny {
 	int włączone = 0;
 	
 	static final HashMap<String, Klasa> mapa = new HashMap<>();
 	
-	static final List<Class<?>> klasy = Arrays.asList(Antylog.class, AutoEventy.class, AutoWiadomosci.class, Bazy.class,
-Budownik.class, BlockSkrzyńNaZwierzętach.class, ChatGrupowy.class, CustomoweCraftingi.class, CustomoweItemy.class,
-CustomowyDrop.class, CustomoweMoby.class, Czapka.class, DrabinaPlus.class, EdytorTabliczek.class, EdytujItem.class, Funkcje.class,
-InvulnerablePlus.class, ItemLink.class, JednorekiBandyta.class, KolorPisania.class, KomendyInfo.class, Koniki.class, Kosz.class,
-Lootbagi.class, LosowyDropGracza.class, Menu.class, Menurpg.class, Mi.class, Miniony.class, Osiągnięcia.class, Patrzeq.class,
-PiszJako.class, Plecak.class, Pomoc.class, Poziom.class, Przyjaciele.class, RandomoweRespy.class, RangiWysp.class, RTP.class,
-Sklep.class, Spawnery.class, Targ.class, Ujezdzaj.class, UstawAttr.class, WeryfikacjaPelnoletnosci.class, WykonajWszystkim.class,
-Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
-	
-	public static void dodajModuły(Class<?>... moduły) {
-		for (Class<?> klasa : moduły)
-			klasy.add(klasa);
+	static final List<Class<?>> klasy = Lists.newArrayList();
+	 
+	public Moduły() {
+		try {
+			JarFile jar = new JarFile("plugins/"+Main.plugin.getName()+".jar");
+			skanuj(jar.entries());
+			jar.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private void skanuj(Enumeration<JarEntry> scieżki) {
+		while (scieżki.hasMoreElements()) {
+			String sc = scieżki.nextElement().toString();
+			if (!sc.endsWith(".class")) continue;
+			sc = sc.substring(0, sc.length()-6).replace('/', '.');
+			try {
+				Class<?> klasa = Class.forName(sc);
+				if (klasa.isAnnotationPresent(Moduł.class))
+					klasy.add(klasa);
+			} catch (Throwable e) {}
+		}
 	}
 	
 	@Override
 	public void przeładuj() {
 		włącz(Main.ust.sekcja("Moduły"));
+	}
+	@Override
+	public String raport() {
+		return "§6Włączone Moduły: §e" + włączone + "§6/§e" + klasy.size();
 	}
 	
 	public void włącz(ConfigurationSection sekcja) {
@@ -83,16 +95,10 @@ Wymienianie.class, Wyplac.class, ZabezpieczGracza.class, ZamienEq.class);
 			Bukkit.getServer().reloadData();
 	}
 
-	@Override
-	public String raport() {
-		return "§6Włączone Moduły: §e" + włączone + "§6/§e" + klasy.size();
-	}
-
 	public static boolean włączony(String moduł) {
 		Klasa klasa = mapa.get(moduł);
 		return klasa == null ? false : klasa.włączony;
-	}
-	
+	}	
 }
 
 class Klasa {

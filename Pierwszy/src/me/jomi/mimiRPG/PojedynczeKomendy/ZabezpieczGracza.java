@@ -21,8 +21,10 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NowyEkwipunek;
 
+@Moduł
 public class ZabezpieczGracza extends Komenda implements Listener{
 	public static String prefix = Func.prefix("Bezpieczny gm");
 	

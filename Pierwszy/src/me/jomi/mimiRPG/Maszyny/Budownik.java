@@ -30,8 +30,10 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Zegar;
 
+@Moduł
 public class Budownik extends Komenda implements Listener, Zegar {
 	public static final String prefix = Func.prefix("Budownik");
 	private final ItemStack itemSkrzynia = Func.połysk(Func.stwórzItem(Material.BARREL, "&6&lBudownik",

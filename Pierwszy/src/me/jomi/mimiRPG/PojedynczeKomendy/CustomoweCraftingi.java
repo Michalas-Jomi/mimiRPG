@@ -15,8 +15,10 @@ import com.google.common.collect.Sets;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	

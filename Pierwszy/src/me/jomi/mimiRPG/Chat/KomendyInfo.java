@@ -17,7 +17,9 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class KomendyInfo extends Komenda implements Listener {
 	public static final String prefix = Func.prefix("Komendy Info");
 	public KomendyInfo() {

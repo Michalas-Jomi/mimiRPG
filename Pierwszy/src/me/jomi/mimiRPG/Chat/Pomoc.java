@@ -8,8 +8,10 @@ import org.bukkit.command.CommandSender;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class Pomoc extends Komenda implements Przeładowalny{
 	public static final String prefix = Func.prefix("Pomoc");
 	public final Config config = new Config("Pomoc");

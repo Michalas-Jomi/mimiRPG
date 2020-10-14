@@ -37,12 +37,14 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
 
+@Moduł
 public class CustomoweMoby implements Zegar, Przeładowalny {
 	public static boolean warunekModułu() {
 		return Main.rg != null;

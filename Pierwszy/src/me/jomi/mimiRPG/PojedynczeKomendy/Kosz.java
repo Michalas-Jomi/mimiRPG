@@ -17,9 +17,11 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 
+@Moduł
 public class Kosz extends Komenda implements Przeładowalny, Zegar {
 	private static Inventory inv = Bukkit.createInventory(null, 6*9, "§1§lKosz");
 	private static List<ItemStack> kolejka = Lists.newArrayList();

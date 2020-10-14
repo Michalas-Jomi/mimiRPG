@@ -18,8 +18,10 @@ import com.iridium.iridiumskyblock.User;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public RangiWysp() {
 		super("przelicz");

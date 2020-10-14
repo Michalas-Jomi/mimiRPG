@@ -12,8 +12,10 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 
+@Moduł
 public class ItemLink implements Listener {
 	@EventHandler(priority=EventPriority.HIGHEST)
 	private void itemLink(AsyncPlayerChatEvent ev) {

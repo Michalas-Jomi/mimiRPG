@@ -27,12 +27,14 @@ import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 import me.jomi.mimiRPG.Gracze.Kon;
 
+@Moduł
 public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static final String prefix = Func.prefix("Koniki");
 	

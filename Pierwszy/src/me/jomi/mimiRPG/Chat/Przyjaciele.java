@@ -12,12 +12,14 @@ import org.bukkit.entity.Player;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
+@Moduł
 public class Przyjaciele extends Komenda implements Przeładowalny {
 	public static String prefix = Func.prefix("§d§lPrzyjaciele");
 	

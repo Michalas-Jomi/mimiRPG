@@ -21,7 +21,9 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class Wymienianie implements Listener{
 	public static String prefix = Func.prefix("Handel");
 	private static ItemStack środek = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§2Wymiana", Arrays.asList("§bAby tranzakcja byłą udana", "§boboje graczy musi ją zaakceptować"));

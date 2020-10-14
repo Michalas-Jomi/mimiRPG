@@ -13,8 +13,10 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class Funkcje extends Komenda implements Przeładowalny {
 	public static final String prefix = Func.prefix("Funkcje");
 	private HashMap<String, Funkcja> mapa = new HashMap<>();

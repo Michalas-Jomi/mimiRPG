@@ -21,11 +21,13 @@ import com.mojang.authlib.properties.Property;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
+@Moduł
 public class Menurpg extends Komenda implements Listener{
 	private static HashMap<String, HashMap<String, Atrybut>> mapa = new HashMap<String, HashMap<String, Atrybut>>();
 

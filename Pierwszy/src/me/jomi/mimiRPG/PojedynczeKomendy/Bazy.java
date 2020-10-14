@@ -57,11 +57,13 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
 // TODO sprawdzać poprawność pliku przy przeładowywaniu tu i u customowych zombie
 // TODO opisać config
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazyx
+@Moduł
 public class Bazy implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;

@@ -12,7 +12,9 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class UstawAttr extends Komenda {
 	public UstawAttr() {
 	    super("ustawattr", prefix + "/ustawAttr <Atrybut> [gracz] [wartość]");

@@ -25,10 +25,12 @@ import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 import net.md_5.bungee.api.chat.ClickEvent;
 
+@Moduł
 public class JednorekiBandyta extends Komenda implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix("Jednoręki Bandyta");
 	public static final Config config = new Config("configi/jednoreki bandyta");

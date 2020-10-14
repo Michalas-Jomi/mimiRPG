@@ -17,7 +17,9 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class DrabinaPlus extends Komenda implements Listener {
 	public static final String prefix = Func.prefix("Drabina+");
 	final ItemStack drabina = Func.połysk(Func.stwórzItem(Material.LADDER, "§6Drabina§l+", "§bPostaw jedną a sięgniesz nieba"));

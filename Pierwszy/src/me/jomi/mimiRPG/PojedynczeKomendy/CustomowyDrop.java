@@ -19,8 +19,10 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
+@Moduł
 public class CustomowyDrop implements Listener, Przeładowalny{
 
 	public static final Config configBloki = new Config("Customowy Drop Bloki");

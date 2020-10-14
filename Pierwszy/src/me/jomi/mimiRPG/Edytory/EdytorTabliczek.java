@@ -16,9 +16,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
+@Moduł
 public class EdytorTabliczek extends Komenda implements Listener{
 	public static String prefix = Func.prefix("Edytor Tabliczek");
 	private static HashMap<String, Sign> mapa = new HashMap<>();

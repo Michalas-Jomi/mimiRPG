@@ -17,9 +17,11 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
+@Moduł
 public class Plecak extends Komenda implements Listener {
 	private static ItemStack zablokowanySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot Niedostępny", Arrays.asList("Można odblokować pod komendą", "/menu"));
 	

@@ -10,7 +10,9 @@ import org.bukkit.entity.Player;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class PiszJako extends Komenda {
 	public static final String prefix = Func.prefix("Pisz Jako");
 	

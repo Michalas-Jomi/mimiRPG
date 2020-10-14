@@ -20,11 +20,13 @@ import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
+@Moduł
 public class Antylog implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Antylog");
 	final HashMap<String, Set<String>> gracze = new HashMap<>();

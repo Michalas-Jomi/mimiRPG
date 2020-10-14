@@ -9,9 +9,10 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 
+@Moduł
 public class Czapka extends Komenda {
-
 	public Czapka() {
 		super("czapka");
 	}

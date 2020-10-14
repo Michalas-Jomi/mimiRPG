@@ -28,10 +28,12 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
+@Moduł
 public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 	public static final String prefix = Func.prefix("Lootbagi");
 	public static final Config config = new Config("configi/lootbagi");

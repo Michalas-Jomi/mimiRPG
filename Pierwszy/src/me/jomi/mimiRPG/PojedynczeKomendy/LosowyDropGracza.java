@@ -16,9 +16,11 @@ import org.bukkit.inventory.PlayerInventory;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
+@Moduł
 public class LosowyDropGracza extends Komenda implements Listener {
 	public static String prefix = Func.prefix("Drop po śmierci");
 	public static ItemStack nic = new ItemStack(Material.AIR);
