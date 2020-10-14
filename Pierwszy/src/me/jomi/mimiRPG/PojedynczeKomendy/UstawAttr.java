@@ -12,7 +12,6 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 
 public class UstawAttr extends Komenda {
 	public UstawAttr() {
@@ -69,10 +68,10 @@ public class UstawAttr extends Komenda {
 		if (args.length >= 2) {
 			gracz = Bukkit.getPlayer(args[1]);
 			if (gracz == null) 
-				return Main.powiadom(p, prefix + "Gracz §e" + args[1] + "§6 nie jest online");
+				return Func.powiadom(p, prefix + "Gracz §e" + args[1] + "§6 nie jest online");
 		}
 		if (gracz == null)
-			return Main.powiadom(p, prefix + "Konsole jest ponad tym");
+			return Func.powiadom(p, prefix + "Konsole jest ponad tym");
 		
 		double ile = 0;
 		if (args.length >= 3) {

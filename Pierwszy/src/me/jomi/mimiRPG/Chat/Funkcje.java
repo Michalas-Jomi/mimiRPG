@@ -30,7 +30,7 @@ public class Funkcje extends Komenda implements Przeładowalny {
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 0) return Main.powiadom(sender, prefix + "/funkcja <nazwa> [parametry]");
+		if (args.length <= 0) return Func.powiadom(sender, prefix + "/funkcja <nazwa> [parametry]");
 		String nazwa = args[0];
 		Funkcja func = mapa.get(nazwa);
 		if (func != null)

@@ -29,7 +29,7 @@ public class Raport extends Komenda {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1) {
 			Przeładowalny p = Przeładowalny.przeładowalne.get(args[0]);
-			if (p == null) return Main.powiadom(sender, prefix + "Nieprawidłowa sekcja");
+			if (p == null) return Func.powiadom(sender, prefix + "Nieprawidłowa sekcja");
 			sender.sendMessage("\n\n\n§6~~~~~~§emimiRaport§6~~~~~~\n");
 			sender.sendMessage(p.raport());
 			sender.sendMessage("");

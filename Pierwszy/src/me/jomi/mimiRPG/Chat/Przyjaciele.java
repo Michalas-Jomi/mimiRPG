@@ -133,7 +133,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {	
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Każdy jest przyjacielem konsoli!");
+			return Func.powiadom(sender, prefix + "Każdy jest przyjacielem konsoli!");
 		Player p = (Player) sender;
 		
 		Gracz _gracz = Gracze.gracz(p.getName());
@@ -166,7 +166,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 			}
 		}
 		if (Gracze.gracz(p.getName()).przyjaciele.size() <= 0) 
-			return Main.powiadom(p, prefix + "Nie masz żadnych przyjaciół §d§l:(");
+			return Func.powiadom(p, prefix + "Nie masz żadnych przyjaciół §d§l:(");
 		String nagłówek = "§3§l>——————————→ §d§lPrzyjaciele §3§l←——————————<";
 		p.sendMessage(nagłówek);
 		for (String nick : _gracz.przyjaciele)

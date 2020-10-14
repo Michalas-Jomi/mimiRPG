@@ -30,9 +30,9 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
+import me.jomi.mimiRPG.NowyEkwipunek;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
-import me.jomi.mimiRPG.MiniGierki.Stare.NowyEkwipunek;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zegar {
@@ -56,6 +56,12 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 		return Main.ekonomia;
 	}
 
+	public static void wyłącz() {
+		if (inst.event == null) return;
+		Main.log("Wyłączanie AutoEventu");
+		inst.event.koniec();
+	}
+	
 	int czas;
 	int maxCzas;
 	@Override
@@ -91,12 +97,12 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "Tylko gracz może korzystać z autoeventów");
+		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Tylko gracz może korzystać z autoeventów");
 		Player p = (Player) sender;
 		if (args.length >= 1 && p.hasPermission(permEdytuj))
 			switch (args[0]) {
 			case "edytuj":	
-				if (args.length < 2) return Main.powiadom(sender, prefix + "/" + label + " edytuj <nazwa>");
+				if (args.length < 2) return Func.powiadom(sender, prefix + "/" + label + " edytuj <nazwa>");
 				mapaEdytorów.put(p.getName(), new EventEdytor(p, args[1]));
 				break;
 			case "odśwież":
@@ -353,7 +359,6 @@ enum RodzajEventu {
 	OstatniNaArenie,
 	PierwszyNaMecie;
 }
-
 
 class EventEdytor {
 	static final String prefix = Func.prefix("Edytor AutoEventów");

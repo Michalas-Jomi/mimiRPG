@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 
 public class PiszJako extends Komenda {
 	public static final String prefix = Func.prefix("Pisz Jako");
@@ -33,7 +32,7 @@ public class PiszJako extends Komenda {
 			en = Bukkit.selectEntities(sender, args[0]);
 		} catch (IllegalArgumentException e) {}
 		if (en == null || en.isEmpty()) {
-			return Main.powiadom(sender, prefix + " Niepoprawna nazwa gracza: §e" + args[0]);
+			return Func.powiadom(sender, prefix + " Niepoprawna nazwa gracza: §e" + args[0]);
 		}
 		String komenda = Func.listToString(args, 1);
 		for (Entity e : en)

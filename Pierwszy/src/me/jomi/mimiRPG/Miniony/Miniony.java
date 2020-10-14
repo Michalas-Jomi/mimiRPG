@@ -262,7 +262,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 		if (args.length >= 2) {
 			p = Bukkit.getPlayer(args[1]);
 			if (p == null || !p.isOnline())
-				return Main.powiadom(sender, prefix + "Niepoprawna nazwa gracza: " + args[1]);
+				return Func.powiadom(sender, prefix + "Niepoprawna nazwa gracza: " + args[1]);
 		} else if (sender instanceof Player)
 			p = (Player) sender;
 		else

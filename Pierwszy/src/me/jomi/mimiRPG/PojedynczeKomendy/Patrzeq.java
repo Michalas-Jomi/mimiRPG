@@ -60,9 +60,9 @@ public class Patrzeq extends Komenda implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0) return false;
-		if (!(sender instanceof Player)) return Main.powiadom(sender, "Musisz być graczem żeby tego użyć");
+		if (!(sender instanceof Player)) return Func.powiadom(sender, "Musisz być graczem żeby tego użyć");
 		Player p = Bukkit.getPlayer(args[0]);
-		if (p == null) return Main.powiadom(sender, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
+		if (p == null) return Func.powiadom(sender, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
 		if (!mapa.containsKey(p.getName())) {
 			Inventory inv = Bukkit.createInventory(p, 5*9, "§1§lPodgląd gracza §4§l" + p.getName());
 			for (int i=4*9+5; i<5*9; i++)

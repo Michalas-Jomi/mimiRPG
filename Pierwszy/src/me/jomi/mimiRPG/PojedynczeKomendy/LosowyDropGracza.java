@@ -16,7 +16,6 @@ import org.bukkit.inventory.PlayerInventory;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import me.jomi.mimiRPG.Gracze.Gracze;
 
@@ -31,17 +30,17 @@ public class LosowyDropGracza extends Komenda implements Listener {
 	
 	private static boolean komenda(CommandSender p, String args[], boolean koniecznieWiększa) {
 		if (args.length == 0)
-			return Main.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
+			return Func.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
 		else {
 			Player p2 = Bukkit.getPlayer(args[0]);
 			if (p2 == null || !p2.isOnline())
-				return Main.powiadom(p, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
+				return Func.powiadom(p, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
 			if (args.length == 1)
-				return Main.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza §e" + args[0] + " §6: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
+				return Func.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza §e" + args[0] + " §6: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
 			else {
 				int liczba = Func.Int(args[1], -1);
 				if (liczba < 0)
-					return Main.powiadom(p, prefix + "Niepoprawna liczba: §e" + args[1]);
+					return Func.powiadom(p, prefix + "Niepoprawna liczba: §e" + args[1]);
 				else {
 					liczba = Math.min(liczba, 100);
 					if (koniecznieWiększa)

@@ -469,7 +469,7 @@ public class EdytujItem extends Komenda implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Tylko gracz może tego użyć");
+			return Func.powiadom(sender, prefix + "Tylko gracz może tego użyć");
 		Player p = (Player) sender;
 		
 		if (args.length < 1) return false;

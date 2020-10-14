@@ -99,9 +99,9 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Hazard to złooo, nawet nie próbuj ziom");
+			return Func.powiadom(sender, prefix + "Hazard to złooo, nawet nie próbuj ziom");
 		Player p = (Player) sender;
-		if (args.length < 2) return Main.powiadom(p, prefix + "/automat stworz <nazwa>");
+		if (args.length < 2) return Func.powiadom(p, prefix + "/automat stworz <nazwa>");
 		switch (args[0].toLowerCase()) {
 		case "s":
 		case "stworz":

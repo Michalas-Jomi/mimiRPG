@@ -15,7 +15,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 
 public class Poziom extends Komenda implements Listener{
 	public static String prefix = Func.koloruj("&2[&aPoziom&2]&6 ");
@@ -102,7 +101,7 @@ public class Poziom extends Komenda implements Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Konsola bez expa, Konsola bez /poziom");
+			return Func.powiadom(sender, prefix + "Konsola bez expa, Konsola bez /poziom");
 		Player p = (Player) sender;
 		int lvl = p.getLevel();
 		int expAkt = policzCałyExp(p);

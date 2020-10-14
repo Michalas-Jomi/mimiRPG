@@ -4,7 +4,7 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -16,6 +16,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -29,9 +30,8 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 
 import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
-import me.jomi.mimiRPG.MiniGierki.Stare.Minigry;
 import me.jomi.mimiRPG.Miniony.Miniony;
+import me.jomi.mimiRPG.PojedynczeKomendy.AutoEventy;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
@@ -39,47 +39,28 @@ import me.jomi.mimiRPG.Gracze.Gracze;
 import me.jomi.mimiRPG.Maszyny.*;
 
 public class Main extends JavaPlugin {
-	// Blokada skrzynek na zwierzęta jest umiejscowiona w klasie menu
-	// Info o aktywnych i nieaktywnych jest w klasie KolorPisania
-	// Blokada zabijania Invulnerable mobów jest w Klasie KolorPisania
-	
-	// TODO blok przyciągający itemy
-	
-    public static Permission perms = null;
-    public static Economy econ = null;
-    public static Chat chat = null;
-	
-	public static final HashMap<String, MiniGra> minigry = new HashMap<>();
-	
-	public static JavaPlugin plugin;
-	public static String path;
-	
+	// Api Vaults
 	public static boolean ekonomia = false;
-	public static boolean iridiumSkyblock = false;
-	
-	public static boolean pluginEnabled = false;
-	
-	public static WorldGuardPlugin rg = null;
-
-	public static StringFlag flagaCustomoweMoby;
+	public static Permission perms;
+    public static Economy econ;
+    public static Chat chat;
+	// Api Iridium Skyblock
+    public static boolean iridiumSkyblock = false;
+	// Api WorldGuard
+	public static WorldGuardPlugin rg;
+    public static StringFlag flagaCustomoweMoby;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
-	
-	public static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
+
+
+	public static JavaPlugin plugin;
+	public static Config ust;
+	public static String path;
 	
 	private void brakPluginu(String plugin) {
 		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
 	}
-	public static Config ust;
-	public void onLoad() {
-		plugin = this;
-		path = getDataFolder().getPath() + '/';
-		
-		ConfigurationSerialization.registerClass(Napis.class);
-		ConfigurationSerialization.registerClass(Grupa.class);
-
-		ust = new Config("ustawienia");
-		
+	private void włączWorldGuard() {
 		try {
 			rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			
@@ -93,17 +74,48 @@ public class Main extends JavaPlugin {
 			brakPluginu("WorldGuard");
 		}
 	}
-	public void onEnable() {
-		ekonomia = setupVault();
+	private void włączVault() {
+        try {
+	        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+		        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+		        econ  = rsp.getProvider();
+		        chat  = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
+		        perms = getServer().getServicesManager().getRegistration(Permission.class).getProvider();
+	        }
+	    } catch(NullPointerException e) {}
+        ekonomia = econ != null;
         if (!ekonomia)
 			brakPluginu("Vault");
-        try {
+	}
+	private void włączIridiumSkyblock() {
+		try {
         	iridiumSkyblock = IridiumSkyblock.getInstance() != null;
         } catch (NoClassDefFoundError e) {
 			brakPluginu("IridiumSkyblock");
         }
-        
-        
+	}
+	
+	@Override
+	public void onLoad() {
+		plugin = this;
+		path = getDataFolder().getPath() + '/';
+	
+		// Rejestrowanie ConfigurationSerializable
+		List<Class<? extends ConfigurationSerializable>> klasy = Arrays.asList(
+				Napis.class, Grupa.class
+				);
+		for (Class<? extends ConfigurationSerializable> clazz : klasy)
+			ConfigurationSerialization.registerClass(clazz);
+
+		ust = new Config("ustawienia");
+		
+		włączWorldGuard();
+	}
+	@Override
+	public void onEnable() {
+		włączVault();
+		włączIridiumSkyblock();
+            
 		new Baza();
 		zarejestruj(new Gracze());
 		
@@ -111,26 +123,42 @@ public class Main extends JavaPlugin {
         new Raport();
         
 		zarejestruj(new Moduły());
-        
-		if (włączonyModół(Minigry.class)) {
-			new Minigry();
-			for (MiniGra minigra : minigry.values()) 
-				zarejestruj(minigra);
-		}
+		
 		
         if (!Przeładowalny.przeładowalne.isEmpty())
 			new Przeładuj();
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
 
-        Main.dodajPermisje("powiadomienia");
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
 		pluginEnabled = true;
 	}
-	
+	@Override
+	public void onDisable() {
+		for (Player p : Bukkit.getOnlinePlayers())
+			p.closeInventory();
+		if (włączonyModół(Miniony.class))
+			Miniony.zapiszMiniony();
+		if (ZabezpieczGracza.gracze.size() > 0) {
+			log("Odbezpieczanie graczy z bezpiecznego gm");
+			while (ZabezpieczGracza.gracze.size() > 0)
+				ZabezpieczGracza.odbezpiecz(ZabezpieczGracza.gracze.get(0));
+		}
+		if (włączonyModół(Koniki.class)) {
+			log("Usuwanie Koników graczy");
+			Koniki.usuńWszystkie();
+		}
+		if (włączonyModół(Budownik.class))
+			Budownik.wyłączanie();
+		if (włączonyModół(AutoEventy.class))
+			AutoEventy.wyłącz();
+	}
+
+	static boolean pluginEnabled = false;
+	static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
 	
 	static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
@@ -164,62 +192,20 @@ public class Main extends JavaPlugin {
 				((Komenda) obj)._zarejestrowane_komendy = false;
 			}
 	}
-	public void onDisable() {
-		for (Player p : Bukkit.getOnlinePlayers())
-			p.closeInventory();
-		if (włączonyModół(Miniony.class))
-			Miniony.zapiszMiniony();
-		if (ZabezpieczGracza.gracze.size() > 0) {
-			log("Odbezpieczanie graczy z bezpiecznego gm");
-			while (ZabezpieczGracza.gracze.size() > 0)
-				ZabezpieczGracza.odbezpiecz(ZabezpieczGracza.gracze.get(0));
-		}
-		if (włączonyModół(Koniki.class)) {
-			log("Usuwanie Koników graczy");
-			Koniki.usuńWszystkie();
-		}
-		if (!minigry.isEmpty()) {
-			log("Wyłączanie minigierek");
-			for (MiniGra mg : minigry.values())
-				mg.wyłącz();
-		}
-		if (włączonyModół(Budownik.class))
-			Budownik.wyłączanie();
-	}
-	
-	private boolean setupVault() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null)
-            return false;
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null)
-            return false;
-        econ = rsp.getProvider();
-        try {
-        	chat = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-        	perms = getServer().getServicesManager().getRegistration(Permission.class).getProvider();
-        } catch(NullPointerException e) {}
-        return econ != null;
-    }
-	
-	public static boolean powiadom(CommandSender p, String msg) {
-		return powiadom(p, msg, true);
-	}
-	public static boolean powiadom(CommandSender p, String msg, boolean zwrot) {
-		p.sendMessage(msg);
-		return zwrot;
-	}
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private static final String logprefix = "[mimiRPG] ";
+	
 	public static void log(Object... msg) {
 		logger.info(logprefix + Func.listToString(msg, 0));
 	}
 	public static void warn(Object... msg) {
 		logger.warning(logprefix + Func.listToString(msg, 0));
 	}
-	public static void error(Object...msg) {
+	public static void error(Object... msg) {
 		logger.severe(logprefix + Func.listToString(msg, 0));
 	}
+
 
 	/**
 	 * Dodaje permisje do pluginu
@@ -239,14 +225,13 @@ public class Main extends JavaPlugin {
 	}
 }
 
-class WyłączonyExecutor implements TabExecutor {
 
+class WyłączonyExecutor implements TabExecutor {
 	@Override
 	public boolean onCommand(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
 		arg0.sendMessage("§cTa komenda jest aktualnie wyłączona");
 		return true;
 	}
-
 	@Override
 	public List<String> onTabComplete(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
 		return null;

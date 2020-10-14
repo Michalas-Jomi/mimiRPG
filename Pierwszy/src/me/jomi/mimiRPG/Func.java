@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -43,12 +44,6 @@ public abstract class Func {
 		return "§6" + tekst + "§6";
 	}
 	
-	public static Inventory CloneInv(Inventory inv, String nazwa) {
-		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
-		for (int i=0; i<inv.getSize(); i++)
-			_inv.setItem(i, inv.getItem(i).clone());
-		return _inv;
-	}
 	public static String DoubleToString(double liczba) {
 		String całości = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
@@ -108,34 +103,26 @@ public abstract class Func {
 		return s.toString();
 	}
 	
-	public static double Double(Object liczba) {
-		if (liczba instanceof Double)
-			return (double) liczba;
-		if (liczba instanceof Integer)
-			return (int) liczba;
-		return Double((String) liczba, 0);
+	public static String odkoloruj(String text) {
+		if (text == null) return null;
+		return text.replace("&", "&&").replace("§", "&");
 	}
-	public static double Double(String liczba, double domyślna) {
-		if (liczba.contains("."))
-			try {
-				return Double.parseDouble(liczba.trim());
-			} catch(NumberFormatException er) {
-				return domyślna;
-			}
-		return Int(liczba, (int) domyślna);
-	}
-	public static int Int(String liczba, int domyslna) {
-		try {
-			return Integer.parseInt(liczba.trim());
-		} catch(NumberFormatException nfe) {
-			return domyslna;
-		}
-	}
-	
 	public static String koloruj(String text) {
 		if (text == null) return null;
 		text = kolorkiRGB(przejścia(text));
 		return text.replace("&", "§").replace("§§", "&");
+	}
+	public static String usuńKolor(String text) {
+		StringBuilder strB = new StringBuilder();
+		boolean pomiń = false;
+		for (char znak : text.toCharArray()) {
+			if (pomiń || znak == '§') {
+				pomiń = !pomiń;
+				continue;
+			}
+			strB.append(znak);
+		}
+		return strB.toString();
 	}
 	public static String przejścia(String text) {
 		while (text.contains("&%")) {
@@ -219,21 +206,29 @@ public abstract class Func {
 	      assembledColorCode.append("§").append(curChar); 
 	    return assembledColorCode.toString();
 	  }
-	public static String odkoloruj(String text) {
-		if (text == null) return null;
-		return text.replace("&", "&&").replace("§", "&");
+	
+	public static double Double(Object liczba) {
+		if (liczba instanceof Double)
+			return (double) liczba;
+		if (liczba instanceof Integer)
+			return (int) liczba;
+		return Double((String) liczba, 0);
 	}
-	public static String usuńKolor(String text) {
-		StringBuilder strB = new StringBuilder();
-		boolean pomiń = false;
-		for (char znak : text.toCharArray()) {
-			if (pomiń || znak == '§') {
-				pomiń = !pomiń;
-				continue;
+	public static double Double(String liczba, double domyślna) {
+		if (liczba.contains("."))
+			try {
+				return Double.parseDouble(liczba.trim());
+			} catch(NumberFormatException er) {
+				return domyślna;
 			}
-			strB.append(znak);
+		return Int(liczba, (int) domyślna);
+	}
+	public static int Int(String liczba, int domyslna) {
+		try {
+			return Integer.parseInt(liczba.trim());
+		} catch(NumberFormatException nfe) {
+			return domyslna;
 		}
-		return strB.toString();
 	}
 	
 	public static ItemStack połysk(ItemStack item) {
@@ -332,17 +327,7 @@ public abstract class Func {
 		// Wykończenie
         item.setItemMeta(meta);
         return item;
-	}
-	
-	public static boolean dajItem(Player p, ItemStack item) {
-		if (p.getInventory().firstEmpty() == -1) {
-			p.getWorld().dropItem(p.getLocation(), item);
-			return false;
-		} else {
-			p.getInventory().addItem(item);
-			return true;
-		}
-	}
+	}	
 	public static ItemStack dajGłówkę(String url) {
 		return dajGłówkę(null, url, null);
 	}
@@ -377,27 +362,20 @@ public abstract class Func {
         item.setItemMeta(meta);
         return item;	
 	}
-	
-	public static boolean porównaj(ItemStack item1, ItemStack item2) {
-		ItemStack item1c = item1.clone();
-		ItemStack item2c = item2.clone();
-		item1c.setAmount(1);
-		item2c.setAmount(1);
-		return item1c.equals(item2c);
+	public static boolean dajItem(Player p, ItemStack item) {
+		if (p.getInventory().firstEmpty() == -1) {
+			p.getWorld().dropItem(p.getLocation(), item);
+			return false;
+		} else {
+			p.getInventory().addItem(item);
+			return true;
+		}
 	}
 	
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
 		return 0 < rand && rand <= szansa;
 	}
-	/**
-	 * losuje liczbe z zakresu min - max (włącznie)
-	 * 
-	 * @param min minimalna możliwa wylosowana liczba
-	 * @param max maksywamlna możliwa wylosowana liczba
-	 * 
-	 * @return liczba z przedziału <min, max>
-	 */
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
@@ -406,7 +384,7 @@ public abstract class Func {
 			return null;
 		return lista.get(losuj(0, lista.size()-1));
 	}
-	public static int losujWZasięg(int max) {
+	public static int losujWZasięgu(int max) {
 		return Func.losuj(0, max-1);
 	}
 	public static double zaokrąglij(double liczba, int miejsca) {
@@ -459,19 +437,13 @@ public abstract class Func {
 		return w.isEmpty() ? w : w.substring(1);
 	}
 	
-	public static OfflinePlayer graczOffline(String nick) {
-		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers()) {
-			if (gracz.getName().equalsIgnoreCase(nick))
-				return gracz;
-		}
-		return null;
-	}
 	public static String nieNullStr(String str) {
 		return str == null ? "" : str;
 	}
 	public static <T> List<T> nieNullList(List<T> lista){
 		return lista != null ? lista : Lists.newArrayList();
 	}
+	
 	public static String ostatni(String[] stringi) {
 		if (stringi.length == 0) return "";
 		return stringi[stringi.length-1];
@@ -489,11 +461,7 @@ public abstract class Func {
 			napis = napis.substring(i + regex.length());
 		}
 	}
-
-	public static void opóznij(int ticki, Runnable lambda) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
-	}
-
+	
 	private static boolean mieściSię(double co, double x1, double x2) {
 		return  (co >= x1 && co <= x2) || 
 				(co <= x1 && co >= x2);
@@ -538,5 +506,37 @@ public abstract class Func {
 		if (!permisja.startsWith(plugin + '.'))
 			permisja = plugin + '.' + permisja;
 		return permisja;
+	}
+
+	public static boolean powiadom(CommandSender p, String msg) {
+		p.sendMessage(msg);
+		return true;
+	}
+
+	public static Inventory CloneInv(Inventory inv, String nazwa) {
+		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
+		for (int i=0; i<inv.getSize(); i++)
+			_inv.setItem(i, inv.getItem(i).clone());
+		return _inv;
+	}
+
+	public static void opóznij(int ticki, Runnable lambda) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
+	}
+
+	public static OfflinePlayer graczOffline(String nick) {
+		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers()) {
+			if (gracz.getName().equalsIgnoreCase(nick))
+				return gracz;
+		}
+		return null;
+	}
+
+	public static boolean porównaj(ItemStack item1, ItemStack item2) {
+		ItemStack item1c = item1.clone();
+		ItemStack item2c = item2.clone();
+		item1c.setAmount(1);
+		item2c.setAmount(1);
+		return item1c.equals(item2c);
 	}
 }

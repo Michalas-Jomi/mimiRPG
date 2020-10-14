@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.MiniGierki.Stare;
+package me.jomi.mimiRPG;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
 
 

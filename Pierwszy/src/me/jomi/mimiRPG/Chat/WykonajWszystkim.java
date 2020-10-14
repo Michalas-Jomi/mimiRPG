@@ -25,7 +25,7 @@ public class WykonajWszystkim extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0)
-			return Main.powiadom(sender, Func.prefix("Wykonaj Wszystkim") + "/wykonajwszystkim <komenda>\n§aWykona komende z konsoli dla każdego gracza osobno podmieniając {gracz} na nick gracza");
+			return Func.powiadom(sender, Func.prefix("Wykonaj Wszystkim") + "/wykonajwszystkim <komenda>\n§aWykona komende z konsoli dla każdego gracza osobno podmieniając {gracz} na nick gracza");
 		String komenda = Func.listToString(args, 0);
 		for (Player p : Bukkit.getOnlinePlayers())
 			Main.plugin.getServer().dispatchCommand(Bukkit.getConsoleSender(), komenda.replace("{gracz}", p.getName()));

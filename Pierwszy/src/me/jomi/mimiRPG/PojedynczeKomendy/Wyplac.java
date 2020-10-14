@@ -33,7 +33,7 @@ public class Wyplac extends Komenda implements Listener {
 	
 	private static boolean stworz(Player p, String[] args) {
 		double kwota = sprawdz(p, args);
-		if (kwota == 0) return Main.powiadom(p, prefix + "/stworzbanknot <kwota> [ilość]");
+		if (kwota == 0) return Func.powiadom(p, prefix + "/stworzbanknot <kwota> [ilość]");
 
 		kwota = Func.zaokrąglij(kwota, 2);
 
@@ -104,7 +104,7 @@ public class Wyplac extends Komenda implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Konsole ma wszystko i nic. Kasa to akurat te \"nic\"");
+			return Func.powiadom(sender, prefix + "Konsole ma wszystko i nic. Kasa to akurat te \"nic\"");
 		Player p = (Player) sender;
 		
 		if (cmd.getName().equalsIgnoreCase("stworzbanknot"))
@@ -114,7 +114,7 @@ public class Wyplac extends Komenda implements Listener {
 		if (kwota == 0) return true;
 		
 		if (kwota < 1)
-			return Main.powiadom(p, prefix + "Nie możesz wypłaćić mniej niż §e1$");
+			return Func.powiadom(p, prefix + "Nie możesz wypłaćić mniej niż §e1$");
 		
 		kwota = Func.zaokrąglij(kwota, 2);
 
@@ -126,12 +126,12 @@ public class Wyplac extends Komenda implements Listener {
 		
 		double kasa = Main.econ.getBalance(p);
 		if (kasa < kwota*ile)
-			return Main.powiadom(p, prefix + "Nie posiadasz tyle pieniędzy");
+			return Func.powiadom(p, prefix + "Nie posiadasz tyle pieniędzy");
 		
 		Main.econ.withdrawPlayer(p, kwota*ile);
 		
 		p.getInventory().addItem(dajBanknot(kwota, ile));
-		return Main.powiadom(p, prefix + "Utworzono banknot o wartości:§e " + Func.DoubleToString(kwota) + "§6 w ilości §e" + ile);
+		return Func.powiadom(p, prefix + "Utworzono banknot o wartości:§e " + Func.DoubleToString(kwota) + "§6 w ilości §e" + ile);
 	}
 	
 	

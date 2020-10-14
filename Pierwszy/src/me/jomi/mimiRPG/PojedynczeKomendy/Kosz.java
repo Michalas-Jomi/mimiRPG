@@ -92,9 +92,9 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Jesteś zbyt ważny by grzebać się w śmieciach");
+			return Func.powiadom(sender, "Jesteś zbyt ważny by grzebać się w śmieciach");
 		Player p = (Player) sender;
-		if (maxTimer <= -1) return Main.powiadom(p, "§cKosz jest wyłączony");
+		if (maxTimer <= -1) return Func.powiadom(p, "§cKosz jest wyłączony");
 		wrzućItemy();
 		p.openInventory(inv);
 		return true;

@@ -562,7 +562,7 @@ public abstract class Minion extends EntityZombie {
 			}
 			nick = ev.getCurrentItem().getItemMeta().getDisplayName().substring(2);
 			p2 = Bukkit.getPlayer(nick);
-			if (p2 == null) return Main.powiadom(p, prefix + "Wskazany gracz niedawno wszedł w tryb offline");
+			if (p2 == null) return Func.powiadom(p, prefix + "Wskazany gracz niedawno wszedł w tryb offline");
 			gracze.add(nick);
 			p2.sendMessage(prefix + "§e" + p.getName() + "§6 dodał cię do jednego ze swoich minionów");
 			p.sendMessage(prefix + "Dodałeś gracza §e" + nick + "§6 do tego miniona");

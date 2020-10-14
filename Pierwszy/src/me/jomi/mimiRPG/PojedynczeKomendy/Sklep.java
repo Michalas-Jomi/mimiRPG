@@ -93,7 +93,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Sklep jest dostępny tylko dla graczy");
+			return Func.powiadom(sender, prefix + "Sklep jest dostępny tylko dla graczy");
 		Player p = (Player) sender;
 		if (args.length >= 1)
 			otwórz(p, args[0]);

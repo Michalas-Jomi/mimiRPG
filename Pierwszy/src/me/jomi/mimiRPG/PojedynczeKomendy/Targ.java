@@ -275,7 +275,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Targ to nie miejsce dla ciebie");
+			return Func.powiadom(sender, prefix + "Targ to nie miejsce dla ciebie");
 		Player p = (Player) sender;
 		
 		if (cmd.getName().equalsIgnoreCase("targ"))

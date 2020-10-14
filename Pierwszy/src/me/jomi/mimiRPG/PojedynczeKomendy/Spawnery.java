@@ -280,12 +280,12 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		else
 			p = Bukkit.getPlayer(args[1]);
 		if (p == null)
-			return Main.powiadom(sender, prefix + "Nieprawidłowy gracz");
+			return Func.powiadom(sender, prefix + "Nieprawidłowy gracz");
 		
 		try {
 			EntityType.valueOf(args[0].toUpperCase());
 		} catch (Exception e) {
-			return Main.powiadom(sender, prefix + "Nieprawidłowy mob");
+			return Func.powiadom(sender, prefix + "Nieprawidłowy mob");
 		}
 		
 		try {

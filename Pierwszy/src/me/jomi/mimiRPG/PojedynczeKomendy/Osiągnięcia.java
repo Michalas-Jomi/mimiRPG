@@ -28,7 +28,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
 
 public class Osiągnięcia implements Listener, Przeładowalny{
 	public static final String prefix = Func.prefix("Osiągnięcia");
@@ -197,7 +196,6 @@ class OsiągnięciaInst {
 				ile = p.getStatistic(Statistic.valueOf(czynność), EntityType.valueOf(wartość));
 				break;
 			default:
-				MiniGra.powiadomOp("Niepoprawna czynność w pliku osiągnięcia.yml: " + czynność);
 				ile = 0;
 				break;
 			}

@@ -28,10 +28,8 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 public class Lootbagi extends Komenda implements Listener, Przeładowalny{
@@ -82,7 +80,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 			return;
 		}
 		if (lootbag.wygrane.isEmpty()) {
-			MiniGra.powiadomOp(prefix + "§cLootbag " + lootbag + " nie ma żadnych wygranych");
+			p.sendMessage(prefix + "Ten lootbag jest pusty");
 			return;
 		}
 		if (p.getInventory().firstEmpty() == -1) {
@@ -195,9 +193,9 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 			break;
 		case "e":
 		case "edytuj":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
+			if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
 			
-			if (!lootbagi.containsKey(nazwa)) return Main.powiadom(p, prefix + "Lootbag o tej nazwie nie istnieje");
+			if (!lootbagi.containsKey(nazwa)) return Func.powiadom(p, prefix + "Lootbag o tej nazwie nie istnieje");
 
 			Inventory inv = itemy.get(nazwa);
 			if (inv == null) {
@@ -207,19 +205,19 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 					inv.setItem(inv.firstEmpty(), item);
 			}
 			
-			if (lootbag.wygrane.size() > 9*6) return Main.powiadom(p, prefix + "ten lootbag jest za duży aby edytować go poza plikiem");
+			if (lootbag.wygrane.size() > 9*6) return Func.powiadom(p, prefix + "ten lootbag jest za duży aby edytować go poza plikiem");
 			
 			p.openInventory(inv);
 			break;
 		case "i":
 		case "item":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
+			if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
 			
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if (lootbag == null)
-				return Main.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
+				return Func.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
 			if (item == null || item.getType().isAir())
-				return Main.powiadom(p, prefix + "Nie możesz ustawić itemu lootbaga jago powietrze");
+				return Func.powiadom(p, prefix + "Nie możesz ustawić itemu lootbaga jago powietrze");
 			
 			lootbag.item = item;
 			lootbag.item.setAmount(1);
@@ -231,12 +229,12 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 			break;
 		case "d":
 		case "daj":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
+			if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "tej komendy może użyć tylko gracz");
 			
 			if (lootbag == null)
-				return Main.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
+				return Func.powiadom(p, prefix + "Lootbag §e" + nazwa + "§6 nie istnieje");
 			if (p.getInventory().firstEmpty() == -1)
-				return Main.powiadom(p, prefix + "Twój ekwipunek jest pełny");
+				return Func.powiadom(p, prefix + "Twój ekwipunek jest pełny");
 			p.sendMessage(prefix + "Wziołeś lootbag §e" + lootbag.nazwa);
 			p.getInventory().addItem(lootbag.item);
 			break;

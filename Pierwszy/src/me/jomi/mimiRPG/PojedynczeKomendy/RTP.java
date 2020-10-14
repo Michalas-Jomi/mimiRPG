@@ -77,15 +77,15 @@ public class RTP extends Komenda implements Przeładowalny {
 		case 2:
 			List<Entity> en = Bukkit.selectEntities(sender, args[1]);
 			if (en.isEmpty())
-				return Main.powiadom(sender, prefix + "Żaden byt nie odpowiada podanym kryteriom " + args[1]);
+				return Func.powiadom(sender, prefix + "Żaden byt nie odpowiada podanym kryteriom " + args[1]);
 			teleportowany = en.get(0);
 		case 1:
 			zasięg = Func.Int(args[0], -1);
 			if (zasięg <= -1)
-				return Main.powiadom(sender, prefix + "Niepoprawny zasięg");
+				return Func.powiadom(sender, prefix + "Niepoprawny zasięg");
 		}
 		if (teleportowany == null)
-			return Main.powiadom(sender, prefix + "/rtp <zasięg> <selektor> (filtr)");
+			return Func.powiadom(sender, prefix + "/rtp <zasięg> <selektor> (filtr)");
 		teleportowany.teleport(losuj(teleportowany.getLocation(), zasięg, filtr));
 		teleportowany.sendMessage(prefix + "Zostałeś przeteleportowany");
 		return true;

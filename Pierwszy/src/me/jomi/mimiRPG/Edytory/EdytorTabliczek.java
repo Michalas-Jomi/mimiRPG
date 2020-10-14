@@ -16,7 +16,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
@@ -74,12 +73,12 @@ public class EdytorTabliczek extends Komenda implements Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, prefix + "Gracz w świecie, Konsole we wszechświecie, jesteś zbyt potężny SORY");
+			return Func.powiadom(sender, prefix + "Gracz w świecie, Konsole we wszechświecie, jesteś zbyt potężny SORY");
 		Player p = (Player) sender;
-		if (!mapa.containsKey(p.getName())) return Main.powiadom(p, prefix + "Nie wybrałeś żadnej tabliczki");
-		if (args.length < 1) return Main.powiadom(p, prefix + "Nie podano numeru lini");
+		if (!mapa.containsKey(p.getName())) return Func.powiadom(p, prefix + "Nie wybrałeś żadnej tabliczki");
+		if (args.length < 1) return Func.powiadom(p, prefix + "Nie podano numeru lini");
 		if (args[0].equals("typ"))
-			if (args.length < 2) return Main.powiadom(p, prefix + "Nieprawidłowy typ tabliczki");
+			if (args.length < 2) return Func.powiadom(p, prefix + "Nieprawidłowy typ tabliczki");
 			else {
 				String typ = args[1];
 				Sign blok = mapa.get(p.getName());
@@ -95,9 +94,9 @@ public class EdytorTabliczek extends Komenda implements Listener{
 				return true;
 			}
 		int nr = Func.Int(args[0], -1);
-		if (nr == -1 || nr >= 4) return Main.powiadom(p, prefix + "Niepoprawny nr lini");
+		if (nr == -1 || nr >= 4) return Func.powiadom(p, prefix + "Niepoprawny nr lini");
 		Sign blok = mapa.get(p.getName());
-		if (blok == null) return Main.powiadom(p, prefix + "Wybrana tabliczka nie istnieje");
+		if (blok == null) return Func.powiadom(p, prefix + "Wybrana tabliczka nie istnieje");
 		
 		String txt = "";
 		if (args.length > 1)

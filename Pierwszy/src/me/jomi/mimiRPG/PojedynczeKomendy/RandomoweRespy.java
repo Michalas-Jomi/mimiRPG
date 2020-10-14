@@ -16,7 +16,6 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 
@@ -72,29 +71,29 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 			break;
 		case "d":
 		case "dodaj":
-			if (!(sender instanceof Player)) return Main.powiadom(sender, prefix + "Tylko gracz może dodać randomowy resp");
+			if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Tylko gracz może dodać randomowy resp");
 			respy.add(((Player) sender).getLocation());
 			zapiszRespy(respy);
 			break;
 		case "u":
 		case "usun":
 		case "usuń":
-			if (args.length < 2) return Main.powiadom(sender, prefix + "Nie wiadomo co usunąć");
+			if (args.length < 2) return Func.powiadom(sender, prefix + "Nie wiadomo co usunąć");
 			i = Func.Int(args[1], -1);
-			if (i <= -1 || i >= respy.size()) return Main.powiadom(sender, prefix + "Niepoprawne id respu: " + args[1]);
+			if (i <= -1 || i >= respy.size()) return Func.powiadom(sender, prefix + "Niepoprawne id respu: " + args[1]);
 			respy.remove(i);
 			zapiszRespy(respy);
 			break;
 		case "t":
 		case "tp":
-			if (!(sender instanceof Entity)) return Main.powiadom(sender, prefix + "Nie możesz sie przeteleportować");
-			if (args.length < 2) return Main.powiadom(sender, prefix + "Nie wiadomo co usunąć");
+			if (!(sender instanceof Entity)) return Func.powiadom(sender, prefix + "Nie możesz sie przeteleportować");
+			if (args.length < 2) return Func.powiadom(sender, prefix + "Nie wiadomo co usunąć");
 			i = Func.Int(args[1], -1);
-			if (i <= -1 || i >= respy.size()) return Main.powiadom(sender, prefix + "Niepoprawne id respu: " + args[1]);
+			if (i <= -1 || i >= respy.size()) return Func.powiadom(sender, prefix + "Niepoprawne id respu: " + args[1]);
 			((Entity) sender).teleport(respy.get(i));
 			return true;
 		default:
-			return Main.powiadom(sender, prefix + "Niepoprawne argumenty");
+			return Func.powiadom(sender, prefix + "Niepoprawne argumenty");
 		}
 		wyświetlRespy(sender);
 		return true;

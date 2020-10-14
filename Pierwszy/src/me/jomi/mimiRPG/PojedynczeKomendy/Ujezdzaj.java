@@ -52,7 +52,7 @@ public class Ujezdzaj extends Komenda {
 		if (args.length >= 2) {
 			if (!sender.hasPermission("mimiRPG.ujezdzaj.nakazinnym") && 
 					!sender.getName().equals(p2.getName()))
-				return Main.powiadom(sender, prefix + "Nie masz wystarczających uprawnień aby tego użyć");
+				return Func.powiadom(sender, prefix + "Nie masz wystarczających uprawnień aby tego użyć");
 			Entity p3 = byt(sender, args[1]);
 			if (p3 == null) return true;
 			usiądz(sender, p2, p3);

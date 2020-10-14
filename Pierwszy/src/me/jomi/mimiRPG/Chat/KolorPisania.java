@@ -1,7 +1,6 @@
 package me.jomi.mimiRPG.Chat;
 
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import com.google.common.collect.Lists;
@@ -60,13 +59,6 @@ public class KolorPisania extends Komenda implements Listener {
 				Main.log(Func.usuńKolor(ev.getPlayer().getDisplayName()) + ": " + Func.usuńKolor(msg));
 	}
 	
-	// Blokada zabijania Invulnerable Mobów
-	@EventHandler
-	public void uderzenie(EntityDamageByEntityEvent ev) {
-		if (ev.getEntity().isInvulnerable())
-			ev.setCancelled(true);
-	}
-
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return null;
@@ -79,7 +71,7 @@ public class KolorPisania extends Komenda implements Listener {
 		if (Bukkit.getPlayer(args[0]) == null) {
 			if (!args[0].startsWith("g:") && Main.perms != null && 
 					Lists.newArrayList(Main.perms.getGroups()).contains(args[0].substring(2)))
-				return Main.powiadom(p, prefix + "Gracz §e" + args[0] + "§6 nie jest online");
+				return Func.powiadom(p, prefix + "Gracz §e" + args[0] + "§6 nie jest online");
 		}
 		String symbol = args[1];
 		if (symbol.equalsIgnoreCase("&r"))

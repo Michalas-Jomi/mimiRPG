@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 
 public class Czapka extends Komenda {
 
@@ -25,7 +24,7 @@ public class Czapka extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Pokaż mi swoją głowę to ci to założe");
+			return Func.powiadom(sender, "Pokaż mi swoją głowę to ci to założe");
 		Player p = (Player) sender;
 		String prefix = Func.prefix("Czapka");
 		ItemStack helm = p.getInventory().getHelmet();

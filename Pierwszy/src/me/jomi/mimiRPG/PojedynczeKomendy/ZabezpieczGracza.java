@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,9 +21,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.MiniGierki.Stare.MiniGra;
-import me.jomi.mimiRPG.MiniGierki.Stare.NowyEkwipunek;
+import me.jomi.mimiRPG.NowyEkwipunek;
 
 public class ZabezpieczGracza extends Komenda implements Listener{
 	public static String prefix = Func.prefix("Bezpieczny gm");
@@ -57,7 +54,6 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	}
 	public static void odbezpiecz(Player p) {
 		p.getInventory().clear();
-		p.teleport((Location) MiniGra.config.wczytaj("Golf.koniec"));
 		NowyEkwipunek.wczytajStary(p);
 		p.setGameMode(GameMode.SURVIVAL);
 		gracze.remove(p);
@@ -93,10 +89,8 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	@EventHandler
 	public void opuszczenieGry(PlayerQuitEvent ev) {
 		Player p = ev.getPlayer();
-		if (gracze.contains(p)) { 
+		if (gracze.contains(p))
 			odbezpiecz(p);
-			MiniGra.powiadomOp(prefix + "Gracz §e" + p.getName() + "§6 opuścił grę, tym samym stracił gm'a");
-		}
 		
 	}
 
@@ -108,7 +102,7 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
-			return Main.powiadom(sender, "Tylko gracz może zabezpieczyć gracza");
+			return Func.powiadom(sender, "Tylko gracz może zabezpieczyć gracza");
 		Player p = (Player) sender;
 		if (args.length < 1) {
 			if (ZabezpieczGracza.gracze.size() == 0) 

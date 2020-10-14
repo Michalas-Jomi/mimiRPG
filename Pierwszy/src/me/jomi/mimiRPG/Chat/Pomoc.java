@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Przeładowalny;
 
 public class Pomoc extends Komenda implements Przeładowalny{
@@ -28,7 +27,7 @@ public class Pomoc extends Komenda implements Przeładowalny{
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		if (!config.klucze(false).contains(args[0]))
-			return Main.powiadom(sender, prefix + "Niepoprawna sekcja: §e" + args[0]);
+			return Func.powiadom(sender, prefix + "Niepoprawna sekcja: §e" + args[0]);
 		config.wczytajNapis(args[0]).wyświetl(sender);
 		return true;
 	}

@@ -15,12 +15,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +44,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	private static HashMap<String, String> mapaKomend = new HashMap<>();
 	private static HashMap<String, MenuInv> mapa = new HashMap<>();
 	
+	// TODO opisać co i jak zanim całkiem zapomne
 	public Menu() {
 		super("menu");
 	}
@@ -295,18 +294,6 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 		}
 	}
 	
-	
-	// Niezależna metoda, jest tu bo jest krótka xD
-	@SuppressWarnings("deprecation")
-	@EventHandler
-	public void blokadaSkrzynekNaZwierzetach(PlayerInteractEntityEvent ev) {
-		EntityType typ = ev.getRightClicked().getType();
-		Material   mat = ev.getPlayer().getItemInHand().getType();
-		if (mat.equals(Material.CHEST) || mat.equals(Material.TRAPPED_CHEST))
-			if (typ.equals(EntityType.MULE) || typ.equals(EntityType.LLAMA) || typ.equals(EntityType.TRADER_LLAMA) || typ.equals(EntityType.DONKEY))
-				ev.setCancelled(true);
-	}
-
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return null;
@@ -320,11 +307,9 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 			sender.sendMessage("Tylko gracz może korzystać z menu");
 		return true;
 	}
-
 }
 
 class MenuInv {
-
 	private List<Integer> specjalne = Lists.newArrayList();
 	public  List<MenuItem> itemy;
 	private int wielkosc;

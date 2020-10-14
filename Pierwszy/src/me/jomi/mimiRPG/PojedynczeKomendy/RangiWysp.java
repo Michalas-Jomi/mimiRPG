@@ -92,10 +92,10 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 					ustawRange(p2, tytuł);
 				}
 			if (is == null)
-				return Main.powiadom(p, "§6Nie masz wyspy");
-			return Main.powiadom(p, "§6Ranga wyspy: §e" + tytuł + " §e" + ((int) is.getValue()) + "pkt");
+				return Func.powiadom(p, "§6Nie masz wyspy");
+			return Func.powiadom(p, "§6Ranga wyspy: §e" + tytuł + " §e" + ((int) is.getValue()) + "pkt");
 		}
-		return Main.powiadom(sender, "Tylko gracz może tego użyć");
+		return Func.powiadom(sender, "Tylko gracz może tego użyć");
 	}
 }
 
