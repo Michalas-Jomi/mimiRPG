@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="C:/Users/jomzi/Desktop/syf/IridiumSkyblock-2.5.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/jomzi/Desktop/syf/worldedit-bukkit-7.2.0-SNAPSHOT-dist.jar"/>
 	<classpathentry kind="lib" path="C:/Users/jomzi/Desktop/syf/worldguard-bukkit-7.0.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jomzi/Desktop/syf/moje pluginy/plugins/ModuleManager.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

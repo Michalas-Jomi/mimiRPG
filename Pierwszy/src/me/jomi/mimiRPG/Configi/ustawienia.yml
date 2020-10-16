@@ -7,48 +7,51 @@ WiadomoscConsole: '[Konsola]'
 # wyłączanie modółów bez restartu jest możliwe, ale nie zalecane
 Moduły:
   Antylog: true
+  AutoEventy: false
   AutoWiadomosci: true
-  Bazy: true
-  Budownik: true
+  BlockSkrzyńNaZwierzętach: true
+  Budownik: false
   ChatGrupowy: true
   CustomoweCraftingi: true
   CustomoweItemy: true
-  CustomoweMoby: true
   CustomowyDrop: true
   Czapka: true
-  DrabinaPlus: true
+  Debug: false
+  DrabinaPlus: false
   EdytorTabliczek: true
   EdytujItem: true
   Funkcje: true
+  InvulnerablePlus: true
   ItemLink: true
-  JednorekiBandyta: true
+  JednorekiBandyta: false
   KolorPisania: true
   KomendyInfo: true
-  Koniki: true
+  Koniki: false
   Kosz: true
   Lootbagi: true
   LosowyDropGracza: true
   Menu: true
-  Menurpg: true
+  Menurpg: false
   Mi: true
-  Minigry: false
-  Miniony: true
-  Osiągnięcia: true
+  Miniony: false
+  Osiągnięcia: false
   Patrzeq: true
   PiszJako: true
   Plecak: true
   Pomoc: true
   Poziom: true
   Przyjaciele: true
-  RTP: true
+  RTP: false
+  RandomoweRespy: false
+  RangiWysp: false
   Sklep: true
-  Spawnery: true
-  Targ: true
+  Spawnery: false
+  Targ: false
   Ujezdzaj: true
   UstawAttr: true
   WeryfikacjaPelnoletnosci: true
   WykonajWszystkim: true
-  Wymienianie: true
+  Wymienianie: false
   Wyplac: true
   ZabezpieczGracza: true
   ZamienEq: true

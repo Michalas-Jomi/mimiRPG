@@ -29,13 +29,15 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 
+import me.jomi.mimiRPG.Bazy.Gildia;
 import me.jomi.mimiRPG.Chat.*;
+import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.Gracze.Kon;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.AutoEventy;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
-import me.jomi.mimiRPG.Gracze.Gracze;
 import me.jomi.mimiRPG.Maszyny.*;
 
 public class Main extends JavaPlugin {
@@ -102,7 +104,7 @@ public class Main extends JavaPlugin {
 	
 		// Rejestrowanie ConfigurationSerializable
 		List<Class<? extends ConfigurationSerializable>> klasy = Arrays.asList(
-				Napis.class, Grupa.class
+				Napis.class, Grupa.class, Gildia.class, Gracz.class, Kon.class
 				);
 		for (Class<? extends ConfigurationSerializable> clazz : klasy)
 			ConfigurationSerialization.registerClass(clazz);
@@ -117,16 +119,12 @@ public class Main extends JavaPlugin {
 		włączIridiumSkyblock();
             
 		new Baza();
-		zarejestruj(new Gracze());
-		
 		new Mimi();
         new Raport();
         
 		zarejestruj(new Moduły());
 		
-		
-        if (!Przeładowalny.przeładowalne.isEmpty())
-			new Przeładuj();
+		new Przeładuj();
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
 

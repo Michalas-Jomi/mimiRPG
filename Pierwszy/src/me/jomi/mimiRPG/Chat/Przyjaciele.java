@@ -16,7 +16,6 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Gracze.Gracz;
-import me.jomi.mimiRPG.Gracze.Gracze;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
@@ -72,7 +71,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 			return;
 		}
 		
-		if (Gracze.gracz(nick1).przyjaciele.contains(nick2)) {
+		if (Gracz.wczytaj(nick1).przyjaciele.contains(nick2)) {
 			p1.sendMessage(prefix + "ty i §e" + nick2 + "§6 jesteście już przyjaciółmi");
 			return;
 		}
@@ -95,9 +94,9 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 		}
 	}
 	private void dodaj(String kto, String kogo) {
-		Gracz gracz = Gracze.gracz(kto);
+		Gracz gracz = Gracz.wczytaj(kto);
 		gracz.przyjaciele.add(kogo);
-		gracz.config.ustaw_zapisz("przyjaciele", gracz.przyjaciele);
+		gracz.zapisz();
 	}
 	private void usuń(Player kto, Player kogo) {
 		if (kogo == null) {
@@ -112,17 +111,15 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 			return;
 		}
 		
-		Gracz g1 = Gracze.gracz(nick1);
-		Gracz g2 = Gracze.gracz(nick2);
+		Gracz g1 = Gracz.wczytaj(nick1);
+		Gracz g2 = Gracz.wczytaj(nick2);
 		
 		if (!g1.przyjaciele.contains(nick2)) {
 			kto.sendMessage(prefix + "§e" + nick2 + " §6" + "nie jest twoim przyjacielem");
 			return;
 		}
-		g1.przyjaciele.remove(nick2);
-		g2.przyjaciele.remove(nick1);
-		g1.config.ustaw_zapisz("przyjaciele", g1.przyjaciele);
-		g2.config.ustaw_zapisz("przyjaciele", g2.przyjaciele);
+		g1.przyjaciele.remove(nick2); g1.zapisz();
+		g2.przyjaciele.remove(nick1); g2.zapisz();
 		kto.sendMessage(prefix  + "§e" + nick2 + "§6 nie jest już twoim przyjacielem");
 		kogo.sendMessage(prefix + "§e" + nick1 + "§6 zerwał z tobą wasze przyjacielskie więzi §d§l:(");
 	}
@@ -138,7 +135,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 			return Func.powiadom(sender, prefix + "Każdy jest przyjacielem konsoli!");
 		Player p = (Player) sender;
 		
-		Gracz _gracz = Gracze.gracz(p.getName());
+		Gracz _gracz = Gracz.wczytaj(p.getName());
 		if (args.length > 1) {
 			switch(args[0]) {
 			case "w":
@@ -167,7 +164,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 				return true;
 			}
 		}
-		if (Gracze.gracz(p.getName()).przyjaciele.size() <= 0) 
+		if (_gracz.przyjaciele.size() <= 0) 
 			return Func.powiadom(p, prefix + "Nie masz żadnych przyjaciół §d§l:(");
 		String nagłówek = "§3§l>——————————→ §d§lPrzyjaciele §3§l←——————————<";
 		p.sendMessage(nagłówek);

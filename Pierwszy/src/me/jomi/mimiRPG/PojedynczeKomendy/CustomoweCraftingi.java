@@ -65,6 +65,4 @@ public class CustomoweCraftingi implements Przeładowalny {
 	public String raport() {
 		return "§6Customowe Craftingi: §e" + config.klucze(false).size();
 	}
-	
-	
 }

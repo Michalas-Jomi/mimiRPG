@@ -23,8 +23,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
 @Moduł
-public class CustomowyDrop implements Listener, Przeładowalny{
-
+public class CustomowyDrop implements Listener, Przeładowalny {
 	public static final Config configBloki = new Config("Customowy Drop Bloki");
 	public static final Config configMoby  = new Config("Customowy Drop Moby");
 

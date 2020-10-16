@@ -1,49 +1,46 @@
 package me.jomi.mimiRPG.Gracze;
 
 import java.util.List;
+import java.util.Map;
 
-import org.bukkit.entity.Player;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Mapowane;
 
-public class Gracz {
-	public Config config;
-	public Player p;
+public class Gracz implements ConfigurationSerializable {
+	@Mapowane public String nick;
+	@Mapowane public int dropPoŚmierci;
+	@Mapowane public String kolorPisania = "";
+	@Mapowane public List<String> przyjaciele = Lists.newArrayList();
+	@Mapowane public List<ItemStack> plecak = Lists.newArrayList();
+	@Mapowane public List<String> bazy = Lists.newArrayList();
+	
+	@Mapowane public Kon kon;
+	
 
-	public int dropPoŚmierci;
-	public String kolorPisania;
-	public List<String> przyjaciele;
-	public List<ItemStack> plecak;
-	
-	public Kon kon;
-	
-	public Gracz(Player p) {
-		this.p = p;
-		
-		config = new Config("gracze/" + p.getName());
-		
-		dropPoŚmierci = (int) config.wczytajLubDomyślna("dropPoŚmierci", 0);
-		kolorPisania  = (String) config.wczytajLubDomyślna("kolorPisania", "");
-		przyjaciele   = config.wczytajListe("przyjaciele");
-		plecak 		  = config.wczytajItemy("plecak");
-		
-		if (config.klucze(false).contains("koń"))
-			kon = new Kon(this,
-				(boolean) config.wczytajLubDomyślna("koń.bezgłośny", false),
-				(boolean) config.wczytajLubDomyślna("koń.mały", false),
-				(String) config.wczytajLubDomyślna("koń.kolor", "Biały"),
-				(String) config.wczytajLubDomyślna("koń.styl", "Brak"),
-				(int) config.wczytajLubDomyślna("koń.zapas", -1));
+	public Gracz(Map<String, Object> mapa) {
+		Func.zdemapuj(this, mapa);
+	}
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
 	}
 
-	public void zapisz(String co) {
-		try {
-			config.ustaw_zapisz(co, this.getClass().getField(co).get(this));
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-			Main.error("Nieprawidłowa nazwa: " + co);
-			e.printStackTrace();
-		}
+	
+	public void zapisz() {
+		new Config("configi/gracze/" + nick).ustaw_zapisz("gracz", this);
+	}
+	
+
+	private Gracz(String nick) {
+		this.nick = nick;
+	}
+	public static Gracz wczytaj(String nick) {
+		return new Config("configi/gracze/" + nick).wczytajLubDomyślna("gracz", new Gracz(nick));
 	}
 }

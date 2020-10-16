@@ -21,7 +21,6 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
-import me.jomi.mimiRPG.Gracze.Gracze;
 
 @Moduł
 public class KolorPisania extends Komenda implements Listener {
@@ -45,7 +44,7 @@ public class KolorPisania extends Komenda implements Listener {
 					msgB.append(grp.kolorpisania);
 				}
 		
-		String symbol = Gracze.gracz(ev.getPlayer().getName()).kolorPisania;
+		String symbol = Gracz.wczytaj(ev.getPlayer().getName()).kolorPisania;
 		msgB.append(symbol).append(msg);
 		
 		msg = msgB.toString();
@@ -94,9 +93,9 @@ public class KolorPisania extends Komenda implements Listener {
 			else 			  p.sendMessage(prefix + "Zresetowano domyślny kolor pisania grupy §e" + args[0].substring(2));	
 			return true;
 		}
-		Gracz gracz = Gracze.gracz(args[0]);
+		Gracz gracz = Gracz.wczytaj(args[0]);
 		gracz.kolorPisania = symbol;
-		gracz.config.ustaw_zapisz("kolorPisania", symbol);
+		gracz.zapisz();
 		if (symbol != "") p.sendMessage(prefix + "Zmieniono domyślny kolor pisania gracza §e" + args[0] + "§6 na " + symbol);
 		else 			  p.sendMessage(prefix + "Zresetowano domyślny kolor pisania gracza §e" + args[0]);	
 		return true;

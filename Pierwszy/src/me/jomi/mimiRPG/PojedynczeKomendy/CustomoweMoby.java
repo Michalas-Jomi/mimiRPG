@@ -178,9 +178,9 @@ class Mob {
 		}
 		
 		if (sekcja.contains("Imie"))
-			tag.setString("CustomName", "'" + Func.koloruj(sekcja.getString("Imie")) + "'"); // TODO sprawdzić
+			tag.setString("CustomName", "\"\\\"" + Func.koloruj(sekcja.getString("Imie")) + "\\\"\""); // TODO sprawdzić
 		if (sekcja.contains("Imie zawsze widoczne"))
-			tag.setBoolean("CustomNameVisible", sekcja.getBoolean("Imie zawsze widoczne")); // TODO sprawdzić
+			tag.setBoolean("CustomNameVisible", sekcja.getBoolean("Imie zawsze widoczne"));
 		if (tag.isEmpty())
 			tag = null;
 		

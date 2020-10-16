@@ -108,7 +108,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	void edytuj(Player p, CreatureSpawner spawner) {
-		// TODO nazwa moba z dużej litery
+		// TODO nazwa moba z dużej litery, tłumaczenie na polski
 		Inventory _inv = Func.CloneInv(inv, "§9§lSpawner §9§4" + spawner.getSpawnedType().toString().toLowerCase());
 		
 		int licz = 0;

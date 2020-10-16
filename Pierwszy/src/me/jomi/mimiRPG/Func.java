@@ -7,7 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -480,16 +483,16 @@ public abstract class Func {
 		int godziny = minuty  / 60;	minuty  %= 60;
 		int dni 	= godziny / 24;	godziny %= 24;
 		
-		Function<Integer, Character> odmiana = ile -> {
+		Function<Integer, String> odmiana = ile -> {
 			switch (ile % 10) {
 			case 1:
-				return 'ę';
+				return "ę";
 			case 2:
 			case 3:
 			case 4:
-				return 'y';
+				return "y";
 			default:
-				return null;
+				return "";
 			}
 		};
 		
@@ -526,10 +529,9 @@ public abstract class Func {
 	}
 
 	public static OfflinePlayer graczOffline(String nick) {
-		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers()) {
+		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers())
 			if (gracz.getName().equalsIgnoreCase(nick))
 				return gracz;
-		}
 		return null;
 	}
 
@@ -539,5 +541,50 @@ public abstract class Func {
 		item1c.setAmount(1);
 		item2c.setAmount(1);
 		return item1c.equals(item2c);
+	}
+
+	public static void zdemapuj(Object obj, Map<String, Object> mapa) {
+		Class<?> clazz = obj.getClass();
+		
+		for (Entry<String, Object> en : mapa.entrySet())
+			try {
+				if (en.getKey().equals("==")) continue;
+				Field field = clazz.getDeclaredField(en.getKey());
+				if (!field.isAnnotationPresent(Mapowane.class))
+					throw new Throwable();
+				field.setAccessible(true);
+				if (field.getType().isEnum())
+					try {
+						field.set(obj, field.getType().getMethod("valueOf", String.class).invoke(null, en.getValue()));
+					} catch (Throwable _e) {
+						Main.warn(String.format("Nieprawidłowa wartość \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
+								en.getValue(), en.getKey(), clazz.getName()));
+					}
+				else
+					field.set(obj, en.getValue());
+			} catch (Throwable e) {
+				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
+			}
+	}
+	public static Map<String, Object> zmapuj(Object obj) {
+		Map<String, Object> mapa = new HashMap<String, Object>();
+		Class<?> clazz = obj.getClass();
+		for (Field field : clazz.getDeclaredFields())
+			try {
+				if (!field.isAnnotationPresent(Mapowane.class)) continue;
+				field.setAccessible(true);
+				String name = field.getName();
+				mapa.put(name, zmapuj_wez(field, obj));
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		return mapa;
+	}
+	private static Object zmapuj_wez(Field field, Object obj) throws Throwable {
+		Object w = field.get(obj);
+		if (w == null) return w;
+		if (field.getType().isEnum())
+			return field.getType().getMethod("name").invoke(w);
+		return w;
 	}
 }

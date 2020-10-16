@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG;
 
+
 public class Krotka<T1, T2> {
 	public T1 a;
 	public T2 b;

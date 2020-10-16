@@ -19,7 +19,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
-import me.jomi.mimiRPG.Gracze.Gracze;
 
 @Moduł
 public class Plecak extends Komenda implements Listener {
@@ -30,7 +29,7 @@ public class Plecak extends Komenda implements Listener {
 	}
 
 	private static boolean otwórz(Player p) {
-		List<ItemStack> itemy = Gracze.gracz(p.getName()).plecak;
+		List<ItemStack> itemy = Gracz.wczytaj(p.getName()).plecak;
 		while (itemy.size() < 3)
 			itemy.add(null);
 		int sloty = itemy.size();
@@ -44,29 +43,26 @@ public class Plecak extends Komenda implements Listener {
 	@EventHandler
 	public static void zamknij(InventoryCloseEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
-		Gracz gracz = Gracze.gracz(ev.getPlayer().getName());
+		Gracz gracz = Gracz.wczytaj(ev.getPlayer().getName());
 		for (int i=0; i<gracz.plecak.size(); i++)
 			gracz.plecak.set(i, ev.getInventory().getItem(i));
-		gracz.zapisz("plecak");
+		gracz.zapisz();
 	}
 	@EventHandler
 	public static void kliknięcie(InventoryClickEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		
-		Player p = (Player) ev.getWhoClicked();
-		int sloty = Gracze.gracz(p.getName()).plecak.size();
-		
-		if (ev.getRawSlot() >= sloty && ev.getRawSlot() < ev.getInventory().getSize())
+		if (Func.porównaj(ev.getCurrentItem(), zablokowanySlot))
 			ev.setCancelled(true);
 	}
 	
 	public static void ulepsz(Player p, String imie) {
-		Gracz gracz = Gracze.gracz(imie);
+		Gracz gracz = Gracz.wczytaj(imie);
 		int sloty = gracz.plecak.size();
 		if (sloty >= 6*9) 
 			{p.sendMessage("Osiągnięto już maksymalny poziom plecaka"); return;}
 		gracz.plecak.add(null);
-		gracz.zapisz("plecak");
+		gracz.zapisz();
 	}
 	
 	@Override
@@ -81,5 +77,4 @@ public class Plecak extends Komenda implements Listener {
 			sender.sendMessage("I co ja moge zrobić?");
 		return true;
 	}
-	
 }

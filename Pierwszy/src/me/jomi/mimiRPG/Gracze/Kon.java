@@ -1,9 +1,14 @@
 package me.jomi.mimiRPG.Gracze;
 
+import java.util.List;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
@@ -14,12 +19,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 
-public class Kon {
-	public Inventory inv;
+public class Kon implements ConfigurationSerializable {
 	private static final int slotyEq 		= 3*9;
 	private static final int slotMały 		= 4*9 + 1;
 	private static final int slotStyl 		= 4*9 + 7;
@@ -28,39 +35,44 @@ public class Kon {
 	
 	private static final ItemStack itemMały = Func.stwórzItem(Material.EGG, "§6Rozmiar", "§eMały");
 	private static final ItemStack itemDuży = Func.stwórzItem(Material.EGG, "§6Rozmiar", "§eDuży");
-	
 	private static final ItemStack itemBezgłośny 	= Func.stwórzItem(Material.BONE, 		 "§6Dzwięk", "§6Bezgłośny");
 	private static final ItemStack itemNieBezgłośny = Func.stwórzItem(Material.CREEPER_HEAD, "§6Dzwięk", "§6Normalny");
 	
-	
-	public boolean bezgłośny;
-	public boolean mały;
-	public Kolor kolor;
-	public Gracz gracz;
-	public Styl styl;
-	public Player p;
-	
+	private static final Kolor[] kolory = Kolor.values();
+	private static final Styl[] style = Styl.values();
+
+	@Mapowane public List<ItemStack> itemy = Lists.newArrayList();
+	@Mapowane public Kolor kolor = Kolor.Biały;
+	@Mapowane public Styl styl = Styl.Brak;
+	@Mapowane public String właściciel;
+	@Mapowane public boolean bezgłośny;
+	@Mapowane public boolean mały;
+	@Mapowane public int zapas;
+
 	private int nrKolor = -1;
 	private int nrStyl = -1;
 	
-	private static final Kolor[] kolory = Kolor.values();
-	private static final Styl[] style = Styl.values();
-	public Kon(Gracz gracz, boolean bezgłośny, boolean mały, String kolor, String styl, int zapas) {
-		this.kolor = Kolor.valueOf(kolor);
-		this.styl = Styl.valueOf(styl);
-		this.bezgłośny = bezgłośny;
-		this.gracz = gracz;
-		this.zapas = zapas;
-		this.mały = mały;
-		this.p = gracz.p;
-		
-		gracz.kon = this;
-		
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
+	}
+	public Kon(Map<String, Object> mapa) {
+		Func.zdemapuj(this, mapa);
+		init();
+	}
+	public Kon(Gracz g) {
+		właściciel = g.nick;
+		init();
+	}
+	private void init() {
 		nrKolor = znajdz(kolory, this.kolor);
 		nrStyl = znajdz(style, this.styl);
-		
-		stwórzInv();
 	}
+	
+	public Inventory dajInv(Horse kon) {
+		return stwórzInv(kon);
+	}
+	
 	private int znajdz(Object[] objekty, Object obj) {
 		for (int i=0; i< objekty.length; i++)
 			if (objekty[i].equals(obj))
@@ -68,10 +80,9 @@ public class Kon {
 		return -1;
 	}
 	
-	private Horse kon;
-	public void przywołaj() {
-		if (kon != null) kon.remove();
-		kon = (Horse) p.getWorld().spawnEntity(p.getLocation(), EntityType.HORSE);
+	public void przywołaj(Player p) {
+		usuń();
+		Horse kon = (Horse) p.getWorld().spawnEntity(p.getLocation(), EntityType.HORSE);
 		
 		kon.setOwner(p);
 		kon.setTamed(true);
@@ -86,96 +97,113 @@ public class Kon {
 		kon.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
 		kon.setHealth(20);
 
-		p.sendMessage(Koniki.prefix + Func.msg("Przywołałeś swojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", Koniki.czas(gracz.kon.zapas)));
+		p.sendMessage(Koniki.prefix + Func.msg("Przywołałeś swojego Konika, możesz jezdzić na nim jeszcze %s bez karmienia", Koniki.czas(zapas)));
 		//EntityHorse e = ((EntityHorse)((CraftEntity) kon).getHandle());
 		//e.goalSelector = new PathfinderGoalSelector(e.getWorld().getMethodProfilerSupplier());
 		
-		ustawMały();
-		ustawStyl();
-		ustawKolor();
-		ustawBezgłośny();
+		ustawMały(kon, null);
+		ustawStyl(kon, null);
+		ustawKolor(kon, null);
+		ustawBezgłośny(kon, null);
 	}
 	
 	public void usuń() {
+		Horse kon = znajdzKonia();
 		if (kon != null)
 			kon.remove();
 	}
+	public Horse znajdzKonia() {
+		for (World świat : Bukkit.getWorlds())
+			for (Horse h : świat.getEntitiesByClass(Horse.class))
+				if (h.hasMetadata("mimiKon") && h.getMetadata("mimiKon").get(0).asString().equals(właściciel))
+					return h;
+		return null;
+	}
 	
-	public int zapas;
-	public void nakarm(int ile) {
+	public void nakarm(int ile, Gracz g) {
 		if (!nakarmiony())
 			zapas = (int) (System.currentTimeMillis() / 1000);
 		zapas += ile;
-		gracz.config.ustaw_zapisz("koń.zapas", zapas);
+		g.zapisz();
 	}
 	public boolean nakarmiony() {
 		return System.currentTimeMillis() / 1000 <= zapas;
 	}
-	public void sprawdz() {
+	public void sprawdz(Horse kon) {
 		if (kon != null && !kon.getPassengers().isEmpty()) {
 			if (nakarmiony()) return;
-			kon.removePassenger(p);
-			p.sendMessage(Koniki.prefix + "Twój Konik jest głodny, nie jest w stanie cie dalej wozić");
+			for (Entity e : kon.getPassengers())
+				if (e instanceof Player) {
+					Player p = (Player) e;
+					kon.removePassenger(p);
+					p.sendMessage(Koniki.prefix + "Konik jest głodny, nie jest w stanie cie dalej wozić");
+				}
 		}
 	}
 	
-	private void stwórzInv() {
-		inv = Bukkit.createInventory(p, 5*9, "§1§lTwój Konik");
-		ConfigurationSection sekcja = gracz.config.sekcja("koń", "itemy");
-		if (sekcja != null)
-			for (String slot : sekcja.getKeys(false)) {
-				int i = Func.Int(slot, -1);
-				if (i <= -1 || i >= slotyEq) continue;
-				inv.setItem(i, gracz.config.wczytajItem("koń", "itemy", i));
-			}
+	private Inventory stwórzInv(Horse kon) {
+		Inventory inv = Bukkit.createInventory(Bukkit.getPlayer(właściciel), 5*9, "§1§lTwój Konik");
+		for (int i=0; i<itemy.size(); i++) {
+			if (i >= slotyEq) continue;
+			inv.setItem(i, itemy.get(i));
+		}
 		ItemStack nic = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§1§l§o §6§o");
 		for (int i=slotyEq; i < 5*9; i++)
 			inv.setItem(i, nic);
 		Func.nazwij(inv.getItem(slotKolor), "§6Kolor");
 		Func.nazwij(inv.getItem(slotStyl),  "§6Styl");
-		ustawMały();
-		ustawStyl();
-		ustawKolor();
-		ustawBezgłośny();
+		ustawMały(kon, inv);
+		ustawStyl(kon, inv);
+		ustawKolor(kon, inv);
+		ustawBezgłośny(kon, inv);
+		return inv;
 	}
-	private void ustawMały() {
-		inv.setItem(slotMały, mały ? itemMały : itemDuży);
+	private void ustawMały(Horse kon, Inventory inv) {
+		if (inv != null)
+			inv.setItem(slotMały, mały ? itemMały : itemDuży);
 		if (kon != null)
 			kon.setAge(mały ? -1 : 0);
 	}
-	private void ustawBezgłośny() {
-		inv.setItem(slotBezgłośny, bezgłośny ? itemBezgłośny : itemNieBezgłośny);
+	private void ustawBezgłośny(Horse kon, Inventory inv) {
+		if (inv != null)
+			inv.setItem(slotBezgłośny, bezgłośny ? itemBezgłośny : itemNieBezgłośny);
 		if (kon != null)
 			kon.setSilent(bezgłośny);
 	}
-	private void ustawKolor() {
-		ItemStack item = inv.getItem(slotKolor);
+	private void ustawKolor(Horse kon, Inventory inv) {
 		kolor = kolory[nrKolor];
-		item.setType(kolor.mat);
-		Func.ustawLore(item, "§e" + kolor, 0);
+		if (inv != null) {
+			ItemStack item = inv.getItem(slotKolor);
+			item.setType(kolor.mat);
+			Func.ustawLore(item, "§e" + kolor, 0);
+		}
 		if (kon != null)
 			kon.setColor(kolor.kolor);
 	}
-	private void ustawStyl() {
-		ItemStack item = inv.getItem(slotStyl);
+	private void ustawStyl(Horse kon, Inventory inv) {
 		styl = style[nrStyl];
-		item.setType(styl.mat);
-		Func.ustawLore(item, "§e" + styl, 0);
+		if (inv != null) {
+			ItemStack item = inv.getItem(slotStyl);
+			item.setType(styl.mat);
+			Func.ustawLore(item, "§e" + styl, 0);
+		}
 		if (kon != null)
 			kon.setStyle(styl.styl);
 	}
-	public void kliknięteEq(InventoryClickEvent ev) {
+	public void kliknięteEq(InventoryClickEvent ev, Gracz g) {
 		int slot = ev.getSlot();
 		if (slot < slotyEq || slot >= 5*9) return;
+		ev.setCancelled(true);
 		int zmiana = ev.getClick().toString().endsWith("RIGHT") ? -1 : 1;
+		Horse kon = znajdzKonia();
 		switch(slot) {
 		case slotMały:
 			mały = !mały;
-			ustawMały();
+			ustawMały(kon, ev.getInventory());
 			break;
 		case slotBezgłośny:
 			bezgłośny = !bezgłośny;
-			ustawBezgłośny();
+			ustawBezgłośny(kon, ev.getInventory());
 			break;
 		case slotKolor:
 			nrKolor += zmiana;
@@ -183,7 +211,7 @@ public class Kon {
 				nrKolor = 0;
 			else if (nrKolor < 0)
 				nrKolor = kolory.length -1;
-			ustawKolor();
+			ustawKolor(kon, ev.getInventory());
 			break;
 		case slotStyl:
 			nrStyl += zmiana;
@@ -191,24 +219,17 @@ public class Kon {
 				nrStyl = 0;
 			else if (nrStyl < 0)
 				nrStyl = style.length - 1;
-			ustawStyl();
+			ustawStyl(kon, ev.getInventory());
 			break;
 		}
-		ev.setCancelled(true);
+		g.zapisz();
 	}
 	
-	public void zapisz() {
-		gracz.config.ustaw("koń.bezgłośny", bezgłośny);
-		gracz.config.ustaw("koń.kolor", kolor.name());
-		gracz.config.ustaw("koń.styl", styl.name());
-		gracz.config.ustaw("koń.mały", mały);
-		gracz.config.ustaw("koń.itemy", null);
-		for (int i=0; i<slotyEq; i++) {
-			ItemStack item = inv.getItem(i);
-			if (item != null && !item.getType().isAir())
-				gracz.config.ustaw("koń.itemy."+i, item);
-		}
-		gracz.config.zapisz();
+	public void ustawItemy(Inventory inv) {
+		itemy.clear();
+		for (int i=0; i<slotyEq; i++)
+			if (inv.getItem(i) != null)
+				itemy.add(inv.getItem(i));
 	}
 	
 	public static enum Styl {

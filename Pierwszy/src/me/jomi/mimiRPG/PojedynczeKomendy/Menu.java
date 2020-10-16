@@ -46,7 +46,6 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	private static HashMap<String, String> mapaKomend = new HashMap<>();
 	private static HashMap<String, MenuInv> mapa = new HashMap<>();
 	
-	// TODO opisać co i jak zanim całkiem zapomne
 	public Menu() {
 		super("menu");
 	}

@@ -18,7 +18,6 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
-import me.jomi.mimiRPG.Gracze.Gracze;
 
 @Moduł
 public class LosowyDropGracza extends Komenda implements Listener {
@@ -32,13 +31,13 @@ public class LosowyDropGracza extends Komenda implements Listener {
 	
 	private static boolean komenda(CommandSender p, String args[], boolean koniecznieWiększa) {
 		if (args.length == 0)
-			return Func.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
+			return Func.powiadom(p, prefix + "Twoja szansa na zatrzymanie przedmiotu: §e" + Gracz.wczytaj(p.getName()).dropPoŚmierci + "%");
 		else {
 			Player p2 = Bukkit.getPlayer(args[0]);
 			if (p2 == null || !p2.isOnline())
 				return Func.powiadom(p, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
 			if (args.length == 1)
-				return Func.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza §e" + args[0] + " §6: §e" + Gracze.gracz(p.getName()).dropPoŚmierci + "%");
+				return Func.powiadom(p, prefix + "Szansa na zatrzymanie przedmiotu gracza §e" + args[0] + " §6: §e" + Gracz.wczytaj(p.getName()).dropPoŚmierci + "%");
 			else {
 				int liczba = Func.Int(args[1], -1);
 				if (liczba < 0)
@@ -56,19 +55,19 @@ public class LosowyDropGracza extends Komenda implements Listener {
 	}
 
 	public static void zwiększ(CommandSender p, String nick, int ile) {
-		int s = Math.min(100, Gracze.gracz(nick).dropPoŚmierci + ile);
+		int s = Math.min(100, Gracz.wczytaj(nick).dropPoŚmierci + ile);
 		ustaw(p, nick, s);
 	}
 	public static void ustaw(CommandSender p, String nick, int szansa) {
-		Gracz gracz = Gracze.gracz(nick);
+		Gracz gracz = Gracz.wczytaj(nick);
 		gracz.dropPoŚmierci = szansa;
-		gracz.config.ustaw_zapisz("dropPoŚmierci", szansa);
+		gracz.zapisz();
 		Player p2 = Bukkit.getPlayer(nick);
 		p2.sendMessage(prefix + "Za pośrednictwem §e" + p.getName() + " §6 twoja szansa na nie wypadanie itemów to teraz: §e" + szansa + "%");
 		p.sendMessage(prefix + "Ustawiono graczowi §e" +  p2.getName() + "§6 szansa na nie wypadania itemów na: §e" + szansa + "%");	
 	}
 	public static void ustawWiększy(CommandSender p, String nick, int szansa) {
-		Gracz gracz = Gracze.gracz(nick);
+		Gracz gracz = Gracz.wczytaj(nick);
 		if (gracz.dropPoŚmierci < szansa)
 			ustaw(p, nick, szansa);
 		else
@@ -82,7 +81,7 @@ public class LosowyDropGracza extends Komenda implements Listener {
 		
 		Player p = ev.getEntity();
 		PlayerInventory inv = p.getInventory();
-		int szansa = Gracze.gracz(p.getName()).dropPoŚmierci;
+		int szansa = Gracz.wczytaj(p.getName()).dropPoŚmierci;
 		if (szansa == 0) return;
 		
 		ev.setKeepInventory(true);
@@ -96,9 +95,6 @@ public class LosowyDropGracza extends Komenda implements Listener {
 					inv.setItem(i, nic);
 				}
 		}
-		
-		
-		
 	}
 
 	@Override
