@@ -1,13 +1,8 @@
 package me.jomi.mimiRPG;
 
-import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -21,25 +16,9 @@ public class Moduły implements Przeładowalny {
 	static final List<Class<?>> klasy = Lists.newArrayList();
 	 
 	public Moduły() {
-		try {
-			JarFile jar = new JarFile("plugins/"+Main.plugin.getName()+".jar");
-			skanuj(jar.entries());
-			jar.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	private void skanuj(Enumeration<JarEntry> scieżki) {
-		while (scieżki.hasMoreElements()) {
-			String sc = scieżki.nextElement().toString();
-			if (!sc.endsWith(".class")) continue;
-			sc = sc.substring(0, sc.length()-6).replace('/', '.');
-			try {
-				Class<?> klasa = Class.forName(sc);
-				if (klasa.isAnnotationPresent(Moduł.class))
-					klasy.add(klasa);
-			} catch (Throwable e) {}
-		}
+		for (Class<?> clazz : Func.wszystkieKlasy())
+			if (clazz.isAnnotationPresent(Moduł.class))
+				klasy.add(clazz);
 	}
 	
 	@Override

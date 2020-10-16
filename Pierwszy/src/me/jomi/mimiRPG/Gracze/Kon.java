@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -23,10 +22,11 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowalne;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 
-public class Kon implements ConfigurationSerializable {
+public class Kon extends Mapowalne {
 	private static final int slotyEq 		= 3*9;
 	private static final int slotMały 		= 4*9 + 1;
 	private static final int slotStyl 		= 4*9 + 7;
@@ -52,15 +52,12 @@ public class Kon implements ConfigurationSerializable {
 	private int nrKolor = -1;
 	private int nrStyl = -1;
 	
-	@Override
-	public Map<String, Object> serialize() {
-		return Func.zmapuj(this);
-	}
 	public Kon(Map<String, Object> mapa) {
-		Func.zdemapuj(this, mapa);
+		super(mapa);
 		init();
 	}
 	public Kon(Gracz g) {
+		super(null);
 		właściciel = g.nick;
 		init();
 	}

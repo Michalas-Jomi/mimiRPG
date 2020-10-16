@@ -4,7 +4,6 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -29,10 +28,7 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 
-import me.jomi.mimiRPG.Bazy.Gildia;
 import me.jomi.mimiRPG.Chat.*;
-import me.jomi.mimiRPG.Gracze.Gracz;
-import me.jomi.mimiRPG.Gracze.Kon;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.AutoEventy;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
@@ -58,6 +54,7 @@ public class Main extends JavaPlugin {
 	public static JavaPlugin plugin;
 	public static Config ust;
 	public static String path;	
+	protected static ClassLoader classLoader;
 	
 	private void brakPluginu(String plugin) {
 		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
@@ -98,16 +95,16 @@ public class Main extends JavaPlugin {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void onLoad() {
 		plugin = this;
+		classLoader = this.getClassLoader();
 		path = getDataFolder().getPath() + '/';
 	
 		// Rejestrowanie ConfigurationSerializable
-		List<Class<? extends ConfigurationSerializable>> klasy = Arrays.asList(
-				Napis.class, Grupa.class, Gildia.class, Gracz.class, Kon.class
-				);
-		for (Class<? extends ConfigurationSerializable> clazz : klasy)
-			ConfigurationSerialization.registerClass(clazz);
+		for (Class<?> clazz : Func.wszystkieKlasy())
+			if (ConfigurationSerializable.class.isAssignableFrom(clazz))
+				ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) clazz);
 
 		ust = new Config("ustawienia");
 		

@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,16 @@ public abstract class Func {
 		for (Object u : uzupełnienia)
 			tekst = tekst.replaceFirst("%s", "§e" + u + "§6");
 		return "§6" + tekst + "§6";
+	}
+	
+	public static void napisz(String komu, String co) {
+		Player p = Bukkit.getPlayer(komu);
+		if (p != null)
+			p.sendMessage(co);
+	}
+	
+	public static long czasSekundy() {
+		return System.currentTimeMillis() / 1000;
 	}
 	
 	public static String DoubleToString(double liczba) {
@@ -439,7 +450,26 @@ public abstract class Func {
 		    }
 		return w.isEmpty() ? w : w.substring(1);
 	}
-	
+	public static List<Class<?>> wszystkieKlasy() {
+		List<Class<?>> lista = Lists.newArrayList();
+		try {
+			JarFile jar = new JarFile("plugins/"+Main.plugin.getName()+".jar");
+			Enumeration<JarEntry> scieżki = jar.entries();
+			while (scieżki.hasMoreElements()) {
+				String sc = scieżki.nextElement().toString();
+				if (!sc.endsWith(".class")) continue;
+				sc = sc.substring(0, sc.length()-6).replace('/', '.');
+				try {
+					lista.add(Class.forName(sc, false, Main.classLoader)); // XXX użyć tego w ModuleManagerze
+				} catch (Throwable e) {}
+			}
+			jar.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
 	public static String nieNullStr(String str) {
 		return str == null ? "" : str;
 	}
@@ -516,6 +546,9 @@ public abstract class Func {
 		p.sendMessage(msg);
 		return true;
 	}
+	public static boolean powiadom(String prefix, CommandSender sender, String msg, Object... uzupełnienia) {
+		return powiadom(sender, prefix + Func.msg(msg, uzupełnienia));
+	}
 
 	public static Inventory CloneInv(Inventory inv, String nazwa) {
 		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
@@ -586,5 +619,12 @@ public abstract class Func {
 		if (field.getType().isEnum())
 			return field.getType().getMethod("name").invoke(w);
 		return w;
+	}
+
+	public static <K, V> List<V> wezUstaw(Map<K, List<V>> mapa, K klucz) {
+		List<V> obj = mapa.get(klucz);
+		if (obj == null)
+			mapa.put(klucz, obj = Lists.newArrayList());
+		return obj;
 	}
 }

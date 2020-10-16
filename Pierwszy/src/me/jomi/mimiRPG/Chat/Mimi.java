@@ -5,10 +5,8 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Napis;
 
 public class Mimi extends Komenda {
 
@@ -35,8 +33,6 @@ public class Mimi extends Komenda {
 		p.sendMessage("§1§l~~§9Michałas§1§l~~");
 		p.sendMessage("");
 		p.sendMessage("§b>─────────{ §c§l◄§6mimiRPG§c§l► §b}─────────<");
-		
-		Napis.wczytaj(Func.listToString(args, 0)).wyświetl(p);
 		
 		return true;
 	}

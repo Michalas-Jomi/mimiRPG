@@ -188,14 +188,14 @@ class Mob {
 		if (_sekcja != null) {
 			atrybuty = Lists.newArrayList();
 			for (String attr : _sekcja.getKeys(false))
-				atrybuty.add(Krotka.stwórz(Attribute.valueOf(attr.toUpperCase()), _sekcja.getDouble(attr)));
+				atrybuty.add(new Krotka<>(Attribute.valueOf(attr.toUpperCase()), _sekcja.getDouble(attr)));
 		}
 		
 		_sekcja = sekcja.getConfigurationSection("Itemki");
 		if (_sekcja != null) {
 			eq = Lists.newArrayList();
 			for (Entry<String, Object> en : _sekcja.getValues(false).entrySet())
-				eq.add(Krotka.stwórz(EquipmentSlot.valueOf(slot(en.getKey())), Config.item(en.getValue())));
+				eq.add(new Krotka<>(EquipmentSlot.valueOf(slot(en.getKey())), Config.item(en.getValue())));
 		}
 	
 		if (sekcja.contains("Rumak"))

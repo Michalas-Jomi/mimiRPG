@@ -32,7 +32,10 @@ public class NowyEkwipunek {
 		for (int i=0; i<9*4+5; i++) 
 			itemy.add(inv.getItem(i));
 		
-		mapa.put(p.getName(), Krotka.stwórz(p.getLocation(), Krotka.stwórz(Poziom.policzCałyExp(p), Krotka.stwórz(p.getGameMode(), itemy))));
+		mapa.put(p.getName(),
+				new Krotka<>(p.getLocation(),
+						new Krotka<>(Poziom.policzCałyExp(p),
+								new Krotka<>(p.getGameMode(), itemy))));
 		
 		inv.clear();
 		p.setExp(0);

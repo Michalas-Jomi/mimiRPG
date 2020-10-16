@@ -1,14 +1,24 @@
 package me.jomi.mimiRPG;
 
+import java.util.Map;
 
-public class Krotka<T1, T2> {
-	public T1 a;
-	public T2 b;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
+public class Krotka<T1, T2> implements ConfigurationSerializable {
+	@Mapowane public T1 a;
+	@Mapowane public T2 b;
 	
-	public static <V1, V2> Krotka<V1, V2> stwórz(V1 a, V2 b) {
-		Krotka<V1, V2> krotka = new Krotka<V1, V2>();
-		krotka.a = a;
-		krotka.b = b;
-		return krotka;
+	public Krotka(T1 a, T2 b) {
+		this.a = a;
+		this.b = b;
+	}
+
+	
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
+	}
+	public Krotka(Map<String, Object> mapa) {
+		Func.zdemapuj(this, mapa);
 	}
 }
