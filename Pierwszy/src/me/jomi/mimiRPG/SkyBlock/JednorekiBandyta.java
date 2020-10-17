@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.Maszyny;
+package me.jomi.mimiRPG.SkyBlock;
 
 import java.util.Arrays;
 import java.util.HashMap;

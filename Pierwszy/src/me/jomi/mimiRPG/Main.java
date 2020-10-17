@@ -28,13 +28,14 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 
-import me.jomi.mimiRPG.Chat.*;
+import me.jomi.mimiRPG.Chat.Mimi;
+import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Miniony.Miniony;
-import me.jomi.mimiRPG.PojedynczeKomendy.AutoEventy;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
-import me.jomi.mimiRPG.Maszyny.*;
+import me.jomi.mimiRPG.SkyBlock.AutoEventy;
+import me.jomi.mimiRPG.SkyBlock.Budownik;
 
 public class Main extends JavaPlugin {
 	// Api Vaults

@@ -20,6 +20,8 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Gracze.Gracz;
 
+// TODO przeanalizować
+
 @Moduł
 public class Plecak extends Komenda implements Listener {
 	private static ItemStack zablokowanySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "&4Slot Niedostępny", Arrays.asList("Można odblokować pod komendą", "/menu"));
@@ -44,8 +46,12 @@ public class Plecak extends Komenda implements Listener {
 	public static void zamknij(InventoryCloseEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		Gracz gracz = Gracz.wczytaj(ev.getPlayer().getName());
-		for (int i=0; i<gracz.plecak.size(); i++)
-			gracz.plecak.set(i, ev.getInventory().getItem(i));
+		gracz.plecak.clear();
+		for (ItemStack item : ev.getInventory()) {
+			if (Func.porównaj(item, zablokowanySlot))
+				break;
+			gracz.plecak.add(item);
+		}
 		gracz.zapisz();
 	}
 	@EventHandler

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.Bazy;
+package me.jomi.mimiRPG.MineZ;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -309,7 +309,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			for (ProtectedRegion region : regiony(p.getWorld()).getApplicableRegions(locToVec3(p.getLocation()))) {
 				Baza baza = Baza.wczytaj(p.getWorld(), region);
 				if (baza != null) {
-					baza.usuń(); // TODO sprawdzić permisje do bazy (owner)
+					if (!baza.region.getOwners().contains(sender.getName()))
+						return Func.powiadom(prefix, sender, "To nie twoja baza");
+					baza.usuń();
 					sender.sendMessage(prefix + "Usunięto baza z pod twoich nóg");
 					return true;
 				}
@@ -320,7 +322,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			for (ProtectedRegion region : regiony(p.getWorld()).getApplicableRegions(locToVec3(p.getLocation()))) {
 				Baza baza = Baza.wczytaj(p.getWorld(), region);
 				if (baza != null) {
-					baza.ulepsz(2); // TODO sprawdzić permisje do bazy (owner)
+					if (!baza.region.getOwners().contains(sender.getName()))
+						return Func.powiadom(prefix, sender, "To nie twoja baza");
+					baza.ulepsz(2);
 					sender.sendMessage(prefix + "Ulepszono baze z pod twoich nóg");
 					return true;
 				}

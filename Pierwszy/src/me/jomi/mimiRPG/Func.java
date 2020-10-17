@@ -33,6 +33,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.Metadatable;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
@@ -569,6 +571,7 @@ public abstract class Func {
 	}
 
 	public static boolean porównaj(ItemStack item1, ItemStack item2) {
+		if (item1 == null || item2 == null) return item1 == item2;
 		ItemStack item1c = item1.clone();
 		ItemStack item2c = item2.clone();
 		item1c.setAmount(1);
@@ -626,5 +629,19 @@ public abstract class Func {
 		if (obj == null)
 			mapa.put(klucz, obj = Lists.newArrayList());
 		return obj;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> boolean multiEquals(T co, T... czemu) {
+		for (T _co : czemu)
+			if (co == null && _co == null)
+				return true;
+			else if (co != null && co.equals(_co))
+				return true;
+		return false;
+	}
+
+	public static void ustawMetadate(Metadatable naCzym, String id, Object value) {
+		naCzym.setMetadata(id, new FixedMetadataValue(Main.plugin, value));
 	}
 }

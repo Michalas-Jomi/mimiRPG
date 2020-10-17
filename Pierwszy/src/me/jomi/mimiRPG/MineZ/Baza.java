@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.Bazy;
+package me.jomi.mimiRPG.MineZ;
 
 import java.util.List;
 import java.util.Map;
@@ -96,13 +96,12 @@ public class Baza {
 		Bazy.inst.regiony(świat).removeRegion(region.getId());
 	}
 
-	// TODO karabiny
-	// TODO ceny
-	private void ulepsz(Supplier<BlockVector3> supplier, Consumer<BlockVector3> consumer, int xz, int y) {	
-		consumer.accept(supplier.get().add(xz, y, xz));
-	}
+	// TODO ceny surowkami
 	void ulepsz(int ile) {
 		ulepsz(region::getMaximumPoint, region::setMaximumPoint, ile, ile);
 		ulepsz(region::getMinimumPoint, region::setMinimumPoint, -ile, 0);
+	}
+	private void ulepsz(Supplier<BlockVector3> supplier, Consumer<BlockVector3> consumer, int xz, int y) {	
+		consumer.accept(supplier.get().add(xz, y, xz));
 	}
 }

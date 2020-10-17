@@ -9,10 +9,10 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Miniony.Minion;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.CustomoweItemy;
+import me.jomi.mimiRPG.SkyBlock.Budownik;
 
 public class Raport extends Komenda {
 	public static final String prefix = Func.prefix("Raport");

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.Bazy;
+package me.jomi.mimiRPG.MineZ;
 
 import java.util.List;
 import java.util.Map;
