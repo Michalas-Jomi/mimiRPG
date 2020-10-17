@@ -6,6 +6,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -48,6 +50,9 @@ public class Baza {
 		Gracz g = Gracz.wczytaj(p.getName());
 		Func.wezUstaw(g.bazy, świat.getName()).add(nazwaBazy);
 		g.zapisz();
+		
+		// ognisko to rdzeń bazy, zniszczenie ogniska = usunięcie bazy
+		Func.opóznij(1, () -> new Location(świat, x, y, z).getBlock().setType(Material.CAMPFIRE));
 	}
 	
 	static Baza wczytaj(int x, int y, int z, World świat, ItemStack item, BlockPlaceEvent ev, Map<String, Object> mapa) {

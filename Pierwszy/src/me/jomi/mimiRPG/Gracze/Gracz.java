@@ -22,11 +22,12 @@ public class Gracz extends Mapowalne {
 	@Mapowane public String kolorPisania = "";
 	@Mapowane public List<String> przyjaciele = Lists.newArrayList();
 	@Mapowane public List<ItemStack> plecak = Lists.newArrayList();
+	
 	// świat: lista id regionów
 	@Mapowane public HashMap<String, List<String>> bazy = new HashMap<>();
 	@Mapowane public String gildia;
 	
-	@Mapowane public Kon kon;	
+	@Mapowane public Kon kon;
 	
 	public void zapisz() {
 		new Config("configi/gracze/" + nick).ustaw_zapisz("gracz", this);
@@ -37,7 +38,7 @@ public class Gracz extends Mapowalne {
 		this.nick = nick;
 	}
 	public static Gracz wczytaj(String nick) {
-		return new Config("configi/gracze/" + nick).wczytajLubDomyślna("gracz", new Gracz(nick));
+		return new Config("configi/gracze/" + nick.toLowerCase()).wczytajLubDomyślna("gracz", new Gracz(nick));
 	}
 
 	public boolean posiadaGildie() {

@@ -9,11 +9,7 @@ import com.google.common.collect.Lists;
 public interface Zegar {
 	static final List<_Zegar> zegary = Lists.newArrayList();
 	static void aktywuj() {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-            public void run() {
-                aktywuj();
-            }
-        }, 1);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, Zegar::aktywuj, 1);
 		for (_Zegar zegar : zegary)
 			zegar.tick();
 	}

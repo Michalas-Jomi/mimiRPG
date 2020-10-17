@@ -2,25 +2,32 @@ package me.jomi.mimiRPG.MineZ;
 
 import java.util.Map;
 
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowalne;
 import me.jomi.mimiRPG.Mapowane;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class Karabin extends Mapowalne {
-	@Mapowane String nazwa = "abc";
+	@Mapowane EntityType typPocisku = EntityType.ARROW;
+	@Mapowane String nazwa = "Karabin";
+	@Mapowane double attackCooldown; // w sekundach
+	@Mapowane int przybliżenie = 1;
+	@Mapowane double dmg = 2;
 	@Mapowane ItemStack item;
 	@Mapowane ItemStack ammo;
-	@Mapowane double dmg;
-	@Mapowane double attackCooldown; // w sekundach
 	
 	public Karabin(Map<String, Object> mapa) {
 		super(mapa);
@@ -29,12 +36,15 @@ public class Karabin extends Mapowalne {
 	
 	void strzel(Player p) {
 		if (!minąłCooldown(p)) return;
-		if (!zabierzPocisk(p)) return; // XXX info o braku ammo
+		if (!zabierzPocisk(p)) {
+			p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak amunicji"));
+			return;
+		}
 		Vector wzrok = p.getLocation().getDirection();
-		Arrow pocisk = (Arrow) p.getWorld().spawnEntity(p.getEyeLocation(), EntityType.ARROW);
+		Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
 		pocisk.setMetadata("mimiPocisk", new FixedMetadataValue(Main.plugin, nazwa));
 		pocisk.setVelocity(wzrok.multiply(10));
-		// XXX dzwięk strzału
+		pocisk.setShooter(p);
 			
 		if (attackCooldown > 0) 
 			Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
@@ -60,4 +70,20 @@ public class Karabin extends Mapowalne {
 		}
 		return false;
 	}
+
+
+	public void przybliż(Player p) {
+		if (odbliż(p)) return;
+		p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20*60*60*2, przybliżenie, false, false, false));
+		Func.ustawMetadate(p, "mimiKarabinPrzybliżenie", true);
+	}
+	public static boolean odbliż(HumanEntity p) {
+		if (p.hasMetadata("mimiKarabinPrzybliżenie")) {
+			p.removePotionEffect(PotionEffectType.SLOW);
+			p.removeMetadata("mimiKarabinPrzybliżenie", Main.plugin);
+			return true;
+		}
+		return false;
+	}
 }
+

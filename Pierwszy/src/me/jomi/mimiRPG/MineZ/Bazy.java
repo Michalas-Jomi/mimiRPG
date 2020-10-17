@@ -31,7 +31,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -68,9 +70,7 @@ import me.jomi.mimiRPG.Zegar;
 import me.jomi.mimiRPG.Gracze.Gracz;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-// TODO opisać config
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
-// TODO ulepszanie
 @Moduł
 public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static final String prefix = Func.prefix("Baza");
@@ -205,6 +205,27 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
 		}
 	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void niszczenie(BlockBreakEvent ev) {
+		if (!ev.getBlock().getType().equals(Material.CAMPFIRE)) return;
+		
+		Location loc = ev.getBlock().getLocation();
+		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
+			Baza baza = Baza.wczytaj(loc.getWorld(), region);
+			if (baza != null) {
+				if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
+					Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
+					ev.setCancelled(true);
+					return;
+				}
+				baza.usuń();
+				ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", Func.listToString(
+						baza.region.getOwners().getPlayers(), 0, "§6, §e")));
+				return;
+			}
+		}
+	}
 	
 	boolean blokuj = false;
 	@SuppressWarnings("unchecked")
@@ -248,8 +269,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			}
 			
 			// Baza/Schemat
-			boolean zabierz = Baza.wczytaj(x, y, z, świat, item, ev, 
-					(Map<String, Object>) mapa.get("baza")) != null;
+			boolean zabierz = false;
 			
 			if (mapa.containsKey("schemat") && !blokuj && 
 					Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
@@ -257,6 +277,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 						.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
 					wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
 						zabierz = true;
+			
+			if (Baza.wczytaj(x, y, z, świat, item, ev, (Map<String, Object>) mapa.get("baza")) != null)
+				zabierz = true;
 			
 			blokuj = false;
 			
@@ -335,7 +358,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return true;
 	}
 	
-	
 	@Override
 	public int czas() {
 		Set<String> doUsunięcia = Sets.newConcurrentHashSet();
@@ -388,7 +410,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (p == null) return Func.powiadom(sender, Gildia.prefix + "Gracz nie jeste online");
 			
 			Gracz zaproszony = Gracz.wczytaj(p.getName());
-			if (zaproszony.gildia != null || !zaproszony.gildia.isEmpty())
+			if (!(zaproszony.gildia == null || zaproszony.gildia.isEmpty()))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("%s nalezy już do gildi %s", args[1], zaproszony.gildia));
 			
 			mapaZaproszeń.put(sender.getName(), new Krotka<>(p.getName(), czasZaproszeń));

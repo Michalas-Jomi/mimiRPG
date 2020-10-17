@@ -15,7 +15,7 @@ c4:
   SPRUCE_DOOR: OAK_DOOR
   # bloki których c4 nie rusza
   niezniszczalne:
-    - GRASS_BLOCK
+    - CAMPFIRE
     - BEDROCK
 
 # lista baz i schematów pod przedmiot
@@ -37,9 +37,9 @@ bazy:
     # dane bazy # opcjonalne
     baza:
       nazwa: Bazunia # opcjonalne domyślnie Baza
-      dx: 3  # wymagane dla bazy
+      dx: 5  # wymagane dla bazy
       dz: 5  # wymagane dla bazy
-      dy: 10 # wymagane dla bazy
+      dy: 10 # wymagane dla bazy # w dół liczy zawsze tylko 1 blok
 
     # c4 # opcjonalne 
     # jeśli jest baza i schemat nie funkcjonują

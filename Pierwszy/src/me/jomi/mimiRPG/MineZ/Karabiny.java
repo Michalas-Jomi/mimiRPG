@@ -1,6 +1,9 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
+
+import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -8,8 +11,14 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
@@ -29,7 +38,9 @@ public class Karabiny implements Listener, Przeładowalny {
 		Projectile pocisk = ev.getEntity();
 		if (!pocisk.hasMetadata("mimiPocisk")) return;
 		
+		Location loc = pocisk.getLocation();
 		pocisk.remove();
+		loc.getWorld().spawnParticle(Particle.CRIT, loc, 5, 0, 0, 0, .1);
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -45,20 +56,38 @@ public class Karabiny implements Listener, Przeładowalny {
 		ev.setDamage(karabin.dmg);
 	}
 	
-	
+	private Karabin karabin(ItemStack item) {
+		for (Karabin karabin : karabiny.values())
+			if (Func.porównaj(karabin.item, item))
+				return karabin;
+		return null;
+	}
 	@EventHandler
 	public void użycie(PlayerInteractEvent ev) {
-		if (!Func.multiEquals(ev.getAction(), Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK)) return;
+		if (ev.getAction().equals(Action.PHYSICAL)) return;
 		
-		ItemStack item = ev.getItem();
+		Karabin karabin = karabin(ev.getItem());
+		if (karabin == null) return;
 		
-		for (Karabin karabin : karabiny.values())
-			if (Func.porównaj(karabin.item, item)) {
-				karabin.strzel(ev.getPlayer());
-				return;
-			}
+		switch (ev.getAction()) {
+		case RIGHT_CLICK_AIR:
+		case RIGHT_CLICK_BLOCK:
+			karabin.strzel(ev.getPlayer());
+			break;
+		case LEFT_CLICK_AIR:
+		case LEFT_CLICK_BLOCK:
+			karabin.przybliż(ev.getPlayer());
+			break; // TODO member gildi nie może zniszczyć ogniska
+		default:
+			break;
+		}
 	}
-
+	@EventHandler public void __(PlayerQuitEvent ev)			{ Karabin.odbliż(ev.getPlayer()); }
+	@EventHandler public void __(PlayerDeathEvent ev)			{ Karabin.odbliż(ev.getEntity()); }
+	@EventHandler public void __(InventoryOpenEvent ev)			{ Karabin.odbliż(ev.getPlayer()); }
+	@EventHandler public void __(PlayerItemHeldEvent ev)		{ Karabin.odbliż(ev.getPlayer()); }
+	@EventHandler public void __(PlayerDropItemEvent ev)		{ Karabin.odbliż(ev.getPlayer()); }
+	@EventHandler public void __(PlayerSwapHandItemsEvent ev)	{ Karabin.odbliż(ev.getPlayer()); }
 	
 	@Override
 	public void przeładuj() {
@@ -71,7 +100,6 @@ public class Karabiny implements Listener, Przeładowalny {
 				Main.warn("Niepoprawny karabin " + klucz + " w Karabiny.yml");
 			}
 	}
-
 	@Override
 	public String raport() {
 		return "§6Wczytane karabiny: §e" + karabiny.size();

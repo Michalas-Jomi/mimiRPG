@@ -107,10 +107,12 @@ public abstract class Func {
 	public static String listToString(Object[] lista, int start, String wstawka) {
 		return listToString(Lists.newArrayList(lista), start, wstawka);
 	}
-	public static String listToString(List<?> lista, int start) {
+	
+	public static String listToString(Iterable<?> lista, int start) {
 		return listToString(lista, start, " ");
 	}
-	public static String listToString(List<?> lista, int start, String wstawka) {
+	public static String listToString(Iterable<?> Lista, int start, String wstawka) {
+		List<?> lista = Lists.newArrayList(Lista);
 		StringBuilder s = new StringBuilder(lista.size() > start ? ""+lista.get(start) : "");
 		int i=0;
 		for (Object obj : lista)
