@@ -4,17 +4,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Mapowalne;
+import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Mapowane;
 
-public class Gracz extends Mapowalne {
+public class Gracz implements ConfigurationSerializable {
 	public Gracz(Map<String, Object> mapa) {
-		super(mapa);
+		Func.zdemapuj(this, mapa);
+	}
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
 	}
 	
 	@Mapowane public String nick;
@@ -34,7 +39,6 @@ public class Gracz extends Mapowalne {
 	}
 
 	private Gracz(String nick) {
-		super(null);
 		this.nick = nick;
 	}
 	public static Gracz wczytaj(String nick) {

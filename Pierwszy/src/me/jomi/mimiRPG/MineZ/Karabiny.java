@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -77,7 +78,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		case LEFT_CLICK_AIR:
 		case LEFT_CLICK_BLOCK:
 			karabin.przybliż(ev.getPlayer());
-			break; // TODO member gildi nie może zniszczyć ogniska
+			break;
 		default:
 			break;
 		}
@@ -103,6 +104,19 @@ public class Karabiny implements Listener, Przeładowalny {
 	@Override
 	public String raport() {
 		return "§6Wczytane karabiny: §e" + karabiny.size();
+	}
+
+	
+	public static Set<String> getKarabiny() {
+		return karabiny.keySet();
+	}
+	public static ItemStack getAmmunicje(String karabin) {
+		Karabin k = karabiny.get(karabin);
+		return k == null ? null : k.ammo;
+	}
+	public static ItemStack getKarabin(String karabin) throws NullPointerException {
+		Karabin k = karabiny.get(karabin);
+		return k == null ? null : k.item;
 	}
 }
 

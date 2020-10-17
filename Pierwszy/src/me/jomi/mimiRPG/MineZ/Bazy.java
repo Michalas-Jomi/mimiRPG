@@ -75,7 +75,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;
-	Config config = new Config("Bazy");
+	static Config config = new Config("Bazy");
 	
 	static Bazy inst;
 	public Bazy() {
@@ -95,7 +95,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	@Override
 	public String raport() {
-		return "§6Itemy dla Baz/schematów/C4: §e" + ((List<?>) config.wczytaj("bazy")).size();
+		ConfigurationSection sekcja = config.sekcja("bazy");
+		return "§6Itemy dla Baz/schematów/C4: §e" + (sekcja == null ? 0 : sekcja.getKeys(false).size());
 	}
 	
 	@EventHandler
@@ -214,21 +215,29 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
 			Baza baza = Baza.wczytaj(loc.getWorld(), region);
 			if (baza != null) {
+				ev.setCancelled(true);
 				if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
 					Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
-					ev.setCancelled(true);
+					return;
+				}
+				if (baza.region.getMembers().contains(ev.getPlayer().getName())) {
+					Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć bazy członka twojej gildi");
 					return;
 				}
 				baza.usuń();
+				Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
 				ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", Func.listToString(
 						baza.region.getOwners().getPlayers(), 0, "§6, §e")));
+				for (String owner : baza.region.getOwners().getPlayers()) {
+					Player p = Bukkit.getPlayer(owner);
+					if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
+				}
 				return;
 			}
 		}
 	}
 	
 	boolean blokuj = false;
-	@SuppressWarnings("unchecked")
 	@EventHandler
 	public void stawianie(BlockPlaceEvent ev) {
 		World świat = ev.getBlock().getWorld();
@@ -245,9 +254,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.getPlayer().getEquipment().setItemInMainHand(item);
 				return 0;
 			};
-			
+			// FIXME me.jomi.mimiRPG.Func.zdemapuj(Func.java:587) 
 			// C4
-			Map<String, Object> mapaC4 = (Map<String, Object>) mapa.get("c4");
+			Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
 			if (mapaC4 != null) {
 				
 				float zasięg = (float) (double) mapaC4.getOrDefault("zasięg", 1f);
@@ -278,7 +287,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
 						zabierz = true;
 			
-			if (Baza.wczytaj(x, y, z, świat, item, ev, (Map<String, Object>) mapa.get("baza")) != null)
+			if (Baza.wczytaj(x, y, z, świat, item, ev, ((ConfigurationSection) mapa.get("baza")).getValues(false)) != null)
 				zabierz = true;
 			
 			blokuj = false;
@@ -287,11 +296,13 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				zabierzItem.get();
 		};
 		if (config.klucze(false).contains("bazy"))
-			for (Map<String, Object> mapa : (List<Map<String, Object>>) config.wczytaj("bazy"))
+			for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
+				Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
 				if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
 					wejście.accept(mapa);
 					return;
 				}
+			}
 	}
 	boolean wklejSchemat(String schematScieżka, World świat, int x, int y, int z) {
 		String scieżka = Main.path + schematScieżka;
@@ -507,6 +518,15 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	BlockVector3 locToVec3(Location loc) {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
+	}
+	
+	public static Set<String> getBazy() {
+		ConfigurationSection sekcja = config.sekcja("bazy");
+		if (sekcja == null) return Sets.newConcurrentHashSet();
+		return sekcja.getKeys(false);
+	}
+	public static ItemStack getBaze(String nazwa) {
+		return config.wczytajItem("bazy." + nazwa + ".item");
 	}
 }
 

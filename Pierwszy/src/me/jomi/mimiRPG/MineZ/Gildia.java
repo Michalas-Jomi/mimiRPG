@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -20,14 +21,17 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Mapowalne;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Gracze.Gracz;
 
-public class Gildia extends Mapowalne {
+public class Gildia implements ConfigurationSerializable {
 	public static final String prefix = Func.prefix("Gildia");
 	public Gildia(Map<String, Object> mapa) {
-		super(mapa);
+		Func.zdemapuj(this, mapa);
+	}
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
 	}
 
 	@Mapowane List<String> gracze = Lists.newArrayList();
@@ -42,8 +46,9 @@ public class Gildia extends Mapowalne {
 		if (nazwa == null) return null;
 		return (Gildia) config.wczytaj(nazwa);
 	}
+	private Gildia(){};
 	static Gildia stwórz(String nazwa, String przywódca) {
-		Gildia gildia = new Gildia(null);
+		Gildia gildia = new Gildia();
 		gildia.przywódca = przywódca;
 		gildia.nazwa = nazwa;
 		gildia.zapisz();

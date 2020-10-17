@@ -18,9 +18,9 @@ c4:
     - CAMPFIRE
     - BEDROCK
 
-# lista baz i schematów pod przedmiot
+# nazwa:  c4 / baza i/lub schemat pod przedmiot
 bazy:
-  -
+  baza1:
     # item który postawiony wywoła postawienie bazy i schematu
     item: 
       ==: org.bukkit.inventory.ItemStack

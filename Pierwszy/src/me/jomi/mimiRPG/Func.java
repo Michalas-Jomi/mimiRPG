@@ -588,9 +588,9 @@ public abstract class Func {
 			try {
 				if (en.getKey().equals("==")) continue;
 				Field field = clazz.getDeclaredField(en.getKey());
+				field.setAccessible(true);
 				if (!field.isAnnotationPresent(Mapowane.class))
 					throw new Throwable();
-				field.setAccessible(true);
 				if (field.getType().isEnum())
 					try {
 						field.set(obj, field.getType().getMethod("valueOf", String.class).invoke(null, en.getValue()));

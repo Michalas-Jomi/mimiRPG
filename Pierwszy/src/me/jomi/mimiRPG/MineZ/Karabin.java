@@ -2,36 +2,40 @@ package me.jomi.mimiRPG.MineZ;
 
 import java.util.Map;
 
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowalne;
 import me.jomi.mimiRPG.Mapowane;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-public class Karabin extends Mapowalne {
+public class Karabin implements ConfigurationSerializable {
 	@Mapowane EntityType typPocisku = EntityType.ARROW;
 	@Mapowane String nazwa = "Karabin";
 	@Mapowane double attackCooldown; // w sekundach
+	@Mapowane double siłaStrzału = 3;
 	@Mapowane int przybliżenie = 1;
 	@Mapowane double dmg = 2;
 	@Mapowane ItemStack item;
 	@Mapowane ItemStack ammo;
 	
 	public Karabin(Map<String, Object> mapa) {
-		super(mapa);
+		Func.zdemapuj(this, mapa);
 		Karabiny.karabiny.put(nazwa, this);
+	}
+	@Override
+	public Map<String, Object> serialize() {
+		return Func.zmapuj(this);
 	}
 	
 	void strzel(Player p) {
@@ -42,10 +46,11 @@ public class Karabin extends Mapowalne {
 		}
 		Vector wzrok = p.getLocation().getDirection();
 		Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
-		pocisk.setMetadata("mimiPocisk", new FixedMetadataValue(Main.plugin, nazwa));
-		pocisk.setVelocity(wzrok.multiply(10));
+		Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
+		pocisk.setVelocity(wzrok.multiply(siłaStrzału));
+		pocisk.setGravity(false);
 		pocisk.setShooter(p);
-			
+		
 		if (attackCooldown > 0) 
 			Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
 	}
@@ -70,7 +75,6 @@ public class Karabin extends Mapowalne {
 		}
 		return false;
 	}
-
 
 	public void przybliż(Player p) {
 		if (odbliż(p)) return;
