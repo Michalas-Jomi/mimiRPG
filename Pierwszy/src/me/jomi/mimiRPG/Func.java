@@ -26,7 +26,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -624,13 +623,23 @@ public abstract class Func {
 						Main.warn(String.format("Nieprawidłowa wartość wyliczeniowa \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
 								en.getValue(), en.getKey(), clazz.getName()));
 					}
-				else if (!field.getType().isInstance(en.getValue()) && ConfigurationSerializable.class.isAssignableFrom(field.getType()))
-					field.set(obj, field.getType().getConstructor(Map.class).newInstance(en.getValue()));
 				else
 					field.set(obj, en.getValue());
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
 			}
+
+		try {
+			for (Field field : clazz.getDeclaredFields()) {
+				field.setAccessible(true);
+				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null && 
+						List.class.isAssignableFrom(field.getType()))
+					field.set(obj, Lists.newArrayList());
+	
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 	public static Map<String, Object> zmapuj(Object obj) {
 		Map<String, Object> mapa = new HashMap<String, Object>();

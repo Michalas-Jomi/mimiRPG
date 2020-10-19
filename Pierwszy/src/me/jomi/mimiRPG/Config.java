@@ -32,10 +32,7 @@ public class Config {
 	}
 	
 	public void ustaw(String sciezka, Object obj) {
-		if (obj instanceof Mapowalne) // TODO użyć Mapowalnych zamiast ConfigurationSerializable
-			plik.set(sciezka, Func.zmapuj(obj));
-		else
-			plik.set(sciezka, _item(obj));
+		plik.set(sciezka, _item(obj));
 	}
 	@SuppressWarnings("unchecked")
 	private Object _item(Object item) {
@@ -52,18 +49,16 @@ public class Config {
 		return item;
 	}
 	public boolean ustawDomyślne(String sciezka, Object obj) {
-		if (wczytaj(sciezka) == null) {
-			ustaw(sciezka, obj);
-			return true;
-		}
-		return false;
+		if (wczytaj(sciezka) != null)
+			return false;
+		ustaw(sciezka, obj);
+		return true;
 	}
 	public boolean ustaw_zapiszDomyślne(String sciezka, Object obj) {
-		if (wczytaj(sciezka) == null) {
-			ustaw_zapisz(sciezka, obj);
-			return true;
-		}
-		return false;
+		if (wczytaj(sciezka) != null)
+			return false;
+		ustaw_zapisz(sciezka, obj);
+		return true;		
 	}
 	public void ustaw_zapisz(String sciezka, Object obj) {
 		ustaw(sciezka, obj);
@@ -85,20 +80,7 @@ public class Config {
 		return plik.getConfigurationSection(sc(sciezka));
 	}
 	
-	public Object wczytaj(String sciezka) {
-		String klasa = (String) plik.get(sciezka + "=mimi=");
-		if (klasa != null)
-			try {
-				Class<?> clazz = Class.forName(klasa); // TODO przetestować inicjalize
-				Map<String, Object> mapa = sekcja(sciezka).getValues(false);
-				mapa.remove("=mimi=");
-				Func.zdemapuj(clazz.newInstance(), mapa);
-			} catch (Throwable e) {
-				Main.warn("Niepoprawa klasa =mimi=: " + klasa + " w " + path());
-			}
-		
-		return plik.get(sciezka);
-	}
+	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}
 	public int 	   wczytajInt	 (String sciezka) {return plik.getInt(sciezka);}
 	public boolean wczytajBoolean(String sciezka) {return plik.getBoolean(sciezka);}
 	public String  wczytajStr	 (String sciezka) {return Func.koloruj(plik.getString(sciezka));}

@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.Minigry;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,10 @@ public class Test implements ConfigurationSerializable {
 	@Mapowane char zmiennaChar;
 	@Mapowane Location zmiennaLoc;
 	@Mapowane List<TestB> testbLista;
+
+	@Mapowane TestB testb1 = new TestB(new HashMap<>());
+	@Mapowane TestB testb2;
+	
 	
 	
 	public static class TestB implements ConfigurationSerializable {
