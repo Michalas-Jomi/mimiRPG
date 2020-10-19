@@ -46,12 +46,9 @@ public class Plecak extends Komenda implements Listener {
 	public static void zamknij(InventoryCloseEvent ev) {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		Gracz gracz = Gracz.wczytaj(ev.getPlayer().getName());
-		gracz.plecak.clear();
-		for (ItemStack item : ev.getInventory()) {
-			if (Func.porównaj(item, zablokowanySlot))
-				break;
-			gracz.plecak.add(item);
-		}
+		Inventory inv = ev.getInventory();
+		for (int i=0; i<gracz.plecak.size(); i++)
+			gracz.plecak.set(i, inv.getItem(i));
 		gracz.zapisz();
 	}
 	@EventHandler
@@ -65,8 +62,10 @@ public class Plecak extends Komenda implements Listener {
 	public static void ulepsz(Player p, String imie) {
 		Gracz gracz = Gracz.wczytaj(imie);
 		int sloty = gracz.plecak.size();
-		if (sloty >= 6*9) 
-			{p.sendMessage("Osiągnięto już maksymalny poziom plecaka"); return;}
+		if (sloty >= 6*9) {
+			p.sendMessage("Osiągnięto już maksymalny poziom plecaka");
+			return;
+		}
 		gracz.plecak.add(null);
 		gracz.zapisz();
 	}

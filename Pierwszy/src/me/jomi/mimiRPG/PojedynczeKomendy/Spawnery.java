@@ -34,6 +34,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -99,12 +100,12 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		ulepszenia.accept("Zasięg");
 	}
 	@Override
-	public String raport() {
+	public Krotka<String, Object> raport() {
 		int x = 0;
 		try {
 			x = Main.ust.sekcja("Spawnery.ulepszenia").getKeys(false).size();
 		} catch (Exception e) {}
-		return "§6wczytane ulepszenia: §e" + x;
+		return Func.r("wczytane ulepszenia", x);
 	}
 	
 	void edytuj(Player p, CreatureSpawner spawner) {

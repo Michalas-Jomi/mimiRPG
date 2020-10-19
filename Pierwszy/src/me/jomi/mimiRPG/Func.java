@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -49,11 +50,35 @@ public abstract class Func {
 			tekst = tekst.replaceFirst("%s", "§e" + u + "§6");
 		return "§6" + tekst + "§6";
 	}
+	// podręczny raport
+	public static Krotka<String, Object> r(String info, Object stan) {
+		return new Krotka<>(info, stan);
+	}
 	
 	public static void napisz(String komu, String co) {
 		Player p = Bukkit.getPlayer(komu);
 		if (p != null)
 			p.sendMessage(co);
+	}
+	
+	public static String odpolszcz(String text) {
+		char[] znaki = text.toLowerCase().toCharArray();
+		int i = 0;
+		for (char c : znaki) {
+			switch(c) {
+			case 'ą': c = 'a'; break;
+			case 'ć': c = 'c'; break;
+			case 'ę': c = 'e'; break;
+			case 'ł': c = 'l'; break;
+			case 'ń': c = 'n'; break;
+			case 'ó': c = 'o'; break;
+			case 'ś': c = 's'; break;
+			case 'ź': c = 'z'; break;
+			case 'ż': c = 'z'; break;
+			}
+			znaki[i++] = c;
+		}
+		return new String(znaki);
 	}
 	
 	public static long czasSekundy() {
@@ -397,7 +422,8 @@ public abstract class Func {
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
-	public static <T> T losuj(List<T> lista) {
+	public static <T> T losuj(Iterable<T> zCzego) {
+		List<T> lista = Lists.newArrayList(zCzego);
 		if (lista.isEmpty())
 			return null;
 		return lista.get(losuj(0, lista.size()-1));
@@ -595,9 +621,11 @@ public abstract class Func {
 					try {
 						field.set(obj, field.getType().getMethod("valueOf", String.class).invoke(null, en.getValue()));
 					} catch (Throwable _e) {
-						Main.warn(String.format("Nieprawidłowa wartość \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
+						Main.warn(String.format("Nieprawidłowa wartość wyliczeniowa \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
 								en.getValue(), en.getKey(), clazz.getName()));
 					}
+				else if (!field.getType().isInstance(en.getValue()) && ConfigurationSerializable.class.isAssignableFrom(field.getType()))
+					field.set(obj, field.getType().getConstructor(Map.class).newInstance(en.getValue()));
 				else
 					field.set(obj, en.getValue());
 			} catch (Throwable e) {
@@ -643,6 +671,14 @@ public abstract class Func {
 		return false;
 	}
 
+	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func) {
+		wykonajDlaNieNull(obj, func, obj);
+	}
+	public static <T> void wykonajDlaNieNull(Object obj, Consumer<T> func, T parametr) {
+		if (obj != null)
+			func.accept(parametr);
+	}
+	
 	public static void ustawMetadate(Metadatable naCzym, String id, Object value) {
 		naCzym.setMetadata(id, new FixedMetadataValue(Main.plugin, value));
 	}

@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -53,8 +54,8 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		for (String nick : gracze)
 			Itemy.addAll((List<ItemStack>) config.wczytaj(nick));
 	}
-	public String raport() {
-		return "§6Itemy Targu: §e" + Itemy.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Itemy Targu", Itemy.size());
 	}
 	private static ItemStack przetwórzItem(ItemStack item, double cena, String gracz) {
 		ItemMeta meta = item.getItemMeta();

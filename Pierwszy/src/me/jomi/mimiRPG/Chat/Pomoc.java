@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
 
@@ -41,8 +42,8 @@ public class Pomoc extends Komenda implements Przeładowalny{
 	}
 
 	@Override
-	public String raport() {
-		return "§6Pomoce: §e" + config.klucze(false).size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Pomoce", config.klucze(false).size());
 	}
 	
 }

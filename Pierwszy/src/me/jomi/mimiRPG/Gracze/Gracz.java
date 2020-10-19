@@ -12,6 +12,10 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Minigry.Paintball;
+
+// TODO zablokować 
+
 
 public class Gracz implements ConfigurationSerializable {
 	public Gracz(Map<String, Object> mapa) {
@@ -34,8 +38,10 @@ public class Gracz implements ConfigurationSerializable {
 	
 	@Mapowane public Kon kon;
 	
+	@Mapowane public Paintball.Statystyki statypb;
+	
 	public void zapisz() {
-		new Config("configi/gracze/" + nick).ustaw_zapisz("gracz", this);
+		new Config("configi/gracze/" + nick.toLowerCase()).ustaw_zapisz("gracz", this);
 	}
 
 	private Gracz(String nick) {

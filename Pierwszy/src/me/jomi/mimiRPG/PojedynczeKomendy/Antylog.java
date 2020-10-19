@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -72,7 +73,7 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 		info(nick);
 	}
 
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void uderzenie(EntityDamageByEntityEvent ev) {
 		if (!(ev.getDamager() instanceof Player && ev.getEntity() instanceof Player)) return;
 
@@ -134,7 +135,7 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 	}
 
 	@Override
-	public String raport() {
-		return Func.msg("Dozwolone Komendy Antyloga: %s", dozwolone.size());
+	public Krotka<String, Object> raport() {
+		return Func.r("Dozwolone Komendy Antyloga", dozwolone.size());
 	}
 }

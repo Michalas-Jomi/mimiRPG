@@ -97,8 +97,8 @@ public class CustomoweMoby implements Zegar, Przeładowalny {
 		
 	}
 	@Override
-	public String raport() {
-		return "§6Customwe Moby: §e" + mapaMobów.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Customwe Moby", mapaMobów.size());
 	}
 	
 	public boolean day(World świat) {

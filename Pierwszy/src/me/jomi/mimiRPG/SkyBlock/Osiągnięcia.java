@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
@@ -55,11 +56,11 @@ public class Osiągnięcia implements Listener, Przeładowalny{
 					Main.plugin.getLogger().warning(prefix + "§cNie odnaleziono w osiągnięcia.yml osiągnięcia §4" + klucz);
 		}
 	}
-	public String raport() {
+	public Krotka<String, Object> raport() {
 		int ile = 0;
 		for (List<OsiągnięciaInst> lista : mapa.values())
 			ile += lista.size();
-		return "§6Osiągnięcia: §e" + ile;
+		return Func.r("Osiągnięcia", ile);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)

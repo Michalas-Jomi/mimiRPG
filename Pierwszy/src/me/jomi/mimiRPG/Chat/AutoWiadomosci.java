@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
@@ -20,12 +21,14 @@ public class AutoWiadomosci implements Przeładowalny, Zegar {
 	private int timer = 0;
 	private Napis ostatnia = null;
 	
+	@Override
 	public int czas() {
 		if (timer >= 0)
 			wyślij();
 		return timer;
 	}
 	
+	@Override
 	public void przeładuj() { 
 		wiadomości.clear();
 		doWysłania.clear();
@@ -33,8 +36,9 @@ public class AutoWiadomosci implements Przeładowalny, Zegar {
 		doWysłania = Lists.newArrayList(wiadomości);
 		timer = Main.ust.wczytajInt("AutoWiadomosci.czas") * 20;
 	}
-	public String raport() {
-		return "§6Atomatyczne Wiadomości: §e" + wiadomości.size();
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Atomatyczne Wiadomości", wiadomości.size());
 	}
 	
 	public void wyślij() {

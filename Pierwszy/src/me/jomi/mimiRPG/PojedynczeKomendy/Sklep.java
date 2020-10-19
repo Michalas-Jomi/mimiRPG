@@ -28,6 +28,7 @@ import com.iridium.iridiumskyblock.User;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -80,8 +81,8 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 	}
 
 	@Override
-	public String raport() {
-		return "§6Wczytane Strony Sklepu: §e" + strony.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Wczytane Strony Sklepu", strony.size());
 	}
 
 	@Override

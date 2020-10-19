@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -102,8 +103,8 @@ public class Karabiny implements Listener, Przeładowalny {
 			}
 	}
 	@Override
-	public String raport() {
-		return "§6Wczytane karabiny: §e" + karabiny.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Wczytane karabiny", karabiny.size());
 	}
 
 	

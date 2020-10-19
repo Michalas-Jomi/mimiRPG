@@ -33,6 +33,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.MenuStronne;
 import me.jomi.mimiRPG.Moduł;
@@ -201,8 +202,8 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 			poprawne = false;
 		}
 	}
-	public String raport() {
-		return "§6menu.json: " + (poprawne ? "§aPoprawny" : "§cNie poprawny");
+	public Krotka<String, Object> raport() {
+		return Func.r("menu.json", poprawne ? "§aPoprawny" : "§cNie poprawny");
 	}
 
 	@EventHandler

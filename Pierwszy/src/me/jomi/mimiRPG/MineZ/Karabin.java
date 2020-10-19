@@ -48,7 +48,6 @@ public class Karabin implements ConfigurationSerializable {
 		Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
 		Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
 		pocisk.setVelocity(wzrok.multiply(siłaStrzału));
-		pocisk.setGravity(false);
 		pocisk.setShooter(p);
 		
 		if (attackCooldown > 0) 

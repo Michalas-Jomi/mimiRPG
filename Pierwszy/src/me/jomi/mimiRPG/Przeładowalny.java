@@ -6,5 +6,5 @@ public interface Przeładowalny {
 	public static final HashMap<String, Przeładowalny> przeładowalne = new HashMap<>();
 	
 	public void przeładuj();
-	public String raport();
+	public Krotka<String, Object> raport();
 }

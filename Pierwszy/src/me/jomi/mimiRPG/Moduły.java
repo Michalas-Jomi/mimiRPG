@@ -8,6 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import com.google.common.collect.Lists;
 
+import me.jomi.mimiRPG.Chat.Raport;
+
 public class Moduły implements Przeładowalny {
 	int włączone = 0;
 	
@@ -26,8 +28,8 @@ public class Moduły implements Przeładowalny {
 		włącz(Main.ust.sekcja("Moduły"));
 	}
 	@Override
-	public String raport() {
-		return "§6Włączone Moduły: §e" + włączone + "§6/§e" + klasy.size();
+	public Krotka<String, Object> raport() {
+		return Func.r(Raport.raport(Func.r("Włączone Moduły", włączone)) + "/", klasy.size());
 	}
 	
 	public void włącz(ConfigurationSection sekcja) {

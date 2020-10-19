@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
@@ -33,6 +34,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 	private Napis offline;
 	private Napis zawsze;
 	private int ilość;
+	@Override
 	public void przeładuj() {
 		ilość = 0;
 		ogólne  = wczytaj("ogólne");
@@ -49,8 +51,9 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 		return napis;
 	}
 	
-	public String raport() {
-		return "§6Przyjaciele: §e" + ilość + " komend";
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Komendy Przyjaciół", ilość);
 	}
 	
 	private void zaproś(Player p1, Player p2) {

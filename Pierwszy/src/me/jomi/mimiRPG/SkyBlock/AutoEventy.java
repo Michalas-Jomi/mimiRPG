@@ -28,6 +28,7 @@ import com.google.common.collect.Sets;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
@@ -83,8 +84,8 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 		czas = maxCzas;
 	}
 	@Override
-	public String raport() {
-		return "§6Wczytane Eventy: §e" + dajEventy().size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Wczytane Eventy", dajEventy().size());
 	}
 	
 	final HashMap<String, EventEdytor> mapaEdytorów = new HashMap<>();

@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -82,8 +83,8 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		msgOstrzegawcze  = Func.koloruj(Main.ust.wczytajStr("Kosz.msgOstrzegawcze"));
 		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz.ostrzerzenia");
 	}
-	public String raport() {
-		return "§6Kosz: §e" + (maxTimer != -1 ? (maxTimer + "s §6 między czyszczeniami") : "§cWyłaczony");
+	public Krotka<String, Object> raport() {
+		return Func.r("Kosz", (maxTimer != -1 ? (maxTimer + "s §6 między czyszczeniami") : "§cWyłaczony"));
 	}
 
 	@Override

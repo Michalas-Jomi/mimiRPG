@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -33,12 +34,12 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 		Baza.config.przeładuj();
 	}
 	@Override
-	public String raport() {
+	public Krotka<String, Object> raport() {
 		int x = 0;
 		try {
 			x = dajRespy().size();
 		} catch (Exception e) {}
-		return "§6randomowe respy: §e" + x; 
+		return Func.r("randomowe respy", x);
 	}
 	
 	final String scieżka = "Randomowe Respy";

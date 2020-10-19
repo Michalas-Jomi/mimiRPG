@@ -21,4 +21,8 @@ public class Krotka<T1, T2> implements ConfigurationSerializable {
 	public Krotka(Map<String, Object> mapa) {
 		Func.zdemapuj(this, mapa);
 	}
+
+	public String toString() {
+		return "§r(" + a.toString() + "§r, " + b.toString() + "§r)";
+	}
 }

@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
@@ -59,8 +60,8 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 		if (ost != null)
 			ost.wczytany();
 	}
-	public String raport() {
-		return "§6Automaty Jednorękiego Bandyty: §e" + automaty.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Automaty Jednorękiego Bandyty", automaty.size());
 	}
 	
 	private static final HashMap<String, AutomatTworzony> mapaTworzycieli = new HashMap<>();

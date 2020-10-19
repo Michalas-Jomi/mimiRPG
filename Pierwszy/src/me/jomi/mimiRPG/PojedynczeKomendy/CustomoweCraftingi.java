@@ -14,6 +14,7 @@ import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -52,9 +53,11 @@ public class CustomoweCraftingi implements Przeładowalny {
 		dodaj(klucz, item, arr, mapa);
 	}
 	
+	@Override
 	public void przeładuj() {
 		config.przeładuj();
 		
+		// TODO wydzielić
 		// Usuwanie niechcianych craftingów
 		for (Object przepis :  Main.ust.wczytajLubDomyślna("ZablokowaneCraftingi", Lists.newArrayList()))
 			Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
@@ -62,7 +65,8 @@ public class CustomoweCraftingi implements Przeładowalny {
 		for (String klucz : config.klucze(false))
 			wczytaj(klucz);
 	}
-	public String raport() {
-		return "§6Customowe Craftingi: §e" + config.klucze(false).size();
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Customowe Craftingi", config.klucze(false).size());
 	}
 }

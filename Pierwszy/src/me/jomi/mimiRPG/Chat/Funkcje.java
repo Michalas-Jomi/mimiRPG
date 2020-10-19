@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -52,8 +53,8 @@ public class Funkcje extends Komenda implements Przeładowalny {
 			folder.mkdirs();
 		skanuj(folder);
 	}
-	public String raport() {
-		return "§6Funkcje: §e" + mapa.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Funkcje", mapa.size());
 	}
 	private void skanuj(File folder) {
 		for (File plik : folder.listFiles())

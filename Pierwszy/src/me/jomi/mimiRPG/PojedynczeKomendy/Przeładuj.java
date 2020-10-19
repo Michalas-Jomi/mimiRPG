@@ -11,6 +11,7 @@ import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.Chat.Raport;
 
 public class Przeładuj extends Komenda {
 
@@ -47,7 +48,7 @@ public class Przeładuj extends Komenda {
 	}
 	private void przeładuj(CommandSender sender, Przeładowalny p) {
 		p.przeładuj();
-		String r = p.raport();
+		String r = Raport.raport(p);
 		if (sender instanceof Player)
 			sender.sendMessage(r);
 		Main.log(r);

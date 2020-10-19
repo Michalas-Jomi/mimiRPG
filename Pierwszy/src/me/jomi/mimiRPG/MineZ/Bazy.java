@@ -94,9 +94,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		config.przeładuj();
 	}
 	@Override
-	public String raport() {
+	public Krotka<String, Object> raport() {
 		ConfigurationSection sekcja = config.sekcja("bazy");
-		return "§6Itemy dla Baz/schematów/C4: §e" + (sekcja == null ? 0 : sekcja.getKeys(false).size());
+		return Func.r("Itemy dla Baz/schematów/C4", (sekcja == null ? 0 : sekcja.getKeys(false).size()));
 	}
 	
 	@EventHandler
@@ -207,7 +207,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void niszczenie(BlockBreakEvent ev) {
 		if (!ev.getBlock().getType().equals(Material.CAMPFIRE)) return;
 		
@@ -238,7 +238,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	
 	boolean blokuj = false;
-	@EventHandler
+	@EventHandler // TODO stawianie na ścianie bazy poza bazą c4
 	public void stawianie(BlockPlaceEvent ev) {
 		World świat = ev.getBlock().getWorld();
 		ItemStack item = ev.getPlayer().getEquipment().getItemInMainHand();
@@ -254,10 +254,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.getPlayer().getEquipment().setItemInMainHand(item);
 				return 0;
 			};
-			// FIXME me.jomi.mimiRPG.Func.zdemapuj(Func.java:587) 
+
 			// C4
-			Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
-			if (mapaC4 != null) {
+			
+			if (mapa.containsKey("c4")) {
+				Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
 				
 				float zasięg = (float) (double) mapaC4.getOrDefault("zasięg", 1f);
 				int czas   	 = (int)   			mapaC4.getOrDefault("czas",   1);
@@ -457,7 +458,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			break;
 		case "stwórz":
 		case "stworz":
-			if (args.length < 2) return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa>");
+			if (args.length < 2)
+				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa>");
 			
 			if (Gildia.istnieje(args[1]))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("gildia %s już istnieje", args[1]));

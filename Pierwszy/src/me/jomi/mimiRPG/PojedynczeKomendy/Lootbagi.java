@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Napis;
 import me.jomi.mimiRPG.Przeładowalny;
@@ -55,8 +56,8 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 		for (String klucz : config.klucze(false))
 			Lootbag.wczytaj(config, klucz);
 	}
-	public String raport() {
-		return "§6Lootbagi: §e" + lootbagi.size();
+	public Krotka<String, Object> raport() {
+		return Func.r("Lootbagi", lootbagi.size());
 	}
 	
 	@EventHandler

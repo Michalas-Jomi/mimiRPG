@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Miniony.Minion;
@@ -31,7 +32,7 @@ public class Raport extends Komenda {
 			Przeładowalny p = Przeładowalny.przeładowalne.get(args[0]);
 			if (p == null) return Func.powiadom(sender, prefix + "Nieprawidłowa sekcja");
 			sender.sendMessage("\n\n\n§6~~~~~~§emimiRaport§6~~~~~~\n");
-			sender.sendMessage(p.raport());
+			sender.sendMessage(raport(p));
 			sender.sendMessage("");
 			return true;
 		}
@@ -49,8 +50,14 @@ public class Raport extends Komenda {
 		if (Main.włączonyModół(Budownik.class))
 			sender.sendMessage("§6Aktywne Budowniki:§e " + Budownik.budowniki.size());
 		for (Przeładowalny p : Przeładowalny.przeładowalne.values())
-			sender.sendMessage(p.raport());
+			sender.sendMessage(raport(p));
 		return true;
 	}
 
+	public static String raport(Przeładowalny p) {
+		return raport(p.raport());
+	}
+	public static String raport(Krotka<String, Object> raport) {
+		return "§6" + raport.a + ": §e" + raport.b;	
+	}
 }

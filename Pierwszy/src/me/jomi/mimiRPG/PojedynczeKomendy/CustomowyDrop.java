@@ -19,8 +19,10 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.Chat.Raport;
 
 @Moduł
 public class CustomowyDrop implements Listener, Przeładowalny {
@@ -45,9 +47,10 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			wszystko += lista.size();
 		_moby = wszystko - _bloki;
 	}
-	public String raport() {
-		return "§6Customowe Dropy z bloków: §e" + _bloki + 
-		 "\n" + "§6Customowe Dropy z mobów: §e" + _moby;
+	public Krotka<String, Object> raport() {
+		return Func.r(
+				Raport.raport(Func.r("Customowe Dropy z bloków", _bloki)) + "\n" 
+				+ "Customowe Dropy z mobów", _moby);
 			
 	}
 	

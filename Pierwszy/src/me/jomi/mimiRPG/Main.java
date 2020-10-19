@@ -30,6 +30,7 @@ import com.sk89q.worldguard.protection.flags.StringFlag;
 
 import me.jomi.mimiRPG.Chat.Mimi;
 import me.jomi.mimiRPG.Chat.Raport;
+import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
@@ -106,7 +107,7 @@ public class Main extends JavaPlugin {
 		for (Class<?> clazz : Func.wszystkieKlasy())
 			if (ConfigurationSerializable.class.isAssignableFrom(clazz))
 				ConfigurationSerialization.registerClass((Class<? extends ConfigurationSerializable>) clazz);
-
+		
 		ust = new Config("ustawienia");
 		
 		włączWorldGuard();
@@ -130,7 +131,7 @@ public class Main extends JavaPlugin {
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
-		pluginEnabled = true;
+		pluginEnabled = true;        
 	}
 	@Override
 	public void onDisable() {
@@ -151,6 +152,8 @@ public class Main extends JavaPlugin {
 			Budownik.wyłączanie();
 		if (włączonyModół(AutoEventy.class))
 			AutoEventy.wyłącz();
+		if (włączonyModół(Paintball.class))
+			Paintball.wyłącz();
 	}
 
 	static boolean pluginEnabled = false;
