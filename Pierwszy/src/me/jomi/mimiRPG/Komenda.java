@@ -53,7 +53,6 @@ public abstract class Komenda implements TabExecutor {
 		PluginCommand cmd = Main.plugin.getCommand(komenda);
 		cmd.setTabCompleter(this);
 		cmd.setExecutor(this);
-		cmd.setUsage(użycie);
 	}
 	private PluginCommand komenda(String nazwa, String użycie, List<String> aliasy) throws Exception {
 		Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);

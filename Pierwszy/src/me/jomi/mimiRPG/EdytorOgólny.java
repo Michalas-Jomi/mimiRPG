@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
@@ -50,11 +49,11 @@ public class EdytorOgólny {
 			throw new Throwable();
 		} catch (Throwable e) {
 			if (edytor == null)
-				return Func.powiadom(sender, "§9Aktualnie nie edytujesz nic\n§9użyj -edytor <nazwapliku>|<śccieżka w pliku>\n"
+				return Func.powiadom(sender, "§9Aktualnie nie edytujesz nic\n§9użyj edytor -t <nazwapliku>|<śccieżka w pliku>\n"
 						+ "§9np.: /" + label + " edytor -t configi/testy/test|test1.test2.inne testy.akt\n§9Aby zakończyć edycja"
 								+ " bez zapisu wpisz /" + label + " edytor -u");
 		}
-		sender.sendMessage("\n\n\n§5\"" + edytor.ścieżka + "\" " + edytor.config.path());
+		sender.sendMessage("\n\n\n\n\n§5\"" + edytor.ścieżka + "\" " + edytor.config.path());
 		return edytor.onCommand(args);
 	}
 	
@@ -82,7 +81,7 @@ public class EdytorOgólny {
 			
 			if (obiekt == null)
 				try {
-					obiekt = clazz.getConstructor(Map.class).newInstance(new HashMap<>());
+					obiekt = Func.utwórz(clazz);
 				} catch (Throwable e) {}
 		}
 		
@@ -99,6 +98,7 @@ public class EdytorOgólny {
 				sender.sendMessage("§cNie ingeruj w edytor");
 			}
 			try {
+				sender.sendMessage("§5" + clazz);
 				edytor(obiekt, "§0", "edytor", komenda + " ", false).dodaj(new Napis("\n§a[zatwierdz]", "§bKliknij aby zatwierdzić", komenda + " edytor -zatwierdz")).dodaj("\n").wyświetl(sender);
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -152,11 +152,7 @@ public class EdytorOgólny {
 			try {
 				consumer.accept(domyślna(clazz));
 			} catch (Throwable e1) {
-				try {
-					consumer.accept(clazz.getConstructor(Map.class).newInstance(new HashMap<>()));
-				} catch(Throwable e2) {	
-					consumer.accept(clazz.newInstance());
-				}
+				consumer.accept(Func.utwórz(clazz));
 			}			
 		}
 		Object domyślna (Class<?> klasa) throws Throwable {

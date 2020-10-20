@@ -12,13 +12,11 @@ public abstract class Mapowany implements ConfigurationSerializable {
 			obj = (Mapowany) Class.forName(klasa).newInstance();
 		} catch (ClassNotFoundException e) {
 			Main.error("Nieodnaleziono klasy " + klasa);
-		} catch (Throwable e) {
-			Main.error("Przesłonięty konstruktor w mapowalnej klasie " + klasa);
-		}
+		} catch (Throwable e) {}
 		
 		Func.zdemapuj(obj, mapa);
 		
-		try { 
+		try {
 			obj.getClass().getDeclaredMethod("Init").invoke(obj);
 		} catch (Throwable e) {};
 		
@@ -31,5 +29,4 @@ public abstract class Mapowany implements ConfigurationSerializable {
 		mapa.put("==", "me.jomi.mimiRPG.Mapowany");
 		return mapa;
 	}
-
 }

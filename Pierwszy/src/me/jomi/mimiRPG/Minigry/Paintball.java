@@ -38,7 +38,6 @@ import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Cooldown;
-import me.jomi.mimiRPG.EdytorOgólny;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.KolorRGB;
 import me.jomi.mimiRPG.Komenda;
@@ -51,6 +50,7 @@ import me.jomi.mimiRPG.NowyEkwipunek;
 import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Zegar;
 import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.Minigry.Paintball.Statystyki.Rangi;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -69,11 +69,11 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 	static final Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
 	
 	static final HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
-	final Config config = new Config("configi/minigry/Paintball");
+	final Config configAreny = new Config("configi/minigry/PaintballAreny");
+	final Config configRangi = new Config("configi/minigry/PaintballRangi");
+	static Statystyki.Rangi rangi;
 	
 	static Arena zaczynanaArena;
-	
-	EdytorOgólny edytor = new EdytorOgólny("paintball", Arena.class);
 	
 	public Paintball() {
 		super("paintball", null, "pb");
@@ -448,7 +448,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		Color kolor;
 		String napisy;
 		
-		void Init() {
+		public void Init() {
 			this.kolor 	= kolorRGB.kolor();
 			this.napisy = kolorRGB.kolorChat();	
 		}
@@ -466,6 +466,20 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 	}
 	
 	public static class Statystyki extends Mapowany {
+		public static class Rangi extends Mapowany {
+			@Mapowane public List<Ranga> rangi;
+			
+			public boolean rozpisz(CommandSender p) {
+				
+				p.sendMessage(" ");
+				p.sendMessage("§9Rangi Paintaballa:");
+				p.sendMessage(" ");
+				for (Ranga ranga : rangi)
+					p.sendMessage(ranga.toString() + "§8: §e" + Func.IntToString(ranga.potrzebnePunkty) + "pkt");
+				p.sendMessage(" ");
+				return true;
+			}
+		}
 		public static class Ranga extends Mapowany {
 			@Mapowane public KolorRGB kolor = new KolorRGB();
 			@Mapowane public int potrzebnePunkty;
@@ -532,7 +546,13 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		}
 		
 		static String ranga(int pkt) {
-			return "rangi"; // TODO rangi
+			Ranga ranga = null;
+			
+			for (Ranga _ranga : rangi.rangi)
+				if (_ranga.potrzebnePunkty < pkt && (ranga == null || ranga.potrzebnePunkty < _ranga.potrzebnePunkty))
+					ranga = _ranga;
+			
+			return ranga == null ? "brak" : ranga.toString();
 		}
 	}
 	
@@ -664,20 +684,20 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 	
 	@Override
 	public void przeładuj() {
-		config.przeładuj();
+		configAreny.przeładuj();
 		
 		wyłącz("Przeładowywanie pluginu");
 		
 		mapaAren.clear();
-		for (String klucz : config.klucze(false))
+		for (String klucz : configAreny.klucze(false))
 			try {
-				Arena arena = (Arena) config.wczytaj(klucz);
+				Arena arena = (Arena) configAreny.wczytaj(klucz);
 				arena.nazwa = klucz;
 				if (!arena.poprawna())
 					throw new Throwable();
 				mapaAren.put(klucz, arena);
 			} catch (Throwable e) {
-				Main.warn("Niepoprawna arena paintballa " + klucz + " w " + config.path());
+				Main.warn("Niepoprawna arena paintballa " + klucz + " w " + configAreny.path());
 			}
 		
 		dozwoloneKomendy.clear();
@@ -685,6 +705,12 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		dozwoloneKomendy.add("pb");
 		for (String komenda : Main.ust.wczytajListe("Minigry.Dozwolone komendy"))
 			dozwoloneKomendy.add(komenda.startsWith("/") ? "/" + komenda : komenda);
+
+		configRangi.przeładuj();
+		
+		rangi = (Rangi) configRangi.wczytaj("rangi");
+		if (rangi == null)
+			rangi = Func.utwórz(Rangi.class);
 	}
 	@Override
 	public Krotka<String, Object> raport() {
@@ -693,14 +719,21 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1) return utab(args, "dołącz", "opuść", "staty", "edytor"); // TODO system statystyk
+		if (args.length <= 1)
+			return utab(args, "dołącz", "opuść", "staty", "stopnie");
 		return null;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length < 1) return false; // TODO staty
-		if (args[0].equalsIgnoreCase("edytor")) return edytor.onCommand(sender, label, args);
-		if (!(sender instanceof Player)) return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");
+		if (args.length < 1) return staty(sender, args);
+		
+		switch (args[0]) {
+		case "staty":	return staty(sender, args);
+		case "stopnie": return rangi.rozpisz(sender);
+		}
+		
+		if (!(sender instanceof Player))
+			return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");
 		Player p = (Player) sender;
 		
 		Arena arena;
@@ -720,10 +753,19 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 				return Func.powiadom(prefix, sender, "Nie jesteś w żadnej rozgrywce");
 			arena.opuść(p);
 			break;
-		case "staty": // TODO
-			break;
 		}
-		return true;
+		return staty(p, p.getName());
+	}
+	private boolean staty(CommandSender sender, String[] args) {
+		if (args.length <= 1 && (!(sender instanceof Player)))
+			return Func.powiadom(prefix, sender, "/pb staty <nick>");
+		return staty(sender, args.length <= 1 ? sender.getName() : args[1]);
+	}
+	private boolean staty(CommandSender sender, String nick) {
+		Gracz g = Gracz.wczytaj(nick);
+		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
+				g.nick, g.statypb == null ? g.nick + " §6Nigdy nie grał w Paintball" : g.statypb.rozpisz());
+		
 	}
 	
 }

@@ -735,4 +735,12 @@ public abstract class Func {
 	public static void ustawMetadate(Metadatable naCzym, String id, Object value) {
 		naCzym.setMetadata(id, new FixedMetadataValue(Main.plugin, value));
 	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T utwórz(Class<T> clazz) {
+		Map<String, Object> mapa = new HashMap<>();
+		mapa.put("=mimi=", clazz.getName());
+		return (T) Mapowany.deserialize(mapa);
+		
+	}
 }
