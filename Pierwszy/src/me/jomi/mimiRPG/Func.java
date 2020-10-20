@@ -1,6 +1,5 @@
 package me.jomi.mimiRPG;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -13,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -22,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -32,6 +34,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.Metadatable;
@@ -241,7 +244,7 @@ public abstract class Func {
 	      hexColor = hexColor.substring(1); 
 	    if (hexColor.length() != 6)
 	      throw new NumberFormatException("Invalid hex length"); 
-	    Color.decode("#" + hexColor);
+	    java.awt.Color.decode("#" + hexColor);
 	    
 	    StringBuilder assembledColorCode = new StringBuilder("§x");
 	    for (char curChar : hexColor.toCharArray())
@@ -273,6 +276,14 @@ public abstract class Func {
 		}
 	}
 	
+	public static ItemStack pokolorujZbroje(ItemStack item, Color kolor) {
+		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
+		meta.setColor(kolor);
+		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		item.setItemMeta(meta);
+		return item;
+		
+	}
 	public static ItemStack połysk(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
 		meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
@@ -430,12 +441,31 @@ public abstract class Func {
 	public static int losujWZasięgu(int max) {
 		return Func.losuj(0, max-1);
 	}
+	
 	public static double zaokrąglij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);
 		liczba  = (double) (int) liczba;
 		liczba /= Math.pow(10, miejsca);
 		return liczba;
 	}
+	public static <T> T max(Iterable<T> iterable, BiFunction<T, T, T> func) {
+		T w = null;
+		
+		for (T el : iterable)
+			if (w == null)
+				w = el;
+			else
+				w = func.apply(w, el);
+		
+		return w;
+	}
+	public static int max(Iterable<Integer> iterable) {
+		return max(iterable, (a, b) -> Math.max(a, b));
+	}
+	public static int min(Iterable<Integer> iterable) {
+		return max(iterable, (a, b) -> Math.min(a, b));
+	}
+	
 	
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
@@ -525,6 +555,17 @@ public abstract class Func {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static <T> void dodajWszystkie(List<T> lista, T... elementy) {
+		for (T el : elementy)
+			lista.add(el);
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> void dodajWszystkie(Set<T> set, T... elementy) {
+		for (T el : elementy)
+			set.add(el);
+	}
+	
 	private static boolean mieściSię(double co, double x1, double x2) {
 		return  (co >= x1 && co <= x2) || 
 				(co <= x1 && co >= x2);
@@ -607,11 +648,14 @@ public abstract class Func {
 	}
 
 	public static void zdemapuj(Object obj, Map<String, Object> mapa) {
+		if (obj == null) return;
+		
 		Class<?> clazz = obj.getClass();
 		
 		for (Entry<String, Object> en : mapa.entrySet())
 			try {
 				if (en.getKey().equals("==")) continue;
+				if (en.getKey().equals("=mimi=")) continue;
 				Field field = clazz.getDeclaredField(en.getKey());
 				field.setAccessible(true);
 				if (!field.isAnnotationPresent(Mapowane.class))

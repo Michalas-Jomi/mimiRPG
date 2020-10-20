@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -41,6 +43,7 @@ public class EdytorOgólny {
 				if (!plik.isEmpty() && !ścieżka.isEmpty()) {
 					edytor = new EdytorOgólnyInst(sender, new Config(plik), ścieżka);
 					mapa.put(sender.getName(), edytor);
+					Bukkit.dispatchCommand(sender, komenda.substring(1) + " edytor");
 					return true;
 				}
 			}
@@ -54,7 +57,6 @@ public class EdytorOgólny {
 		sender.sendMessage("\n\n\n§5\"" + edytor.ścieżka + "\" " + edytor.config.path());
 		return edytor.onCommand(args);
 	}
-	
 	
 	private class EdytorOgólnyInst {
 		Config config;
@@ -94,7 +96,6 @@ public class EdytorOgólny {
 			} catch (ArrayIndexOutOfBoundsException aioobe) {
 				
 			} catch (Throwable e) {
-				e.printStackTrace(); // XXX
 				sender.sendMessage("§cNie ingeruj w edytor");
 			}
 			try {
@@ -233,6 +234,5 @@ public class EdytorOgólny {
 			sender.sendMessage("Zapisano w " + ścieżka + " w " + config.path());
 		}
 	}
-
 }
 

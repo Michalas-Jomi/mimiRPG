@@ -263,3 +263,18 @@ Antylog:
     - '/me'
     
 
+###############
+### Minigry ###
+
+Minigry:
+  Dozwolone komendy:
+    - 't'
+    - 'tell'
+    - 'msg'
+    - 'r'
+    - 'w'
+    - 'cg'
+    - 'chatgrupowy'
+    - 'komendyinfo'
+
+
