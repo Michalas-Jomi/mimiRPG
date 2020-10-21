@@ -9,6 +9,12 @@ public class KolorRGB extends Mapowany {
 	@Mapowane int green;
 	@Mapowane int blue;
 	
+	public void Init() {
+		red 	= Math.max(0, Math.min(255, red));
+		green 	= Math.max(0, Math.min(255, green));
+		blue 	= Math.max(0, Math.min(255, blue));
+	}
+	
 	public Color kolor() {
 		return Color.fromRGB(red, green, blue);
 	}

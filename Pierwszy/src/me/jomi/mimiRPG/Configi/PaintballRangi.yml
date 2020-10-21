@@ -1,0 +1,172 @@
+rangi:
+  ==: me.jomi.mimiRPG.Mapowany
+  =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Rangi
+  rangi:
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 0
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 20
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 150
+      blue: 0
+    nazwa: Szeregowy
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 100
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 30
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 200
+      blue: 0
+    nazwa: Starszy Szeregowy
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 250
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 200
+      blue: 250
+    nazwa: Kapral
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 500
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 100
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 200
+      blue: 250
+    nazwa: Starszy Kapral
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 1000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 0
+      blue: 150
+    nazwa: Sierżant
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 1500
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 50
+      blue: 150
+    nazwa: Starszy Sierżant
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 3000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 100
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 200
+      blue: 0
+    nazwa: Młodszy Chorąży
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 5000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 60
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 150
+      blue: 0
+    nazwa: Chorąży
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 7500
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 40
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 120
+      blue: 10
+    nazwa: Starszy Chorąży
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 10000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 255
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 0
+      blue: 0
+    nazwa: Podporucznik
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 13000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 200
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 20
+      blue: 0
+    nazwa: Porucznik
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 20000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 80
+      blue: 0
+    nazwa: Kapitan
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 30000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 0
+      blue: 0
+    nazwa: Major
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 40000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 0
+      blue: 50
+    nazwa: Podpułkownik
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 60000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 255
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 255
+      blue: 255
+    nazwa: Pułkownik
+  - ==: me.jomi.mimiRPG.Mapowany
+    =mimi=: me.jomi.mimiRPG.Minigry.Paintball$Statystyki$Ranga
+    potrzebnePunkty: 100000
+    kolor:
+      ==: me.jomi.mimiRPG.Mapowany
+      red: 0
+      =mimi=: me.jomi.mimiRPG.KolorRGB
+      green: 0
+      blue: 255
+    nazwa: Generał
+
+punktacja:
+  przegraneAreny: 10
+  rozegraneAreny: 0
+  wygraneAreny: 50
+  śmierci: 1
+  rzucone: 0
+  kille: 3

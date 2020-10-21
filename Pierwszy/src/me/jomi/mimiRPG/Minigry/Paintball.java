@@ -1,10 +1,11 @@
 package me.jomi.mimiRPG.Minigry;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
@@ -32,7 +33,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.projectiles.ProjectileSource;
-
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -67,14 +70,16 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 	static final String permCmdBypass = Func.permisja("minigra.paintball.bypasskomendy");
 	
 	static final Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
+	static List<Krotka<String, Integer>> topka = Lists.newArrayList();
 	
 	static final HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
-	final Config configAreny = new Config("configi/minigry/PaintballAreny");
-	final Config configRangi = new Config("configi/minigry/PaintballRangi");
+	static final Config configTopki = new Config("configi/minigry/Topki"); // XXX ogólny dla minigier
+	static final Config configAreny = new Config("configi/minigry/PaintballAreny");
+	static final Config configRangi = new Config("configi/minigry/PaintballRangi");
 	static Statystyki.Rangi rangi;
 	
 	static Arena zaczynanaArena;
-	
+
 	public Paintball() {
 		super("paintball", null, "pb");
 		Main.dodajPermisje(permCmdBypass);
@@ -84,7 +89,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		static final ItemStack itemKask = Func.dajGłówkę("&bKask Paintballowca", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjkzN2VhZGM1M2MzOWI5Njg4Y2MzOTY1NWQxYjc4ZmQ2MTJjMWNkNjI1YzJhODk2MzhjNWUyNzIxNmM2ZTRkIn19fQ==", null);
 		static final ItemStack pustySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§1§l §e§o");
 		static final ItemStack itemWybórDrużyny = Func.stwórzItem(Material.COMPASS, "§9Wybierz Drużynę");
-		static final ItemStack itemŚnieżka = Func.stwórzItem(Material.SNOWBALL, 8, "§9Śnieżka");
+		static final ItemStack itemŚnieżka = Func.stwórzItem(Material.SNOWBALL, 1, "§9Śnieżka");
 		
 		static final String nazwaInv = "§1§lWybierz drużynę";
 		private Inventory inv;
@@ -111,11 +116,8 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 				p.closeInventory();
 				ubierz(p);
 				respawn(p);
-				Statystyki stat = Gracz.wczytaj(p.getName()).statypb;
-				if (stat == null)
-					stat = new Statystyki();
-				stat.rozegraneAreny++;
-				Func.ustawMetadate(p, metaStatystyki, stat);
+				staty(p).rozegraneAreny++;
+				p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 			}
 			cooldownWyboruDrużyny.wyczyść();
 		}
@@ -158,6 +160,23 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 			gracze.add(p);
 			p.getInventory().setItem(4, itemWybórDrużyny);
 			napiszGraczom("%s dołączył do poczekalni %s/%s", p.getDisplayName(), gracze.size(), strMaxGracze());
+
+			Statystyki staty = Gracz.wczytaj(p.getName()).statypb;
+			if (staty == null)
+				staty = new Statystyki();
+			Func.ustawMetadate(p, metaStatystyki, staty);
+		
+			Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+			p.setScoreboard(scoreboard);
+			Objective obj = scoreboard.registerNewObjective("pbstaty", "dummy", "§6§lStatystyki");
+			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+			staty.rozpisz(obj);
+			p.setCustomNameVisible(false);
+			
+			Statystyki.Ranga ranga = staty.ranga();
+			if (ranga != null)
+				ranga.ubierz(p);
+			
 		}
 		boolean opuść(Player p) {
 			String nick = p.getName();
@@ -174,9 +193,12 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 			Statystyki staty = staty(p);
 			if (staty != null) {
 				Gracz g = Gracz.wczytaj(p.getName());
+				staty.sprawdzTopke(p);
 				g.statypb = staty;
 				g.zapisz();
 			}
+			
+			p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 			
 			NowyEkwipunek.wczytajStary(p);
 			
@@ -195,6 +217,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
 					sprawdzKoniec();
 				}
+			p.sendMessage(prefix + "Nie jesteś już w Paintballu");
 			
 			if (timer != -1 && policzGotowych() < min_gracze) {
 				timer = -1;
@@ -255,7 +278,6 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 				p.sendMessage(prefix + "Poczekaj chwile zanim zmienisz drużyne");
 				return;
 			}
-			cooldownWyboruDrużyny.ustaw(p.getName());
 			
 			Drużyna stara = drużyna(p);
 			if (stara != null) {
@@ -263,15 +285,16 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 					return;
 				stara.gracze--;
 			}
+			
+			cooldownWyboruDrużyny.ustaw(p.getName());
+			
+			Func.ustawMetadate(p, metaDrużynaId, drużyna);
+			drużyna.gracze++;
 
 			if (timer == -1 && policzGotowych() >= min_gracze)
 				timer = czasStartu;
 			if (timer != -1 && sprawdzKoniec())
 				timer = -1;
-			
-			Func.ustawMetadate(p, metaDrużynaId, drużyna);
-			drużyna.gracze++;
-			
 			
 			ubierz(p, drużyna);
 			
@@ -315,7 +338,9 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		}
 		
 		static void dajŚnieżke(Player p) {
-			p.getInventory().setItem(4, itemŚnieżka);
+			ItemStack item = p.getInventory().getItem(4);
+			if (item == null || item.getType().equals(Material.SNOWBALL))
+				p.getInventory().setItem(4, itemŚnieżka);
 		}
 		
 		Drużyna znajdzDrużyne(String nazwa) {
@@ -366,7 +391,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		}
 		private void stwórzInv() {
 			Set<Integer> sloty = dajSloty();
-			inv = Bukkit.createInventory(null, Math.min((Func.max(sloty) / 9 + 1)*9, 6*9), nazwaInv);
+			inv = Bukkit.createInventory(null, Math.min((Func.max(sloty) / 9 + 2)*9, 6*9), nazwaInv);
 			
 			for (int i=0; i<inv.getSize(); i++)
 				inv.setItem(i, pustySlot);
@@ -486,7 +511,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 			@Mapowane public String nazwa;
 			
 			void ubierz(Player p) {
-				ItemStack item = Func.stwórzItem(Material.LEATHER_CHESTPLATE, " ");
+				ItemStack item = Func.stwórzItem(Material.LEATHER_CHESTPLATE, this.toString());
 				Func.pokolorujZbroje(item, kolor.kolor());
 				p.getEquipment().setChestplate(item);
 			}
@@ -503,56 +528,121 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		@Mapowane int śmierci;
 		@Mapowane int rzucone;
 		
-		public int policzPunkty() {
-			int pkt = 0;
-			
-			// TODO customozowany przelicznik
-			pkt += przegraneAreny * 10;
-			pkt += wygraneAreny * 50;
-			pkt += śmierci * 1;
-			pkt += kille * 3;
-			
-			return pkt;
-		}
+		private int punkty;
 		
-		public String rozpisz() {
-			StringBuilder s = new StringBuilder();
-			
-			BiConsumer<String, Object> bic = (info, stan) ->
-					s.append("§6").append(info).append("§8: §e").append(stan).append('\n');
-			
-			BiFunction<Integer, Integer, String> bif = (liczone, wszystkie) -> {
-				if (wszystkie == 0) return "100%";
-				return (liczone / wszystkie) + "%";
+		public int policzPunkty() {
+			punkty = 0;
+
+			Consumer<String> consumer = (sc) -> {
+				try {
+					Field field = this.getClass().getDeclaredField(sc);
+					field.setAccessible(true);
+					punkty += ((int) field.get(this)) * configRangi.wczytajLubDomyślna("punktacja." + sc, 0);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 			};
 			
-			bic.accept("Rozegrane gry", rozegraneAreny);
-			bic.accept("Wygrane gry", wygraneAreny);
-			bic.accept("Przegrane gry", przegraneAreny);
-			bic.accept("Współczynnik zwycięstw", bif.apply(wygraneAreny, rozegraneAreny));
+			consumer.accept("rozegraneAreny");
+			consumer.accept("przegraneAreny");
+			consumer.accept("wygraneAreny");
+			consumer.accept("rzucone");
+			consumer.accept("śmierci");
+			consumer.accept("kille");
+			
+			return punkty;
+		}
+		
+		private int licz_linie;
+		public void rozpisz(Objective obj) {
+			licz_linie = -1;
+			
+			rozpiska(str -> obj.getScore(str).setScore(licz_linie--), true);
+		}
+		public String rozpisz() {
+			StringBuilder s = new StringBuilder();
+
 			s.append('\n');
-			bic.accept("Kille", kille);
-			bic.accept("Zgony", śmierci);
-			bic.accept("Współczynnik zabójstw", bif.apply(kille, kille + śmierci));
-			s.append('\n');
-			bic.accept("Rzucone śnieżki", rzucone);
-			s.append('\n');
-			int punkty = policzPunkty();
-			bic.accept("Punkty", punkty);
-			bic.accept("Ranga", ranga(punkty));
+			
+			rozpiska(str -> s.append(str).append('\n'), false);
+			
 			s.append('\n');
 			
 			return s.toString();
 		}
 		
-		static String ranga(int pkt) {
+		private void rozpiska(Consumer<String> cons, boolean usuwaćKolor) {
+			BiFunction<String, Object, String> bic = (info, stan) -> "§6" + info + "§8: §e" + stan;
+			
+			BiFunction<Integer, Integer, String> bif = (liczone, wszystkie) -> {
+				if (wszystkie == 0) return "100%";
+				return ((int) ( ((double) liczone) / ((double) wszystkie) * 100 ) ) + "%";
+			};
+
+			cons.accept(bic.apply("win ratio", bif.apply(wygraneAreny, rozegraneAreny)));
+			cons.accept(bic.apply("Rozegrane gry", rozegraneAreny));
+			cons.accept(bic.apply("Wygrane gry", wygraneAreny));
+			cons.accept(bic.apply("Przegrane gry", przegraneAreny));
+			cons.accept(" ");
+			cons.accept(bic.apply("kill ratio", bif.apply(kille, kille + śmierci)));
+			cons.accept(bic.apply("Kille", kille));
+			cons.accept(bic.apply("Zgony", śmierci));
+			cons.accept("  ");
+			cons.accept(bic.apply("Rzucone śnieżki", rzucone));
+			cons.accept("   ");
+			int punkty = policzPunkty();
+			cons.accept(bic.apply("Punkty", punkty));
+			Ranga ranga = ranga(punkty);
+			
+			if (ranga != null) {
+				String _ranga = usuwaćKolor ? Func.usuńKolor(ranga.toString()) : ranga.toString();
+				Func.multiTry(IllegalArgumentException.class,
+					() -> cons.accept(bic.apply("Ranga", _ranga)),
+					() -> cons.accept(_ranga),
+					() -> cons.accept(bic.apply("Ranga", Func.inicjały(_ranga))),
+					() -> cons.accept(Func.inicjały(_ranga)),
+					() -> cons.accept("    ")
+					);
+			}
+			
+		}
+		
+		void sprawdzTopke(Player p) {
+			int pkt = policzPunkty();
+			
+			int i = -1;
+			while (++i < topka.size()) {
+				if (i >= 10) return;
+				Krotka<String, Integer> k = topka.get(i);
+				if (k.a.equals(p.getName())) return;
+				if (pkt > k.b) break;
+			}
+		
+			topka.add(i, new Krotka<>(p.getName(), pkt));
+			
+			while(++i < topka.size())
+				if (topka.get(i).a.equals(p.getName())) {
+					topka.remove(i);
+					break;
+				}
+			
+			if (topka.size() > 10)	
+				topka.remove(10);
+			
+			configTopki.ustaw_zapisz("Paintball", topka);
+		}
+		
+		Ranga ranga() {
+			return ranga(policzPunkty());
+		}
+		Ranga ranga(int pkt) {
 			Ranga ranga = null;
 			
 			for (Ranga _ranga : rangi.rangi)
-				if (_ranga.potrzebnePunkty < pkt && (ranga == null || ranga.potrzebnePunkty < _ranga.potrzebnePunkty))
+				if (_ranga.potrzebnePunkty <= pkt && (ranga == null || ranga.potrzebnePunkty < _ranga.potrzebnePunkty))
 					ranga = _ranga;
 			
-			return ranga == null ? "brak" : ranga.toString();
+			return ranga;
 		}
 	}
 	
@@ -571,16 +661,17 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		if (shooter instanceof Player) {
 			Player p = (Player) shooter;
 			Statystyki stat = staty(p);
-			if (stat != null)
+			if (stat != null) {
 				stat.rzucone++;
-			Arena.dajŚnieżke(p);
+				Func.opóznij(1, () -> Arena.dajŚnieżke(p));
+			}
 		}
 	}
 	@EventHandler
  	public void trafienie(ProjectileHitEvent ev) {
 		Arena arena = arena(ev.getHitEntity());
 		if (arena != null)
-			arena.trafienie(ev);;
+			arena.trafienie(ev);
 	}
 	@EventHandler
 	public void śmieć(PlayerDeathEvent ev) {
@@ -618,7 +709,6 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 				arena.koniec();
 			}
 	}
-	
 	
 	@EventHandler
 	public void komendy(PlayerCommandPreprocessEvent ev) {
@@ -682,6 +772,7 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		return 20;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void przeładuj() {
 		configAreny.przeładuj();
@@ -711,16 +802,19 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		rangi = (Rangi) configRangi.wczytaj("rangi");
 		if (rangi == null)
 			rangi = Func.utwórz(Rangi.class);
+		
+		configTopki.przeładuj();
+		topka = (List<Krotka<String, Integer>>) Func.nieNullList(configTopki.wczytaj("Paintball"));
 	}
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Wczytane areny paintballa", mapaAren.size());
 	}
-
+	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return utab(args, "dołącz", "opuść", "staty", "stopnie");
+			return utab(args, "dołącz", "opuść", "staty", "stopnie", "topka");
 		return null;
 	}
 	@Override
@@ -730,6 +824,15 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		switch (args[0]) {
 		case "staty":	return staty(sender, args);
 		case "stopnie": return rangi.rozpisz(sender);
+		case "topka":
+			sender.sendMessage(" ");
+			sender.sendMessage(prefix + "Top 10 graczy paintballa");
+			sender.sendMessage(" ");
+			int i = 1;
+			for (Krotka<String, Integer> krotka : topka)
+				sender.sendMessage("§9" + i++ + ") §2" + krotka.a + "§e " + krotka.b + "pkt");
+			sender.sendMessage(" ");
+			return true;
 		}
 		
 		if (!(sender instanceof Player))
@@ -753,8 +856,10 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 				return Func.powiadom(prefix, sender, "Nie jesteś w żadnej rozgrywce");
 			arena.opuść(p);
 			break;
+		default:
+			return staty(p, p.getName());
 		}
-		return staty(p, p.getName());
+		return true;
 	}
 	private boolean staty(CommandSender sender, String[] args) {
 		if (args.length <= 1 && (!(sender instanceof Player)))
@@ -762,12 +867,21 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 		return staty(sender, args.length <= 1 ? sender.getName() : args[1]);
 	}
 	private boolean staty(CommandSender sender, String nick) {
+		Player p = Bukkit.getPlayer(nick);
+		if (p != null) {
+			Statystyki staty = staty(p);
+			if (staty != null)
+				return staty(sender, p.getName(), staty);
+		}
+		
 		Gracz g = Gracz.wczytaj(nick);
+		return staty(sender, g.nick, g.statypb);
+	} 
+	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
 		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
-				g.nick, g.statypb == null ? g.nick + " §6Nigdy nie grał w Paintball" : g.statypb.rozpisz());
+				nick, staty == null ? nick + " §6Nigdy nie grał w Paintball" : staty.rozpisz());
 		
 	}
-	
 }
 
 

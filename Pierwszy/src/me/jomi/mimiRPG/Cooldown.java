@@ -19,10 +19,10 @@ public class Cooldown {
 	}
 		
 	public boolean minął(String czemu) {
-		return minął(czemu, domyślny);
+		return minąłMiliSek(czemu, domyślny);
 	}
 	public boolean minąłMiliSek(String czemu, int miliSekundy) {
-		boolean w = mapa.getOrDefault(czemu, 0L) + miliSekundy <= System.currentTimeMillis();
+		boolean w = ileJeszczeMiliSek(czemu) < 0;
 		if (w) mapa.remove(czemu);
 		return w;
 	}

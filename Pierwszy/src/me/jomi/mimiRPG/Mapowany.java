@@ -12,7 +12,9 @@ public abstract class Mapowany implements ConfigurationSerializable {
 			obj = (Mapowany) Class.forName(klasa).newInstance();
 		} catch (ClassNotFoundException e) {
 			Main.error("Nieodnaleziono klasy " + klasa);
-		} catch (Throwable e) {}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 		
 		Func.zdemapuj(obj, mapa);
 		

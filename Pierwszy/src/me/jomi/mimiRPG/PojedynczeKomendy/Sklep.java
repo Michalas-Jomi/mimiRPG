@@ -158,7 +158,6 @@ class Strona {
 				continue;
 			}
 			
-
 			boolean ustaw = true;
 			
 			ItemStack item = config.wczytajItem(_slot + ".item");
@@ -192,7 +191,7 @@ class Strona {
 					return _cena == 0 ? "§cBrak możliwości " + czynność : "§6Cena " + czynność + ":§e " + _cena;
 				};
 				ItemMeta meta = item.getItemMeta();
-				List<String> lore = Func.nieNullList(meta.getLore());
+				List<String> lore = (List<String>) Func.nieNullList(meta.getLore());
 				lore.add(0, "§7------------------------------");
 				lore.add(0, "");
 				lore.add(0, "§9PPM §8- §akup");

@@ -82,6 +82,24 @@ public abstract class Func {
 		}
 		return new String(znaki);
 	}
+	public static String inicjały(String text) {
+		text = text.trim();
+		if (text.isEmpty()) return text;
+		StringBuilder s = new StringBuilder();
+		
+		s.append(text.charAt(0));
+		
+		boolean b = false;
+		for (char c : text.toCharArray())
+			if (c == ' ')
+				b = true;
+			else if (b) {
+				s.append(c);
+				b = false;
+			}
+		
+		return s.toString();
+	}
 	
 	public static long czasSekundy() {
 		return System.currentTimeMillis() / 1000;
@@ -134,7 +152,6 @@ public abstract class Func {
 	public static String listToString(Object[] lista, int start, String wstawka) {
 		return listToString(Lists.newArrayList(lista), start, wstawka);
 	}
-	
 	public static String listToString(Iterable<?> lista, int start) {
 		return listToString(lista, start, " ");
 	}
@@ -466,7 +483,6 @@ public abstract class Func {
 		return max(iterable, (a, b) -> Math.min(a, b));
 	}
 	
-	
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
 		String nazwaPluginu = Main.plugin.getName();
@@ -532,7 +548,10 @@ public abstract class Func {
 	public static String nieNullStr(String str) {
 		return str == null ? "" : str;
 	}
-	public static <T> List<T> nieNullList(List<T> lista){
+	public static Object nieNullList(Object lista) {
+		return lista != null ? lista : Lists.newArrayList();
+	}
+	public static <T> List<T> nieNullList(List<T> lista) {
 		return lista != null ? lista : Lists.newArrayList();
 	}
 	
@@ -730,6 +749,18 @@ public abstract class Func {
 	public static <T> void wykonajDlaNieNull(Object obj, Consumer<T> func, T parametr) {
 		if (obj != null)
 			func.accept(parametr);
+	}
+	
+	public static void multiTry(Class<? extends Throwable> error, Runnable... funkcje) {
+		for (Runnable r : funkcje)
+			try {
+				r.run();
+				return;
+			} catch (Throwable e) {
+				if (error.isAssignableFrom(error))
+					continue;
+				throw e;
+			}
 	}
 	
 	public static void ustawMetadate(Metadatable naCzym, String id, Object value) {
