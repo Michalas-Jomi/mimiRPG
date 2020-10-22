@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.EdytorOgólny;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 
 @Moduł
@@ -45,7 +46,7 @@ public class EdytorUogólniony extends Komenda {
 			if (args.length < 2)
 				return Func.powiadom(prefix, sender, "/eo nowy <package.klasa>");
 			try {
-				mapa.put(sender.getName(), new EdytorOgólny("/edytorogólny", Class.forName(args[1]))); // XXX Class.forName
+				mapa.put(sender.getName(), new EdytorOgólny("/edytorogólny", Class.forName(args[1], false, Main.classLoader)));
 			} catch (Throwable e) {
 				return Func.powiadom(prefix, sender, "Nieprawidłowa klasa %s", args[1]);
 			}

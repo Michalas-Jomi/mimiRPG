@@ -164,6 +164,13 @@ public abstract class Func {
 				s.append(wstawka).append(obj == null ? null : obj.toString());
 		return s.toString();
 	}
+	public static String locToString(Location loc) {
+		Function<Double, String> func = x -> zaokrąglij(x, 1) + "";
+		return String.format("%sx %sy %sz %s/%s",
+				func.apply(loc.getX()), func.apply(loc.getY()), func.apply(loc.getZ()),
+				(int) loc.getPitch(), (int) loc.getYaw());
+	}
+	
 	
 	public static String odkoloruj(String text) {
 		if (text == null) return null;

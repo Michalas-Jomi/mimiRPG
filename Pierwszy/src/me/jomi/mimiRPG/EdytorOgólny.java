@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 
 public class EdytorOgólny {
@@ -219,7 +223,11 @@ public class EdytorOgólny {
 					n.dodaj(pref).dodaj("§6" + nazwa + "§8: ");
 				if (objekt == null)
 					n.dodaj(new Napis("§e" + objekt, "§bKliknij aby utworzyć", scieżka + "<null>"));
-				 else
+				else if (objekt instanceof ItemStack)
+					n.dodaj(Napis.item((ItemStack) objekt).clickEvent(Action.RUN_COMMAND, scieżka + ">>"));
+				else if (objekt instanceof Location)
+					n.dodaj(new Napis("§e" + Func.locToString((Location) objekt), "§bKliknij aby ustawić", scieżka + ">>"));
+				else
 					n.dodaj(new Napis("§e" + objekt, "§bKliknij aby ustawić", scieżka + ">> "));
 				return n;
 			}
