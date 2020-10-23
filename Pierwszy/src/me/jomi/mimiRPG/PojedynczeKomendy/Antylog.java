@@ -49,15 +49,16 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 	void info(String nick) {
 		int czas = czasy.getOrDefault(nick, maxCzas);
 		String walka = "§"+(czas % 2 == 0 ? '6' : 'e')+"Walka";
-		String txt = walka + " §a";
+		StringBuilder txt = new StringBuilder(walka);
+		txt.append(" §a");
 		czas /= 2;
 		for (int i=0; i<czas; i++)
-			txt += '|';
-		txt += "§c";
+			txt.append('|');
+		txt.append("§c");
 		for (int i=czas; i<maxCzas/2; i++)
-			txt += '|';
-		txt += " " + walka;
-		Bukkit.getPlayer(nick).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(txt));
+			txt.append('|');
+		txt.append(' ').append(walka);
+		Bukkit.getPlayer(nick).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(txt.toString()));
 	}
 	
 	void koniec(String nick) {
@@ -68,8 +69,11 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 				koniec(_nick);
 		}
 		gracze.remove(nick);
-		Bukkit.getPlayer(nick).sendMessage(prefix + "Nie jesteś już w walce");
-		Bukkit.getPlayer(nick).removePotionEffect(PotionEffectType.GLOWING);
+		
+		Player p = Bukkit.getPlayer(nick);
+		if (p == null) return;
+		p.sendMessage(prefix + "Nie jesteś już w walce");
+		p.removePotionEffect(PotionEffectType.GLOWING);
 		info(nick);
 	}
 
@@ -79,6 +83,8 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 
 		Player atakowany = (Player) ev.getEntity();
 		Player atakujący = (Player) ev.getDamager();
+		
+		if (Bukkit.getPlayer(atakowany.getName()) == null) return;
 		
 		czasy.put(atakujący.getName(), 0);
 		czasy.put(atakowany.getName(), 0);

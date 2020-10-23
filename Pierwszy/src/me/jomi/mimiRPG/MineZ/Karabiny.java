@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -45,7 +46,9 @@ import net.md_5.bungee.api.chat.TextComponent;
 @Moduł
 public class Karabiny implements Listener, Przeładowalny {
 	public static class Karabin extends Mapowany {
+		@Mapowane Sound dzwiękStrzału = Sound.ENTITY_WITHER_SHOOT;
 		@Mapowane EntityType typPocisku = EntityType.ARROW;
+		@Mapowane double dzwiękPitch = 2;
 		@Mapowane String nazwa = "Karabin";
 		@Mapowane double attackCooldown; // w sekundach
 		@Mapowane double siłaStrzału = 3;
@@ -65,6 +68,8 @@ public class Karabiny implements Listener, Przeładowalny {
 			Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
 			pocisk.setVelocity(wzrok.multiply(siłaStrzału));
 			pocisk.setShooter(p);
+			
+			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, 80, (float) dzwiękPitch);
 			
 			if (attackCooldown > 0) 
 				Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
@@ -171,7 +176,8 @@ public class Karabiny implements Listener, Przeładowalny {
 		config.przeładuj();
 		for (String klucz : config.klucze(false))
 			try {
-				karabiny.put(klucz, (Karabin) config.wczytaj(klucz));
+				Karabin karabin = (Karabin) config.wczytaj(klucz);
+				karabiny.put(karabin.nazwa, karabin);
 			} catch (Throwable e) {
 				Main.warn("Niepoprawny karabin " + klucz + " w Karabiny.yml");
 			}

@@ -328,8 +328,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 	
-	boolean blokuj = false;
-	@EventHandler // TODO stawianie na ścianie bazy poza bazą c4
+	boolean blokuj;
+	@EventHandler(ignoreCancelled = true)
 	public void stawianie(BlockPlaceEvent ev) {
 		World świat = ev.getBlock().getWorld();
 		ItemStack item = ev.getPlayer().getEquipment().getItemInMainHand();
@@ -337,61 +337,56 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		int y = ev.getBlock().getY();
 		int z = ev.getBlock().getZ();
 		
-		Consumer<Map<String, Object>> wejście = mapa -> {
-			ev.setCancelled(true);
-			
-			Supplier<Integer> zabierzItem = () -> {
-				item.setAmount(item.getAmount()-1);
-				ev.getPlayer().getEquipment().setItemInMainHand(item);
-				return 0;
-			};
-
-			// C4
-			
-			if (mapa.containsKey("c4")) {
-				Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
-				
-				float zasięg = (float) (double) mapaC4.getOrDefault("zasięg", 1f);
-				int czas   	 = (int)   			mapaC4.getOrDefault("czas",   1);
-				Location loc = ev.getBlock().getLocation().add(.5, 0, .5);
-				
-				TNTPrimed tnt = (TNTPrimed) loc.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
-				tnt.addScoreboardTag("mimiC4");
-				tnt.setFuseTicks(czas);
-				tnt.setGravity(false);
-				tnt.setYield(zasięg);
-				tnt.setVelocity(new Vector());
-				try { 
-					tnt.setCustomName(ev.getItemInHand().getItemMeta().getDisplayName());
-				} catch (Exception e) {}
-				
-				zabierzItem.get();
-				return;
-			}
-			
-			// Baza/Schemat
-			boolean zabierz = false;
-			
-			if (mapa.containsKey("schemat") && !blokuj && 
-					Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
-						.getApplicableRegions(BlockVector3.at(x, y, z))
-						.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
-					wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
-						zabierz = true;
-			
-			if (Baza.wczytaj(x, y, z, świat, item, ev, ((ConfigurationSection) mapa.get("baza")).getValues(false)) != null)
-				zabierz = true;
-			
-			blokuj = false;
-			
-			if (zabierz) 
-				zabierzItem.get();
-		};
 		if (config.klucze(false).contains("bazy"))
 			for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 				Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
 				if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
-					wejście.accept(mapa);
+					ev.setCancelled(true);
+					
+					if (Func.multiEquals(ev.getBlockReplacedState().getType(), Material.WATER, Material.LAVA)) return;
+					
+					Runnable zabierzItem = () -> {
+						item.setAmount(item.getAmount()-1);
+						ev.getPlayer().getEquipment().setItemInMainHand(item);
+					};
+
+					// C4
+					if (mapa.containsKey("c4")) {
+						Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
+						
+						float zasięg = (float) (double) mapaC4.getOrDefault("zasięg", 1f);
+						int czas   	 = (int)   			mapaC4.getOrDefault("czas",   1);
+						Location loc = ev.getBlock().getLocation().add(.5, 0, .5);
+						
+						TNTPrimed tnt = (TNTPrimed) loc.getWorld().spawnEntity(loc, EntityType.PRIMED_TNT);
+						tnt.addScoreboardTag("mimiC4");
+						tnt.setFuseTicks(czas);
+						tnt.setGravity(false);
+						tnt.setYield(zasięg);
+						tnt.setVelocity(new Vector());
+						try { 
+							tnt.setCustomName(ev.getItemInHand().getItemMeta().getDisplayName());
+						} catch (Exception e) {}
+						
+						zabierzItem.run();
+						return;
+					}
+					
+					// Baza/Schemat
+					// jeśli baza nie może być postawiona przez flage -> blokuj = true
+					blokuj = false;
+					boolean zabierz = Baza.wczytaj(x, y, z, świat, item, ev,
+							((ConfigurationSection) mapa.get("baza")).getValues(false)) != null;
+					
+					if (mapa.containsKey("schemat") && !blokuj && 
+							Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
+								.getApplicableRegions(BlockVector3.at(x, y, z))
+								.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
+							wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
+								zabierz = true;
+					
+					if (zabierz) 
+						zabierzItem.run();
 					return;
 				}
 			}
@@ -564,13 +559,13 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				String nazwaGildi = args[2];
 				if (!mapaZaproszeń.containsKey(zapraszający))
 					return Func.powiadom(sender, Gildia.prefix + "To zaproszenie już nie jest aktualne");
-				if (maGildie.getAsBoolean())
+				if (!(g.gildia == null || g.gildia.isEmpty()))
 					return Func.powiadom(sender, Gildia.prefix + "Należysz już do gildi");
 				Gildia _gildia = Gildia.wczytaj(nazwaGildi);
 				if (_gildia == null)
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia już nie istnieje");
 				_gildia.dołącz(sender);
-				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", nazwaGildi, zapraszający, sender.getName()));
+				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", zapraszający, nazwaGildi, sender.getName()));
 
 				mapaZaproszeń.remove(zapraszający);
 				break;

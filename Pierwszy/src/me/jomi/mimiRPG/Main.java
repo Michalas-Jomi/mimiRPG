@@ -52,7 +52,7 @@ public class Main extends JavaPlugin {
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
 
-
+	
 	public static JavaPlugin plugin;
 	public static Config ust;
 	public static String path;	

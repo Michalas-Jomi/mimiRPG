@@ -26,6 +26,64 @@ import me.jomi.mimiRPG.Chat.Raport;
 
 @Moduł
 public class CustomowyDrop implements Listener, Przeładowalny {
+	static class Drop {
+		List<Item> itemy = Lists.newArrayList();
+		boolean wyłączPierwotny;
+		ItemStack itemNaGłowie;
+		String imie;
+		
+		public Drop(boolean wyłączPierwotny, ItemStack itemNaGłowie, String imie) {
+			this.wyłączPierwotny = wyłączPierwotny;
+			this.itemNaGłowie = itemNaGłowie;
+			if (imie != null)
+				imie = Func.koloruj(imie);
+			this.imie = imie;
+		}
+		public boolean warunek(LivingEntity mob) {
+			if (imie != null && !imie.equals(mob.getCustomName()))
+				return false;
+			ItemStack glowa = mob.getEquipment().getHelmet();
+			if (glowa == null || glowa.getType().isAir())
+				glowa = null;
+			if (itemNaGłowie != null && !itemNaGłowie.equals(glowa))
+				return false;
+			return true;
+		}
+		public void dodajDrop(double szansa, double bonusEnch, ItemStack item) {
+			itemy.add(new Item(szansa, bonusEnch, item));
+		}
+		public void dropnij(Location loc, int lvl) {
+			for (Item item : itemy)
+				item.upuść(loc, lvl);
+		}
+
+		public String toString() {
+			return String.format("§rDrop(imie=%s)", Func.odkoloruj(imie));
+		}
+		
+	}
+	static class Item {
+		private int pełne;
+		private double szansa;
+		private ItemStack item;
+		private double bonusEnch;
+		
+		public Item(double szansa, double bonusEnch, ItemStack item) {
+			this.item = item;
+			pełne = (int) szansa;
+			this.bonusEnch = bonusEnch;
+			this.szansa =  szansa - pełne;
+		}
+		
+		public void upuść(Location loc, int lvl) {
+			double szansa = this.szansa + (lvl * bonusEnch);
+			for (int i=0; i<pełne; i++)
+				if (Math.random() <= szansa)
+					loc.getWorld().dropItem(loc, item);
+		}
+		
+	}
+	
 	public static final Config configBloki = new Config("Customowy Drop Bloki");
 	public static final Config configMoby  = new Config("Customowy Drop Moby");
 
@@ -109,61 +167,4 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	}
 }
 
-class Drop {
-	List<Item> itemy = Lists.newArrayList();
-	boolean wyłączPierwotny;
-	ItemStack itemNaGłowie;
-	String imie;
-	
-	public Drop(boolean wyłączPierwotny, ItemStack itemNaGłowie, String imie) {
-		this.wyłączPierwotny = wyłączPierwotny;
-		this.itemNaGłowie = itemNaGłowie;
-		if (imie != null)
-			imie = Func.koloruj(imie);
-		this.imie = imie;
-	}
-	public boolean warunek(LivingEntity mob) {
-		if (imie != null && !imie.equals(mob.getCustomName()))
-			return false;
-		ItemStack glowa = mob.getEquipment().getHelmet();
-		if (glowa == null || glowa.getType().isAir())
-			glowa = null;
-		if (itemNaGłowie != null && !itemNaGłowie.equals(glowa))
-			return false;
-		return true;
-	}
-	public void dodajDrop(double szansa, double bonusEnch, ItemStack item) {
-		itemy.add(new Item(szansa, bonusEnch, item));
-	}
-	public void dropnij(Location loc, int lvl) {
-		for (Item item : itemy)
-			item.upuść(loc, lvl);
-	}
 
-	public String toString() {
-		return String.format("§rDrop(imie=%s)", Func.odkoloruj(imie));
-	}
-	
-}
-
-class Item {
-	private int pełne;
-	private double szansa;
-	private ItemStack item;
-	private double bonusEnch;
-	
-	public Item(double szansa, double bonusEnch, ItemStack item) {
-		this.item = item;
-		pełne = (int) szansa;
-		this.bonusEnch = bonusEnch;
-		this.szansa =  szansa - pełne;
-	}
-	
-	public void upuść(Location loc, int lvl) {
-		double szansa = this.szansa + (lvl * bonusEnch);
-		for (int i=0; i<pełne; i++)
-			if (Math.random() <= szansa)
-				loc.getWorld().dropItem(loc, item);
-	}
-	
-}

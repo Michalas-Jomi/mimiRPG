@@ -32,4 +32,10 @@ szansa zrespawnowania w nocy: .3
 Moby: 
 #  <nazwa moba>: _mob_
 
+Flagi:
+# <flaga>: # szansa_na_moba = jego_szansa / suma_szans
+#   <nazwa moba1>: szansa(int)
+#   <nazwa moba2>: szansa
+#   <nazwa moba3>: szansa
+
 

@@ -1,14 +1,13 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -16,29 +15,24 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import me.jomi.mimiRPG.Config;
 import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Gracze.Gracz;
 
-public class Gildia implements ConfigurationSerializable {
+public class Gildia extends Mapowany {
 	public static final String prefix = Func.prefix("Gildia");
-	public Gildia(Map<String, Object> mapa) {
-		Func.zdemapuj(this, mapa);
-	}
-	@Override
-	public Map<String, Object> serialize() {
-		return Func.zmapuj(this);
-	}
-
-	@Mapowane List<String> gracze = Lists.newArrayList();
+	static final Config config = new Config("configi/Gildie");
+	@Mapowane List<String> gracze;
 	@Mapowane String przywódca;
 	@Mapowane String nazwa;
 	
-	static final Config config = new Config("configi/Gildie");
+	
 	void zapisz() {
 		config.ustaw_zapisz(nazwa, this);
 	}
@@ -46,15 +40,23 @@ public class Gildia implements ConfigurationSerializable {
 		if (nazwa == null) return null;
 		return (Gildia) config.wczytaj(nazwa);
 	}
-	private Gildia(){};
 	static Gildia stwórz(String nazwa, String przywódca) {
+		Gracz g = Gracz.wczytaj(przywódca);
+		
+		if (g.gildia != null) {
+			Player p = Bukkit.getPlayer(przywódca);
+			p.sendMessage(prefix + "Nie możesz utworzyć nowej gildi puki nie opuścisz aktualnej");
+			return null;
+		}
+		
 		Gildia gildia = new Gildia();
 		gildia.przywódca = przywódca;
 		gildia.nazwa = nazwa;
-		gildia.zapisz();
-		Gracz g = Gracz.wczytaj(przywódca);
+		gildia.zapisz();;
+		
 		g.gildia = nazwa;
 		g.zapisz();
+		
 		return gildia;
 	}
 		
@@ -66,68 +68,59 @@ public class Gildia implements ConfigurationSerializable {
 	}
 	
 	void dołącz(Player p) {
+		
 		Gracz g = Gracz.wczytaj(p.getName());
 		
-		// dodanie gracza do regionów gildi
-		for (String członek : gracze)
-			for (ProtectedRegion region : bazy(Gracz.wczytaj(członek)))
-				region.getMembers().addPlayer(p.getName());
+		wykonajNaRegionach(g, DefaultDomain::addPlayer);
 		
-		// dodanie regionów gracza do regionów gildi
-		for (ProtectedRegion region : bazy(g))
-			for (String członek : gracze)
-				region.getMembers().addPlayer(członek);
-		
-		// dodanie gracza do gildi
 		gracze.add(p.getName());
 		zapisz();
+		
 		g.gildia = nazwa;
 		g.zapisz();
 		
 	}
-	private List<ProtectedRegion> bazy(Gracz g) {
-		List<ProtectedRegion> lista = Lists.newArrayList();
-		for (Entry<String, List<String>> en : g.bazy.entrySet()) {
-			World świat = Bukkit.getWorld(en.getKey()); if (świat == null) continue;
-			RegionManager manager = Bazy.inst.regiony.get(BukkitAdapter.adapt(świat));
-			for (String regionId : en.getValue()) {
-				ProtectedRegion region = manager.getRegion(regionId);
-				if (region != null)
-					lista.add(region);
-			}
-		}
-		return lista;
-	}
 	void opuść(String nick) {
 		Gracz g = Gracz.wczytaj(nick);
 		
-		// opuszczenie regionów gildijnych
-		for (String członek : gracze)
-			for (ProtectedRegion region : bazy(Gracz.wczytaj(członek)))
-				region.getMembers().removePlayer(nick);
-		
-		// oddzielenie regionów gracza od gildi
-		for (ProtectedRegion region : bazy(g))
-			for (String członek : gracze)
-				region.getMembers().removePlayer(członek);
-		
-		// opuszczenie gilidi
 		gracze.remove(nick);
 		zapisz();
+		
 		g.gildia = null;
 		g.zapisz();
 		
-		// usunięcie gildi, lub przekazanie przywódctwa
-		if (nick.equals(przywódca)) {
-			if (gracze.size() == 0) {
-				// usunięcie gildi
+		wykonajNaRegionach(g, DefaultDomain::removePlayer);
+		
+		if (nick.equals(przywódca))
+			if (gracze.size() == 0)
 				config.ustaw_zapisz(nazwa, null);
-			} else {
-				// przekazanie przywódctwa
+			else
 				przywódca = gracze.remove(0);
+	}	
+	private void wykonajNaRegionach(Gracz g, BiConsumer<DefaultDomain, String> bic) {
+		
+		Consumer<String> cons = członek -> {
+			for (ProtectedRegion region : bazy(Gracz.wczytaj(członek))) {
+				DefaultDomain members = region.getMembers();
+				bic.accept(members, g.nick);
+				region.setMembers(members);
 			}
+		};
+		for (String członek : gracze)
+			cons.accept(członek);
+		cons.accept(przywódca);
+		
+		
+		for (ProtectedRegion region : bazy(g)) {
+			DefaultDomain members = region.getMembers();
+			for (String członek : gracze)
+				bic.accept(members, członek);
+			bic.accept(members, przywódca);
+			region.setMembers(members);
 		}
+		
 	}
+	
 	
 	void napiszDoCzłonków(Player kto, String msg) {
 		Set<Player> set = Sets.newConcurrentHashSet();
@@ -158,5 +151,20 @@ public class Gildia implements ConfigurationSerializable {
 		wyświetl.accept(przywódca);
 		
 	}
+	
+	private List<ProtectedRegion> bazy(Gracz g) {
+		List<ProtectedRegion> lista = Lists.newArrayList();
+		for (Entry<String, List<String>> en : g.bazy.entrySet()) {
+			World świat = Bukkit.getWorld(en.getKey()); if (świat == null) continue;
+			RegionManager manager = Bazy.inst.regiony.get(BukkitAdapter.adapt(świat));
+			for (String regionId : en.getValue()) {
+				ProtectedRegion region = manager.getRegion(regionId);
+				if (region != null)
+					lista.add(region);
+			}
+		}
+		return lista;
+	}
 
+	
 }

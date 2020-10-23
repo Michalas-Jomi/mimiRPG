@@ -713,13 +713,16 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 	@EventHandler
 	public void komendy(PlayerCommandPreprocessEvent ev) {
 		Player p = ev.getPlayer();
-		if (p.hasMetadata(metaid))
-			if (p.hasPermission(permCmdBypass)) {
+		if (p.hasMetadata(metaid)) {
+			if (dozwoloneKomendy.contains(Func.tnij(ev.getMessage(), " ").get(0)))
+				return;
+			else if (p.hasPermission(permCmdBypass))
 				p.sendMessage(prefix + "pamiętaj że jesteś w trakcie minigry");
-			} else {
+			else {
 				ev.setCancelled(true);
 				p.sendMessage(prefix + "Nie wolno tu uzywać komend");
 			}
+		}
 	}
 	
 	@EventHandler
@@ -792,8 +795,8 @@ public class Paintball extends Komenda implements Listener, Przeładowalny, Zega
 			}
 		
 		dozwoloneKomendy.clear();
-		dozwoloneKomendy.add("paintball");
-		dozwoloneKomendy.add("pb");
+		dozwoloneKomendy.add("/paintball");
+		dozwoloneKomendy.add("/pb");
 		for (String komenda : Main.ust.wczytajListe("Minigry.Dozwolone komendy"))
 			dozwoloneKomendy.add(komenda.startsWith("/") ? "/" + komenda : komenda);
 

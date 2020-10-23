@@ -666,11 +666,7 @@ public abstract class Func {
 
 	public static boolean porównaj(ItemStack item1, ItemStack item2) {
 		if (item1 == null || item2 == null) return item1 == item2;
-		ItemStack item1c = item1.clone();
-		ItemStack item2c = item2.clone();
-		item1c.setAmount(1);
-		item2c.setAmount(1);
-		return item1c.equals(item2c);
+		return item1.isSimilar(item2);
 	}
 
 	public static void zdemapuj(Object obj, Map<String, Object> mapa) {
