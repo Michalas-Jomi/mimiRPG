@@ -89,11 +89,12 @@ public class CustomoweItemy extends Komenda {
 			}
 			if (args.length < 3)
 				return Func.powiadom(p, prefix + "/citem karabin [broń / ammo] <karabin>");
-			item = func.apply(args[2]);
+			String nazwa = Func.listToString(args, 2);
+			item = func.apply(nazwa);
 			if (item == null) 
-				return Func.powiadom(prefix, p, "Niepoprawna nazwa karabinu %s", args[2]);
+				return Func.powiadom(prefix, p, "Niepoprawna nazwa karabinu %s", nazwa);
 			Func.dajItem(p, item);
-			return Func.powiadom(prefix, p, "Otrzymałeś %s %s", args[1], args[2]);
+			return Func.powiadom(prefix, p, "Otrzymałeś %s %s", args[1], nazwa);
 		default:
 			return false; // TODO
 		}

@@ -54,8 +54,6 @@ import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
-// TODO customowy drop z cutomowych mobów
-
 @Moduł
 public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	static class Mob {
@@ -336,7 +334,6 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 					loc.add(0, dokładność, 0);
 			}
 		};
-		znajdz.accept(5);
 		znajdz.accept(1);
 		int y = loc.getBlockY();
 		if (0 < y && y < 256)

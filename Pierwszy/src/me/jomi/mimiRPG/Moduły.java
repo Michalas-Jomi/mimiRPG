@@ -48,6 +48,7 @@ public class Moduły implements Przeładowalny {
 					włączone++;
 				} catch (Throwable e) {
 					Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
+					e.printStackTrace();
 				}
 			}
 		};

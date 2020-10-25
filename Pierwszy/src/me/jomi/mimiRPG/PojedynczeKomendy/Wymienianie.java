@@ -125,6 +125,7 @@ public class Wymienianie implements Listener{
 		if (handlujący.contains(nick1)) return;
 		Player p2 = (Player) ev.getRightClicked();
 		String nick2 = p2.getName();
+		if (Bukkit.getPlayer(nick2) == null) return;
 		if (nick1.equals(prozby.get(nick2)))
 			handel(p2, p);
 		else {

@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,6 +16,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -79,10 +82,21 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void uderzenie(EntityDamageByEntityEvent ev) {
-		if (!(ev.getDamager() instanceof Player && ev.getEntity() instanceof Player)) return;
-
+		if (!(ev.getEntity() instanceof Player)) return;
 		Player atakowany = (Player) ev.getEntity();
-		Player atakujący = (Player) ev.getDamager();
+		
+		Entity _atakujący = ev.getDamager();
+		
+		
+		Player atakujący = null;
+		if (_atakujący instanceof Player)
+			atakujący = (Player) ev.getDamager();
+		else if (_atakujący instanceof Projectile) {
+			 ProjectileSource __atakujący = ((Projectile) _atakujący).getShooter();
+			 if (__atakujący instanceof Player)
+				 atakujący = (Player) __atakujący;
+		}
+		if (atakujący == null) return;
 		
 		if (Bukkit.getPlayer(atakowany.getName()) == null) return;
 		
