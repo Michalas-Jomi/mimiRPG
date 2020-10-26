@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,12 +15,12 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Napis;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class RandomoweRespy extends Komenda implements Przeładowalny, Listener {
@@ -57,7 +58,7 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1) return utab(args, "lista", "dodaj");
+		if (args.length <= 1) return utab(args, "lista", "dodaj", "los");
 		return null;
 	}
 	@Override
@@ -90,10 +91,23 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 		case "t":
 		case "tp":
 			if (!(sender instanceof Entity)) return Func.powiadom(sender, prefix + "Nie możesz sie przeteleportować");
-			if (args.length < 2) return Func.powiadom(sender, prefix + "Nie wiadomo co usunąć");
+			if (args.length < 2) return Func.powiadom(sender, prefix + "Nie gdzie tepnąć");
 			i = Func.Int(args[1], -1);
 			if (i <= -1 || i >= respy.size()) return Func.powiadom(sender, prefix + "Niepoprawne id respu: " + args[1]);
-			((Entity) sender).teleport(respy.get(i));
+			if (args.length < 3)
+				((Entity) sender).teleport(respy.get(i));
+			else {
+				List<Entity> moby = Bukkit.selectEntities(sender, args[2]);
+				if (!moby.isEmpty())
+					moby.get(0).teleport(respy.get(i));
+			}
+			return true;
+		case "los":
+			if (args.length < 1)
+				return Func.powiadom(sender, prefix + "/losresp <nick>");
+			List<Entity> en = Bukkit.selectEntities(sender, Func.listToString(args, 0));
+			if (!en.isEmpty())
+				en.get(0).teleport(Func.losuj(respy));
 			return true;
 		default:
 			return Func.powiadom(sender, prefix + "Niepoprawne argumenty");
@@ -121,8 +135,13 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 	
 	@EventHandler
 	public void śmierć(PlayerRespawnEvent ev) {
-		List<Location> respy = dajRespy();
-		if (respy.size() > 0)
-			ev.setRespawnLocation(Func.losuj(respy));
+		Location łóżko = ev.getPlayer().getBedLocation();
+		if (łóżko != null)
+			ev.setRespawnLocation(łóżko);
+		else {
+			List<Location> respy = dajRespy();
+			if (respy.size() > 0)
+				ev.setRespawnLocation(Func.losuj(respy));
+		}
 	}
 }

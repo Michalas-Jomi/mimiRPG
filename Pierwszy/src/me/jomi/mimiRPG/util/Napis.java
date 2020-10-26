@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

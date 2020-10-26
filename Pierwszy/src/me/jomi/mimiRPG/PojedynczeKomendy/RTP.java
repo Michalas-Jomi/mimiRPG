@@ -13,12 +13,12 @@ import org.bukkit.entity.Entity;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class RTP extends Komenda implements Przeładowalny {

@@ -37,6 +37,10 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
 import me.jomi.mimiRPG.SkyBlock.Budownik;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
 
 public class Main extends JavaPlugin {
 	// Api Vaults
@@ -117,7 +121,7 @@ public class Main extends JavaPlugin {
 		włączVault();
 		włączIridiumSkyblock();
             
-		new Baza();
+		zarejestruj(new Baza());
 		new Mimi();
         new Raport();
         
@@ -202,7 +206,7 @@ public class Main extends JavaPlugin {
 	public static void error(Object... msg) {
 		logger.severe(logprefix + Func.listToString(msg, 0));
 	}
-
+	
 	/**
 	 * Dodaje permisje do pluginu
 	 * 

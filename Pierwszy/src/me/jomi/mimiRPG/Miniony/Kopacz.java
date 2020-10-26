@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
 
 public class Kopacz extends Minion{
 

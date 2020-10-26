@@ -10,10 +10,10 @@ import org.bukkit.command.CommandSender;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Zegar;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Zegar;
 
 public class Glosowanie extends Komenda implements Zegar {
 	public static final String prefix = Func.prefix("Głosowanie");

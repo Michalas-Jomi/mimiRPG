@@ -8,6 +8,10 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import com.google.common.collect.Lists;
 
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
+
 public class Moduły implements Przeładowalny {
 	int włączone = 0;
 	

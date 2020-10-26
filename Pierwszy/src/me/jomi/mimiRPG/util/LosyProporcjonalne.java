@@ -1,9 +1,12 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.util.List;
 import java.util.Random;
 
 import com.google.common.collect.Lists;
+
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 
 public class LosyProporcjonalne<T> extends Mapowany {
 	@Mapowane List<Krotka<Integer, T>> lista;

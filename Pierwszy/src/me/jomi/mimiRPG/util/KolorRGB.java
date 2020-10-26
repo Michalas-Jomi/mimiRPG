@@ -1,8 +1,11 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.util.function.Function;
 
 import org.bukkit.Color;
+
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 
 public class KolorRGB extends Mapowany {
 	@Mapowane int red;

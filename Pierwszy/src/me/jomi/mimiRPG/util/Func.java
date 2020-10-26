@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,6 +42,10 @@ import org.bukkit.metadata.Metadatable;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+
+import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {

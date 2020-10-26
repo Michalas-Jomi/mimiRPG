@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -13,6 +13,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 

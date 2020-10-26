@@ -15,9 +15,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class DrabinaPlus extends Komenda implements Listener {

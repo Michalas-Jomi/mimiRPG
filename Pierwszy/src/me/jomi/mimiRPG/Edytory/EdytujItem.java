@@ -24,10 +24,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.TextComponent;

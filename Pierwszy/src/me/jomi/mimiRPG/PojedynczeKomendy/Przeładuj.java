@@ -7,11 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.jomi.mimiRPG.Baza;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Chat.Raport;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Przeładuj extends Komenda {
 

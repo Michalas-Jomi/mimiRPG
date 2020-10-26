@@ -32,12 +32,12 @@ import org.bukkit.inventory.ItemStack;
 import com.iridium.iridiumskyblock.User;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 import net.minecraft.server.v1_16_R2.BlockPosition;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.util.List;
 

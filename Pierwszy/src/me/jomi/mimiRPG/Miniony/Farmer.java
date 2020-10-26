@@ -11,9 +11,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
 import net.minecraft.server.v1_16_R2.EntityHuman;
 import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;

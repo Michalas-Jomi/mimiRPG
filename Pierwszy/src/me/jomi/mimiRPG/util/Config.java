@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
+
+import me.jomi.mimiRPG.Baza;
+import me.jomi.mimiRPG.Main;
 
 public class Config {
 	private YamlConfiguration plik;

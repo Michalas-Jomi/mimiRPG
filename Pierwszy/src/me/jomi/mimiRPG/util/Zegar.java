@@ -1,10 +1,12 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.util.List;
 
 import org.bukkit.Bukkit;
 
 import com.google.common.collect.Lists;
+
+import me.jomi.mimiRPG.Main;
 
 public interface Zegar {
 	static final List<_Zegar> zegary = Lists.newArrayList();

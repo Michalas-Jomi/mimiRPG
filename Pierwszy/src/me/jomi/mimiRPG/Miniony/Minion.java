@@ -28,10 +28,10 @@ import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.MenuStronne;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.MenuStronne;
 import net.minecraft.server.v1_16_R2.EntityZombie;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;

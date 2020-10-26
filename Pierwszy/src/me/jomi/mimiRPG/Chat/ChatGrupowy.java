@@ -15,11 +15,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Napis;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Napis;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;

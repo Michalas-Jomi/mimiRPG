@@ -10,8 +10,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class WeryfikacjaPelnoletnosci implements Listener{

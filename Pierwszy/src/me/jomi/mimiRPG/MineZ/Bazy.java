@@ -30,33 +30,18 @@ import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.LingeringPotionSplashEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.hanging.HangingEvent;
-import org.bukkit.event.hanging.HangingPlaceEvent;
-import org.bukkit.event.inventory.BrewEvent;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.FurnaceBurnEvent;
-import org.bukkit.event.inventory.FurnaceExtractEvent;
-import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryCreativeEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryEvent;
-import org.bukkit.event.inventory.InventoryInteractEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -83,189 +68,170 @@ import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Napis;
-import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.Zegar;
-import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Napis;
+import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 
 
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockBurnEvent;
-import org.bukkit.event.block.BlockCanBuildEvent;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockDispenseArmorEvent;
-import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.block.BlockEvent;
-import org.bukkit.event.block.BlockExpEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockFertilizeEvent;
-import org.bukkit.event.block.BlockFormEvent;
-import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockGrowEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockMultiPlaceEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPistonEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.event.block.BlockSpreadEvent;
-import org.bukkit.event.block.EntityBlockFormEvent;
-import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.block.NotePlayEvent;
-import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.EntityUnleashEvent;
-import org.bukkit.event.entity.ExpBottleEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerShearEntityEvent;
-import org.bukkit.event.player.PlayerTakeLecternBookEvent;
-import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
-import org.bukkit.event.vehicle.VehicleCollisionEvent;
-import org.bukkit.event.vehicle.VehicleCreateEvent;
-import org.bukkit.event.vehicle.VehicleDamageEvent;
-import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.event.vehicle.VehicleEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
-import org.bukkit.event.vehicle.VehicleUpdateEvent;
-import org.bukkit.event.world.StructureGrowEvent;
-
-import com.sk89q.worldguard.bukkit.event.block.BreakBlockEvent;
-import com.sk89q.worldguard.bukkit.event.block.PlaceBlockEvent;
-import com.sk89q.worldguard.bukkit.event.block.UseBlockEvent;
-import com.sk89q.worldguard.bukkit.event.entity.DamageEntityEvent;
-import com.sk89q.worldguard.bukkit.event.entity.DestroyEntityEvent;
-import com.sk89q.worldguard.bukkit.event.entity.UseEntityEvent;
-import com.sk89q.worldguard.bukkit.event.inventory.UseItemEvent;
-import com.sk89q.worldguard.bukkit.event.player.ProcessPlayerEvent;
-import com.sk89q.worldguard.bukkit.protection.events.flags.FlagContextCreateEvent;
-
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.CreeperPowerEvent;
-import org.bukkit.event.entity.EntityBreakDoorEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityCombustByBlockEvent;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
-import org.bukkit.event.entity.EntityPortalEnterEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.event.entity.EntityPortalExitEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.EntityTeleportEvent;
-import org.bukkit.event.entity.EntityUnleashEvent;
-import org.bukkit.event.entity.ExpBottleEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.entity.HorseJumpEvent;
-import org.bukkit.event.entity.ItemDespawnEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.PigZapEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.PlayerLeashEntityEvent;
-import org.bukkit.event.entity.PotionSplashEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.entity.SheepDyeWoolEvent;
-import org.bukkit.event.entity.SheepRegrowWoolEvent;
-import org.bukkit.event.entity.SlimeSplitEvent;
-
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerChannelEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerEditBookEvent;
-import org.bukkit.event.player.PlayerEggThrowEvent;
-import org.bukkit.event.player.PlayerEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerLevelChangeEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRegisterChannelEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerShearEntityEvent;
-import org.bukkit.event.player.PlayerStatisticIncrementEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerToggleFlightEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
-import org.bukkit.event.player.PlayerUnleashEntityEvent;
-import org.bukkit.event.player.PlayerUnregisterChannelEvent;
-import org.bukkit.event.player.PlayerVelocityEvent;
-
 
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
-@SuppressWarnings({ "unused" })
 @Moduł
 public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
-	public static class Baza {
+	public static class Gildia extends Mapowany {
+		public static final String prefix = Func.prefix("Gildia");
+		static final Config config = new Config("configi/Gildie");
+		@Mapowane List<String> gracze;
+		@Mapowane String przywódca;
+		@Mapowane String nazwa;
+		
+		
+		void zapisz() {
+			config.ustaw_zapisz(nazwa, this);
+		}
+		static Gildia wczytaj(String nazwa) {
+			if (nazwa == null) return null;
+			return (Gildia) config.wczytaj(nazwa);
+		}
+		static Gildia stwórz(String nazwa, String przywódca) {
+			Gracz g = Gracz.wczytaj(przywódca);
+			
+			if (g.gildia != null) {
+				Player p = Bukkit.getPlayer(przywódca);
+				p.sendMessage(prefix + "Nie możesz utworzyć nowej gildi puki nie opuścisz aktualnej");
+				return null;
+			}
+			
+			Gildia gildia = new Gildia();
+			gildia.przywódca = przywódca;
+			gildia.nazwa = nazwa;
+			gildia.zapisz();;
+			
+			g.gildia = nazwa;
+			g.zapisz();
+			
+			return gildia;
+		}
+			
+		static boolean istnieje(String nazwa) {
+			for (String klucz : config.klucze(false))
+				if (klucz.equalsIgnoreCase(nazwa))
+					return true;
+			return false;
+		}
+		
+		void dołącz(Player p) {
+			
+			Gracz g = Gracz.wczytaj(p.getName());
+			
+			wykonajNaRegionach(g, DefaultDomain::addPlayer);
+			
+			gracze.add(p.getName());
+			zapisz();
+			
+			g.gildia = nazwa;
+			g.zapisz();
+			
+		}
+		void opuść(String nick) {
+			Gracz g = Gracz.wczytaj(nick);
+			
+			gracze.remove(nick);
+			zapisz();
+			
+			g.gildia = null;
+			g.zapisz();
+			
+			wykonajNaRegionach(g, DefaultDomain::removePlayer);
+			
+			if (nick.equals(przywódca))
+				if (gracze.size() == 0)
+					config.ustaw_zapisz(nazwa, null);
+				else
+					przywódca = gracze.remove(0);
+		}	
+		private void wykonajNaRegionach(Gracz g, BiConsumer<DefaultDomain, String> bic) {
+			Consumer<String> cons = członek -> {
+				Gracz gracz = Gracz.wczytaj(członek);
+				if (gracz.baza == null) return;
+				ProtectedRegion region = gracz.baza.region;
+				DefaultDomain members = region.getMembers();
+				bic.accept(members, g.nick);
+				region.setMembers(members);			
+			};
+			for (String członek : gracze)
+				cons.accept(członek);
+			cons.accept(przywódca);
+			
+			
+			if (g.baza == null) return;
+			ProtectedRegion region = g.baza.region;
+			DefaultDomain members = region.getMembers();
+			for (String członek : gracze)
+				bic.accept(members, członek);
+			bic.accept(members, przywódca);
+			region.setMembers(members);
+		}
+		
+		
+		void napiszDoCzłonków(Player kto, String msg) {
+			Set<Player> set = Sets.newConcurrentHashSet();
+			
+			Consumer<String> dodaj = nick -> {
+				Player p = Bukkit.getPlayer(nick);
+				if (p != null) 
+					set.add(p);
+			};
+			
+			for (String nick : gracze) 
+				dodaj.accept(nick);
+			dodaj.accept(przywódca);
+			
+			// TODO sprawdzić czy sie wyświetli, czy trzeba samodzielnie
+			Event event = new AsyncPlayerChatEvent(true, kto, msg, set);
+			Bukkit.getServer().getPluginManager().callEvent(event);
+		}
+		void wyświetlCzłonkom(String msg) {
+			Consumer<String> wyświetl = nick -> {
+				Player p = Bukkit.getPlayer(nick);
+				if (p != null) 
+					p.sendMessage(msg);
+			};
+			
+			for (String nick : gracze) 
+				wyświetl.accept(nick);
+			wyświetl.accept(przywódca);
+			
+		}
+	}
+	public static class Baza extends Mapowany {
 		ProtectedCuboidRegion region;
 		World świat;
+		
+		@Mapowane String nazwa;
+		@Mapowane String nazwaŚwiata;
+		@Mapowane Location tp;
+		@Mapowane int poziom = 1;
 		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
 			this.świat = świat;
 					
 			String nazwaBazy = String.format("baza%sx%sy%sz", x, y, z);
+			
 			region = new ProtectedCuboidRegion(
 					nazwaBazy,
 					BlockVector3.at(x+dx, y+dy, z+dz),
@@ -280,16 +246,25 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.DENY);
 			region.setFlag(Main.flagaC4, 		   StateFlag.State.ALLOW);
 			
+			tp = p.getLocation();
+			nazwaŚwiata = świat.getName();
+			nazwa = nazwaBazy;
+			
 			Gracz g = Gracz.wczytaj(p.getName());
-			Func.wezUstaw(g.bazy, świat.getName()).add(nazwaBazy);
+			g.baza = this;
 			g.zapisz();
 			
 			// ognisko to rdzeń bazy, zniszczenie ogniska = usunięcie bazy
 			Func.opóznij(1, () -> new Location(świat, x, y, z).getBlock().setType(Material.CAMPFIRE));
-		}
-		
-		static Baza wczytaj(int x, int y, int z, World świat, ItemStack item, BlockPlaceEvent ev, Map<String, Object> mapa) {
+		}		
+		static Baza wczytaj(Player p, int x, int y, int z, World świat, ItemStack item, BlockPlaceEvent ev, Map<String, Object> mapa) {
 			if (mapa == null) return null;
+			Gracz g = Gracz.wczytaj(p.getName());
+			if (g.baza != null) {
+				p.sendMessage(prefix + "Nie możesz postawić więcej baz");
+				Bazy.inst.blokuj = true;
+				return null;
+			}
 			int dx = (int) mapa.get("dx");
 			int dy = (int) mapa.get("dy");
 			int dz = (int) mapa.get("dz");
@@ -306,6 +281,12 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return null;
 		}
 
+		public Baza() {}// konstruktor dla Mapowanego
+		public void Init() {
+			świat = Bukkit.getWorld(nazwaŚwiata);
+			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
+		}
+		
 		Baza(World świat, String nazwa) {
 			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
 			this.świat = świat;
@@ -326,15 +307,14 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		void usuń() {
 			for (String owner : region.getOwners().getPlayers()) {
 				Gracz g = Gracz.wczytaj(owner);
-				List<String> bazy = g.bazy.get(świat.getName());
-				if (bazy == null) continue;
-				if (bazy.remove(region.getId()) && bazy.size() == 0)
-					g.bazy.remove(świat.getName());
+				if (g.baza.nazwa.equals(region.getId())) {
+					g.baza = null;
+					g.zapisz();
+				}
 			}
 			Bazy.inst.regiony(świat).removeRegion(region.getId());
 		}
-
-		// TODO ceny surowkami
+		
 		void ulepsz(int ile) {
 			ulepsz(region::getMaximumPoint, region::setMaximumPoint, ile, ile);
 			ulepsz(region::getMinimumPoint, region::setMinimumPoint, -ile, 0);
@@ -343,16 +323,16 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			consumer.accept(supplier.get().add(xz, y, xz));
 		}
 	}
-
+	
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;
 	static Config config = new Config("Bazy");
 	
 	static Bazy inst;
+	
 	public Bazy() {
 		super("gildia", null, "g");
-		ustawKomende("usuńbaze", null, null);
-		ustawKomende("ulepszbaze", null, null);
+		ustawKomende("baza", "/baza [tp | ustawtp | usuń | ulepsz]", null);
 		inst = this;
 		regiony = WorldGuard.getInstance().getPlatform().getRegionContainer();
 	}
@@ -360,15 +340,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return Main.rg != null;
 	}
 	
-	@Override
-	public void przeładuj() {
-		config.przeładuj();
-	}
-	@Override
-	public Krotka<String, Object> raport() {
-		ConfigurationSection sekcja = config.sekcja("bazy");
-		return Func.r("Itemy dla Baz/schematów/C4", (sekcja == null ? 0 : sekcja.getKeys(false).size()));
-	}
 	
 	@EventHandler
 	public void explozja(ExplosionPrimeEvent ev) {
@@ -477,44 +448,28 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
 		}
 	}
-
-	@EventHandler(priority = EventPriority.HIGH)
-	public void preNiszczenie2(PlayerInteractEvent ev) {
-		Block blok = ev.getClickedBlock();
-		if (blok != null && blok.getType().equals(Material.CAMPFIRE))
-			ev.setCancelled(false);
-	}
-
-	@EventHandler(priority = EventPriority.LOW)
-	public void niszczenie(BlockBreakEvent ev) {
-		if (!ev.getBlock().getType().equals(Material.CAMPFIRE)) return;
-		
-		Location loc = ev.getBlock().getLocation();
-		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
-			Baza baza = Baza.wczytaj(loc.getWorld(), region);
-			if (baza != null) {
-				ev.setCancelled(true);
-				if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
-					Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
-					return;
-				}
-				if (baza.region.getMembers().contains(ev.getPlayer().getName())) {
-					Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć bazy członka twojej gildi");
-					return;
-				}
-				baza.usuń();
-				Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
-				ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", Func.listToString(
-						baza.region.getOwners().getPlayers(), 0, "§6, §e")));
-				for (String owner : baza.region.getOwners().getPlayers()) {
-					Player p = Bukkit.getPlayer(owner);
-					if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
-				}
-				return;
-			}
-		}
-	}
 	
+	@EventHandler(priority = EventPriority.LOW)
+	public void uderzenie(EntityDamageByEntityEvent ev) {
+		if (!(ev.getEntity() instanceof Player)) return;
+		Player uderzony = (Player) ev.getEntity();
+		
+		Player uderzający;
+		if (ev.getDamager() instanceof Player)
+			uderzający = (Player) ev.getDamager();
+		else if (ev.getDamager() instanceof Projectile && ((Projectile) ev.getDamager()).getShooter() instanceof Player)
+			uderzający = (Player) ((Projectile) ev.getDamager()).getShooter();
+		else
+			return;
+		
+		String g1 = Gracz.wczytaj(uderzony).gildia;
+		String g2 = Gracz.wczytaj(uderzający).gildia;
+		
+		if (g1 != null && g1.equals(g2))
+			ev.setCancelled(true);
+	}
+
+		
 	boolean blokuj;
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void stawianie(BlockPlaceEvent ev) {
@@ -562,7 +517,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					// Baza/Schemat
 					// jeśli baza nie może być postawiona przez flage -> blokuj = true
 					blokuj = false;
-					boolean zabierz = Baza.wczytaj(x, y, z, świat, item, ev,
+					boolean zabierz = Baza.wczytaj(ev.getPlayer(), x, y, z, świat, item, ev,
 							((ConfigurationSection) mapa.get("baza")).getValues(false)) != null;
 					
 					if (mapa.containsKey("schemat") && !blokuj && 
@@ -598,64 +553,79 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			e.printStackTrace();
 		}
 		return true;
+	}	
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void niszczenie(BlockBreakEvent ev) {
+		if (!ev.getBlock().getType().equals(Material.CAMPFIRE)) return;
+		
+		Baza baza = znajdzBaze(ev.getBlock().getLocation());
+		if (baza == null) return;
+		
+		ev.setCancelled(true);
+		if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
+			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
+			return;
+		}
+		
+		if (baza.region.getMembers().contains(ev.getPlayer().getName())) {
+			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć bazy członka twojej gildi");
+			return;
+		}
+		
+		baza.usuń();
+		Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
+		
+		ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", "§e" + Func.listToString(
+				baza.region.getOwners().getPlayers(), 0, "§6, §e")));
+		for (String owner : baza.region.getOwners().getPlayers()) {
+			Player p = Bukkit.getPlayer(owner);
+			if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
+		}
 	}
 		
-	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1)
-			return utab(args, "zaproś", "wyrzuć", "opuść", "stwórz");
+	@EventHandler(priority = EventPriority.HIGH)
+	public void preNiszczenieStawianie(PlayerInteractEvent ev) {
+		Block blok = ev.getClickedBlock();
+		if (blok != null) {
+			switch (ev.getAction()) {
+			case LEFT_CLICK_BLOCK:
+				if (blok.getType().equals(Material.CAMPFIRE))
+					ev.setCancelled(false);
+				break;
+			case RIGHT_CLICK_BLOCK:
+				ItemStack item = ev.getItem();
+				if (item == null) return;
+				if (config.klucze(false).contains("bazy"))
+					for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
+						Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
+						if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
+							ev.setCancelled(false);
+							break;
+						}
+					}
+				break;
+			default:
+				break;
+			
+			}
+		}
+	}
+
+	
+	Baza znajdzBaze(Location loc) {
+		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
+			Baza baza = Baza.wczytaj(loc.getWorld(), region);
+			if (baza != null)
+				return baza;
+		}
 		return null;
 	}
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player)) return Func.powiadom(sender, "Ta komenda jest zarezerwowana tylko dla graczy");
-		Player p = (Player) sender;
-		switch (cmd.getName()) {
-		case "gildia":
-			return komendaGildia(p, args);
-		case "usuńbaze":
-			for (ProtectedRegion region : regiony(p.getWorld()).getApplicableRegions(locToVec3(p.getLocation()))) {
-				Baza baza = Baza.wczytaj(p.getWorld(), region);
-				if (baza != null) {
-					if (!baza.region.getOwners().contains(sender.getName()))
-						return Func.powiadom(prefix, sender, "To nie twoja baza");
-					baza.usuń();
-					sender.sendMessage(prefix + "Usunięto baza z pod twoich nóg");
-					return true;
-				}
-			}
-			sender.sendMessage(prefix + "W tym miejscu nie ma żadnej bazy");
-			break;
-		case "ulepszbaze":
-			for (ProtectedRegion region : regiony(p.getWorld()).getApplicableRegions(locToVec3(p.getLocation()))) {
-				Baza baza = Baza.wczytaj(p.getWorld(), region);
-				if (baza != null) {
-					if (!baza.region.getOwners().contains(sender.getName()))
-						return Func.powiadom(prefix, sender, "To nie twoja baza");
-					baza.ulepsz(2);
-					sender.sendMessage(prefix + "Ulepszono baze z pod twoich nóg");
-					return true;
-				}
-			}
-			sender.sendMessage(prefix + "Tu nie ma żadnej bazy");
-			break;
-		}
-		return true;
+	RegionManager regiony(World świat) {
+		return regiony.get(BukkitAdapter.adapt(świat));
 	}
-	
-	@Override
-	public int czas() {
-		Set<String> doUsunięcia = Sets.newConcurrentHashSet();
-		for (Entry<String, Krotka<String, Integer>> en : mapaZaproszeń.entrySet()) {
-			if ((en.getValue().b -= 1) <= 0) {
-				Func.napisz(en.getKey(), Gildia.prefix + Func.msg("Zaproszenie do gildi dla %s wygasło", en.getValue().a));
-				Func.napisz(en.getValue().a, Gildia.prefix + Func.msg("Zaproszenie do gildi od %s wygasło", en.getKey()));
-				doUsunięcia.add(en.getKey());
-			}
-		}
-		for (String nick : doUsunięcia)
-			mapaZaproszeń.remove(nick);
-		return 20;
+	BlockVector3 locToVec3(Location loc) {
+		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 	
 	// nick zapraszającego: (zaproszony, czas)
@@ -761,7 +731,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return edytor(sender);
 		}
 		return true;
-	}
+	}	
 	boolean edytor(Player p) {
 		Napis n = new Napis();
 		
@@ -787,14 +757,163 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		return true;
 	}
-
-	RegionManager regiony(World świat) {
-		return regiony.get(BukkitAdapter.adapt(świat));
-	}
-	BlockVector3 locToVec3(Location loc) {
-		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
+	boolean komendaBaza(Player p, String[] args) {
+		if (args.length < 1) return false;
+		Gracz g = Gracz.wczytaj(p.getName());
+		if (g.baza == null)
+			return Func.powiadom(p, prefix + "Nie masz bazy");
+		switch (args[0]) {
+		case "home":
+		case "dom":
+		case "tp": // TODO cooldown 
+			p.teleport(g.baza.tp);
+			break;
+		case "sethome":
+		case "ustawtp":
+			Baza znaleziona = znajdzBaze(p.getLocation());
+			if (znaleziona == null)
+				return Func.powiadom(p, prefix + "Musisz być w swojej bazie aby ustawić teleport");
+			g.baza.tp = p.getLocation();
+			g.zapisz();
+			break;
+		case "usuń":
+			if (args.length < 2 || !g.baza.nazwa.equals(args[1]))
+				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
+			g.baza.usuń();
+			return Func.powiadom(p, prefix + "Usunołeś swoją bazę");
+		case "ulepsz":// TODO ulepszanie z czytaniem danych z configa w tym surkami
+			g.baza.ulepsz(2);
+			return Func.powiadom(p, prefix + "Ulepszyłeś baze");
+		}
+		return true;
 	}
 	
+	final String nazwaEqUlepszania = "§1§lUlepszanie Bazy";
+	@EventHandler
+	public void klikanieEq(InventoryClickEvent ev) {
+		if (!(ev.getView().getTitle().equals(nazwaEqUlepszania))) return;
+		
+		int slot = ev.getSlot();
+		
+		if (slot < ev.getInventory().getSize() && slot >= 0 && !(slot >= 3*9 + 1 && slot < 3*9 + 8))	
+			ev.setCancelled(true);
+	}
+	@SuppressWarnings("unchecked")
+	@EventHandler
+	public void zamykanieEq(InventoryCloseEvent ev) {
+		if (!ev.getView().getTitle().equals(nazwaEqUlepszania)) return;
+		
+		Player p = (Player) ev.getPlayer();
+		
+		List<ItemStack> zwrot = zwrotneItemy(ev.getInventory());
+		if (zwrot == null) {
+			for (int i=3*9 + 1; i<3*9 + 8; i++)
+				p.getInventory().addItem(ev.getInventory().getItem(i));
+			return;
+		}
+		for (ItemStack item : zwrot)
+			p.getInventory().addItem(item);
+		Gracz g = Gracz.wczytaj(p);
+		g.baza.ulepsz((int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(g.baza.poziom).get("kratki")); // TODO ilośćKratek
+		p.sendMessage(prefix + "Ulepszyłeś swoją baze");
+		/* szybki
+		 * potrzebne
+		 * szybki
+		 * dane
+		 * szybki
+		 * 
+		 */
+	}
+	@SuppressWarnings("unchecked")
+	Inventory stwórzInvUlepszenia(int poziom) {
+		final ItemStack szybka = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§1§l §2§o");
+		Inventory inv = Bukkit.createInventory(null, 9*5, nazwaEqUlepszania);
+		for (int i=0; i< 9*5; i++)
+			inv.setItem(i, szybka);
+		
+		List<Map<String, Object>> lista = (List<Map<String, Object>>) config.wczytaj("ulepszenia bazy");
+		if (lista.size() > poziom) return null;
+		int i = 1*9 + 1;
+			for (ItemStack item : Config.itemy((List<?>) lista.get(poziom).get("itemy")))
+				inv.setItem(i++, item);
+		while (i < 1*9 + 8)
+			inv.getItem(i).setType(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+		
+		return inv;
+	}
+	List<ItemStack> zwrotneItemy(Inventory inv) {
+		List<ItemStack> lista = Lists.newArrayList();
+		for (int i=1; i<8; i++) {
+			ItemStack potrzebny = inv.getItem(1*9 + i);
+			if (potrzebny == null) continue;
+			ItemStack item = inv.getItem(3*9 + i);
+			if (item == null) return null;
+			if (!potrzebny.isSimilar(item)) return null;
+			int zwrot = item.getAmount() - potrzebny.getAmount();
+			if (zwrot < 0) return null;
+			if (zwrot > 0) {
+				ItemStack _item = item.clone();
+				_item.setAmount(zwrot);
+				lista.add(_item);
+			}
+		}
+		return lista;
+	}
+	
+	
+		
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		switch (cmd.getName()) {
+		case "gildia":
+			if (args.length <= 1)
+				return utab(args, "zaproś", "wyrzuć", "opuść", "stwórz");
+			break;
+		case "baza":
+			if (args.length <= 1)
+				return utab(args, "tp", "ustawtp", "usuń", "ulepsz");
+		}
+		return null;
+	}
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if (!(sender instanceof Player)) return Func.powiadom(sender, "Ta komenda jest zarezerwowana tylko dla graczy");
+		Player p = (Player) sender;
+		switch (cmd.getName()) {
+		case "gildia":
+			return komendaGildia(p, args);
+		case "baza":
+			return komendaBaza(p, args);
+		}
+		return true;
+	}
+
+	@Override
+	public int czas() {
+		Set<String> doUsunięcia = Sets.newConcurrentHashSet();
+		for (Entry<String, Krotka<String, Integer>> en : mapaZaproszeń.entrySet()) {
+			if ((en.getValue().b -= 1) <= 0) {
+				Func.napisz(en.getKey(), Gildia.prefix + Func.msg("Zaproszenie do gildi dla %s wygasło", en.getValue().a));
+				Func.napisz(en.getValue().a, Gildia.prefix + Func.msg("Zaproszenie do gildi od %s wygasło", en.getKey()));
+				doUsunięcia.add(en.getKey());
+			}
+		}
+		for (String nick : doUsunięcia)
+			mapaZaproszeń.remove(nick);
+		return 20;
+	}
+	
+	@Override
+	public void przeładuj() {
+		config.przeładuj();
+	}
+	@Override
+	public Krotka<String, Object> raport() {
+		ConfigurationSection sekcja = config.sekcja("bazy");
+		return Func.r("Itemy dla Baz/schematów/C4", (sekcja == null ? 0 : sekcja.getKeys(false).size()));
+	}
+
+	// dla /citem
 	public static Set<String> getBazy() {
 		ConfigurationSection sekcja = config.sekcja("bazy");
 		if (sekcja == null) return Sets.newConcurrentHashSet();

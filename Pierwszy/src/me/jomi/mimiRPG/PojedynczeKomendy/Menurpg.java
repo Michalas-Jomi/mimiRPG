@@ -19,9 +19,9 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

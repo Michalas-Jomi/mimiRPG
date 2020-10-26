@@ -14,10 +14,10 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class LosowyDropGracza extends Komenda implements Listener {

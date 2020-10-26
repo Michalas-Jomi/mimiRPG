@@ -14,6 +14,8 @@ import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.Lists;
 
+import me.jomi.mimiRPG.util.Func;
+
 public abstract class Komenda implements TabExecutor {
 	List<PluginCommand> _komendy = Lists.newArrayList();
 	boolean _zarejestrowane_komendy = true;

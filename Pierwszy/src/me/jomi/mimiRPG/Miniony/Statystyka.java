@@ -4,9 +4,9 @@ import java.util.HashMap;
 
 import org.bukkit.entity.Player;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
 
 public class Statystyka {
 	private static final HashMap<String, Statystyka> mapa = new HashMap<>();

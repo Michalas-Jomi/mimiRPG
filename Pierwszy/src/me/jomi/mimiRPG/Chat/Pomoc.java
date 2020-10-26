@@ -5,12 +5,12 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Pomoc extends Komenda implements Przeładowalny{

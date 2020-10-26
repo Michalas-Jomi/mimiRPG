@@ -39,14 +39,14 @@ import com.sk89q.worldedit.math.BlockVector3;
 
 import com.sk89q.worldguard.WorldGuard;
 
-import me.jomi.mimiRPG.Config;
-import me.jomi.mimiRPG.Func;
-import me.jomi.mimiRPG.Krotka;
-import me.jomi.mimiRPG.LosyProporcjonalne;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Przeładowalny;
-import me.jomi.mimiRPG.Zegar;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.LosyProporcjonalne;
+import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
 import net.minecraft.server.v1_16_R2.EntityInsentient;
 import net.minecraft.server.v1_16_R2.EntityPlayer;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
@@ -239,7 +239,6 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			spodnie.add(Material.valueOf(typ + "_LEGGINGS"));
 			buty.	add(Material.valueOf(typ + "_BOOTS"));
 		}
-		czapki.add(Material.TURTLE_HELMET);
 		for (World świat : Bukkit.getWorlds())
 			for (Entity mob : świat.getEntities())
 				if (mob.getScoreboardTags().contains("mimiCustomowyMob"))

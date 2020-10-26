@@ -1,4 +1,7 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
+
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 
 public class Krotka<T1, T2> extends Mapowany {
 	@Mapowane public T1 a;

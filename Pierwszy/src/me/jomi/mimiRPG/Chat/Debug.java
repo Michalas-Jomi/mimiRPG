@@ -10,9 +10,9 @@ import org.bukkit.command.CommandSender;
 import com.google.common.collect.Lists;
 
 import joptsimple.ValueConversionException;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class Debug extends Komenda {

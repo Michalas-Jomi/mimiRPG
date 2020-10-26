@@ -3,9 +3,14 @@ package me.jomi.mimiRPG;
 import java.util.HashMap;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class Baza {
+import me.jomi.mimiRPG.util.Config;
+
+public class Baza implements Listener {
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static ConfigurationSection grupy;
@@ -37,5 +42,11 @@ public class Baza {
 	}
 	private static void wczytajGrupy() {
 		grupy = config.sekcja("grupy");
+	}
+
+	
+	@EventHandler
+	public void opuszczanieGry(PlayerQuitEvent ev) {
+		Gracz.mapa.remove(ev.getPlayer().getName());
 	}
 }

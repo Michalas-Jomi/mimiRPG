@@ -5,15 +5,15 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Przeładowalny;
 import me.jomi.mimiRPG.Miniony.Minion;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.CustomoweItemy;
 import me.jomi.mimiRPG.SkyBlock.Budownik;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Raport extends Komenda {
 	public static final String prefix = Func.prefix("Raport");

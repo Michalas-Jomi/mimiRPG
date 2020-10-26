@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
+import me.jomi.mimiRPG.util.Func;
+
 public abstract class Mapowany implements ConfigurationSerializable {
 	public static Mapowany deserialize(Map<String, Object> mapa) {
 		Mapowany obj = null;

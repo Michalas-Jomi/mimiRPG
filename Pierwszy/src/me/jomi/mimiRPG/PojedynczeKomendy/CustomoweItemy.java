@@ -11,12 +11,12 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Karabiny;
+import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class CustomoweItemy extends Komenda {

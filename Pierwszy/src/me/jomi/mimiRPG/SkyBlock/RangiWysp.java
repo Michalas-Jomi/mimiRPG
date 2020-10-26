@@ -15,12 +15,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.User;
 
-import me.jomi.mimiRPG.Func;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Krotka;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Przeładowalny;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class RangiWysp extends Komenda implements Przeładowalny, Listener {

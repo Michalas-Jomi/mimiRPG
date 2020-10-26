@@ -15,10 +15,10 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Func;
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Gracze.Gracz;
+import me.jomi.mimiRPG.util.Func;
 
 // TODO przeanalizować
 
@@ -31,7 +31,7 @@ public class Plecak extends Komenda implements Listener {
 	}
 
 	private static boolean otwórz(Player p) {
-		List<ItemStack> itemy = Gracz.wczytaj(p.getName()).plecak;
+		List<ItemStack> itemy = Gracz.wczytaj(p).plecak;
 		while (itemy.size() < 3)
 			itemy.add(null);
 		int sloty = itemy.size();
@@ -47,7 +47,7 @@ public class Plecak extends Komenda implements Listener {
 		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
 		Gracz gracz = Gracz.wczytaj(ev.getPlayer().getName());
 		Inventory inv = ev.getInventory();
-		for (int i=0; i<gracz.plecak.size(); i++)
+		for (int i=0; i<Math.max(gracz.plecak.size(), 3); i++)
 			gracz.plecak.set(i, inv.getItem(i));
 		gracz.zapisz();
 	}

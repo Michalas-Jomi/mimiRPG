@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
+import me.jomi.mimiRPG.util.Krotka;
 
 
 public class NowyEkwipunek {
