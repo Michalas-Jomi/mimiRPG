@@ -18,6 +18,18 @@ c4:
     - CAMPFIRE
     - BEDROCK
 
+# lista ulepszeń
+ulepszenia bazy:
+  -
+    kratki: 4 # ilość rozszerzanych kratek
+    itemy: [] # lista potrzebnych itemów
+  -
+    kratki: 3
+    itemy: []
+  -
+    kratki: 2
+    itemy: []
+
 # nazwa:  c4 / baza i/lub schemat pod przedmiot
 bazy:
   baza1:

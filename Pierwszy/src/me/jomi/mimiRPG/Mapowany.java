@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -21,7 +22,9 @@ public abstract class Mapowany implements ConfigurationSerializable {
 		Func.zdemapuj(obj, mapa);
 		
 		try {
-			obj.getClass().getDeclaredMethod("Init").invoke(obj);
+			Method met = Func.dajMetode(obj.getClass(), "Init");
+			met.setAccessible(true);
+			met.invoke(obj);
 		} catch (Throwable e) {};
 		
 		return obj;

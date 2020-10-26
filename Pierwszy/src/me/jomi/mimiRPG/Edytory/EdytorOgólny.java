@@ -1,7 +1,9 @@
-package me.jomi.mimiRPG.util;
+package me.jomi.mimiRPG.Edytory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,6 +17,9 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Napis;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 
@@ -101,6 +106,7 @@ public class EdytorOgólny {
 			} catch (ArrayIndexOutOfBoundsException aioobe) {
 				
 			} catch (Throwable e) {
+				e.printStackTrace();
 				sender.sendMessage("§cNie ingeruj w edytor");
 			}
 			try {
@@ -111,7 +117,7 @@ public class EdytorOgólny {
 			}
 			return true;
 		}
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked" })
 		void komenda(String[] args) throws Throwable {
 			Object ost = null;
 			Object obj = obiekt;
@@ -130,7 +136,8 @@ public class EdytorOgólny {
 					}
 				} else if (args[i].equals("[]")) {
 					if (args[i+1].equals("dodaj")) {
-						Class<?> clazz = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+						Type x = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+						Class<?> clazz = ((Class<?>) (x instanceof Class ? x : ((TypeVariable<?>) x).getBounds()[0]));
 						domyślna(clazz, ((List<Object>) field.get(ost))::add);
 					} else if (args[i+1].equals("usuń")) {
 						((List<Object>) field.get(ost)).remove(Integer.parseInt(args[i+2]));
@@ -144,7 +151,7 @@ public class EdytorOgólny {
 					if (obj instanceof List) {
 						obj = ((List<?>) obj).get(Integer.parseInt(klucz));
 					} else {
-						field = obj.getClass().getDeclaredField(klucz);
+						field = Func.dajField(obj.getClass(), klucz);
 						field.setAccessible(true);
 						obj = field.get(obj);
 					}
@@ -200,7 +207,7 @@ public class EdytorOgólny {
 			if (objekt instanceof ConfigurationSerializable && !objekt.getClass().getName().startsWith("org.bukkit")) {
 				pref += "-";
 				Napis n = new Napis((wLiście ? "\n" : "") + pref + "§9" + nazwa);
-				for (Field field : objekt.getClass().getDeclaredFields()) {
+				for (Field field : Func.głębokiSkanKlasy(objekt.getClass())) {
 					field.setAccessible(true);
 					if (field.isAnnotationPresent(Mapowane.class)) {
 						n.dodaj("\n");

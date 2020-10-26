@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.MineZ.Bazy;
-import me.jomi.mimiRPG.Minigry.Paintball;
+import me.jomi.mimiRPG.Minigry.Minigra;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.util.Config;
 
@@ -21,12 +21,10 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public Koniki.Kon kon;
 	
-	@Mapowane public Paintball.Statystyki statypb;
+	@Mapowane public HashMap<String, Minigra.Statystyki> staty = new HashMap<>();
 	
 	@Mapowane public Bazy.Baza baza;
 	@Mapowane public String gildia;
-	
-	
 	
  	public void zapisz() {
 		config(nick).ustaw_zapisz("gracz", this);
@@ -42,6 +40,7 @@ public class Gracz extends Mapowany {
 		return config;
 	}
  	
+	public Gracz() {}
 	private Gracz(String nick) {
 		this.nick = nick;
 	}
@@ -50,11 +49,5 @@ public class Gracz extends Mapowany {
 	}
 	public static Gracz wczytaj(Player p) {
 		return wczytaj(p.getName());
-	}
-	
-	
-	// TODO wyrzucić
-	public boolean posiadaGildie() {
-		return gildia != null && !gildia.isEmpty();
 	}
 }

@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -70,6 +72,8 @@ public class Karabiny implements Listener, Przeładowalny {
 			pocisk.setShooter(p);
 			
 			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, 80, (float) dzwiękPitch);
+			
+			p.incrementStatistic(Statistic.USE_ITEM, Material.SNOWBALL);
 			
 			if (attackCooldown > 0) 
 				Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));

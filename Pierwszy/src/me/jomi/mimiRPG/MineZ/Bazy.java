@@ -186,7 +186,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region.setMembers(members);
 		}
 		
-		
 		void napiszDoCzłonków(Player kto, String msg) {
 			Set<Player> set = Sets.newConcurrentHashSet();
 			
@@ -224,7 +223,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		@Mapowane String nazwa;
 		@Mapowane String nazwaŚwiata;
 		@Mapowane Location tp;
-		@Mapowane int poziom = 1;
+		@Mapowane int poziom = -1;
 		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
@@ -736,7 +735,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Napis n = new Napis();
 		
 		Gracz g = Gracz.wczytaj(p.getName());
-		if (!g.posiadaGildie()) {
+		if (!Func.nieNullStr(g.gildia).isEmpty()) {
 			n.dodaj(Gildia.prefix);
 			n.dodaj(new Napis("§a[stwórz gildie]\n", "§bWymagana nazwa gildi", "/gildia stwórz ", Action.SUGGEST_COMMAND));
 		} else {
@@ -781,9 +780,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
 			g.baza.usuń();
 			return Func.powiadom(p, prefix + "Usunołeś swoją bazę");
-		case "ulepsz":// TODO ulepszanie z czytaniem danych z configa w tym surkami
-			g.baza.ulepsz(2);
-			return Func.powiadom(p, prefix + "Ulepszyłeś baze");
+		case "ulepsz":
+			if (((List<?>) config.wczytaj("ulepszenia bazy")).size() - 1 <= g.baza.poziom)
+			p.openInventory(stwórzInvUlepszenia(g.baza.poziom + 1));
+			break;
 		}
 		return true;
 	}
@@ -814,15 +814,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		for (ItemStack item : zwrot)
 			p.getInventory().addItem(item);
 		Gracz g = Gracz.wczytaj(p);
-		g.baza.ulepsz((int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(g.baza.poziom).get("kratki")); // TODO ilośćKratek
+		g.baza.ulepsz((int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(g.baza.poziom).get("kratki"));
+		g.baza.poziom++;
+		g.zapisz();
 		p.sendMessage(prefix + "Ulepszyłeś swoją baze");
-		/* szybki
-		 * potrzebne
-		 * szybki
-		 * dane
-		 * szybki
-		 * 
-		 */
 	}
 	@SuppressWarnings("unchecked")
 	Inventory stwórzInvUlepszenia(int poziom) {
@@ -859,7 +854,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		return lista;
 	}
-	
 	
 		
 	@Override

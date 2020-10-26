@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,8 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiFunction;
+
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
@@ -40,6 +42,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.Metadatable;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 
@@ -174,7 +177,6 @@ public abstract class Func {
 				func.apply(loc.getX()), func.apply(loc.getY()), func.apply(loc.getZ()),
 				(int) loc.getPitch(), (int) loc.getYaw());
 	}
-	
 	
 	public static String odkoloruj(String text) {
 		if (text == null) return null;
@@ -476,7 +478,7 @@ public abstract class Func {
 		liczba /= Math.pow(10, miejsca);
 		return liczba;
 	}
-	public static <T> T max(Iterable<T> iterable, BiFunction<T, T, T> func) {
+	public static <T> T max(Iterable<T> iterable, BinaryOperator<T> func) {
 		T w = null;
 		
 		for (T el : iterable)
@@ -492,6 +494,12 @@ public abstract class Func {
 	}
 	public static int min(Iterable<Integer> iterable) {
 		return max(iterable, (a, b) -> Math.min(a, b));
+	}
+	public static <T> Krotka<T, T> minMax(T a, T b, BinaryOperator<T> min, BinaryOperator<T> max) {
+		return new Krotka<>(
+				min.apply(a, b),
+				max.apply(a, b)
+				);
 	}
 	
 	@SuppressWarnings("resource")
@@ -682,7 +690,7 @@ public abstract class Func {
 			try {
 				if (en.getKey().equals("==")) continue;
 				if (en.getKey().equals("=mimi=")) continue;
-				Field field = clazz.getDeclaredField(en.getKey());
+				Field field = dajField(clazz, en.getKey());
 				field.setAccessible(true);
 				if (!field.isAnnotationPresent(Mapowane.class))
 					throw new Throwable();
@@ -700,7 +708,7 @@ public abstract class Func {
 			}
 
 		try {
-			for (Field field : clazz.getDeclaredFields()) {
+			for (Field field : głębokiSkanKlasy(clazz)) {
 				field.setAccessible(true);
 				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null && 
 						List.class.isAssignableFrom(field.getType()))
@@ -714,7 +722,7 @@ public abstract class Func {
 	public static Map<String, Object> zmapuj(Object obj) {
 		Map<String, Object> mapa = new HashMap<String, Object>();
 		Class<?> clazz = obj.getClass();
-		for (Field field : clazz.getDeclaredFields())
+		for (Field field : głębokiSkanKlasy(clazz))
 			try {
 				if (!field.isAnnotationPresent(Mapowane.class)) continue;
 				field.setAccessible(true);
@@ -781,4 +789,41 @@ public abstract class Func {
 		return (T) Mapowany.deserialize(mapa);
 		
 	}
+
+	public static List<Field> głębokiSkanKlasy(Class<?> clazz) {
+		return głębokiSkanKlasy(clazz, Sets.newConcurrentHashSet());
+	}
+	private static List<Field> głębokiSkanKlasy(Class<?> clazz, Set<String> nazwyfieldsów) {
+		List<Field> lista = Lists.newArrayList();
+		if (clazz == null || clazz.getName().equals(Object.class.getName()))
+			return lista;
+		
+		for (Field field : clazz.getDeclaredFields())
+			if (nazwyfieldsów.add(field.getName()))
+				lista.add(field);
+		
+		for (Field field : głębokiSkanKlasy(clazz.getSuperclass(), nazwyfieldsów))
+			lista.add(field);
+		
+		return lista;
+	}
+	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
+		if (clazz.getName().equals(Object.class.getName()))
+			throw new Throwable();
+		try {
+			return clazz.getDeclaredField(nazwa);
+		} catch (NoSuchFieldException e) {
+			return dajField(clazz.getSuperclass(), nazwa);
+		}
+	}
+	public static Method dajMetode(Class<?> clazz, String nazwa) throws Throwable {
+		if (clazz.getName().equals(Object.class.getName()))
+			throw new Throwable();
+		try {
+			return clazz.getDeclaredMethod(nazwa);
+		} catch (NoSuchMethodException e) {
+			return dajMetode(clazz.getSuperclass(), nazwa);
+		}
+	}
+	
 }
