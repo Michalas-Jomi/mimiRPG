@@ -306,7 +306,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		void usuń() {
 			for (String owner : region.getOwners().getPlayers()) {
 				Gracz g = Gracz.wczytaj(owner);
-				if (g.baza.nazwa.equals(region.getId())) {
+				if (g.baza != null && g.baza.nazwa.equals(region.getId())) {
 					g.baza = null;
 					g.zapisz();
 				}
@@ -562,11 +562,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (baza == null) return;
 		
 		ev.setCancelled(true);
+		
 		if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
 			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
 			return;
 		}
-		
 		if (baza.region.getMembers().contains(ev.getPlayer().getName())) {
 			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć bazy członka twojej gildi");
 			return;

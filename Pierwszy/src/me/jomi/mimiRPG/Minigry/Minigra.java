@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,14 +42,15 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		@Mapowane int czasStartu = 60;
 		@Mapowane int min_gracze = 2;
 		@Mapowane Location zbiorka;
-
+		
 		String nazwa = "Minigra";
 		List<Player> gracze = Lists.newArrayList();
 		boolean grane = false;
 		int timer = -1;
-		
 
-		abstract Statystyki noweStaty();
+		abstract Minigra getInstMinigra();
+		abstract <M extends Minigra> void setInst(M inst);
+		abstract Supplier<? extends Statystyki> noweStaty();
 		abstract int policzGotowych();
 		
 		// Wykonywane co sekunde dla "zaczynanaArena"
@@ -79,31 +82,29 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		void start() {
 			timer = -1;
 			grane = true;
-			zaczynanaArena = null;
+			getInstMinigra().zaczynanaArena = null;
 			for (Player p : gracze) {
 				p.getInventory().clear();
-				staty(p).rozegraneAreny++;
+				getInstMinigra().staty(p).rozegraneAreny++;
 				p.closeInventory();
 				p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 			}
 		}
 		boolean dołącz(Player p) {
 			if (opuść(p)) return false;
-			Func.ustawMetadate(p, inst.getMetaId(), this);
+			Func.ustawMetadate(p, getInstMinigra().getMetaId(), this);
 			NowyEkwipunek.dajNowy(p, zbiorka, GameMode.ADVENTURE);
 			gracze.add(p);
 			napiszGraczom("%s dołączył do poczekalni %s/%s", p.getDisplayName(), gracze.size(), strMaxGracze());
 
-			Statystyki staty = Gracz.wczytaj(p.getName()).staty.getOrDefault(this.getClass().getName(), noweStaty());
-			Func.ustawMetadate(p, inst.getMetaStatystyki(), staty);
+			Statystyki staty = Gracz.wczytaj(p.getName()).staty.getOrDefault(this.getClass().getName(), noweStaty().get());
+			Func.ustawMetadate(p, getInstMinigra().getMetaStatystyki(), staty);
 			
 			Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 			p.setScoreboard(scoreboard);
 			Objective obj = scoreboard.registerNewObjective("staty", "dummy", "§6§lStatystyki");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 			staty.rozpisz(obj);
-			
-			p.setCustomNameVisible(false);
 			
 			return true;
 		}
@@ -121,7 +122,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 			
-			Statystyki staty = staty(p);
+			Statystyki staty = getInstMinigra().staty(p);
 			if (staty != null) {
 				Gracz g = Gracz.wczytaj(p.getName());
 				staty.sprawdzTopke(p);
@@ -129,8 +130,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				g.zapisz();
 			}
 			
-			p.removeMetadata(inst.getMetaId(), Main.plugin);
-			p.removeMetadata(inst.getMetaStatystyki(), Main.plugin);
+			p.removeMetadata(getInstMinigra().getMetaId(), Main.plugin);
+			p.removeMetadata(getInstMinigra().getMetaStatystyki(), Main.plugin);
 			
 			if (info)
 				if (!grane)
@@ -228,22 +229,20 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 
 	static Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
 
-	static HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
+	HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
 	static Config configTopki = new Config("configi/minigry/Topki");
-	
-	static Minigra inst;
-	public Minigra() {
-		inst = this;
-	}
-	
-	
+		
 	// abstract
+	public static String prefix = Func.prefix("Minigra");
 	abstract Config getConfigAreny();
 	abstract String getMetaStatystyki();
-	public static String prefix = Func.prefix("Minigra");
 	abstract String getMetaId();
 	
-	static Arena zaczynanaArena;
+	public Minigra() {
+		Minigry.mapaGier.put(this.getClass().getSimpleName().toLowerCase(), this);
+	}
+	
+	Arena zaczynanaArena;
 	
 	@Override
 	public void przeładuj() {
@@ -262,6 +261,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			try {
 				Arena arena = (Arena) configAreny.wczytaj(klucz);
 				arena.nazwa = klucz;
+				arena.setInst(this);
 				if (!arena.poprawna())
 					throw new Throwable();
 				mapaAren.put(klucz, arena);
@@ -296,7 +296,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 	}
 
-	static Arena zaczynanaArena() {
+	Arena zaczynanaArena() {
 		if (zaczynanaArena != null) 
 			return zaczynanaArena;
 		
@@ -322,28 +322,84 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		return (T) p.getMetadata(meta).get(0).value();	
 	}
 
-	static Arena arena(Entity p) {
-		return metadata(p, inst.getMetaId());
+	<A extends Arena> A arena(Entity p) {
+		return metadata(p, getMetaId());
 	}
-	static Statystyki staty(Player p) {
-		return metadata(p, inst.getMetaStatystyki());
+	<S extends Statystyki> S staty(Player p) {
+		return metadata(p, getMetaStatystyki());
 	}
 
 	public static void wyłącz() {
 		wyłącz("Wyłączanie pluginu");
 	}
 	static void wyłącz(String msg) {
-		if (zaczynanaArena != null) {
-			zaczynanaArena.napiszGraczom(msg);
-			zaczynanaArena.koniec();
-			zaczynanaArena = null;
+		for (Minigra minigra : Minigry.mapaGier.values()) {
+			for (Arena arena : minigra.mapaAren.values())
+				if (arena.grane) {
+					arena.napiszGraczom(msg);
+					arena.koniec();
+				}
+			if (minigra.zaczynanaArena != null) {
+				minigra.zaczynanaArena.napiszGraczom(msg);
+				minigra.zaczynanaArena.koniec();
+				minigra.zaczynanaArena = null;
+			}
+		}
+	}
+
+
+	public boolean onCommand(CommandSender sender, String[] args) {
+		if (args.length < 2) return staty(sender, args);
+		
+		switch (args[1]) {
+		case "staty":	return staty(sender, args);
+		}
+				
+		if (!(sender instanceof Player))
+			return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");
+		Player p = (Player) sender;
+		
+		Arena arena;
+		
+		switch (Func.odpolszcz(args[1])) {
+		case "dolacz":
+			arena = (Arena) zaczynanaArena();
+			if (arena == null)
+				return Func.powiadom(prefix, sender, "Aktualnie nie ma żadnych wolnych aren");
+			if (arena.pełna())
+				return Func.powiadom(prefix, sender, "Brak miejsc w poczekalni");
+			arena.dołącz(p);
+			break;
+		case "opusc":
+			arena = arena(p);
+			if (arena == null)
+				return Func.powiadom(prefix, sender, "Nie jesteś w żadnej rozgrywce");
+			arena.opuść(p);
+			break;
+		default:
+			return staty(p, p.getName());
+		}
+		return true;
+	}
+	private boolean staty(CommandSender sender, String[] args) {
+		if (args.length <= 2 && (!(sender instanceof Player)))
+			return Func.powiadom(prefix, sender, "/" + args[0] + " staty <nick>");
+		return staty(sender, args.length <= 2 ? sender.getName() : args[2]);
+	}
+	private boolean staty(CommandSender sender, String nick) {
+		Player p = Bukkit.getPlayer(nick);
+		if (p != null) {
+			Statystyki staty = staty(p);
+			if (staty != null)
+				return staty(sender, p.getName(), staty);
 		}
 		
-		for (Arena arena : mapaAren.values())
-			if (arena.grane) {
-				arena.napiszGraczom(msg);
-				arena.koniec();
-			}
+		Gracz g = Gracz.wczytaj(nick);
+		return staty(sender, g.nick, (Statystyki) g.staty.get(Arena.class.getName()));
+	} 
+	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
+		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
+				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz());
 	}
 }
 

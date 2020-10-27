@@ -135,7 +135,7 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 	
 	@EventHandler
 	public void śmierć(PlayerRespawnEvent ev) {
-		Location łóżko = ev.getPlayer().getBedLocation();
+		Location łóżko = ev.getPlayer().getBedSpawnLocation();
 		if (łóżko != null)
 			ev.setRespawnLocation(łóżko);
 		else {

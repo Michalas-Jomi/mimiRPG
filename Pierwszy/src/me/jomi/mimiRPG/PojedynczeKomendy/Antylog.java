@@ -82,6 +82,8 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 
 	@EventHandler(priority=EventPriority.MONITOR)
 	public void uderzenie(EntityDamageByEntityEvent ev) {
+		if (ev.isCancelled()) return;
+		if (ev.getDamage() <= 0) return;
 		if (!(ev.getEntity() instanceof Player)) return;
 		Player atakowany = (Player) ev.getEntity();
 		

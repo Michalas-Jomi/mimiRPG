@@ -3,6 +3,8 @@ package me.jomi.mimiRPG.Minigry;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,20 +34,15 @@ import me.jomi.mimiRPG.util.Krotka;
 @Moduł
 public class Paintball extends MinigraDrużynowa {
 	public static final String prefix = Func.prefix("Paintball");
-	
-	static final String metaStatystyki = "mimiPaintballStatystyki";
-	static final String metaDrużynaId = "mimiPaintballDrużyna";
-	static final String metaid = "mimiMinigraPaintball";
-	
+		
 	static List<Krotka<String, Integer>> topka = Lists.newArrayList();
 	
-	static final Config configAreny = new Config("configi/minigry/PaintballAreny");
 	static final Config configRangi = new Config("configi/minigry/PaintballRangi");
 	static Statystyki.Rangi rangi;
 
 	public static class Arena extends MinigraDrużynowa.Arena {
 		static final ItemStack itemKask = Func.dajGłówkę("&bKask Paintballowca", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjkzN2VhZGM1M2MzOWI5Njg4Y2MzOTY1NWQxYjc4ZmQ2MTJjMWNkNjI1YzJhODk2MzhjNWUyNzIxNmM2ZTRkIn19fQ==", null);
-		static final ItemStack itemŚnieżka = Func.stwórzItem(Material.SNOWBALL, 1, "§9Śnieżka");
+		static final ItemStack itemŚnieżka = Func.stwórzItem(Material.SNOWBALL, 8, "§9Śnieżka");
 		
 		@Mapowane List<Drużyna> druzyny;
 		
@@ -61,17 +58,16 @@ public class Paintball extends MinigraDrużynowa {
 		@Override
 		boolean dołącz(Player p) {
 			if (!super.dołącz(p)) return false;
-			p.getInventory().setItem(4, itemWybórDrużyny);
 
-			Statystyki.Ranga ranga = staty(p).ranga();
+			Statystyki.Ranga ranga = inst.staty(p).ranga();
 			if (ranga != null)
 				ranga.ubierz(p);
 			return true;
-			
 		}
-		
-		void ubierz(Player p, Drużyna drużyna) {
-			super.ubierz(p, drużyna);
+
+		@Override
+		<D extends MinigraDrużynowa.Drużyna> void ubierz(Player p, D drużyna) {
+			ubierz(p, drużyna, false, true, true, true);
 			p.getInventory().setHelmet(itemKask);
 		}
 		
@@ -88,7 +84,7 @@ public class Paintball extends MinigraDrużynowa {
 		}
 		
 		Location respawn(Player p) {
-			return respawn(p, drużyna(p));
+			return respawn(p, inst.drużyna(p));
 		}
 		Location respawn(Player p, Drużyna drużyna) {
 			if (!grane) {
@@ -115,12 +111,12 @@ public class Paintball extends MinigraDrużynowa {
 			Drużyna dr;
 			Drużyna dt;
 			if (!grane || rzucający == null || // rzut w poczekalni lub rzucający nie istnieje
-					!this.equals(arena(rzucający)) || // należą do innych aren
-					(dt = drużyna(trafiony)).equals(dr = drużyna(rzucający))) return; // należą do tej samej drużyny 
+					!this.equals(inst.arena(rzucający)) || // należą do innych aren
+					(dt = inst.drużyna(trafiony)).equals(dr = inst.drużyna(rzucający))) return; // należą do tej samej drużyny 
 			respawn(trafiony, dt);
 			
-			staty(trafiony).śmierci++;
-			staty(rzucający).kille++;
+			inst.staty(trafiony).śmierci++;
+			inst.staty(rzucający).kille++;
 			
 			napiszGraczom(dr.napisy + rzucający.getName() + "§6 postrzelił " +
 						  dt.napisy + trafiony.getName()  + " §e" + ++dr.punkty + "§6/§e" + punktyPotrzebne);
@@ -135,13 +131,13 @@ public class Paintball extends MinigraDrużynowa {
 			 return super.poprawna() && druzyny.size() >= 2;
 		}
 		
-		Statystyki noweStaty() {
-			return new Statystyki();
-		}
-		@Override
-		List<Drużyna> getDrużyny() {
-			return druzyny;
-		}
+		@Override Supplier<Statystyki> noweStaty() { return Statystyki::new; }
+		@Override List<Drużyna> getDrużyny() { return druzyny; }
+		
+		Paintball inst;
+		@Override Paintball getInstMinigraDrużynowa()	   { return inst; }
+		@Override <M extends Minigra> void setInst(M inst) { this.inst = (Paintball) inst; }
+		@Override int getMinDrużyny() { return 2; }
 	}
 	
 	public static class Drużyna extends MinigraDrużynowa.Drużyna {
@@ -274,18 +270,15 @@ public class Paintball extends MinigraDrużynowa {
 			return ranga;
 		}
 	}
-	
-	String getMetaId() {
-		return metaid;
-	}
-	String getMetaDrużynaId() {
-		return metaDrużynaId;
-	}
-	String getMetaStatystyki() {
-		return metaStatystyki;
-	}
-	
-	
+
+	static final String metaStatystyki = "mimiPaintballStatystyki";
+	static final String metaDrużynaId = "mimiPaintballDrużyna";
+	static final String metaid = "mimiMinigraPaintball";
+	final Config configAreny = new Config("configi/minigry/PaintballAreny");
+	@Override Config getConfigAreny() { return configAreny; }
+	@Override String getMetaId() { return metaid; }
+	@Override String getMetaDrużynaId() { return metaDrużynaId; }
+	@Override String getMetaStatystyki() { return metaStatystyki; }
 	
 	
 	@EventHandler
@@ -326,15 +319,9 @@ public class Paintball extends MinigraDrużynowa {
 			arena.opuść(p);
 	}
 
-	static Statystyki staty(Player p) {
-		return metadata(p, metaStatystyki);
-	}
-	static Drużyna drużyna(Player p) {
-		return metadata(p, metaDrużynaId);
-	}
-	static Arena arena(Player p) {
-		return metadata(p, metaid);
-	}
+	@Override @SuppressWarnings("unchecked") Statystyki staty(Player p)	{ return super.staty(p); }
+	@Override @SuppressWarnings("unchecked") Drużyna drużyna(Player p)	{ return super.drużyna(p); }
+	@Override @SuppressWarnings("unchecked") Arena arena(Entity p)		{ return super.arena(p); }
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -350,7 +337,7 @@ public class Paintball extends MinigraDrużynowa {
 		topka = (List<Krotka<String, Integer>>) Func.nieNullList(configTopki.wczytaj("Paintball"));
 	}
 	
-	public static boolean onCommand(CommandSender sender, String[] args) {
+	public boolean onCommand(CommandSender sender, String[] args) {
 		if (args.length < 2) return staty(sender, args);
 		
 		switch (args[1]) {
@@ -394,12 +381,12 @@ public class Paintball extends MinigraDrużynowa {
 		return true;
 	}
 	
-	private static boolean staty(CommandSender sender, String[] args) {
+	private boolean staty(CommandSender sender, String[] args) {
 		if (args.length <= 2 && (!(sender instanceof Player)))
 			return Func.powiadom(prefix, sender, "/pb staty <nick>");
 		return staty(sender, args.length <= 2 ? sender.getName() : args[2]);
 	}
-	private static boolean staty(CommandSender sender, String nick) {
+	private boolean staty(CommandSender sender, String nick) {
 		Player p = Bukkit.getPlayer(nick);
 		if (p != null) {
 			Statystyki staty = staty(p);
@@ -410,18 +397,9 @@ public class Paintball extends MinigraDrużynowa {
 		Gracz g = Gracz.wczytaj(nick);
 		return staty(sender, g.nick, (Statystyki) g.staty.get(Arena.class.getName()));
 	} 
-	private static boolean staty(CommandSender sender, String nick, Statystyki staty) {
+	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
 		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
 				nick, staty == null ? nick + " §6Nigdy nie grał w Paintball" : staty.rozpisz());
-	}
-	
-
-	static Arena arena(Entity p) {
-		return metadata(p, metaid);
-	}
-	@Override
-	Config getConfigAreny() {
-		return configAreny;
 	}
 }
 

@@ -9,13 +9,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
-
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,6 +29,8 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -710,9 +712,15 @@ public abstract class Func {
 		try {
 			for (Field field : głębokiSkanKlasy(clazz)) {
 				field.setAccessible(true);
-				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null && 
-						List.class.isAssignableFrom(field.getType()))
-					field.set(obj, Lists.newArrayList());
+				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null) { 
+					if (List.class.isAssignableFrom(field.getType()))
+						field.set(obj, Lists.newArrayList());
+					else if (field.getType().isEnum()) {
+						Enum<?>[] enumy = (Enum<?>[]) field.getType().getMethod("values").invoke(null);
+						if (enumy.length > 0)
+							field.set(obj, enumy[0]);
+					}
+				}
 	
 			}
 		} catch (Throwable e) {
@@ -825,5 +833,66 @@ public abstract class Func {
 			return dajMetode(clazz.getSuperclass(), nazwa);
 		}
 	}
+
+	public static <T1, T2> List<T2> wykonajWszystkim(Iterable<T1> lista, Function<T1, T2> func) {
+		List<T2> _lista = Lists.newArrayList();
+		for (T1 el : lista)
+			_lista.add(func.apply(el));
+		return _lista;
+	}
+
 	
+	static class IterableBloków implements Iterable<Block> {
+		Iterator<Block> iterator;
+		IterableBloków(Iterator<Block> iterator) {
+			this.iterator = iterator;
+		}
+		@Override
+		public Iterator<Block> iterator() {
+			return iterator;
+		}
+		
+	}
+	static class IteratorBloków implements Iterator<Block> {
+		Krotka<Integer, Integer> kx;
+		Krotka<Integer, Integer> ky;
+		Krotka<Integer, Integer> kz;
+		boolean next = true;
+		World świat;
+		int x;
+		int y;
+		int z;
+		
+		IteratorBloków(Location róg1, Location róg2) {
+			świat = róg1.getWorld();
+			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
+					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
+			kx = krotka.apply(Location::getBlockX); x = kx.a;
+			ky = krotka.apply(Location::getBlockY); y = ky.a;
+			kz = krotka.apply(Location::getBlockZ); z = kz.a;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next;
+		}
+		@Override
+		public Block next() {
+			Block blok = świat.getBlockAt(x, y, z);
+			if (++x > kx.b) {
+				x = kx.a;
+				if (++z > kz.b) {
+					z = kz.a;
+					next = ++y <= ky.b;
+				}
+			}
+			return blok;
+		}
+	}
+	public static Iterable<Block> bloki(Location róg1, Location róg2) {
+		return new IterableBloków(blokiIterator(róg1, róg2));
+	}
+	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
+		return new IteratorBloków(róg1, róg2);
+	}
 }

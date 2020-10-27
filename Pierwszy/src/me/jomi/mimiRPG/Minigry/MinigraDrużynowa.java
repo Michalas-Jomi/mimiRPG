@@ -1,13 +1,14 @@
 package me.jomi.mimiRPG.Minigry;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +18,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.Team.Option;
+import org.bukkit.scoreboard.Team.OptionStatus;
 
 import com.google.common.collect.Sets;
 
@@ -37,21 +42,55 @@ public abstract class MinigraDrużynowa extends Minigra {
 		private final Cooldown cooldownWyboruDrużyny = new Cooldown(5);
 		
 		abstract List<? extends Drużyna> getDrużyny();
+		Scoreboard sb;
 		
+		@Override 
+		Minigra getInstMinigra() { return getInstMinigraDrużynowa(); }
+		abstract MinigraDrużynowa getInstMinigraDrużynowa();
+		
+		private final HashMap<String, StringBuffer> mapaDrużynDlaMsgWin = new HashMap<>();
 		@Override
 		void start() {
 			super.start();
-			for (Player p : gracze)
+			sb = Bukkit.getScoreboardManager().getNewScoreboard();
+			
+			for (Drużyna drużyna : getDrużyny()) {
+				Team team = sb.registerNewTeam(drużyna.nazwa);
+				drużyna.team = team;
+				team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
+				team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
+				team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
+				team.setCanSeeFriendlyInvisibles(true);
+				team.setDisplayName(drużyna.toString());
+				team.setPrefix(drużyna.napisy);
+			}
+			
+			mapaDrużynDlaMsgWin.clear();
+			for (Player p : gracze) {
+				Drużyna drużyna = getInstMinigraDrużynowa().drużyna(p);
+				drużyna.team.addEntry(p.getName());
+				p.setScoreboard(sb);
+				StringBuffer msg = mapaDrużynDlaMsgWin.getOrDefault(drużyna.nazwa, new StringBuffer());
+				msg.append(" ").append(drużyna.napisy).append(p.getName());
+				mapaDrużynDlaMsgWin.put(drużyna.nazwa, msg);
 				ubierz(p);
+			}
+			
 			cooldownWyboruDrużyny.wyczyść();
+		}
+		@Override
+		boolean dołącz(Player p) {
+			if (!super.dołącz(p)) return false;
+			p.getInventory().setItem(4, itemWybórDrużyny);
+			return true;
 		}
 		@Override
 		Player opuść(int i, boolean info) {
 			Player p = super.opuść(i, info);
-			Drużyna drużyna = drużyna(p);
+			Drużyna drużyna = getInstMinigraDrużynowa().drużyna(p);
 			if (drużyna != null)
 				drużyna.gracze--;
-			p.removeMetadata(inst.getMetaDrużynaId(), Main.plugin);
+			p.removeMetadata(getInstMinigraDrużynowa().getMetaDrużynaId(), Main.plugin);
 			return p;
 		}
 		
@@ -59,7 +98,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		boolean sprawdzKoniec() {
 			Drużyna grająca = null;
 			for (Player p : gracze) {
-				Drużyna drużyna = drużyna(p);
+				Drużyna drużyna = getInstMinigraDrużynowa().drużyna(p);
 				if (grająca == null)
 					grająca = drużyna;
 				else if (!grająca.equals(drużyna))
@@ -68,36 +107,34 @@ public abstract class MinigraDrużynowa extends Minigra {
 			return wygrana(grająca);
 		}
 		
-		boolean wygrana(Drużyna drużyna) {
+		<D extends Drużyna> boolean wygrana(D drużyna) {
 			if (!grane) return true;
 			for (Player p : gracze)
-				if (drużyna.equals(drużyna(p)))
-					staty(p).wygraneAreny++;
+				if (drużyna.equals(getInstMinigraDrużynowa().drużyna(p)))
+					getInstMinigraDrużynowa().staty(p).wygraneAreny++;
 				else
-					staty(p).przegraneAreny++;
+					getInstMinigraDrużynowa().staty(p).przegraneAreny++;
 			
 			
-			StringBuilder wygrani 	= new StringBuilder();
 			StringBuilder przegrani = new StringBuilder();
-			for (Player p : gracze) {
-				Drużyna dp = drużyna(p);
-				StringBuilder s = drużyna.equals(dp) ? wygrani : przegrani;
-				s.append(' ').append(dp.napisy).append(p.getName());
-			}
+			for (Entry<String, StringBuffer> en : mapaDrużynDlaMsgWin.entrySet())
+				if (!en.getKey().equals(drużyna.nazwa))
+					przegrani.append(en.getValue());
 			
 			Bukkit.broadcastMessage(prefix + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
-					drużyna, wygrani.substring(1), nazwa, przegrani));
+					drużyna, mapaDrużynDlaMsgWin.get(drużyna.nazwa).substring(1), nazwa, przegrani));
+			mapaDrużynDlaMsgWin.clear();
 			koniec();
 			return true;
 		}
 		
-		void wybierzDrużyne(Player p, Drużyna drużyna) {
+		<D extends Drużyna> void wybierzDrużyne(Player p, D drużyna) {
 			if (!cooldownWyboruDrużyny.minął(p.getName())) {
 				p.sendMessage(prefix + "Poczekaj chwile zanim zmienisz drużyne");
 				return;
 			}
 			
-			Drużyna stara = drużyna(p);
+			Drużyna stara = getInstMinigraDrużynowa().drużyna(p);
 			if (stara != null) {
 				if (stara.equals(drużyna)) 
 					return;
@@ -106,7 +143,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 			
 			cooldownWyboruDrużyny.ustaw(p.getName());
 			
-			Func.ustawMetadate(p, inst.getMetaDrużynaId(), drużyna);
+			Func.ustawMetadate(p, getInstMinigraDrużynowa().getMetaDrużynaId(), drużyna);
 			drużyna.gracze++;
 
 			if (timer == -1 && policzGotowych() >= min_gracze)
@@ -119,17 +156,20 @@ public abstract class MinigraDrużynowa extends Minigra {
 			napiszGraczom("%s dołącza do drużyny %s", p.getDisplayName(), drużyna);
 		}
 		void ubierz(Player p) {
-			ubierz(p, drużyna(p));
+			ubierz(p, getInstMinigraDrużynowa().drużyna(p));
 		}
-		void ubierz(Player p, Drużyna drużyna) {
+		<D extends Drużyna> void ubierz(Player p, D drużyna) {
+			ubierz(p, drużyna, true, true, true, true);
+		}
+		<D extends Drużyna> void ubierz(Player p, D drużyna, boolean hełm, boolean spodnie, boolean klata, boolean buty) {
 			Color kolor = drużyna.kolor;
 			Function<Material, ItemStack> dajItem = mat -> 
 					Func.pokolorujZbroje(Func.stwórzItem(mat, " "), kolor);
 			PlayerInventory inv = p.getInventory();
-			inv.setHelmet(dajItem.apply(Material.LEATHER_HELMET));
-			inv.setChestplate(dajItem.apply(Material.LEATHER_CHESTPLATE));
-			inv.setLeggings(dajItem.apply(Material.LEATHER_LEGGINGS));
-			inv.setBoots(dajItem.apply(Material.LEATHER_BOOTS));
+			if (hełm)	inv.setHelmet(		dajItem.apply(Material.LEATHER_HELMET));
+			if (klata)	inv.setChestplate(	dajItem.apply(Material.LEATHER_CHESTPLATE));
+			if (spodnie)inv.setLeggings(	dajItem.apply(Material.LEATHER_LEGGINGS));
+			if (buty)	inv.setBoots(		dajItem.apply(Material.LEATHER_BOOTS));
 		}
 
 		Inventory dajInv() {
@@ -141,7 +181,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 			for (Drużyna drużyna : getDrużyny())
 				odświeżInv(drużyna);
 		}
-		void odświeżInv(Drużyna drużyna) {	
+		<D extends Drużyna> void odświeżInv(D drużyna) {	
 			dajInv().getItem(drużyna.slotInv).setAmount(drużyna.gracze);
 		}
 		private void stwórzInv() {
@@ -193,26 +233,39 @@ public abstract class MinigraDrużynowa extends Minigra {
 			return sloty;
 		}
 
+		@Override
+		boolean poprawna() {
+			return super.poprawna() && getDrużyny().size() >= getMinDrużyny();
+		}
 		
 		@Override
 		int policzGotowych() {
 			int w = 0;
-			for (Drużyna drużyna : getDrużyny())
-				w += drużyna.gracze;
-			return w;
-		}
-		
-		Drużyna znajdzDrużyne(String nazwa) {
+			int d = 0;
 			for (Drużyna drużyna : getDrużyny()) {
-				if (drużyna.toString().equals(nazwa))
-					return drużyna;
+				w += drużyna.gracze;
+				if (drużyna.gracze > 0)
+					d++;
 			}
+			if (getMinDrużyny() >= d)
+				return w;
+			return 0;
+		}
+		abstract int getMinDrużyny();
+		
+		@SuppressWarnings("unchecked")
+		<D extends Drużyna> D znajdzDrużyne(String nazwa) {
+			for (Drużyna drużyna : getDrużyny())
+				if (drużyna.toString().equals(nazwa))
+					return (D) drużyna;
 			return null;
 		}
 	}
 	public abstract static class Drużyna extends Mapowany {
 		@Mapowane KolorRGB kolorRGB = new KolorRGB();
 		@Mapowane String nazwa;
+
+		Team team;
 		
 		int gracze;
 		
@@ -240,15 +293,17 @@ public abstract class MinigraDrużynowa extends Minigra {
 	
 	abstract String getMetaDrużynaId();
 	
-	static Drużyna drużyna(Player p) {
-		return metadata(p, inst.getMetaDrużynaId());
-	}
-
-	static MinigraDrużynowa inst;
-	public MinigraDrużynowa() {
-		inst = this;
+	<D extends Drużyna> D drużyna(Player p) {
+		return metadata(p, getMetaDrużynaId());
 	}
 	
+	String nick(Player p) {
+		Drużyna d = drużyna(p);
+		if (d != null)
+			return d.napisy + p.getName();
+		return p.getName();
+	}
+
 	@EventHandler
 	public void KlikanieInv(InventoryClickEvent ev) {
 		Arena arena = arena(ev.getWhoClicked());
@@ -271,20 +326,4 @@ public abstract class MinigraDrużynowa extends Minigra {
 			ev.setCancelled(true);
 		}
 	}
-	
-	static Arena arena(Entity p) {
-		return metadata(p, inst.getMetaId());
-	}
 }
-
-
-
-
-
-
-
-
-
-
-
-

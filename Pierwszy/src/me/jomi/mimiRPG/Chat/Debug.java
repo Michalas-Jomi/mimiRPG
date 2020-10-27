@@ -54,9 +54,19 @@ public class Debug extends Komenda {
 			for (int i=0; i<parametry.length; i++)
 				klasy[i] = parametry[i].getClass();
 			
-			Method met = klasa.getDeclaredMethod(co.substring(0, co.indexOf('(')), klasy);
-			met.setAccessible(true);
-			return met.invoke(naCzym, parametry);
+			String metoda = co.substring(0, co.indexOf('('));
+			boolean b = true;
+			while (b) {
+				b = !klasa.getName().equals(Object.class.getName());
+				try {
+					Method met = klasa.getDeclaredMethod(metoda, klasy);
+					met.setAccessible(true);
+					return met.invoke(naCzym, parametry);
+				} catch (NoSuchMethodException e) {
+					klasa = klasa.getSuperclass();
+				}
+			}
+			throw new NoSuchMethodException("Nieznaleziona metoda " + metoda);
 		} else {
 			Field f = klasa.getDeclaredField(co);
 			f.setAccessible(true);

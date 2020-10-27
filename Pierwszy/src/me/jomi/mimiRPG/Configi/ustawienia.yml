@@ -276,5 +276,8 @@ Minigry:
     - 'cg'
     - 'chatgrupowy'
     - 'komendyinfo'
+  Budowanie Aren:
+    Max Bloki: 50000 # maksymalna ilość bloków dla pojedyńczego odbudowania między przerwami
+    Ticki Przerw: 1 # ilość ticków między odbudowywaniem
 
 
