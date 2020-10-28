@@ -19,6 +19,8 @@ import java.util.UUID;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -606,14 +608,17 @@ public abstract class Func {
 			set.add(el);
 	}
 	
-	private static boolean mieściSię(double co, double x1, double x2) {
-		return  (co >= x1 && co <= x2) || 
-				(co <= x1 && co >= x2);
-	}
 	public static boolean zawiera(Location loc, Location róg1, Location róg2) {
-		return  mieściSię(loc.getX(), róg1.getX(), róg2.getX()) &&
-				mieściSię(loc.getY(), róg1.getY(), róg2.getY()) &&
-				mieściSię(loc.getZ(), róg1.getZ(), róg2.getZ());
+		Predicate<Function<Location, Double>> mieściSię = func -> {
+			double co = func.apply(loc);
+			double x1 = func.apply(róg1);
+			double x2 = func.apply(róg2);
+			return  (co >= x1 && co <= x2) || 
+					(co <= x1 && co >= x2);
+		};
+		return  mieściSię.test(Location::getX) &&
+				mieściSię.test(Location::getY) &&
+				mieściSię.test(Location::getZ);
 		
 	}
 	
@@ -667,8 +672,8 @@ public abstract class Func {
 		return _inv;
 	}
 
-	public static void opóznij(int ticki, Runnable lambda) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
+	public static int opóznij(int ticki, Runnable lambda) {
+		return Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
 	}
 
 	public static OfflinePlayer graczOffline(String nick) {
@@ -755,6 +760,18 @@ public abstract class Func {
 			mapa.put(klucz, obj = Lists.newArrayList());
 		return obj;
 	}
+	public static <K, V> V wezUstaw(Map<K, V> mapa, K klucz, Supplier<V> domyślna) {
+		V w = mapa.get(klucz);
+		if (w == null)
+			mapa.put(klucz, w = domyślna.get());
+		return w;
+	}
+	public static <K, V> V wezUstaw(Map<K, V> mapa, K klucz, V domyślna) {
+		V w = mapa.get(klucz);
+		if (w == null)
+			mapa.put(klucz, w = domyślna);
+		return w;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> boolean multiEquals(T co, T... czemu) {
@@ -767,11 +784,13 @@ public abstract class Func {
 	}
 
 	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func) {
-		wykonajDlaNieNull(obj, func, obj);
-	}
-	public static <T> void wykonajDlaNieNull(Object obj, Consumer<T> func, T parametr) {
 		if (obj != null)
-			func.accept(parametr);
+			func.accept(obj);
+	}
+	public static <T, V> V zwrotDlaNieNull(T obj, Function<T, V> func) {
+		if (obj != null)
+			return func.apply(obj);
+		return null;
 	}
 	
 	public static void multiTry(Class<? extends Throwable> error, Runnable... funkcje) {

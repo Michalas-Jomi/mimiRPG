@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -94,6 +95,13 @@ public class Config {
 		Object obj = wczytaj(sciezka);
 		if (obj == null)
 			return domyślna;
+		return (T) obj;
+	}
+	@SuppressWarnings("unchecked")
+	public <T> T wczytajLubDomyślna(String sciezka, Supplier<T> domyślna) {
+		Object obj = wczytaj(sciezka);
+		if (obj == null)
+			return domyślna.get();
 		return (T) obj;
 	}
 	public List<String> wczytajListe(Object... sciezka){

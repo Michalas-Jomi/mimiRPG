@@ -43,43 +43,23 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		@Mapowane int czasStartu = 60;
 		@Mapowane int min_gracze = 2;
 		@Mapowane Location zbiorka;
-		
-		String nazwa = "Minigra";
+
+		Set<String> wszyscyGracze = Sets.newConcurrentHashSet();
 		List<Player> gracze = Lists.newArrayList();
+		String nazwa = "Minigra";
 		boolean grane = false;
 		int timer = -1;
 
+		// abstract
 		abstract Minigra getInstMinigra();
 		abstract <M extends Minigra> void setInst(M inst);
+		
 		abstract Supplier<? extends Statystyki> noweStaty();
+		
 		abstract int policzGotowych();
 		
-		// Wykonywane co sekunde dla "zaczynanaArena"
-		void czas() {
-			if (timer == -1) return;
-			
-			if (policzGotowych() >= max_gracze)
-				timer = Math.min(timer, 11);
-			
-			String czas = Func.czas(--timer);
-			
-			if (sekundyPowiadomien.contains(timer))
-				Bukkit.broadcastMessage(prefix + Func.msg("Arena %s wystartuje za %s (%s/%s)",
-						nazwa, czas, gracze.size(), strMaxGracze()));
-			
-			if (timer <= 0) {
-				start();
-				return;
-			}
-			
-			if (timer <= 5)
-				for (Player p : gracze)
-					p.sendTitle("§a" + czas, "§bStart areny " + nazwa, 30, 40, 30);
-			
-			for (Player p : gracze)
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§aStart za " + czas));
-		}
-				
+		
+		// obsługa start / koniec		
 		void start() {
 			timer = -1;
 			grane = true;
@@ -89,8 +69,10 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				getInstMinigra().staty(p).rozegraneAreny++;
 				p.closeInventory();
 				p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
+				wszyscyGracze.add(p.getName());
 			}
 		}
+		
 		boolean dołącz(Player p) {
 			if (opuść(p)) return false;
 			Func.ustawMetadate(p, getInstMinigra().getMetaId(), this);
@@ -111,13 +93,12 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			return true;
 		}
+		
 		boolean opuść(Player p) {
 			String nick = p.getName();
 			for (int i=0; i<gracze.size(); i++)
 				if (gracze.get(i).getName().equals(nick))
 					return opuść(i, true) != null;
-			
-			Antylog.wyłączBypass(p);
 			
 			return false;
 		}
@@ -125,6 +106,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Player p = gracze.remove(i);
 
 			NowyEkwipunek.wczytajStary(p);
+			
+			Antylog.wyłączBypass(p);
 			
 			p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 			
@@ -146,30 +129,44 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
 					sprawdzKoniec();
 				}
-			p.sendMessage(prefix + "Nie jesteś już w Paintballu");
+			p.sendMessage(getInstMinigra().prefix + "Nie jesteś już w Paintballu");
 			
 			if (timer != -1 && policzGotowych() < min_gracze) {
 				timer = -1;
-				Bukkit.broadcastMessage(prefix + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
+				Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
 						nazwa, gracze.size(), strMaxGracze()));
 			}
 			return p;
 		}
 
-		abstract boolean sprawdzKoniec();
+		boolean wygrana(Player p) {
+			if (!grane) return true;
+			wszyscyGracze.remove(p.getName());
+			Set<String> set = Sets.newConcurrentHashSet();
+			for (String nick : wszyscyGracze) {
+				Player gracz = Bukkit.getPlayer(nick);
+				set.add(gracz == null ? "§c" + nick : gracz.getDisplayName());
+			}
+			Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("%s Wygrał na arenie %s z %s",
+					p.getDisplayName(), nazwa, nazwa, Func.listToString(wszyscyGracze, 0, "§6, §e")));
+			koniec();
+			return true;
+		}
+
 		void koniec() {
 			grane = false;
 			while (!gracze.isEmpty())
 				opuść(0, false);
 		}
 		
+		
+		// util
 		Object strMaxGracze() {
 			return max_gracze <= 0 ? min_gracze + "+" : max_gracze;
 		}
-
 		void napiszGraczom(String msg, Object... uzupełnienia) {
-			if (!msg.startsWith(prefix))
-				msg = prefix + msg;
+			if (!msg.startsWith(getInstMinigra().prefix))
+				msg = getInstMinigra().prefix + msg;
 			msg = Func.msg(msg, uzupełnienia);
 			for (Player p : gracze)
 				p.sendMessage(msg);
@@ -184,6 +181,41 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					(max_gracze < 0 || max_gracze >= min_gracze);
 		}
 	
+		boolean sprawdzKoniec() {
+			if (gracze.size() == 1)
+				return wygrana(gracze.get(0));
+			return false;
+		}
+		
+		
+		// Override
+		
+		// Wykonywane co sekunde dla "zaczynanaArena"
+		void czas() {
+			if (timer == -1) return;
+			
+			if (max_gracze > 0 && policzGotowych() >= max_gracze)
+				timer = Math.min(timer, 11);
+			
+			String czas = Func.czas(--timer);
+			
+			if (sekundyPowiadomien.contains(timer))
+				Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("Arena %s wystartuje za %s (%s/%s)",
+						nazwa, czas, gracze.size(), strMaxGracze()));
+			
+			if (timer <= 0) {
+				start();
+				return;
+			}
+			
+			if (timer <= 5)
+				for (Player p : gracze)
+					p.sendTitle("§a" + czas, "§bStart areny " + nazwa, 30, 40, 30);
+			
+			for (Player p : gracze)
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§aStart za " + czas));
+		}
+		
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof Arena)
@@ -234,25 +266,105 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 
 	static Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
-
+	static Config configDane = new Config("configi/minigry/Dane");
+	
 	HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
-	static Config configTopki = new Config("configi/minigry/Topki");
-		
+	Arena zaczynanaArena;
+	
 	// abstract
-	public static String prefix = Func.prefix("Minigra");
+	String prefix;
+	abstract String getPrefix();
 	abstract Config getConfigAreny();
 	abstract String getMetaStatystyki();
 	abstract String getMetaId();
 	
+	
 	public Minigra() {
 		Minigry.mapaGier.put(this.getClass().getSimpleName().toLowerCase(), this);
+		prefix = getPrefix();
+	}
+
+
+	Arena zaczynanaArena() {
+		if (zaczynanaArena != null) 
+			return zaczynanaArena;
+		
+		if (mapaAren.isEmpty())
+			return null;
+		
+		for (int i=0; i < 10; i++) {
+			Arena arena = Func.losuj(mapaAren.values());
+			if (arena.grane) continue;
+			return zaczynanaArena = arena;
+		}
+		for (Arena arena : mapaAren.values()) {
+			if (arena.grane) continue;
+			return zaczynanaArena = arena;
+		}
+		
+		return null;
+	}
+
+
+	// util
+	<A extends Arena> 	   A arena(Entity p) { return metadata(p, getMetaId()); }
+	<S extends Statystyki> S staty(Entity p) { return metadata(p, getMetaStatystyki()); }
+	@SuppressWarnings("unchecked")
+	static <T> T metadata(Entity p, String meta) {
+		if (p == null || !p.hasMetadata(meta))
+			return null;
+		return (T) p.getMetadata(meta).get(0).value();	
+	}
+
+	
+	// onDisable
+	public static void wyłącz() {
+		wyłącz("Wyłączanie pluginu");
+	}
+	static void wyłącz(String msg) {
+		for (Minigra minigra : Minigry.mapaGier.values()) {
+			for (Arena arena : minigra.mapaAren.values())
+				if (arena.grane) {
+					arena.napiszGraczom(msg);
+					arena.koniec();
+				}
+			if (minigra.zaczynanaArena != null) {
+				minigra.zaczynanaArena.napiszGraczom(msg);
+				minigra.zaczynanaArena.koniec();
+				minigra.zaczynanaArena = null;
+			}
+		}
 	}
 	
-	Arena zaczynanaArena;
+	
+	// EventHandler
+	@EventHandler
+	public void komendy(PlayerCommandPreprocessEvent ev) {
+		Player p = ev.getPlayer();
+		if (p.hasMetadata(getMetaId())) {
+			if (dozwoloneKomendy.contains(Func.tnij(ev.getMessage(), " ").get(0)))
+				return;
+			else if (p.hasPermission(Minigry.permCmdBypass))
+				p.sendMessage(prefix + "pamiętaj że jesteś w trakcie minigry");
+			else {
+				ev.setCancelled(true);
+				p.sendMessage(prefix + "Nie wolno tu uzywać komend");
+			}
+		}
+	}
+	
+	
+	// Override
+	@Override
+	public int czas() {
+		if (zaczynanaArena != null)
+			zaczynanaArena.czas();
+		return 20;
+	}
 	
 	@Override
 	public void przeładuj() {
-		configTopki.przeładuj();
+		configDane.przeładuj();
 
 		wyłącz("Przeładowywanie pluginu");
 		
@@ -280,86 +392,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		return Func.r("Wczytane areny " + this.getClass().getSimpleName(), mapaAren.size());
 	}
 	
-	@Override
-	public int czas() {
-		if (zaczynanaArena != null)
-			zaczynanaArena.czas();
-		return 20;
-	}
-	
-	@EventHandler
-	public void komendy(PlayerCommandPreprocessEvent ev) {
-		Player p = ev.getPlayer();
-		if (p.hasMetadata(getMetaId())) {
-			if (dozwoloneKomendy.contains(Func.tnij(ev.getMessage(), " ").get(0)))
-				return;
-			else if (p.hasPermission(Minigry.permCmdBypass))
-				p.sendMessage(prefix + "pamiętaj że jesteś w trakcie minigry");
-			else {
-				ev.setCancelled(true);
-				p.sendMessage(prefix + "Nie wolno tu uzywać komend");
-			}
-		}
-	}
-
-	Arena zaczynanaArena() {
-		if (zaczynanaArena != null) 
-			return zaczynanaArena;
-		
-		if (mapaAren.isEmpty())
-			return null;
-		
-		for (int i=0; i < 10; i++) {
-			Arena arena = Func.losuj(mapaAren.values());
-			if (arena.grane) continue;
-			return zaczynanaArena = arena;
-		}
-		for (Arena arena : mapaAren.values()) {
-			if (arena.grane) continue;
-			return zaczynanaArena = arena;
-		}
-		
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	static <T> T metadata(Entity p, String meta) {
-		if (p == null || !p.hasMetadata(meta)) return null;
-		return (T) p.getMetadata(meta).get(0).value();	
-	}
-
-	<A extends Arena> A arena(Entity p) {
-		return metadata(p, getMetaId());
-	}
-	<S extends Statystyki> S staty(Player p) {
-		return metadata(p, getMetaStatystyki());
-	}
-
-	public static void wyłącz() {
-		wyłącz("Wyłączanie pluginu");
-	}
-	static void wyłącz(String msg) {
-		for (Minigra minigra : Minigry.mapaGier.values()) {
-			for (Arena arena : minigra.mapaAren.values())
-				if (arena.grane) {
-					arena.napiszGraczom(msg);
-					arena.koniec();
-				}
-			if (minigra.zaczynanaArena != null) {
-				minigra.zaczynanaArena.napiszGraczom(msg);
-				minigra.zaczynanaArena.koniec();
-				minigra.zaczynanaArena = null;
-			}
-		}
-	}
-
-
-	public boolean onCommand(CommandSender sender, String[] args) {
+	boolean onCommand(CommandSender sender, String[] args) {
 		if (args.length < 2) return staty(sender, args);
 		
-		switch (args[1]) {
-		case "staty":	return staty(sender, args);
-		}
+		if (args[1].equalsIgnoreCase("staty"))
+			return staty(sender, args);
 				
 		if (!(sender instanceof Player))
 			return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");

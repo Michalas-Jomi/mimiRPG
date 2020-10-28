@@ -2,6 +2,8 @@ package me.jomi.mimiRPG;
 
 import java.util.HashMap;
 import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,6 +28,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public Bazy.Baza baza;
 	@Mapowane public String gildia;
 	
+	@Mapowane public HashMap<String, String> superItemy = new HashMap<>();
+	
  	public void zapisz() {
 		config(nick).ustaw_zapisz("gracz", this);
 	}
@@ -36,7 +40,8 @@ public class Gracz extends Mapowany {
 		if (config != null)
 			return config;
 		config = new Config("configi/gracze/" + nick.toLowerCase());
-		mapa.put(nick, config);
+		if (Bukkit.getPlayer(nick) != null)
+			mapa.put(nick, config);
 		return config;
 	}
  	

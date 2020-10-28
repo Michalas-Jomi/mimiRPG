@@ -14,7 +14,7 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
-
+// TODO naprawić
 @Moduł
 public class ZamienEq extends Komenda{
 	public static final String prefix = Func.prefix("Zamiana eq");

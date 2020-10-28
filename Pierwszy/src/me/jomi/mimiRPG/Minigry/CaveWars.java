@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.Minigry;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -21,6 +22,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -30,10 +32,6 @@ import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.LosyProporcjonalne;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
-// TODO naprawić spawnery
 
 @Moduł
 public class CaveWars extends MinigraDrużynowa {
@@ -48,30 +46,44 @@ public class CaveWars extends MinigraDrużynowa {
 		@Mapowane Location róg1;
 		@Mapowane Location róg2;
 		
-		
+		void skończoneGenerowanie() {
+			if (startuje) {
+				_start();
+				for (Player p : gracze)
+					p.resetTitle();
+			}
+		}
+		boolean startuje = false;
 		@Override
 		void start() {
 			super.start();
-			for (Player p : gracze)
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§bGenerowanie Areny"));
-			wygenerujArene(() -> {
-				for (Drużyna drużyna : drużyny) { // TODO w poprawne sprawdzać nazwy drużyn
-					if (drużyna.gracze <= 0) continue;
-					int x = Func.losuj(róg1.getBlockX() + 2, róg2.getBlockX() - 1);
-					int y = Func.losuj(róg1.getBlockY() + 0, róg2.getBlockY() - 3);
-					int z = Func.losuj(róg1.getBlockZ() + 2, róg2.getBlockZ() - 0);
-					drużyna.respawn = new Location(róg1.getWorld(), x, y, z);
-					
-					for (Block blok : Func.bloki(drużyna.respawn.clone().add(-2, 0, -2), drużyna.respawn.clone().add(1, 3, 0)))
-						blok.setType(Material.AIR, false);
-				}
+			
+			startuje = true;
+			if (wygenerowana())
+				_start();
+			else
+				for (Player p : gracze)
+					p.sendTitle("§aGenerowanie areny", "§2Za moment zostaniecie przeteleportowani", 20,  2400, 200);
+		}
+		void _start() {
+			startuje = false;
+			for (Drużyna drużyna : drużyny) { // TODO w poprawne sprawdzać nazwy drużyn
+				if (drużyna.gracze <= 0) continue;
+				int x = Func.losuj(róg1.getBlockX() + 2, róg2.getBlockX() - 1);
+				int y = Func.losuj(róg1.getBlockY() + 0, róg2.getBlockY() - 3);
+				int z = Func.losuj(róg1.getBlockZ() + 2, róg2.getBlockZ() - 0);
+				drużyna.respawn = new Location(róg1.getWorld(), x, y, z);
 				
-				for (Player p : gracze) {
-					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§aZaczynamy"));
-					p.teleport(inst.drużyna(p).respawn);
-					p.setGameMode(GameMode.SURVIVAL);
-				}
-			});
+				for (Block blok : Func.bloki(drużyna.respawn.clone().add(-2, 0, -2), drużyna.respawn.clone().add(1, 3, 0)))
+					blok.setType(Material.AIR, false);
+			}
+			
+			for (Player p : gracze) {
+				p.teleport(inst.drużyna(p).respawn);
+				p.setGameMode(GameMode.SURVIVAL);
+			}
+
+			zapiszWygenerowanieJako(false);			
 		}
 		
 		void zabity(Player kto, Player kiler) {
@@ -128,7 +140,24 @@ public class CaveWars extends MinigraDrużynowa {
 					return;
 				}
 			}
-			runnable.run();
+			
+			zapiszWygenerowanieJako(true);
+			
+			if (runnable != null)
+				runnable.run();
+		}
+		private boolean wygenerowana() {
+			Set<String> set = configDane.wczytajLubDomyślna("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
+			return set.contains(nazwa);
+		}
+		private void zapiszWygenerowanieJako(boolean wygenerowana) {
+			Set<String> set = configDane.wczytajLubDomyślna("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
+			if (wygenerowana)
+				set.add(nazwa);
+			else
+				set.remove(nazwa);
+			configDane.ustaw_zapisz("CaveWars.Wygenerowane", set);
+			
 		}
 		
 		@Override List<Drużyna> getDrużyny() 	   { return drużyny; }
@@ -193,10 +222,25 @@ public class CaveWars extends MinigraDrużynowa {
 			staty(p).rozkopaneBloki++;
 	}
 
-
-	@Override @SuppressWarnings("unchecked") Arena arena(Entity p) 		{ return super.arena(p); }
-	@Override @SuppressWarnings("unchecked") Statystyki staty(Player p) { return super.staty(p); }
-	@Override @SuppressWarnings("unchecked") Drużyna drużyna(Player p) 	{ return super.drużyna(p); }
+	@Override
+	Minigra.Arena zaczynanaArena() {
+		if (zaczynanaArena != null) 
+			return zaczynanaArena;
+		
+		Arena arena = (Arena) super.zaczynanaArena();
+		if (arena == null) 
+			return null;
+		
+		if (!arena.wygenerowana())
+			arena.wygenerujArene(arena::skończoneGenerowanie);
+		
+		return arena;
+	}
+	
+	
+	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }
+	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }
+	@Override @SuppressWarnings("unchecked") Drużyna 	drużyna (Entity p) { return super.drużyna(p); }
 
 	final Config configAreny = new Config("configi/minigry/CaveWarsAreny");
 	@Override Config getConfigAreny() 	 { return configAreny; }
@@ -204,4 +248,6 @@ public class CaveWars extends MinigraDrużynowa {
 	@Override String getMetaId() 		 { return "mimiMinigraCaveWarsArena"; }
 	@Override String getMetaDrużynaId()  { return "mimiMinigraCaveWarsDrużyna"; }
 	@Override String getMetaStatystyki() { return "mimiMinigraCaveWarsStatystyki"; }
+	final String prefix = Func.prefix("CaveWars");
+	@Override String getPrefix() { return prefix; }
 }
