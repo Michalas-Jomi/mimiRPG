@@ -114,7 +114,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 				if (!en.getKey().equals(drużyna.nazwa))
 					przegrani.append(en.getValue());
 			
-			Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
+			Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
 					drużyna, mapaDrużynDlaMsgWin.get(drużyna.nazwa).substring(1), nazwa, przegrani));
 			mapaDrużynDlaMsgWin.clear();
 			koniec();
@@ -194,7 +194,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 		<D extends Drużyna> void wybierzDrużyne(Player p, D drużyna) {
 			if (!cooldownWyboruDrużyny.minął(p.getName())) {
-				p.sendMessage(getInstMinigra().prefix + "Poczekaj chwile zanim zmienisz drużyne");
+				p.sendMessage(getInstMinigra().getPrefix() + "Poczekaj chwile zanim zmienisz drużyne");
 				return;
 			}
 			

@@ -468,6 +468,18 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			ev.setCancelled(true);
 	}
 
+	@EventHandler(priority = EventPriority.HIGH)
+	public void użycie(PlayerInteractEvent ev) {
+		Block blok = ev.getClickedBlock();
+		if (blok != null) {
+			Baza baza = znajdzBaze(blok.getLocation());
+			if (baza != null) {
+				ev.setCancelled(!(baza.region.getOwners().contains(ev.getPlayer().getName()) ||
+								baza.region.getMembers().contains(ev.getPlayer().getName()))
+								);
+			}
+		}
+	}
 		
 	boolean blokuj;
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -583,8 +595,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 		
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void preNiszczenieStawianie(PlayerInteractEvent ev) {
+		if (!ev.getAction().equals(org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
 		Block blok = ev.getClickedBlock();
 		if (blok != null) {
 			switch (ev.getAction()) {
@@ -855,7 +868,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return lista;
 	}
 	
-		
+	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		switch (cmd.getName()) {

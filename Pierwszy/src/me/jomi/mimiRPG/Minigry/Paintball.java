@@ -44,8 +44,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
 
-// TODO personalizowany /powertool
-
 @Moduł
 public class Paintball extends MinigraDrużynowa {
 	public static final String prefix = Func.prefix("Paintball");
@@ -410,12 +408,13 @@ public class Paintball extends MinigraDrużynowa {
  	public void trafienie(ProjectileHitEvent ev) {
 		Projectile pocisk = ev.getEntity();
 		Entity trafiony = ev.getHitEntity();
-		Func.wykonajDlaNieNull(arena(trafiony), 
-				arena -> arena.trafienie((Player) trafiony, (Player) pocisk.getShooter()));
 		if (pocisk.hasMetadata(metaPocisków)) {
 			Broń broń = (Broń) pocisk.getMetadata(metaPocisków).get(0).value();
 			broń.wybuch(pocisk, drużyna((Entity) pocisk.getShooter()), this::arena);
 		}
+		
+		Func.wykonajDlaNieNull(arena(trafiony), 
+				arena -> arena.trafienie((Player) trafiony, (Player) pocisk.getShooter()));
 		
 		ev.getEntity().remove();
 	}

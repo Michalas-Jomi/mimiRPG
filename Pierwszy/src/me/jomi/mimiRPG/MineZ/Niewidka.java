@@ -27,7 +27,7 @@ public class Niewidka extends Komenda {
 		Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
 		Func.wykonajDlaNieNull(main.getTeam("mimiNiewidka"), Team::unregister);
 		team = main.registerNewTeam("mimiNiewidka");
-		team.setOption(Option.COLLISION_RULE, OptionStatus.ALWAYS);
+		team.setOption(Option.COLLISION_RULE, OptionStatus.NEVER);
 		team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
 		team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
 		team.setCanSeeFriendlyInvisibles(true);

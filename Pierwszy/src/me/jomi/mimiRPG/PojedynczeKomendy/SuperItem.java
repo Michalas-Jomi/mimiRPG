@@ -26,11 +26,13 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 
+// TODO dodawać baze do gildi przy stawianiu bazy
+
 @Moduł
 public class SuperItem extends Komenda implements Listener {
 	public static final String prefix = Func.prefix("Super Item");
 	public SuperItem() {
-		super("superitem", null, "/si");
+		super("superitem", null, "si");
 	}
 
 	@Override
@@ -60,7 +62,7 @@ public class SuperItem extends Komenda implements Listener {
 			ItemStack item = p.getInventory().getItemInMainHand();
 			if (item == null)
 				item = p.getInventory().getItemInOffHand();
-			if (item != null)
+			if (item != null && !item.getType().isAir())
 				return item.getType().toString();
 			p.sendMessage(prefix + "Nie możesz przypisać komendy do powietrza!");
 			return null;
@@ -108,7 +110,7 @@ public class SuperItem extends Komenda implements Listener {
 		return edytor(p, Gracz.wczytaj(p));
 	}
 	boolean edytor(Player p, Gracz g) {
-		Napis n = new Napis("\n\n\n§a§lS§auper §lI§atem\n\n");
+		Napis n = new Napis("\n\n\n§a§lS§auper Item\n\n");
 		
 		int i = 0;
 		// Material : cmd
@@ -118,7 +120,7 @@ public class SuperItem extends Komenda implements Listener {
 			n.dodaj(" ");
 			n.dodaj(new Napis("§d" + en.getKey(), "§bKliknij aby zmienić", "/superitem zmieńmateriał " + en.getKey()));
 			n.dodaj("§8: ");
-			n.dodaj(new Napis("§e" + en.getValue(), "§bKliknij aby zmienić", "/superitem zmień " + en.getKey() + " >> "));
+			n.dodaj(new Napis("§e/" + en.getValue(), "§bKliknij aby zmienić", "/superitem zmień " + en.getKey() + " >> "));
 			n.dodaj("\n");
 			i++;
 		}
@@ -138,7 +140,7 @@ public class SuperItem extends Komenda implements Listener {
 		if (Main.perms != null) {
 			int limit = -1;
 			for (String grupa : Main.perms.getPlayerGroups(p))
-				limit = Math.max(limit, Main.ust.wczytajInt("SuperItem.grupy." + grupa));
+				limit = Math.max(limit, Main.ust.wczytajLubDomyślna("SuperItem.grupy." + grupa, -1));
 			return limit == -1 ? 5 : limit;
 		}
 		return 5;

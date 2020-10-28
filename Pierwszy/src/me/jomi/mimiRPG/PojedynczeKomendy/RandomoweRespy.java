@@ -104,8 +104,8 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 			return true;
 		case "los":
 			if (args.length < 1)
-				return Func.powiadom(sender, prefix + "/losresp <nick>");
-			List<Entity> en = Bukkit.selectEntities(sender, Func.listToString(args, 0));
+				return Func.powiadom(sender, prefix + "/losresp los <nick>");
+			List<Entity> en = Bukkit.selectEntities(sender, Func.listToString(args, 1));
 			if (!en.isEmpty())
 				en.get(0).teleport(Func.losuj(respy));
 			return true;

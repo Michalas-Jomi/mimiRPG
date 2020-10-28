@@ -129,11 +129,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
 					sprawdzKoniec();
 				}
-			p.sendMessage(getInstMinigra().prefix + "Nie jesteś już w Paintballu");
+			p.sendMessage(getInstMinigra().getPrefix() + "Nie jesteś już w Paintballu");
 			
 			if (timer != -1 && policzGotowych() < min_gracze) {
 				timer = -1;
-				Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
+				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
 						nazwa, gracze.size(), strMaxGracze()));
 			}
 			return p;
@@ -147,7 +147,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				Player gracz = Bukkit.getPlayer(nick);
 				set.add(gracz == null ? "§c" + nick : gracz.getDisplayName());
 			}
-			Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("%s Wygrał na arenie %s z %s",
+			Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("%s Wygrał na arenie %s z %s",
 					p.getDisplayName(), nazwa, nazwa, Func.listToString(wszyscyGracze, 0, "§6, §e")));
 			koniec();
 			return true;
@@ -165,8 +165,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return max_gracze <= 0 ? min_gracze + "+" : max_gracze;
 		}
 		void napiszGraczom(String msg, Object... uzupełnienia) {
-			if (!msg.startsWith(getInstMinigra().prefix))
-				msg = getInstMinigra().prefix + msg;
+			if (!msg.startsWith(getInstMinigra().getPrefix()))
+				msg = getInstMinigra().getPrefix() + msg;
 			msg = Func.msg(msg, uzupełnienia);
 			for (Player p : gracze)
 				p.sendMessage(msg);
@@ -200,7 +200,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			String czas = Func.czas(--timer);
 			
 			if (sekundyPowiadomien.contains(timer))
-				Bukkit.broadcastMessage(getInstMinigra().prefix + Func.msg("Arena %s wystartuje za %s (%s/%s)",
+				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Arena %s wystartuje za %s (%s/%s)",
 						nazwa, czas, gracze.size(), strMaxGracze()));
 			
 			if (timer <= 0) {
@@ -272,7 +272,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	Arena zaczynanaArena;
 	
 	// abstract
-	String prefix;
 	abstract String getPrefix();
 	abstract Config getConfigAreny();
 	abstract String getMetaStatystyki();
@@ -281,7 +280,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	
 	public Minigra() {
 		Minigry.mapaGier.put(this.getClass().getSimpleName().toLowerCase(), this);
-		prefix = getPrefix();
 	}
 
 
@@ -345,10 +343,10 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			if (dozwoloneKomendy.contains(Func.tnij(ev.getMessage(), " ").get(0)))
 				return;
 			else if (p.hasPermission(Minigry.permCmdBypass))
-				p.sendMessage(prefix + "pamiętaj że jesteś w trakcie minigry");
+				p.sendMessage(getPrefix() + "pamiętaj że jesteś w trakcie minigry");
 			else {
 				ev.setCancelled(true);
-				p.sendMessage(prefix + "Nie wolno tu uzywać komend");
+				p.sendMessage(getPrefix() + "Nie wolno tu uzywać komend");
 			}
 		}
 	}
@@ -399,7 +397,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return staty(sender, args);
 				
 		if (!(sender instanceof Player))
-			return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");
+			return Func.powiadom(getPrefix(), sender, "Paintball jest tylko dla graczy");
 		Player p = (Player) sender;
 		
 		Arena arena;
@@ -408,15 +406,15 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		case "dolacz":
 			arena = (Arena) zaczynanaArena();
 			if (arena == null)
-				return Func.powiadom(prefix, sender, "Aktualnie nie ma żadnych wolnych aren");
+				return Func.powiadom(getPrefix(), sender, "Aktualnie nie ma żadnych wolnych aren");
 			if (arena.pełna())
-				return Func.powiadom(prefix, sender, "Brak miejsc w poczekalni");
+				return Func.powiadom(getPrefix(), sender, "Brak miejsc w poczekalni");
 			arena.dołącz(p);
 			break;
 		case "opusc":
 			arena = arena(p);
 			if (arena == null)
-				return Func.powiadom(prefix, sender, "Nie jesteś w żadnej rozgrywce");
+				return Func.powiadom(getPrefix(), sender, "Nie jesteś w żadnej rozgrywce");
 			arena.opuść(p);
 			break;
 		default:
@@ -426,7 +424,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 	private boolean staty(CommandSender sender, String[] args) {
 		if (args.length <= 2 && (!(sender instanceof Player)))
-			return Func.powiadom(prefix, sender, "/" + args[0] + " staty <nick>");
+			return Func.powiadom(getPrefix(), sender, "/" + args[0] + " staty <nick>");
 		return staty(sender, args.length <= 2 ? sender.getName() : args[2]);
 	}
 	private boolean staty(CommandSender sender, String nick) {
@@ -441,7 +439,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		return staty(sender, g.nick, (Statystyki) g.staty.get(Arena.class.getName()));
 	} 
 	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
-		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
+		return Func.powiadom(getPrefix(), sender, "Staty %s\n\n%s",
 				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz());
 	}
 }
