@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -289,7 +290,8 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	@Override
 	public int czas() {
 		for (Player p : Bukkit.getOnlinePlayers())
-			if (Func.losuj(dzień(p.getWorld()) ? dzienna_szansa_zrespawnowania_dla_gracza : nocna_szansa_zrespawnowania_dla_gracza))
+			if (Func.multiEquals(p.getGameMode(), GameMode.SURVIVAL, GameMode.ADVENTURE) &&
+					Func.losuj(dzień(p.getWorld()) ? dzienna_szansa_zrespawnowania_dla_gracza : nocna_szansa_zrespawnowania_dla_gracza))
 				zresp(p.getLocation());
 		return czas_odświeżania_ticki;
 	}

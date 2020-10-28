@@ -27,6 +27,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.NowyEkwipunek;
+import me.jomi.mimiRPG.PojedynczeKomendy.Antylog;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -106,6 +107,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 			staty.rozpisz(obj);
 			
+			Antylog.włączBypass(p);
+			
 			return true;
 		}
 		boolean opuść(Player p) {
@@ -113,6 +116,9 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			for (int i=0; i<gracze.size(); i++)
 				if (gracze.get(i).getName().equals(nick))
 					return opuść(i, true) != null;
+			
+			Antylog.wyłączBypass(p);
+			
 			return false;
 		}
 		Player opuść(int i, boolean info) {

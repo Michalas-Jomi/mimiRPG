@@ -145,6 +145,7 @@ Spawnery:
       # zasięg w jakim musi być gracz aby spawner działał (RequiredPlayerRange)
       # poziom * mnożnik
       mnożnik: 4
+      #opis # opcjonalne
     
     # maksymalna ilość respionych mobów na raz (SpawnCount)
     # poziom
@@ -155,7 +156,7 @@ Spawnery:
       # maksymalna ilość zrespionych mobów w pobliżu (MaxNearbyEntities)
       # poziom * mnożnik
       mnożnik: 2.3
-      # opis na itemie
+      # opis na itemie # opcjonalne
       opis:
         - '&dLiczebność to fajna sprawa jest'
     
@@ -164,12 +165,15 @@ Spawnery:
       item: sugar
       slot: 28
       koszty: [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+      # początkowa ilość sekund
+      początkowa: 40 # opcjonalne domyślnie 40
       # ilość ujmowanych sekund na poziom (MaxSpawnDelay)
       # (poziom - 1) * mnożnik
-      mnożnik: 5
+      mnożnik: 4
       # najszybsze możliwe zrespienia moba
       # MinSpawnDelay = MaxSpawnDelay / dzielnik
-      dzielnik: 4
+      dzielnik: 3
+      #opis # opcjonalne
 
 
 ###################

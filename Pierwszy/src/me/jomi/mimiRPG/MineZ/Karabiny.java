@@ -45,6 +45,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 // TODO szablonowy config
 
+// TODO info o przeładowaniu
+
 @Moduł
 public class Karabiny implements Listener, Przeładowalny {
 	public static class Karabin extends Mapowany {
@@ -55,6 +57,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		@Mapowane double attackCooldown; // w sekundach
 		@Mapowane double siłaStrzału = 3;
 		@Mapowane int przybliżenie = 1;
+		@Mapowane double mocWybuchu;
 		@Mapowane double dmg = 2;
 		@Mapowane ItemStack item;
 		@Mapowane ItemStack ammo;
@@ -69,6 +72,7 @@ public class Karabiny implements Listener, Przeładowalny {
 			Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
 			Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
 			pocisk.setVelocity(wzrok.multiply(siłaStrzału));
+			pocisk.setInvulnerable(true);
 			pocisk.setShooter(p);
 			
 			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, 80, (float) dzwiękPitch);
@@ -123,6 +127,10 @@ public class Karabiny implements Listener, Przeładowalny {
 		Projectile pocisk = ev.getEntity();
 		if (!pocisk.hasMetadata("mimiPocisk")) return;
 		
+		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());	
+		if (karabin.mocWybuchu > 0)
+			pocisk.getWorld().createExplosion(pocisk.getLocation(), (float) karabin.mocWybuchu, false, false, (Player) pocisk.getShooter());
+		
 		Location loc = pocisk.getLocation();
 		pocisk.remove();
 		loc.getWorld().spawnParticle(Particle.CRIT, loc, 5, 0, 0, 0, .1);
@@ -137,9 +145,9 @@ public class Karabiny implements Listener, Przeładowalny {
 		if (!pocisk.hasMetadata("mimiPocisk")) return;
 		
 		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());
-		
 		ev.setDamage(karabin.dmg);
 	}
+	
 	
 	private Karabin karabin(ItemStack item) {
 		for (Karabin karabin : karabiny.values())

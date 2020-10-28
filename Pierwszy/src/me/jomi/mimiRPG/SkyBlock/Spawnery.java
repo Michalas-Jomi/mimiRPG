@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.SkyBlock;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -101,11 +101,19 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
+		// TODO raport spawnerów
 		int x = 0;
 		try {
 			x = Main.ust.sekcja("Spawnery.ulepszenia").getKeys(false).size();
 		} catch (Exception e) {}
 		return Func.r("wczytane ulepszenia", x);
+	}
+	
+	int getMaxSpawnDelay() {
+		return Main.ust.wczytajLubDomyślna("Spawnery.ulepszenia.Szybkość.początkowa", 40) * 20;
+	}
+	int getMinSpawnDelay(int maxSpawnDelay) {
+		return maxSpawnDelay / Main.ust.wczytajLubDomyślna("Spawnery.ulepszenia.Szybkość.dzielnik", 3);
 	}
 	
 	void edytuj(Player p, CreatureSpawner spawner) {
@@ -124,7 +132,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 				ench = poziom == spawner.getSpawnRange() - 1;
 				break;
 			case "§bSzybkość":
-				ench = poziom == (800 - spawner.getMaxSpawnDelay()) / (20 * mnożnik("Szybkość")) + 1;
+				ench = poziom == (getMaxSpawnDelay() - spawner.getMaxSpawnDelay()) / (20 * mnożnik("Szybkość")) + 1;
 				break;
 			}
 			if (ench) {
@@ -157,32 +165,31 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		
 		int poziom = item.getAmount();
 
-		double mnożnik;
-		switch (item.getItemMeta().getDisplayName()) {
+		String nazwa = item.getItemMeta().getDisplayName();
+		double mnożnik = mnożnik(nazwa.substring(2));
+		switch (nazwa) {
 		case "§bLiczebność":
-			spawner.setSpawnCount(poziom + 1);
-			mnożnik = mnożnik("Liczebność");
-			spawner.setMaxNearbyEntities((int) ((poziom + 1) * mnożnik));
+			spawner.setSpawnCount(poziom);
+			spawner.setMaxNearbyEntities((int) (poziom * mnożnik));
 			break;
 		case "§bZasięg":
-			spawner.setSpawnRange(poziom + 2);
-			mnożnik = mnożnik("Zasięg");
-			spawner.setRequiredPlayerRange((int) ((poziom + 1) * mnożnik));
+			spawner.setSpawnRange(poziom + 1);
+			spawner.setRequiredPlayerRange((int) (poziom * mnożnik));
 			break;
 		case "§bSzybkość":
-			mnożnik = mnożnik("Szybkość");
-			double maxSpawnDeley = 800 - poziom * mnożnik*20;;
+			double maxSpawnDeley = getMaxSpawnDelay() - (poziom - 1) * mnożnik*20;;
 			spawner.setMaxSpawnDelay((int) maxSpawnDeley);
-			mnożnik = Main.ust.wczytajDouble("Spawnery.ulepszenia.Szybkość.dzielnik");
-			spawner.setMinSpawnDelay((int) (maxSpawnDeley / mnożnik));
+			spawner.setMinSpawnDelay(getMinSpawnDelay((int) maxSpawnDeley));
 			break;
 		}
 		spawner.update();
+		
+		Main.econ.withdrawPlayer(p, cena);
+		
 		edytuj(p, spawner);
 	}
 	double mnożnik(String typ) {
 		return Main.ust.wczytajDouble("Spawnery.ulepszenia." + typ + ".mnożnik");
-		
 	}
 	
 	@EventHandler
@@ -292,10 +299,16 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		try {
+			int maxSD = getMaxSpawnDelay();
 			Func.dajItem(p, dajItem(args[0], 1, 1, 1, MojangsonParser.parse(
-					String.format("{SpawnData:{id:\"minecraft:%s\"},MaxNearbyEntities:%ss,"
-							+ "MinSpawnDelay:200s,SpawnRange:2s,MaxSpawnDelay:800s,RequiredPlayerRange:%ss,SpawnCount:1s}",
-							args[0].toLowerCase(), (int) mnożnik("Liczebność"), (int) mnożnik("Zasięg")))));
+					"{SpawnData:{id:\"minecraft:<mob>\"},MaxNearbyEntities:<maxNE>s,MinSpawnDelay:<minSD>s,"
+					+ "SpawnRange:2s,MaxSpawnDelay:<maxSD>s,RequiredPlayerRange:<RPR>s,SpawnCount:1s}"
+					.replace("<mob>", args[0].toLowerCase())
+					.replace("<maxNE>", "" + (int) mnożnik("Liczebność"))
+					.replace("<RPR>",	"" + (int) mnożnik("Zasięg"))
+					.replace("<minSD>", "" + getMinSpawnDelay(maxSD))
+					.replace("<maxSD>", "" + maxSD)
+					)));
 		} catch (CommandSyntaxException e) {
 			e.printStackTrace();
 		}

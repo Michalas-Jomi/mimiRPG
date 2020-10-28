@@ -35,6 +35,24 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Antylog");
 	final HashMap<String, Set<String>> gracze = new HashMap<>();
 	final HashMap<String, Integer> 	   czasy  = new HashMap<>();
+
+	
+	static final String metaBypass = "mimiAntylogBypass";
+	public static void włączBypass(Player p) {
+		int lvl = maBypass(p) ? p.getMetadata(metaBypass).get(0).asInt() : 0;
+		Func.ustawMetadate(p, metaBypass, lvl + 1);
+	}
+	public static void wyłączBypass(Player p) {
+		if (!maBypass(p)) return;
+		int lvl = p.getMetadata(metaBypass).get(0).asInt();
+		if (lvl <= 1)
+			p.removeMetadata(metaBypass, Main.plugin);
+		else
+			Func.ustawMetadate(p, metaBypass, lvl - 1);
+	}
+	public static boolean maBypass(Player p) {
+		return p.hasMetadata(metaBypass);
+	}
 	
 	final int maxCzas = 40;
 	
@@ -86,10 +104,10 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 		if (ev.getDamage() <= 0) return;
 		if (!(ev.getEntity() instanceof Player)) return;
 		Player atakowany = (Player) ev.getEntity();
-		
-		Entity _atakujący = ev.getDamager();
+		if (maBypass(atakowany)) return;
 		
 		Player atakujący = null;
+		Entity _atakujący = ev.getDamager();
 		if (_atakujący instanceof Player)
 			atakujący = (Player) ev.getDamager();
 		else if (_atakujący instanceof Projectile) {
@@ -98,6 +116,8 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 				 atakujący = (Player) __atakujący;
 		}
 		if (atakujący == null) return;
+		
+		if (maBypass(atakujący)) return;
 		
 		if (Bukkit.getPlayer(atakowany.getName()) == null) return;
 		
