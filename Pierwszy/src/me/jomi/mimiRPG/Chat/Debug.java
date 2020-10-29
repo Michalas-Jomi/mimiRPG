@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 
 import joptsimple.ValueConversionException;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -50,28 +51,35 @@ public class Debug extends Komenda {
 		if (co.endsWith(")")) {
 			Object[] parametry = parametry(co.substring(co.indexOf('(')+1, co.indexOf(')')));
 			
-			Class<?>[] klasy = new Class<?>[parametry.length];
+			List<List<Class<?>>> klasy = Lists.newArrayList();
 			for (int i=0; i<parametry.length; i++)
-				klasy[i] = parametry[i].getClass();
+				klasy.add(Func.dajKlasy(parametry[i].getClass()));
 			
 			String metoda = co.substring(0, co.indexOf('('));
-			boolean b = true;
-			while (b) {
-				b = !klasa.getName().equals(Object.class.getName());
-				try {
-					Method met = klasa.getDeclaredMethod(metoda, klasy);
-					met.setAccessible(true);
-					return met.invoke(naCzym, parametry);
-				} catch (NoSuchMethodException e) {
-					klasa = klasa.getSuperclass();
-				}
-			}
-			throw new NoSuchMethodException("Nieznaleziona metoda " + metoda);
+			Main.warn(klasa, co, Func.wykonajWszystkim(klasy, lista -> Func.wykonajWszystkim(lista, Class::getSimpleName)));
+			Method met = wezMetode(klasa, metoda, klasy, 0, new Class<?>[klasy.size()]);
+			met.setAccessible(true);
+			return met.invoke(naCzym, parametry);
 		} else {
-			Field f = klasa.getDeclaredField(co);
+			Field f = Func.dajField(klasa, co);
 			f.setAccessible(true);
 			return f.get(naCzym);
 		}
+	}
+	Method wezMetode(Class<?> klasa, String metoda, List<List<Class<?>>> klasy, int i, Class<?>[] args) throws Throwable {
+		if (i >= args.length) {
+			Main.log(Func.wykonajWszystkim(Lists.newArrayList(args), Class::getSimpleName));
+			return Func.dajMetode(klasa, metoda, args);
+		}
+		for (Class<?> arg : klasy.get(i))
+			try {
+				args[i] = arg;
+				return wezMetode(klasa, metoda, klasy, i + 1, args);
+			} catch(Throwable e) {}
+		throw new Throwable();
+	}
+	Method wezMetode(Class<?> klasa, String metoda, Class<?>[] args) throws Throwable {
+		return Func.dajMetode(klasa, metoda, args);
 	}
 	Object[] parametry(String nawiasy) {
 		List<Object> lista = Lists.newArrayList();

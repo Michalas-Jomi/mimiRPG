@@ -115,7 +115,7 @@ public abstract class Func {
 	public static long czasSekundy() {
 		return System.currentTimeMillis() / 1000;
 	}
-	
+
 	public static String DoubleToString(double liczba) {
 		String całości = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
@@ -159,6 +159,12 @@ public abstract class Func {
 	}
 	public static String listToString(Object[] lista, int start) {
 		return listToString(Lists.newArrayList(lista), start, " ");
+	}
+	public static String listToString(Object[] lista) {
+		return listToString(Lists.newArrayList(lista), 0, " ");
+	}
+	public static String listToString(Object[] lista, String wstawka) {
+		return listToString(Lists.newArrayList(lista), 0, wstawka);
 	}
 	public static String listToString(Object[] lista, int start, String wstawka) {
 		return listToString(Lists.newArrayList(lista), start, wstawka);
@@ -836,21 +842,29 @@ public abstract class Func {
 	}
 	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
 		if (clazz.getName().equals(Object.class.getName()))
-			throw new Throwable();
+			throw new NoSuchFieldException();
 		try {
 			return clazz.getDeclaredField(nazwa);
 		} catch (NoSuchFieldException e) {
 			return dajField(clazz.getSuperclass(), nazwa);
 		}
 	}
-	public static Method dajMetode(Class<?> clazz, String nazwa) throws Throwable {
+	public static Method dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
 		if (clazz.getName().equals(Object.class.getName()))
-			throw new Throwable();
+			throw new NoSuchMethodException();
 		try {
-			return clazz.getDeclaredMethod(nazwa);
+			return clazz.getDeclaredMethod(nazwa, klasy);
 		} catch (NoSuchMethodException e) {
 			return dajMetode(clazz.getSuperclass(), nazwa);
 		}
+	}
+	public static List<Class<?>> dajKlasy(Class<?> clazz) {
+		List<Class<?>> lista = Lists.newArrayList(clazz);
+		
+		while (!clazz.getName().equals(Object.class.getName()))
+			lista.add(clazz = clazz.getSuperclass());
+		
+		return lista;
 	}
 
 	public static <T1, T2> List<T2> wykonajWszystkim(Iterable<T1> lista, Function<T1, T2> func) {
