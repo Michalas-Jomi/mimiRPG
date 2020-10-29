@@ -21,6 +21,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -67,7 +70,7 @@ public class CaveWars extends MinigraDrużynowa {
 		}
 		void _start() {
 			startuje = false;
-			for (Drużyna drużyna : drużyny) { // TODO w poprawne sprawdzać nazwy drużyn
+			for (Drużyna drużyna : drużyny) {
 				if (drużyna.gracze <= 0) continue;
 				int x = Func.losuj(róg1.getBlockX() + 2, róg2.getBlockX() - 1);
 				int y = Func.losuj(róg1.getBlockY() + 0, róg2.getBlockY() - 3);
@@ -76,11 +79,14 @@ public class CaveWars extends MinigraDrużynowa {
 				
 				for (Block blok : Func.bloki(drużyna.respawn.clone().add(-2, 0, -2), drużyna.respawn.clone().add(1, 3, 0)))
 					blok.setType(Material.AIR, false);
+				
+				drużyna.respawn.getBlock().setType(Material.TORCH);
 			}
 			
 			for (Player p : gracze) {
 				p.teleport(inst.drużyna(p).respawn);
 				p.setGameMode(GameMode.SURVIVAL);
+				p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20*60*60*6, 1));
 			}
 
 			zapiszWygenerowanieJako(false);			

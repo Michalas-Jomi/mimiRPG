@@ -22,6 +22,8 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
+// TODO usunąć range przy usuwaniu wyspy
+
 @Moduł
 public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public RangiWysp() {
@@ -42,24 +44,27 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		if (wyspa == null) return "";
 		
 		String tytuł = ranga(wyspa.getValue());
-		if (p.getDisplayName().startsWith(tytuł)) return "";
+		if (p.getDisplayName().endsWith(tytuł)) return "";
 		
 		ustawRange(p, tytuł);
 		return tytuł;
 	}
 	
 	void ustawRange(Player p, String tytuł) {
-		Main.chat.setPlayerSuffix(p, "§a§l " + Func.koloruj(tytuł));
+		Main.chat.setPlayerSuffix(p, Func.koloruj(Main.ust.wczytajLubDomyślna("RangiWysp.prefix", "§a§l ") + tytuł));
 	}
 	String ranga(double pkt) {
 		String w = " ";
 		double ost = -1;
 		for (Entry<String, Object> en : Main.ust.sekcja("RangiWysp").getValues(false).entrySet()) {
-			double _pkt = Func.Double(en.getValue());
-			if (_pkt <= pkt && _pkt > ost) {
-				w = en.getKey();
-				ost = _pkt;
-			}
+			if (en.getKey().equals("prefix")) continue;
+			try {
+				double _pkt = Func.Double(en.getValue());
+				if (_pkt <= pkt && _pkt > ost) {
+					w = en.getKey();
+					ost = _pkt;
+				}
+			} catch(Throwable e) {}
 		}
 		return w;
 	}

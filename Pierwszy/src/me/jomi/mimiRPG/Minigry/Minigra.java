@@ -13,7 +13,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -99,7 +101,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			for (int i=0; i<gracze.size(); i++)
 				if (gracze.get(i).getName().equals(nick))
 					return opuść(i, true) != null;
-			
 			return false;
 		}
 		Player opuść(int i, boolean info) {
@@ -129,7 +130,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
 					sprawdzKoniec();
 				}
-			p.sendMessage(getInstMinigra().getPrefix() + "Nie jesteś już w Paintballu");
+			p.sendMessage(getInstMinigra().getPrefix() + "Nie jesteś już w Minigrze");
 			
 			if (timer != -1 && policzGotowych() < min_gracze) {
 				timer = -1;
@@ -349,6 +350,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				p.sendMessage(getPrefix() + "Nie wolno tu uzywać komend");
 			}
 		}
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void śmierć(PlayerDeathEvent ev) {
+		if (!ev.getKeepInventory()) return;
+		Func.wykonajDlaNieNull(arena(ev.getEntity()), a -> ev.setKeepInventory(false));
 	}
 	
 	

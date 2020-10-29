@@ -26,8 +26,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 
-// TODO dodawać baze do gildi przy stawianiu bazy
-
 @Moduł
 public class SuperItem extends Komenda implements Listener {
 	public static final String prefix = Func.prefix("Super Item");

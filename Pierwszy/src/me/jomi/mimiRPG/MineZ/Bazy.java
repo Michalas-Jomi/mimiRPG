@@ -137,7 +137,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			Gracz g = Gracz.wczytaj(p.getName());
 			
-			wykonajNaRegionach(g, DefaultDomain::addPlayer);
+			dodajRegiony(g);
 			
 			gracze.add(p.getName());
 			zapisz();
@@ -155,14 +155,23 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			g.gildia = null;
 			g.zapisz();
 			
-			wykonajNaRegionach(g, DefaultDomain::removePlayer);
+			zapomnijRegiony(g);
 			
 			if (nick.equals(przywódca))
 				if (gracze.size() == 0)
 					config.ustaw_zapisz(nazwa, null);
 				else
 					przywódca = gracze.remove(0);
-		}	
+		}
+		
+		void dodajRegiony(Gracz g) {
+			wykonajNaRegionach(g, DefaultDomain::addPlayer);
+		}
+		void zapomnijRegiony(Gracz g) {
+			wykonajNaRegionach(g, DefaultDomain::removePlayer);
+		}
+		
+		
 		private void wykonajNaRegionach(Gracz g, BiConsumer<DefaultDomain, String> bic) {
 			Consumer<String> cons = członek -> {
 				Gracz gracz = Gracz.wczytaj(członek);
@@ -250,7 +259,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			nazwa = nazwaBazy;
 			
 			Gracz g = Gracz.wczytaj(p.getName());
+			
 			g.baza = this;
+			
+			Func.wykonajDlaNieNull(Gildia.wczytaj(g.gildia), gildia -> gildia.dodajRegiony(g));
+			
 			g.zapisz();
 			
 			// ognisko to rdzeń bazy, zniszczenie ogniska = usunięcie bazy
@@ -306,6 +319,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		void usuń() {
 			for (String owner : region.getOwners().getPlayers()) {
 				Gracz g = Gracz.wczytaj(owner);
+				
+				Func.wykonajDlaNieNull(Gildia.wczytaj(g.gildia), gildia -> gildia.zapomnijRegiony(g));
+				
 				if (g.baza != null && g.baza.nazwa.equals(region.getId())) {
 					g.baza = null;
 					g.zapisz();

@@ -251,6 +251,34 @@ rtp:
     - Water
     - Lava
 
+##################
+### Rangi Wysp ###
+
+RangiWysp:
+  prefix: '&a&l '
+
+  z Polany: 0
+  z Jaskini: 500
+  z Lepianki: 1_500
+  
+  Z Osady: 3_000
+  z Wioski: 10_000
+  z Osiedla: 25_000
+  
+  z Prowincji: 50_000
+  z Dworu: 100_000
+  Z Posiadłości: 200_000
+  
+  z Mieściny: 500_000
+  z Miasta: 750_000
+  z Aglomeracji: 1_000_000
+  
+  z Metropoli: 2_000_000
+  z Megalopolis: 5_000_000
+  NoLife: 10_000_000
+
+
+
 ###############
 ### AntyLog ###
 

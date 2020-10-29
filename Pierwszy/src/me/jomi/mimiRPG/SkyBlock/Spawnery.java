@@ -301,8 +301,8 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		try {
 			int maxSD = getMaxSpawnDelay();
 			Func.dajItem(p, dajItem(args[0], 1, 1, 1, MojangsonParser.parse(
-					"{SpawnData:{id:\"minecraft:<mob>\"},MaxNearbyEntities:<maxNE>s,MinSpawnDelay:<minSD>s,"
-					+ "SpawnRange:2s,MaxSpawnDelay:<maxSD>s,RequiredPlayerRange:<RPR>s,SpawnCount:1s}"
+					("{SpawnData:{id:\"minecraft:<mob>\"},MaxNearbyEntities:<maxNE>s,MinSpawnDelay:<minSD>s,"
+					+ "SpawnRange:2s,MaxSpawnDelay:<maxSD>s,RequiredPlayerRange:<RPR>s,SpawnCount:1s}")
 					.replace("<mob>", args[0].toLowerCase())
 					.replace("<maxNE>", "" + (int) mnożnik("Liczebność"))
 					.replace("<RPR>",	"" + (int) mnożnik("Zasięg"))

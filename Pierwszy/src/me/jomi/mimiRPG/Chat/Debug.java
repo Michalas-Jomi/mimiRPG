@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 
 import joptsimple.ValueConversionException;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -56,7 +55,6 @@ public class Debug extends Komenda {
 				klasy.add(Func.dajKlasy(parametry[i].getClass()));
 			
 			String metoda = co.substring(0, co.indexOf('('));
-			Main.warn(klasa, co, Func.wykonajWszystkim(klasy, lista -> Func.wykonajWszystkim(lista, Class::getSimpleName)));
 			Method met = wezMetode(klasa, metoda, klasy, 0, new Class<?>[klasy.size()]);
 			met.setAccessible(true);
 			return met.invoke(naCzym, parametry);
@@ -67,10 +65,8 @@ public class Debug extends Komenda {
 		}
 	}
 	Method wezMetode(Class<?> klasa, String metoda, List<List<Class<?>>> klasy, int i, Class<?>[] args) throws Throwable {
-		if (i >= args.length) {
-			Main.log(Func.wykonajWszystkim(Lists.newArrayList(args), Class::getSimpleName));
+		if (i >= args.length)
 			return Func.dajMetode(klasa, metoda, args);
-		}
 		for (Class<?> arg : klasy.get(i))
 			try {
 				args[i] = arg;

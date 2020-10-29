@@ -238,7 +238,14 @@ public abstract class MinigraDrużynowa extends Minigra {
 		
 		@Override
 		boolean poprawna() {
-			return super.poprawna() && getDrużyny().size() >= getMinDrużyny();
+			if (super.poprawna() && getDrużyny().size() >= getMinDrużyny()) {
+				Set<String> nazwy = Sets.newConcurrentHashSet();
+				for (Drużyna drużyna : getDrużyny())
+					if (!nazwy.add(drużyna.nazwa))
+						return false;
+				return true;
+			}
+			return false;
 		}
 
 		@Override
@@ -325,7 +332,6 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 	}
 
-	
 	// abstract
 	abstract String getMetaDrużynaId();
 	
@@ -349,12 +355,14 @@ public abstract class MinigraDrużynowa extends Minigra {
 	public void KlikanieInv(InventoryClickEvent ev) {
 		Arena arena = arena(ev.getWhoClicked());
 		int slot = ev.getRawSlot();
-		if (arena != null && Arena.nazwaInv.equals(ev.getView().getTitle()) && slot >= 0 && slot < ev.getInventory().getSize()) {
+		if (arena != null && !arena.grane) {
 			ev.setCancelled(true);
-			ItemStack item = ev.getCurrentItem();
-			if (item.getType().equals(Material.LEATHER_CHESTPLATE)) {
-				Drużyna drużyna = arena.znajdzDrużyne(item.getItemMeta().getDisplayName());
-				arena.wybierzDrużyne((Player) ev.getWhoClicked(), drużyna);
+			if (Arena.nazwaInv.equals(ev.getView().getTitle()) && slot >= 0 && slot < ev.getInventory().getSize()) {
+				ItemStack item = ev.getCurrentItem();
+				if (item.getType().equals(Material.LEATHER_CHESTPLATE)) {
+					Drużyna drużyna = arena.znajdzDrużyne(item.getItemMeta().getDisplayName());
+					arena.wybierzDrużyne((Player) ev.getWhoClicked(), drużyna);
+				}
 			}
 		}
 	}
