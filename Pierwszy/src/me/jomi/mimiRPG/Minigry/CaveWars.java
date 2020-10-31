@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -49,6 +50,10 @@ public class CaveWars extends MinigraDrużynowa {
 		@Mapowane Location róg1;
 		@Mapowane Location róg2;
 		
+		@Mapowane int minutyDoGlowingu = 20;
+		
+		Integer taskGlowingu = null;
+		
 		void skończoneGenerowanie() {
 			if (startuje) {
 				_start();
@@ -86,10 +91,32 @@ public class CaveWars extends MinigraDrużynowa {
 			for (Player p : gracze) {
 				p.teleport(inst.drużyna(p).respawn);
 				p.setGameMode(GameMode.SURVIVAL);
-				p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20*60*60*6, 1));
+				p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20*60*60*6, 1, false, false, false));
 			}
 
-			zapiszWygenerowanieJako(false);			
+			zapiszWygenerowanieJako(false);
+			
+			taskGlowingu = Func.opóznij(20*60*minutyDoGlowingu - 20*30, () -> {
+				napiszGraczom("Za 30 sekund zaczniecie świecić");
+				taskGlowingu = Func.opóznij(20*30, () -> {
+					for (Player p : gracze)
+						p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*60*60*6, 1, false, false, false));
+					taskGlowingu = null;
+				});
+			});
+		}
+		@Override
+		Player opuść(int i, boolean info) {
+			Player p = super.opuść(i, info);
+			p.removePotionEffect(PotionEffectType.NIGHT_VISION);
+			p.removePotionEffect(PotionEffectType.GLOWING);
+			return p;
+		}
+		@Override
+		void koniec() {
+			super.koniec();
+			if (taskGlowingu != null)
+				Bukkit.getScheduler().cancelTask(taskGlowingu);
 		}
 		
 		void zabity(Player kto, Player kiler) {

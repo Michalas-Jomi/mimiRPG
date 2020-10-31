@@ -10,7 +10,7 @@ import me.jomi.mimiRPG.Mapowany;
 
 public class Ciąg<T> extends Mapowany {
 	static final Random random = new Random();
-	@Mapowane List<Krotka<Integer, T>> lista;
+	@Mapowane List<Krotka<Integer, T>> lista = Lists.newArrayList();
 	@Mapowane int suma = 0;
 	
 	public Ciąg() {}
@@ -25,11 +25,23 @@ public class Ciąg<T> extends Mapowany {
 	
 	void przetwórz() {
 		List<Krotka<Integer, T>> nowa = Lists.newArrayList();
-		for (Krotka<Integer, T> krotka : lista) {
-			nowa.add(new Krotka<>(krotka.a + suma, krotka.b));
-			suma += krotka.a;
-		}
+		for (Krotka<Integer, T> krotka : lista)
+			dodaj(krotka.b, krotka.a);
 		this.lista = nowa;
+	}
+
+	public void wyczyść() {
+		lista.clear();
+		suma = 0;
+	}
+	public int wielkość() {
+		return lista.size();
+	}
+	
+	
+	public void dodaj(T co, int szansa) {
+		lista.add(new Krotka<>(szansa + suma, co));
+		suma += szansa;
 	}
 
 	public T znajdz(int numer) {
