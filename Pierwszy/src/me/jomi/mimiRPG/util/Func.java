@@ -499,6 +499,21 @@ public abstract class Func {
 		
 		return w;
 	}
+	public static <T> T max(Iterable<T> iterable, Function<T, Integer> func) {
+		T w = null;
+		int max = 0;
+		
+		for (T el : iterable) {
+			int x = func.apply(el);
+			if (w == null || x > max) {
+				max = x;
+				w = el;
+			}
+		}
+		
+		
+		return w;
+	}
 	public static int max(Iterable<Integer> iterable) {
 		return max(iterable, (a, b) -> Math.max(a, b));
 	}
@@ -809,6 +824,12 @@ public abstract class Func {
 					continue;
 				throw e;
 			}
+	}
+	public static void multiTry(Runnable... funkcje) {
+		for (Runnable r : funkcje)
+			try {
+				r.run();
+			} catch (Throwable e) {}
 	}
 	
 	public static void ustawMetadate(Metadatable naCzym, String id, Object value) {

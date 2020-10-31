@@ -31,10 +31,10 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.LosyProporcjonalne;
 
 @Moduł
 public class CaveWars extends MinigraDrużynowa {
@@ -43,7 +43,7 @@ public class CaveWars extends MinigraDrużynowa {
 		@Mapowane int szansa;
 	}
 	public static class Arena extends MinigraDrużynowa.Arena {
-		LosyProporcjonalne<Material> blokiAreny;
+		Ciąg<Material> blokiAreny;
 		@Mapowane List<Drużyna> drużyny;
 		@Mapowane List<Box> BlokiAreny;
 		@Mapowane Location róg1;
@@ -109,7 +109,9 @@ public class CaveWars extends MinigraDrużynowa {
 			ubierz(p, drużyna, false, false, false, true);
 		}
 		
+		@Override
 		public void Init() {
+			super.Init();
 			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
 					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
 			Krotka<Integer, Integer> kx = krotka.apply(Location::getBlockX);
@@ -121,7 +123,7 @@ public class CaveWars extends MinigraDrużynowa {
 			List<Krotka<Integer, Material>> lista = Lists.newArrayList();
 			for (Box box : BlokiAreny)
 				lista.add(new Krotka<>(box.szansa, box.blok));
-			blokiAreny = new LosyProporcjonalne<>(lista);
+			blokiAreny = new Ciąg<>(lista);
 		}
 		
 		void wygenerujArene(Runnable runnable) {

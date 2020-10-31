@@ -67,7 +67,7 @@ public class Paintball extends MinigraDrużynowa {
 			pocisk.setShooter(p);
 		}
 		
-		void wybuch(Projectile pocisk, Drużyna drużyna, Function<Entity, Arena> arena) {
+		void wybuch(Projectile pocisk, Drużyna drużyna, Function<Entity, Arena> arena, Entity trafiony) {
 			Location loc = pocisk.getLocation();
 			
 			Consumer<Double> particle = zasięg -> loc.getWorld().spawnParticle(Particle.REDSTONE, loc, (int) (double) zasięg*40 + 1,
@@ -80,7 +80,8 @@ public class Paintball extends MinigraDrużynowa {
 			Player rzucający = (Player) pocisk.getShooter();
 			for (Entity e : pocisk.getNearbyEntities(zasięg, zasięg, zasięg))
 				if (e instanceof Player)
-					Func.wykonajDlaNieNull(arena.apply(e), a -> a.trafienie((Player) e, rzucający));
+					if (trafiony == null || !e.getName().equals(trafiony.getName()))
+						Func.wykonajDlaNieNull(arena.apply(e), a -> a.trafienie((Player) e, rzucający));
 		}
 	}
 	
@@ -410,7 +411,7 @@ public class Paintball extends MinigraDrużynowa {
 		Entity trafiony = ev.getHitEntity();
 		if (pocisk.hasMetadata(metaPocisków)) {
 			Broń broń = (Broń) pocisk.getMetadata(metaPocisków).get(0).value();
-			broń.wybuch(pocisk, drużyna((Entity) pocisk.getShooter()), this::arena);
+			broń.wybuch(pocisk, drużyna((Entity) pocisk.getShooter()), this::arena, trafiony);
 		}
 		
 		Func.wykonajDlaNieNull(arena(trafiony), 

@@ -42,7 +42,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 
 		private final HashMap<String, StringBuffer> mapaDrużynDlaMsgWin = new HashMap<>();
 		
-		Scoreboard sb;
+		Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();;
 		
 		
 		// abstract
@@ -52,23 +52,24 @@ public abstract class MinigraDrużynowa extends Minigra {
 		abstract MinigraDrużynowa getInstMinigraDrużynowa();
 		@Override Minigra getInstMinigra() { return getInstMinigraDrużynowa(); }
 
+		public void Init() {
+			for (Drużyna drużyna : getDrużyny()) {
+				Team team = sb.registerNewTeam(drużyna.nazwa);
+				team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
+				team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
+				team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
+				team.setColor(drużyna.kolorRGB.zbliżony());
+				team.setDisplayName(drużyna.toString());
+				team.setCanSeeFriendlyInvisibles(true);
+				team.setPrefix(drużyna.napisy);
+				drużyna.team = team;
+			}
+		}
 		
 		// obsłóga start / koniec
 		@Override
 		void start() {
 			super.start();
-			sb = Bukkit.getScoreboardManager().getNewScoreboard();
-			
-			for (Drużyna drużyna : getDrużyny()) {
-				Team team = sb.registerNewTeam(drużyna.nazwa);
-				drużyna.team = team;
-				team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
-				team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
-				team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
-				team.setCanSeeFriendlyInvisibles(true);
-				team.setDisplayName(drużyna.toString());
-				team.setPrefix(drużyna.napisy);
-			}
 			
 			mapaDrużynDlaMsgWin.clear();
 			for (Player p : gracze) {

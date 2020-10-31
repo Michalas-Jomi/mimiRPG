@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -28,10 +29,11 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public RangiWysp() {
 		super("przelicz");
+		ustawKomende("rangiWysp", null, null);
 	}
 
 	public static boolean warunekModułu() {
-		return Main.iridiumSkyblock;
+		return Main.iridiumSkyblock && Main.chat != null;
 	}
 	
 	void odśwież(Player p) {
@@ -51,7 +53,9 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	void ustawRange(Player p, String tytuł) {
-		Main.chat.setPlayerSuffix(p, Func.koloruj(Main.ust.wczytajLubDomyślna("RangiWysp.prefix", "§a§l ") + tytuł));
+		String suff = Func.koloruj(Main.ust.wczytajLubDomyślna("RangiWysp.prefix", "§a§l ") + tytuł);
+		for (World świat : Bukkit.getWorlds())
+			Main.chat.setPlayerSuffix(świat.getName(), p, suff);
 	}
 	String ranga(double pkt) {
 		String w = " ";
@@ -74,7 +78,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	@Override
 	public Krotka<String, Object> raport() {
 		ConfigurationSection sekcja = Main.ust.sekcja("RangiWysp");
-		return Func.r("Rangi wysp", (sekcja == null ? 0 : sekcja.getKeys(false).size()));
+		return Func.r("Rangi wysp", (sekcja == null ? 0 : (sekcja.getKeys(false).size() - (sekcja.contains("prefix") ? 1 : 0))));
 	}
 	
 	@EventHandler
@@ -88,22 +92,32 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (sender instanceof Player) {
-			Player p = (Player) sender;
-			String tytuł = sprawdz(p);
-			Island is = User.getUser(p).getIsland();
-			if (!tytuł.isEmpty())
-				for (String nick : is.getMembers()) {
-					if (p.getName() == nick) continue;
-					Player p2 = Bukkit.getPlayer(nick);
-					if (p2 == null) continue;
-					ustawRange(p2, tytuł);
-				}
-			if (is == null)
-				return Func.powiadom(p, "§6Nie masz wyspy");
-			return Func.powiadom(p, "§6Ranga wyspy: §e" + tytuł + " §e" + ((int) is.getValue()) + "pkt");
+		if (cmd.getName().equals("przelicz")) {
+			if (sender instanceof Player) {
+				Player p = (Player) sender;
+				String tytuł = sprawdz(p);
+				Island is = User.getUser(p).getIsland();
+				if (!tytuł.isEmpty())
+					for (String nick : is.getMembers()) {
+						if (p.getName() == nick) continue;
+						Player p2 = Bukkit.getPlayer(nick);
+						if (p2 == null) continue;
+						ustawRange(p2, tytuł);
+					}
+				if (is == null)
+					return Func.powiadom(p, "§6Nie masz wyspy");
+				return Func.powiadom(p, "§6Ranga wyspy: §e" + tytuł + " §e" + ((int) is.getValue()) + "pkt");
+			}
+			return Func.powiadom(sender, "Tylko gracz może tego użyć");
+		} else {
+			ConfigurationSection sekcja = Main.ust.sekcja("RangiWysp");
+			String prefix = "§6" + sekcja.getString("prefix", "§a§l ");
+			sender.sendMessage("§a§n|< §c-§l<>§c- §6Rangi wysp §c-§l<>§c- §a§n>|");
+			for (Entry<String, Object> entry : sekcja.getValues(false).entrySet())
+				if (!entry.getKey().equals("prefix"))
+					sender.sendMessage(prefix + entry.getKey() + "§8: §e" + Func.Double(entry.getValue()));
+			return true;
 		}
-		return Func.powiadom(sender, "Tylko gracz może tego użyć");
 	}
 }
 

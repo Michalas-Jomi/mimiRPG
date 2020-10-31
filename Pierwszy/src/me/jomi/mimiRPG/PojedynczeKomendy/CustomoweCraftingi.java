@@ -19,8 +19,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
-// TODO ulepszyć
-
 @Moduł
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");

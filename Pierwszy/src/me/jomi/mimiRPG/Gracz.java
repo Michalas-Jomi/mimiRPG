@@ -36,10 +36,11 @@ public class Gracz extends Mapowany {
  	
  	static final HashMap<String, Config> mapa = new HashMap<>();
 	private static Config config(String nick) {
+		nick = nick.toLowerCase();
 		Config config = mapa.get(nick);
 		if (config != null)
 			return config;
-		config = new Config("configi/gracze/" + nick.toLowerCase());
+		config = new Config("configi/gracze/" + nick);
 		if (Bukkit.getPlayer(nick) != null)
 			mapa.put(nick, config);
 		return config;

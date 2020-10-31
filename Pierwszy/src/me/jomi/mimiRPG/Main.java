@@ -125,6 +125,13 @@ public class Main extends JavaPlugin {
 		new Mimi();
         new Raport();
         
+        try {
+        	Bukkit.getPluginCommand("statspurge").setPermission("jbwmstats.statspurge");
+        	Bukkit.getPluginCommand("statspurge").setPermissionMessage("§cNie mas dostępu do tego");
+        } catch (Throwable e) {
+        	Main.warn("Nie wykryto komendy Korala /statspurge");
+        }
+        
 		zarejestruj(new Moduły());
 		
 		new Przeładuj();

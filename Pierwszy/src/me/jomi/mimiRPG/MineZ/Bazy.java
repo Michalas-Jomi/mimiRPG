@@ -230,9 +230,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		World świat;
 		
 		@Mapowane String nazwa;
-		@Mapowane String nazwaŚwiata;
-		@Mapowane Location tp;
 		@Mapowane int poziom = -1;
+		@Mapowane String nazwaŚwiata;
 		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
@@ -253,8 +252,12 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region.setFlag(Main.flagaCustomoweMoby, "brak");
 			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.DENY);
 			region.setFlag(Main.flagaC4, 		   StateFlag.State.ALLOW);
+			String msgWejścia = config.wczytajLubDomyślna("ustawienia.msg wejścia", "§6Wszedłeś na teren bazy gracza {gracz}");
+			region.setFlag(Flags.GREET_MESSAGE, Func.koloruj(msgWejścia.replace("{gracz}", p.getName())));
+			String msgWyjścia = config.wczytajLubDomyślna("ustawienia.msg wyjścia", "§6Wyszedłeś z terenu bazy gracza {gracz}");
+			region.setFlag(Flags.FAREWELL_MESSAGE, Func.koloruj(msgWyjścia.replace("{gracz}", p.getName())));
 			
-			tp = p.getLocation();
+			
 			nazwaŚwiata = świat.getName();
 			nazwa = nazwaBazy;
 			
@@ -286,11 +289,27 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					BlockVector3.at(x-dx, y-1,  z-dz)
 					);
 			if (Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
-					.getApplicableRegions(region).testState(null, Main.flagaStawianieBaz))
+					.getApplicableRegions(region)
+					.testState(null, Main.flagaStawianieBaz))
 				return new Baza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
 			Bazy.inst.blokuj = true;
 			ev.getPlayer().sendMessage(Bazy.prefix + "Nie możesz tu postawić swojej bazy");
 			return null;
+		}
+		@SuppressWarnings("unchecked")
+		boolean możnaUlepszyć() {
+			int xz = (int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(poziom + 1).get("kratki");
+			ProtectedCuboidRegion regionKontrolny = new ProtectedCuboidRegion(
+					"mimiBazaUlepszeniowoTestowana",
+					region.getMaximumPoint().add(xz, xz, xz),
+					region.getMinimumPoint().add(-xz, 0, -xz)
+					);
+			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.ALLOW);
+			boolean w = Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
+					.getApplicableRegions(regionKontrolny)
+					.testState(null, Main.flagaStawianieBaz);
+			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.DENY);
+			return w;
 		}
 
 		public Baza() {}// konstruktor dla Mapowanego
@@ -299,20 +318,16 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
 		}
 		
-		Baza(World świat, String nazwa) {
-			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
-			this.świat = świat;
-		}
-		private Baza(World świat, ProtectedCuboidRegion region) {
-			this.region = region;
-			this.świat = świat;
-		}
 		static Baza wczytaj(World świat, ProtectedRegion region) {
 			if (świat == null) return null;
 			if (!(region instanceof ProtectedCuboidRegion)) return null;
 			Pattern patern = Pattern.compile("baza-?\\d+x-?\\d+y-?\\d+z");
 			if (patern.matcher(region.getId()).find())
-				return new Baza(świat, (ProtectedCuboidRegion) region);
+				for (String owner : region.getOwners().getPlayers()) {
+					Baza baza = Gracz.wczytaj(owner).baza;
+					if (baza != null)
+						return baza;
+				}
 			return null;
 		}
 		
@@ -322,11 +337,23 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				
 				Func.wykonajDlaNieNull(Gildia.wczytaj(g.gildia), gildia -> gildia.zapomnijRegiony(g));
 				
-				if (g.baza != null && g.baza.nazwa.equals(region.getId())) {
+				if (g.baza != null && g.baza.nazwa.equals(nazwa)) {
 					g.baza = null;
 					g.zapisz();
 				}
 			}
+
+			ProtectedCuboidRegion nowy = new ProtectedCuboidRegion(
+					"zniszczona" + nazwa,
+					region.getMinimumPoint(),
+					region.getMaximumPoint()
+					);
+			Bazy.inst.regiony.get(BukkitAdapter.adapt(świat)).addRegion(nowy);
+			
+			nowy.setFlag(Flags.BLOCK_BREAK, StateFlag.State.ALLOW);
+			nowy.setFlag(Main.flagaC4, 		StateFlag.State.ALLOW);
+			nowy.setPriority(region.getPriority() - 1);
+			
 			Bazy.inst.regiony(świat).removeRegion(region.getId());
 		}
 		
@@ -338,7 +365,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			consumer.accept(supplier.get().add(xz, y, xz));
 		}
 	}
-	
+		
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;
 	static Config config = new Config("Bazy");
@@ -483,19 +510,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (g1 != null && g1.equals(g2))
 			ev.setCancelled(true);
 	}
-
-	@EventHandler(priority = EventPriority.HIGH)
-	public void użycie(PlayerInteractEvent ev) {
-		Block blok = ev.getClickedBlock();
-		if (blok != null) {
-			Baza baza = znajdzBaze(blok.getLocation());
-			if (baza != null) {
-				ev.setCancelled(!(baza.region.getOwners().contains(ev.getPlayer().getName()) ||
-								baza.region.getMembers().contains(ev.getPlayer().getName()))
-								);
-			}
-		}
-	}
 		
 	boolean blokuj;
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -600,7 +614,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return;
 		}
 		
-		baza.usuń();
 		Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
 		
 		ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", "§e" + Func.listToString(
@@ -609,34 +622,43 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			Player p = Bukkit.getPlayer(owner);
 			if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
 		}
+
+		baza.usuń();
 	}
 		
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void preNiszczenieStawianie(PlayerInteractEvent ev) {
-		if (!ev.getAction().equals(org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
+		if (!Func.multiEquals(ev.getAction(),
+				org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, org.bukkit.event.block.Action.LEFT_CLICK_BLOCK)) return;
 		Block blok = ev.getClickedBlock();
-		if (blok != null) {
-			switch (ev.getAction()) {
-			case LEFT_CLICK_BLOCK:
-				if (blok.getType().equals(Material.CAMPFIRE))
-					ev.setCancelled(false);
-				break;
-			case RIGHT_CLICK_BLOCK:
-				ItemStack item = ev.getItem();
-				if (item == null) return;
-				if (config.klucze(false).contains("bazy"))
-					for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
-						Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
-						if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
+		if (blok == null) return;
+		Baza baza = znajdzBaze(blok.getLocation());
+		if (baza != null) {
+			ev.setCancelled(!(baza.region.getOwners().contains(ev.getPlayer().getName()) ||
+							baza.region.getMembers().contains(ev.getPlayer().getName()))
+							);
+		}
+		
+		switch (ev.getAction()) {
+		case LEFT_CLICK_BLOCK:
+			if (blok.getType().equals(Material.CAMPFIRE))
+				ev.setCancelled(false);
+			break;
+		case RIGHT_CLICK_BLOCK:
+			ItemStack item = ev.getItem();
+			if (item == null) return;
+			if (config.klucze(false).contains("bazy"))
+				for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
+					Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
+					if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
+						if (!blok.getType().isInteractable())
 							ev.setCancelled(false);
-							break;
-						}
+						break;
 					}
-				break;
-			default:
-				break;
-			
-			}
+				}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -764,11 +786,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Napis n = new Napis();
 		
 		Gracz g = Gracz.wczytaj(p.getName());
-		if (!Func.nieNullStr(g.gildia).isEmpty()) {
+		if (Func.nieNullStr(g.gildia).isEmpty()) {
 			n.dodaj(Gildia.prefix);
 			n.dodaj(new Napis("§a[stwórz gildie]\n", "§bWymagana nazwa gildi", "/gildia stwórz ", Action.SUGGEST_COMMAND));
 		} else {
-			Gildia gildia = Gildia.wczytaj(g.gildia);	
+			Gildia gildia = Gildia.wczytaj(g.gildia);
 			n.dodaj("\n\n\n\n\n§9Gracze gildi " + gildia.nazwa + ":\n");
 			n.dodaj("§e§l- §e^§b" + gildia.przywódca + "§e^\n");
 			for (String nick : gildia.gracze) {
@@ -791,27 +813,19 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (g.baza == null)
 			return Func.powiadom(p, prefix + "Nie masz bazy");
 		switch (args[0]) {
-		case "home":
-		case "dom":
-		case "tp": // TODO cooldown 
-			p.teleport(g.baza.tp);
-			break;
-		case "sethome":
-		case "ustawtp":
-			Baza znaleziona = znajdzBaze(p.getLocation());
-			if (znaleziona == null)
-				return Func.powiadom(p, prefix + "Musisz być w swojej bazie aby ustawić teleport");
-			g.baza.tp = p.getLocation();
-			g.zapisz();
-			break;
 		case "usuń":
 			if (args.length < 2 || !g.baza.nazwa.equals(args[1]))
 				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
 			g.baza.usuń();
-			return Func.powiadom(p, prefix + "Usunołeś swoją bazę");
+			return Func.powiadom(p, prefix + "Usunąłeś swoją bazę");
 		case "ulepsz":
-			if (((List<?>) config.wczytaj("ulepszenia bazy")).size() - 1 <= g.baza.poziom)
-			p.openInventory(stwórzInvUlepszenia(g.baza.poziom + 1));
+			if (((List<?>) config.wczytaj("ulepszenia bazy")).size() > g.baza.poziom + 1)
+				if (g.baza.możnaUlepszyć())
+					p.openInventory(stwórzInvUlepszenia(g.baza.poziom + 1));
+				else
+					p.sendMessage(prefix + "W tym miejscu nie możesz bardziej ulepszyć swojej bazy");
+			else
+				p.sendMessage(prefix + "Twoja baza jest już na maksymalnym poziomie");
 			break;
 		}
 		return true;
@@ -822,46 +836,56 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public void klikanieEq(InventoryClickEvent ev) {
 		if (!(ev.getView().getTitle().equals(nazwaEqUlepszania))) return;
 		
-		int slot = ev.getSlot();
+		int slot = ev.getRawSlot();
 		
 		if (slot < ev.getInventory().getSize() && slot >= 0 && !(slot >= 3*9 + 1 && slot < 3*9 + 8))	
 			ev.setCancelled(true);
 	}
-	@SuppressWarnings("unchecked")
 	@EventHandler
+	@SuppressWarnings("unchecked")
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		if (!ev.getView().getTitle().equals(nazwaEqUlepszania)) return;
 		
 		Player p = (Player) ev.getPlayer();
+		Gracz g = Gracz.wczytaj(p);
+		
+		if (!g.baza.możnaUlepszyć()) {
+			p.sendMessage(prefix + "Nie możesz ulepszyć bazy w tym miejscu");
+			return;
+		}
 		
 		List<ItemStack> zwrot = zwrotneItemy(ev.getInventory());
 		if (zwrot == null) {
 			for (int i=3*9 + 1; i<3*9 + 8; i++)
-				p.getInventory().addItem(ev.getInventory().getItem(i));
+				Func.wykonajDlaNieNull(ev.getInventory().getItem(i), p.getInventory()::addItem);
 			return;
 		}
 		for (ItemStack item : zwrot)
 			p.getInventory().addItem(item);
-		Gracz g = Gracz.wczytaj(p);
-		g.baza.ulepsz((int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(g.baza.poziom).get("kratki"));
-		g.baza.poziom++;
+		g.baza.ulepsz((int) ((List<Map<String, Object>>) config.wczytaj("ulepszenia bazy")).get(++g.baza.poziom).get("kratki"));
 		g.zapisz();
 		p.sendMessage(prefix + "Ulepszyłeś swoją baze");
 	}
+
+	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");
 	@SuppressWarnings("unchecked")
 	Inventory stwórzInvUlepszenia(int poziom) {
-		final ItemStack szybka = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§1§l §2§o");
+		ItemStack szybka = pustyZablokowanySlot.clone();
+		szybka.setType(Material.BLACK_STAINED_GLASS_PANE);
 		Inventory inv = Bukkit.createInventory(null, 9*5, nazwaEqUlepszania);
 		for (int i=0; i< 9*5; i++)
 			inv.setItem(i, szybka);
 		
 		List<Map<String, Object>> lista = (List<Map<String, Object>>) config.wczytaj("ulepszenia bazy");
-		if (lista.size() > poziom) return null;
+		if (lista.size() <= poziom) return null;
 		int i = 1*9 + 1;
-			for (ItemStack item : Config.itemy((List<?>) lista.get(poziom).get("itemy")))
-				inv.setItem(i++, item);
+		for (ItemStack item : Config.itemy((List<?>) lista.get(poziom).get("itemy")))
+			inv.setItem(i++, item);
 		while (i < 1*9 + 8)
-			inv.getItem(i).setType(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+			inv.setItem(i++, pustyZablokowanySlot);;
+		
+		for (i = 3*9 + 1; i< 3*9 + 8; i++)
+			inv.setItem(i, null);
 		
 		return inv;
 	}
@@ -869,8 +893,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		List<ItemStack> lista = Lists.newArrayList();
 		for (int i=1; i<8; i++) {
 			ItemStack potrzebny = inv.getItem(1*9 + i);
-			if (potrzebny == null) continue;
 			ItemStack item = inv.getItem(3*9 + i);
+			if (potrzebny.isSimilar(pustyZablokowanySlot)) {
+				Func.wykonajDlaNieNull(item, lista::add);
+				continue;
+			}
 			if (item == null) return null;
 			if (!potrzebny.isSimilar(item)) return null;
 			int zwrot = item.getAmount() - potrzebny.getAmount();
@@ -894,7 +921,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			break;
 		case "baza":
 			if (args.length <= 1)
-				return utab(args, "tp", "ustawtp", "usuń", "ulepsz");
+				return utab(args, "usuń", "ulepsz");
 		}
 		return null;
 	}
@@ -911,16 +938,16 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return true;
 	}
 
+	final HashMap<String, Krotka<Integer, Player>> mapaTp = new HashMap<>();
 	@Override
 	public int czas() {
 		Set<String> doUsunięcia = Sets.newConcurrentHashSet();
-		for (Entry<String, Krotka<String, Integer>> en : mapaZaproszeń.entrySet()) {
+		for (Entry<String, Krotka<String, Integer>> en : mapaZaproszeń.entrySet())
 			if ((en.getValue().b -= 1) <= 0) {
 				Func.napisz(en.getKey(), Gildia.prefix + Func.msg("Zaproszenie do gildi dla %s wygasło", en.getValue().a));
 				Func.napisz(en.getValue().a, Gildia.prefix + Func.msg("Zaproszenie do gildi od %s wygasło", en.getKey()));
 				doUsunięcia.add(en.getKey());
 			}
-		}
 		for (String nick : doUsunięcia)
 			mapaZaproszeń.remove(nick);
 		return 20;
@@ -933,7 +960,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	@Override
 	public Krotka<String, Object> raport() {
 		ConfigurationSection sekcja = config.sekcja("bazy");
-		return Func.r("Itemy dla Baz/schematów/C4", (sekcja == null ? 0 : sekcja.getKeys(false).size()));
+		return Func.r("Itemy dla Baz/schematów/C4", sekcja == null ? "Nieaktywne" : "Aktywne");
 	}
 
 	// dla /citem

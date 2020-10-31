@@ -45,7 +45,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.LosyProporcjonalne;
+import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 import net.minecraft.server.v1_16_R2.EntityInsentient;
@@ -223,7 +223,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	double nocna_szansa_zrespawnowania_dla_gracza;
 	
 	final HashMap<String, Mob> mapaMobów = new HashMap<>();
-	final HashMap<String, LosyProporcjonalne<Mob>> mapaFlag = new HashMap<>();
+	final HashMap<String, Ciąg<Mob>> mapaFlag = new HashMap<>();
 	
 	final Config config = new Config("Customowe Moby");
 	
@@ -274,7 +274,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 				List<Krotka<Integer, Mob>> lista = Lists.newArrayList();
 				for (Entry<String, Object> entry : sekcjaFlag.getValues(false).entrySet())
 					lista.add(new Krotka<>((int) entry.getValue(), mapaMobów.get(entry.getKey())));
-				mapaFlag.put(flaga, new LosyProporcjonalne<>(lista));
+				mapaFlag.put(flaga, new Ciąg<>(lista));
 			}
 	}
 	@Override
@@ -304,7 +304,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	}
 	
 	@EventHandler
-	public void śmiećMoba(EntityDeathEvent ev) {
+	public void śmierćMoba(EntityDeathEvent ev) {
 		LivingEntity mob = ev.getEntity();
 		if (!mob.hasMetadata("mimiCustomowyMob")) return;
 		Mob m = (Mob) mob.getMetadata("mimiCustomowyMob").get(0).value();
@@ -349,7 +349,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 				.queryValue(null, Main.flagaCustomoweMoby);
 		if (_flagi == null) return;
 		String[] flagi = _flagi.split(",");
-		LosyProporcjonalne<Mob> moby = mapaFlag.get(flagi[Func.losuj(0, flagi.length-1)]);
+		Ciąg<Mob> moby = mapaFlag.get(flagi[Func.losuj(0, flagi.length-1)]);
 		if (moby == null) return;
 		Mob mob = moby.losuj();
 		if (mob == null) return;

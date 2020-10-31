@@ -1,6 +1,9 @@
 # Ustawienia
 ustawienia:
+  cooldown tp: 5
   prority baz: 3
+  msg wejścia: '§6Wszedłeś na teren bazy gracza {gracz}'
+  msg wyjścia: '§6Wyszedłeś z terenu bazy gracza {gracz}'
 
 # Ustawnienia c4
 # Bloki nieuwzględnione zamieniają sie w AIR
