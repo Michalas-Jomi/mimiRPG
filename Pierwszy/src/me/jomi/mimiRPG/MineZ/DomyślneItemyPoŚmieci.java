@@ -59,7 +59,7 @@ public class DomyślneItemyPoŚmieci extends Komenda implements Przeładowalny, 
 		Consumer<String> cons = slot -> {
 			ItemStack item = p.getInventory().getItem(EquipmentSlot.valueOf(slot));
 			if (item != null) {
-				config.ustaw("zbrja." + slot , item);
+				config.ustaw("zbroja." + slot , item);
 			}
 		};
 		

@@ -45,8 +45,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 // TODO szablonowy config
 
-// TODO info o przeładowaniu
-
 @Moduł
 public class Karabiny implements Listener, Przeładowalny {
 	public static class Karabin extends Mapowany {
@@ -81,6 +79,27 @@ public class Karabiny implements Listener, Przeładowalny {
 			
 			if (attackCooldown > 0) 
 				Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
+
+			if (attackCooldown > 0)
+				tick(p, (int) (attackCooldown*20));
+		}
+		private void tick(Player p, int ticki) {
+			if (ticki <= 0) return;
+			
+			if (!Func.porównaj(p.getInventory().getItemInMainHand(), item)) return;
+			
+			int zielone = (int) (((double) ticki / (attackCooldown*20)) * 100) / 4;
+			
+			StringBuilder s = new StringBuilder();
+			int i= -1;
+			while (++i < zielone)
+				s.append("§a|");
+			while (i < 25)
+				s.append("§c|");
+			
+			p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Przaładowywanie " + s));
+			
+			Func.opóznij(1, () -> tick(p, ticki - 1));
 		}
 		private boolean minąłCooldown(Player p) {
 			if (attackCooldown <= 0) return true;
@@ -211,6 +230,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		Karabin k = karabiny.get(karabin);
 		return k == null ? null : k.item;
 	}
+
 }
 
 

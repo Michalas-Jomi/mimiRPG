@@ -44,9 +44,8 @@ public class CustomoweCraftingi implements Przeładowalny {
 			set.add(z);
 		}
 		HashMap<Character, Material> mapa = new HashMap<>();
-		for (char znak : set) {
+		for (char znak : set)
 			mapa.put(znak, Material.valueOf(config.wczytajStr(klucz + "." + znak).toUpperCase()));
-		}
 			
 		String[] arr = new String[lista.size()];
 		for (int i=0; i<arr.length; i++)

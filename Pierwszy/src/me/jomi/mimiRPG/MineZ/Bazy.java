@@ -651,7 +651,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 					Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
 					if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
-						if (!blok.getType().isInteractable())
+						if (!blok.getType().isInteractable() && !blok.getType().toString().contains("LEAVES"))
 							ev.setCancelled(false);
 						break;
 					}

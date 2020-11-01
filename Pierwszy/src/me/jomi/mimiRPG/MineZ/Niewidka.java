@@ -8,6 +8,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
@@ -20,7 +23,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł
-public class Niewidka extends Komenda {
+public class Niewidka extends Komenda implements Listener {
 	public Niewidka() {
 		super("niewidka", "/niewidka [uniewidzialnij | odniewidzialnij] <selektor>");
 		
@@ -79,4 +82,11 @@ public class Niewidka extends Komenda {
 				cons.accept((Player) e);
 		return true;
 	}
+
+	@EventHandler()
+	public void teleport(PlayerTeleportEvent ev) {
+		if (team.removeEntry(ev.getPlayer().getName()))
+			ev.getPlayer().removePotionEffect(PotionEffectType.INVISIBILITY);
+	}
+
 }

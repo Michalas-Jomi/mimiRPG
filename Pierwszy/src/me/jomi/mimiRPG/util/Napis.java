@@ -176,7 +176,7 @@ public class Napis implements ConfigurationSerializable {
 			}
 			else {
 				n.dodaj(ost);
-				ost = new Napis(s);
+				ost = new Napis(s.replace("\\n", "\n"));
 			}
 		}
 		n.dodaj(ost);

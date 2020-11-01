@@ -24,10 +24,10 @@ public class Ciąg<T> extends Mapowany {
 	}
 	
 	void przetwórz() {
-		List<Krotka<Integer, T>> nowa = Lists.newArrayList();
-		for (Krotka<Integer, T> krotka : lista)
+		List<Krotka<Integer, T>> nowa = Lists.newArrayList(lista.iterator());
+		this.lista = Lists.newArrayList();
+		for (Krotka<Integer, T> krotka : nowa)
 			dodaj(krotka.b, krotka.a);
-		this.lista = nowa;
 	}
 
 	public void wyczyść() {
