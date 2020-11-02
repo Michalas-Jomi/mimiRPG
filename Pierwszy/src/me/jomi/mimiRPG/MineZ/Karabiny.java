@@ -81,25 +81,25 @@ public class Karabiny implements Listener, Przeładowalny {
 				Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
 
 			if (attackCooldown > 0)
-				tick(p, (int) (attackCooldown*20));
+				tick(p, 0);
 		}
 		private void tick(Player p, int ticki) {
-			if (ticki <= 0) return;
+			if (ticki > attackCooldown*20) return;
+
+			Func.opóznij(1, () -> tick(p, ticki + 1));
 			
 			if (!Func.porównaj(p.getInventory().getItemInMainHand(), item)) return;
 			
 			int zielone = (int) (((double) ticki / (attackCooldown*20)) * 100) / 4;
 			
 			StringBuilder s = new StringBuilder();
-			int i= -1;
-			while (++i < zielone)
-				s.append("§a|");
-			while (i < 25)
-				s.append("§c|");
+			
+			int i = -1;
+			while (++i < zielone) s.append("§a|");
+			while (++i < 25)	  s.append("§c|");
 			
 			p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Przaładowywanie " + s));
 			
-			Func.opóznij(1, () -> tick(p, ticki - 1));
 		}
 		private boolean minąłCooldown(Player p) {
 			if (attackCooldown <= 0) return true;

@@ -43,11 +43,8 @@ public abstract class Komenda implements TabExecutor {
 		try {
 	    	Field fCommandMap = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 	        fCommandMap.setAccessible(true);
-	        Object commandMapObject = fCommandMap.get(Bukkit.getPluginManager());
-	        if (commandMapObject instanceof CommandMap) {
-	            CommandMap commandMap = (CommandMap) commandMapObject;
-	    		commandMap.register(Main.plugin.getName(), komenda(komenda, użycie, aliasy));
-	        }
+	        CommandMap commandMap = (CommandMap) fCommandMap.get(Bukkit.getPluginManager());
+	        commandMap.register(Main.plugin.getName(), komenda(komenda, użycie, aliasy));
 	    } catch (Exception e) {
 	    	Main.error("Nie udało sie Stworzyć komendy " + komenda);
 	    	return;

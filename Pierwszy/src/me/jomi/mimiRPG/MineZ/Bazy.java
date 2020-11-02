@@ -606,7 +606,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		ev.setCancelled(true);
 		
 		if (baza.region.getOwners().contains(ev.getPlayer().getName())) {
-			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /usuńbaze");
+			Func.powiadom(prefix, ev.getPlayer(), "Nie możesz zniszczyć własnej bazy, jeśli musisz użyj /baza usuń");
 			return;
 		}
 		if (baza.region.getMembers().contains(ev.getPlayer().getName())) {
@@ -645,6 +645,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setCancelled(false);
 			break;
 		case RIGHT_CLICK_BLOCK:
+			if (baza == null && blok.getType().toString().contains("_BED"))
+				ev.setCancelled(true);
+			
 			ItemStack item = ev.getItem();
 			if (item == null) return;
 			if (config.klucze(false).contains("bazy"))

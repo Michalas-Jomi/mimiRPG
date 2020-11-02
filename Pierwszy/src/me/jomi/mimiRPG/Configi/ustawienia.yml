@@ -124,6 +124,9 @@ Kosz:
   # Ilość senkund przed czyszczeniem, kiedy ma być powiadomienie msgOstrzegawcze
   ostrzerzenia: [60, 10]
 
+  # Lita światów w których itemy nie będą zbierane
+  omijane Światy: ['Przykładowy świat', "Inny przykładowy świat"]
+
 
 ################
 ### Spawnery ###

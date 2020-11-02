@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.List;
 import java.util.function.Function;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,7 +24,7 @@ public class CustomoweItemy extends Komenda {
 	public static final String prefix = Func.prefix("Customowe Itemy");
 	
 	public CustomoweItemy() {
-		super("customowyitem", prefix + "/citem [baza / bazy / karabin]", "citem");
+		super("customowyitem", prefix + "/citem [(baza <nick> <item>) / (bazy <item>) / (karabin [broń / ammo] <item>)]", "citem");
 	}
 	
 	@Override
@@ -38,7 +39,9 @@ public class CustomoweItemy extends Komenda {
 		}
 		switch (args[0].toLowerCase()) {
 		case "baza":
-			return uzupełnijTabComplete(Func.listToString(args, 1), Baza.itemy.keySet());
+			if (args.length == 2)
+				return null;
+			return uzupełnijTabComplete(Func.listToString(args, 2), Baza.itemy.keySet());
 		case "bazy":
 			if (args.length == 2)
 				return utab(args, Bazy.getBazy());
@@ -56,13 +59,19 @@ public class CustomoweItemy extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 2) return false;
-		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Tylko gracz może tego użyć");
+		
+		if (args[0].equalsIgnoreCase("baza")) {
+			// /citem baza <nick> <nazwa>
+			if (args.length < 3) return false;
+			return dajzBazy(sender, args[1], Func.listToString(args, 2));
+		}
+		
+		if (!(sender instanceof Player))
+			return Func.powiadom(sender, prefix + "Tylko gracz może tego użyć");
+		
 		Player p = (Player) sender;
 		ItemStack item;
 		switch (args[0].toLowerCase()) {
-		case "baza":
-			// /citem baza <nazwa>
-			return dajzBazy(p, args[1]);
 		case "bazy":
 			// /citem bazy <nazwa>
 			if (!Main.włączonyModół(Bazy.class))
@@ -96,27 +105,23 @@ public class CustomoweItemy extends Komenda {
 			Func.dajItem(p, item);
 			return Func.powiadom(prefix, p, "Otrzymałeś %s %s", args[1], nazwa);
 		default:
-			return false; // TODO
+			return false;
 		}
 		Func.dajItem(p, item);
 		return Func.powiadom(prefix, p, "Otrzymałeś item", args[1]);
 	}
-	private boolean dajzBazy(Player sender, String item) {
-		Player p = sender;
-		String nick = p.getDisplayName();
+	private boolean dajzBazy(CommandSender sender, String nick, String item) {
+		Player p = Bukkit.getPlayer(nick);
 		if (p == null || !p.isOnline())
 			sender.sendMessage(prefix + Func.msg("Niepoprawna nazwa gracza: %s.", nick));
 		else {
+			nick = p.getDisplayName();
 			ItemStack _item = Baza.itemy.get(item);
 			if (item == null)
 				sender.sendMessage(prefix + Func.msg("Niepoprawny item: %s.", item));
 			else {
-				if (p.getInventory().firstEmpty() == -1)
-					sender.sendMessage(prefix + Func.msg("Ekwipunek gracz %s jest pełny", nick));
-				else {	
-					p.getInventory().addItem(_item);
-					sender.sendMessage(prefix + Func.msg("Dano %s customowy item %s.", nick, item));
-				}
+				p.getInventory().addItem(_item);
+				sender.sendMessage(prefix + Func.msg("Dano %s customowy item %s.", nick, item));
 			}
 		}
 		return true;

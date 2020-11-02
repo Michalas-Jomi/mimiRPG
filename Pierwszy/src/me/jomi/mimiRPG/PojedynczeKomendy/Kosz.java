@@ -36,6 +36,8 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 	private static String msgOstrzegawcze;
 	
 	private static List<Integer> ostrzerzenia;
+	
+	private static List<String> omijaneŚwiaty;
 
 	public Kosz() {
 		super("kosz");
@@ -56,12 +58,13 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		inv.clear();
 		kolejka.clear();
 		for (World w : Bukkit.getWorlds())
-			for (Entity en : w.getEntitiesByClasses(CraftItem.class))
-				if (en.getTicksLived() > żywotność) {
-					CraftItem item = (CraftItem) en;
-					kolejka.add(item.getItemStack());
-					item.remove();
-				}
+			if (!omijaneŚwiaty.contains(w.getName()))
+				for (Entity en : w.getEntitiesByClasses(CraftItem.class))
+					if (en.getTicksLived() > żywotność) {
+						CraftItem item = (CraftItem) en;
+						kolejka.add(item.getItemStack());
+						item.remove();
+					}
 		if (!msgPoCzyszczeniu.isEmpty())
 			Bukkit.broadcastMessage(msgPoCzyszczeniu.replace("{liczba}", "" + kolejka.size()));
 		wrzućItemy();
@@ -82,6 +85,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		msgPoCzyszczeniu = Func.koloruj(Main.ust.wczytajStr("Kosz.msgPoCzyszczeniu"));
 		msgOstrzegawcze  = Func.koloruj(Main.ust.wczytajStr("Kosz.msgOstrzegawcze"));
 		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz.ostrzerzenia");
+		omijaneŚwiaty = Main.ust.wczytajListe("Kosz.omijane Światy");
 	}
 	public Krotka<String, Object> raport() {
 		return Func.r("Kosz", (maxTimer != -1 ? (maxTimer + "s §6 między czyszczeniami") : "§cWyłaczony"));

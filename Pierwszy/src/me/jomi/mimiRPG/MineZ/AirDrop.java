@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.MineZ;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -48,8 +49,8 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	List<Drop> wszystkieDropy = Lists.newArrayList();
 	static int _id = 0;
 	class Drop {
-		int id;
 		int czas = -1;
+		int id;
 		int x;
 		int z;
 		List<FallingBlock> bloki = Lists.newArrayList();
@@ -62,13 +63,16 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			x = loc.getBlockX();
 			z = loc.getBlockZ();
 			this.loc = new Location(loc.getWorld(), x, loc.getY(), z);
+			this.loc.add(.5, 0, .5);
 			
-			bossbar = Bukkit.createBossBar("§bZrzut spadnie na " + loc.getBlockX() + "x " + loc.getBlockZ() + "z", BarColor.GREEN, BarStyle.SOLID);
+			bossbar = Bukkit.createBossBar("§bZrzut zostanie zrzucony na " + loc.getBlockX() + "x " + loc.getBlockZ() + "z", BarColor.GREEN, BarStyle.SOLID);
 			for (Player p : Bukkit.getOnlinePlayers())
 				bossbar.addPlayer(p);
 			bossbar.setVisible(true);
 			tick();
 		}
+		
+		boolean ładowany;
 		
 		int timer = 40;
 		void tick() {
@@ -82,14 +86,6 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 				Func.opóznij(1, this::tick);
 			else
 				przywołaj();
-		}
-		void tickSpadanie() {
-			if (bloki.isEmpty()) return;
-			for (FallingBlock blok : bloki) {
-				blok.setVelocity(spadanie);
-				blok.setTicksLived(1);
-			}
-			Func.opóznij(10, this::tickSpadanie);
 		}
 
 		void przywołaj() {
@@ -119,6 +115,10 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			
 			zrespBlok(świat, loc.add(-1, 0, -1), Material.LIGHT_BLUE_WOOL, null);
 			zrespBlok(świat, loc.add(0, 0, -1), Material.LIGHT_BLUE_WOOL, null);
+			
+			ładowany = this.loc.getChunk().isForceLoaded();
+			this.loc.getChunk().setForceLoaded(true);
+			
 			tickSpadanie();
 		}
 		void zrespBlok(World świat, Location loc, Material typ, Drop drop) {
@@ -133,12 +133,21 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			Func.ustawMetadate(blok, metaId, drop);
 			bloki.add(blok);
 		}
+		void tickSpadanie() {
+			if (bloki.isEmpty()) return;
+			for (FallingBlock blok : bloki) {
+				blok.setVelocity(spadanie);
+				blok.setTicksLived(1);
+			}
+			Func.opóznij(10, this::tickSpadanie);
+		}
 	
 		void rozbij(int y) {
 			World świat = bloki.get(0).getWorld();
 			for (FallingBlock blok : bloki)
 				blok.remove();
 			świat.spawnParticle(Particle.CLOUD, loc.getBlockX(), y, loc.getBlockZ(), 200, 2, 2, 2, 1);
+			this.loc.getChunk().setForceLoaded(ładowany);
 			loc.setY(y);
 			zbuduj();
 			bossbar.setVisible(false);
@@ -194,7 +203,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 
 	static AirDrop inst;
 	public AirDrop() {
-		super("airdrop");
+		super("airdrop", "/airdrop [przywołaj / (dajitem <nick>)]");
 		inst = this;
 	}
 	
@@ -228,19 +237,48 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		while (loc.getBlock().getType().isAir() && loc.getBlockY() >= 0)
 			loc.add(0, -1, 0);
 		
-		return loc.getBlock().getType().equals(Material.WATER) || loc.getBlockY() < 0;
+		return Func.multiEquals(loc.getBlock().getType(), Material.WATER, Material.SNOW, Material.SPRUCE_LEAVES, Material.CACTUS) || loc.getBlockY() < 0;
 	}
 	
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return utab(args, "przywołaj", "dajitem");
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		new Drop(((Player) sender).getLocation());
+		Predicate<Player> dajItem = p -> {
+			Func.dajItem(p, itemRespienia);
+			return Func.powiadom(prefix, sender, "%s otrzymał item respienia AirDropu", p.getDisplayName());
+		};
+		
+		Player p = null;
+		if (args.length >= 2) {
+			p = Bukkit.getPlayer(args[1]);
+			if (p == null)
+				return Func.powiadom(sender, prefix + Func.msg("Niepoprawna nazwa gracza %s", args[1]));
+		} else if (sender instanceof Player)
+			p = (Player) sender;
+		
+		if (p == null)	
+			return Func.powiadom(sender, prefix + "Z konsoli musisz podać nazwe gracza");
+		
+		if (args.length <= 0) {
+			if (sender instanceof Player)
+				return dajItem.test((Player) sender);
+			else
+				return false;			
+		}
+		switch (args[0].toLowerCase()) {
+		case "przywołaj":
+			new Drop(p.getLocation());
+			return Func.powiadom(prefix, sender, "Przywołano air drop na pozycji gracza %s", p.getDisplayName());
+		case "dajitem":
+			Func.dajItem(p, itemRespienia);
+			return Func.powiadom(prefix, sender, "%s otrzymał item respienia Air Dropu", p.getDisplayName());
+		}
+		
 		return true;
 	}
 	@EventHandler

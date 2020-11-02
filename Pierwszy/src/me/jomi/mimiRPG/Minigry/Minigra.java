@@ -17,6 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -356,7 +357,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		if (!ev.getKeepInventory()) return;
 		Func.wykonajDlaNieNull(arena(ev.getEntity()), a -> ev.setKeepInventory(false));
 	}
-	
+	@EventHandler
+	public void opuszczenieGry(PlayerQuitEvent ev) {
+		Arena arena = arena(ev.getPlayer());
+		Func.wykonajDlaNieNull(arena, a -> a.opuść(ev.getPlayer()));
+	}
 	
 	// Override
 	@Override

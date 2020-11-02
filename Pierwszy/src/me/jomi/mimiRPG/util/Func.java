@@ -895,7 +895,6 @@ public abstract class Func {
 		return _lista;
 	}
 
-	
 	static class IterableBloków implements Iterable<Block> {
 		Iterator<Block> iterator;
 		IterableBloków(Iterator<Block> iterator) {
