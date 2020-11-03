@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.MineZ.Bazy;
+import me.jomi.mimiRPG.MineZ.Wilczek;
 import me.jomi.mimiRPG.Minigry.Minigra;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.util.Config;
@@ -29,6 +30,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public String gildia;
 	
 	@Mapowane public HashMap<String, String> superItemy = new HashMap<>();
+	
+	public Wilczek.Wilk wilk;
 	
  	public void zapisz() {
 		config(nick).ustaw_zapisz("gracz", this);

@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.MineZ;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,9 +23,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -127,7 +130,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 				blok = świat.spawnFallingBlock(loc, Bukkit.createBlockData("minecraft:barrel[facing=up,open=false]"));
 			else
 				blok = świat.spawnFallingBlock(loc, Bukkit.createBlockData(typ));
-			blok.setDropItem(false);
+			blok.setDropItem(true);
 			blok.setHurtEntities(false);
 			blok.setGravity(false);
 			Func.ustawMetadate(blok, metaId, drop);
@@ -177,9 +180,12 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			loc.add(0, 0, 1).getBlock().setType(Material.BEEHIVE);
 			loc.add(-1, 0, 0).getBlock().setType(Material.BEEHIVE);
 			
-			Func.opóznij(20*60*30, () -> {
-				for (Block blok : Func.bloki(loc, loc.clone().add(1, -2, -1)))
+			Func.opóznijWykonajOnDisable(20*60*30, () -> {
+				for (Block blok : Func.bloki(loc, loc.clone().add(1, -2, -1))) {
+					if (blok.getState() instanceof InventoryHolder)
+						((InventoryHolder) blok.getState()).getInventory().clear();
 					blok.setType(Material.AIR);
+				}
 			});
 		}
 		void ustawDrop(Block blok) {
@@ -226,9 +232,15 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		if (Bukkit.getOnlinePlayers().size() <= 0) return;
 		Location loc;
 		
-		do loc = new Location(Func.losuj(Bukkit.getOnlinePlayers()).getWorld(), Func.losuj(-2000, 2000), 240, Func.losuj(-2000, 2000));
+		UnaryOperator<Integer> xz = i -> { 
+			int w = Func.losuj(-2000, 2000);
+			if ((w - i) % 16 >= 13)
+				w += 3;
+			return w;
+		};
+		do loc = new Location(Func.losuj(Bukkit.getOnlinePlayers()).getWorld(), xz.apply(1), 260, xz.apply(2));
 		while(woda(loc));
-
+		
 		new Drop(loc);
 	}
 	boolean woda(Location _loc) {
@@ -237,7 +249,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		while (loc.getBlock().getType().isAir() && loc.getBlockY() >= 0)
 			loc.add(0, -1, 0);
 		
-		return Func.multiEquals(loc.getBlock().getType(), Material.WATER, Material.SNOW, Material.SPRUCE_LEAVES, Material.CACTUS) || loc.getBlockY() < 0;
+		return Func.multiEquals(loc.getBlock().getType(), Material.WATER, Material.LAVA, Material.SPRUCE_LEAVES) || loc.getBlockY() < 0;
 	}
 	
 
@@ -290,9 +302,18 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			drop.rozbij(ev.getBlock().getY());
 	}
 	@EventHandler
+	public void __(EntityDropItemEvent ev) {
+		if (!ev.getEntity().hasMetadata(metaId)) return;
+		ev.setCancelled(true);
+		Drop drop = (Drop) ev.getEntity().getMetadata(metaId).get(0).value();
+		if (drop != null)
+			drop.rozbij(ev.getEntity().getLocation().getBlockY() + 1);
+		
+	}
+	@EventHandler
 	public void __(PlayerInteractEvent ev) {
 		if (itemRespienia == null) return;
-		if (!Func.multiEquals(ev.getAction(), Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK)) return;
+		if (!ev.getAction().equals(Action.RIGHT_CLICK_AIR)) return;
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		if (item == null) return;
 		

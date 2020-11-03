@@ -16,7 +16,7 @@ import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class Minigry extends Komenda {
-	static final String permCmdBypass = Func.permisja("minigra.paintball.bypasskomendy");
+	static final String permCmdBypass = Func.permisja("minigry.bypasskomendy");
 	static final HashMap<String, Minigra> mapaGier = new HashMap<>();
 	
 	public Minigry() {
@@ -26,9 +26,9 @@ public class Minigry extends Komenda {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 2 && args[0].equalsIgnoreCase("paintball"))
+		if (args.length <= 2 && args[0].equalsIgnoreCase("paintball")) // TODO uniwersalnić
 			return utab(args, "dołącz", "opuść", "staty", "stopnie", "topka");
-		if (args.length <= 2 && args[0].equalsIgnoreCase("cavewars"))
+		if (args.length <= 2 && (args[0].equalsIgnoreCase("cavewars") || args[0].equalsIgnoreCase("chowany")))
 			return utab(args, "dołącz", "opuść", "staty");
 		if (args.length <= 1)
 			return utab(args, Func.wykonajWszystkim(mapaGier.values(), m -> m.getClass().getSimpleName().toLowerCase()));
@@ -42,3 +42,5 @@ public class Minigry extends Komenda {
 		return true;
 	}
 }
+
+

@@ -15,6 +15,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.util.Config;
@@ -178,6 +180,8 @@ public class EdytorOgólny {
 			case "Location": 	return p.getLocation();
 			case "ItemStack": 	return p.getInventory().getItemInMainHand();
 			}
+			if (klasa.isEnum())
+				return Func.losuj(Lists.newArrayList((Object[]) klasa.getMethod("values").invoke(null)));
 			throw new Throwable();
 		}
 		Object konwertuj(Class<?> klasa, String[] args, int i) throws Throwable {

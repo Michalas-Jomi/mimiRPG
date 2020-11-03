@@ -650,9 +650,9 @@ public abstract class Func {
 		int dni 	= godziny / 24;	godziny %= 24;
 		
 		Function<Integer, String> odmiana = ile -> {
-			switch (ile % 10) {
-			case 1:
+			if (ile == 1)
 				return "ę";
+			switch (ile % 10) {
 			case 2:
 			case 3:
 			case 4:
@@ -693,10 +693,49 @@ public abstract class Func {
 		return _inv;
 	}
 
+	public static class Task {
+		static final List<Task> wszystkie = Lists.newArrayList();
+		Runnable lambda;
+		int id;
+		
+		public Task(int ticki, Runnable lambda) {
+			this.lambda = lambda;
+			id = opóznij(ticki, this::wykonaj);
+			wszystkie.add(this);
+		}
+		
+		public void wykonaj() {
+			lambda.run();
+			usuń();
+		}
+		public void anuluj() {
+			Bukkit.getScheduler().cancelTask(id);
+			usuń();
+		}
+		private void usuń() {
+			int i = -1;
+			for (Task task : wszystkie)
+				if (++i >= 0 && task.id == id) {
+					wszystkie.remove(i);
+					break;
+				}
+		}
+	}
 	public static int opóznij(int ticki, Runnable lambda) {
 		return Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
 	}
+	public static Task opóznijWykonajOnDisable(int ticki, Runnable lambda) {
+		return new Task(ticki, lambda);
+	}
+	public static void onDisable() {
+		for (Task task : Task.wszystkie)
+			task.lambda.run();
+		for (Task task : Task.wszystkie)
+			Bukkit.getScheduler().cancelTask(task.id);
+		Task.wszystkie.clear();
+	}
 
+	
 	public static OfflinePlayer graczOffline(String nick) {
 		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers())
 			if (gracz.getName().equalsIgnoreCase(nick))

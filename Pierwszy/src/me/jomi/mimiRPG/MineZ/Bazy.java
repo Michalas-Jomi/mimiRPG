@@ -233,6 +233,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		@Mapowane int poziom = -1;
 		@Mapowane String nazwaŚwiata;
 		
+		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
 			this.świat = świat;
@@ -355,6 +356,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			nowy.setPriority(region.getPriority() - 1);
 			
 			Bazy.inst.regiony(świat).removeRegion(region.getId());
+			
+			if (atakowana)
+				Bukkit.getScheduler().cancelTask(idTasku);
 		}
 		
 		void ulepsz(int ile) {
@@ -363,6 +367,24 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		private void ulepsz(Supplier<BlockVector3> supplier, Consumer<BlockVector3> consumer, int xz, int y) {	
 			consumer.accept(supplier.get().add(xz, y, xz));
+		}
+	
+		boolean atakowana = false;
+		int idTasku;
+		void atak() {
+			if (atakowana)
+				Bukkit.getScheduler().cancelTask(idTasku); // TODO uzupełnić szablon
+			else
+				for (String nick : region.getOwners().getPlayers())
+					Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(prefix + "Twoja baza jest §cAtakowana!"));
+			
+			idTasku = Func.opóznij(config.wczytajLubDomyślna("ustawienia.długość rajdów", 120) * 20, () -> {
+					atakowana = false;
+					for (String nick : region.getOwners().getPlayers())
+						Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(prefix + "Atak na twoją bazę §aminął"));
+					});
+			
+			atakowana = true;
 		}
 	}
 		
@@ -488,6 +510,15 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			for (Krotka<Block, Material> krotka : kolejka)
 				if (krotka.a.getType() != krotka.b)
 					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
+			
+			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
+					locToVec3(_loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(_loc.clone().add(-zasięg, -zasięg, -zasięg)));
+			for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
+				Func.wykonajDlaNieNull(Baza.wczytaj(_loc.getWorld(), region), baza -> {
+					boolean atakowana = baza.atakowana;
+					baza.atak();
+					if (atakowana) return;
+				});
 		}
 	}
 	
@@ -633,11 +664,13 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Block blok = ev.getClickedBlock();
 		if (blok == null) return;
 		Baza baza = znajdzBaze(blok.getLocation());
+		boolean jego = false;
 		if (baza != null) {
-			ev.setCancelled(!(baza.region.getOwners().contains(ev.getPlayer().getName()) ||
-							baza.region.getMembers().contains(ev.getPlayer().getName()))
-							);
+			jego = baza.region.getOwners() .contains(ev.getPlayer().getName()) ||
+				   baza.region.getMembers().contains(ev.getPlayer().getName());
+			ev.setCancelled(!jego);
 		}
+		
 		
 		switch (ev.getAction()) {
 		case LEFT_CLICK_BLOCK:
@@ -645,9 +678,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setCancelled(false);
 			break;
 		case RIGHT_CLICK_BLOCK:
-			if (baza == null && blok.getType().toString().contains("_BED"))
+			if (baza != null && jego && baza.atakowana) {
 				ev.setCancelled(true);
-			
+				ev.getPlayer().sendMessage(prefix + "Nie buduj, teraz Jesteś §cAtakowany!");
+				return;
+			}
 			ItemStack item = ev.getItem();
 			if (item == null) return;
 			if (config.klucze(false).contains("bazy"))

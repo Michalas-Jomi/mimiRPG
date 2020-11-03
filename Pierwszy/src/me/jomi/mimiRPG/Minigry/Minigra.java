@@ -62,7 +62,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		abstract int policzGotowych();
 		
 		
-		// obsługa start / koniec		
+		// obsługa start / koniec
 		void start() {
 			timer = -1;
 			grane = true;
@@ -93,6 +93,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			staty.rozpisz(obj);
 			
 			Antylog.włączBypass(p);
+			
+			sprawdzStart();
 			
 			return true;
 		}
@@ -187,6 +189,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			if (gracze.size() == 1)
 				return wygrana(gracze.get(0));
 			return false;
+		}
+
+		void sprawdzStart() {
+			if (timer == -1 && policzGotowych() >= min_gracze)
+				timer = czasStartu;
 		}
 		
 		

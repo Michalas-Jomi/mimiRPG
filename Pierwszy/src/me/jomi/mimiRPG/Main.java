@@ -165,6 +165,8 @@ public class Main extends JavaPlugin {
 			AutoEventy.wyłącz();
 		if (włączonyModół(Paintball.class))
 			Paintball.wyłącz();
+		
+		Func.onDisable();
 	}
 
 	static boolean pluginEnabled = false;

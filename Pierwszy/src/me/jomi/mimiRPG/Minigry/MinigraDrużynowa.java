@@ -211,8 +211,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 			Func.ustawMetadate(p, getInstMinigraDrużynowa().getMetaDrużynaId(), drużyna);
 			drużyna.gracze++;
 
-			if (timer == -1 && policzGotowych() >= min_gracze)
-				timer = czasStartu;
+			super.sprawdzStart();
 			if (timer != -1 && sprawdzKoniec())
 				timer = -1;
 			
@@ -290,6 +289,8 @@ public abstract class MinigraDrużynowa extends Minigra {
 			
 			return akt;
 		}
+		
+		@Override void sprawdzStart() {};
 		
 		@SuppressWarnings("unchecked")
 		<D extends Drużyna> D znajdzDrużyne(String nazwa) {
