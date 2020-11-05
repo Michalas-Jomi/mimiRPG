@@ -11,9 +11,9 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,6 +21,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
@@ -86,6 +87,12 @@ public class Chowany extends Minigra {
 				
 				Status status = new Status();
 				status.typ = Func.losuj(bloki).typ;
+				status.maska = (ArmorStand) p.getWorld().spawnEntity(p.getLocation(), EntityType.ARMOR_STAND);
+				status.maska.setInvulnerable(true);
+				status.maska.setCollidable(false);
+				status.maska.setBasePlate(false);
+				status.maska.setVisible(false);
+				status.maska.setGravity(false);
 				Func.ustawMetadate(p, metaStatusId, status);
 			}
 			szukający = 0;
@@ -103,6 +110,7 @@ public class Chowany extends Minigra {
 			Func.wykonajDlaNieNull(status(p), status -> {
 				if (status.typ == null)
 					szukający--;
+				Func.wykonajDlaNieNull(status.maska, Entity::remove);
 			});
 			
 			p.removeMetadata(metaStatusId, Main.plugin);
@@ -159,6 +167,8 @@ public class Chowany extends Minigra {
 			
 			p.getInventory().addItem(Func.stwórzItem(Material.IRON_SWORD, "Sztylet Szukającego", "&bZnajdz wszystkich i wygraj"));
 		
+			p.setGameMode(GameMode.SURVIVAL);
+			
 			sprawdzKoniecNowe();
 		}
 		void chowający(Player p) {
@@ -171,13 +181,11 @@ public class Chowany extends Minigra {
 		void anulujChowającego(Player p, Status status) {
 			teamChowający.removeEntry(p.getName());	
 			p.removePotionEffect(PotionEffectType.INVISIBILITY);
-			Func.wykonajDlaNieNull(status.blok, FallingBlock::remove);
 			Func.wykonajDlaNieNull(status.loc, loc -> loc.getBlock().setType(Material.AIR));
-			status.blok = null;
+			status.maska = null;
 			status.typ = null;
 			status.loc = null;
 		}
-		
 		
 		
 		static final char[] etapyMaskowaniaZnaczki = new char[] {'░', '▒', '▓', '█'};
@@ -191,11 +199,9 @@ public class Chowany extends Minigra {
 				Status status = status(p);
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, czas);
 				if (status.typ == null) continue;
-				if (status.blok != null)
-					status.blok.setTicksLived(1);
 				if (status.loc == null && ++status.nieruchomesekundy >= 5)
 					zamaskuj(p, status);
-				else if (status.nieruchomesekundy >= 1) {
+				else if (status.nieruchomesekundy >= 1 && status.nieruchomesekundy < 4) {
 					String s = "§6Nie poruszaj się aby się zamaskować §a" + etapyMaskowaniaZnaczki[status.nieruchomesekundy - 1];
 					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(s));
 					p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, .8f, ((float) status.nieruchomesekundy - 1) / 3f + 1);
@@ -209,19 +215,19 @@ public class Chowany extends Minigra {
 			
 			status.nieruchomesekundy = -1;
 			
-			if (status.loc != null) { // jeśli jest zamaskowany to go zdemaskuje
-				status.loc.getBlock().setType(Material.AIR);
-				status.loc = null;
-				p.setGameMode(GameMode.ADVENTURE);
-				p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_DESTROY, .8f, 1f);
-				p.sendMessage(prefix + "Już §cnie §6jesteś §cZamaskowany");
-			}
-		
-			Func.wykonajDlaNieNull(status.blok, Entity::remove);
-			przywołajBlok(p, status);
+			if (status.loc != null)
+				zdemaskuj(p, status);
 			
+			status.maska.teleport(p.getLocation().add(0, -1, 0));
 		}
-		
+		void zdemaskuj(Player p, Status status) {
+			status.loc.getBlock().setType(Material.AIR);
+			status.loc = null;
+			p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_DESTROY, .8f, 1f);
+			p.sendMessage(prefix + "Już §cnie §6jesteś §cZamaskowany");
+			status.maska.getEquipment().setHelmet(new ItemStack(status.typ));
+			status.maska.removePassenger(p);
+		}
 		void zamaskuj(Player p, Status status) {
 			status.loc = p.getLocation().getBlock().getLocation();
 			if (!status.loc.getBlock().getType().isAir()) {
@@ -231,31 +237,19 @@ public class Chowany extends Minigra {
 				return;
 			}
 			
-			p.setGameMode(GameMode.SPECTATOR);
-			
 			p.playSound(p.getLocation(), Sound.BLOCK_ANVIL_PLACE, .8f, 1f);
+
+			status.loc.getBlock().setType(status.typ);
 			
-			Block blok = status.loc.getBlock();
-			blok.setType(status.typ);
-			// XXX
-			//Main.log(blok.getBoundingBox().union(p.getBoundingBox())); zrzuca w dół
-			blok.getBoundingBox().expand(0);
-			
-			Func.wykonajDlaNieNull(status.blok, FallingBlock::remove);
-			status.blok = null;
+			status.maska.teleport(status.loc.clone().add(.5, -1, .5));
+			status.maska.addPassenger(p);
+			status.maska.getEquipment().setHelmet(null);
 			
 			p.sendMessage(prefix + "Teraz jesteś §aZamaskowany");
 		}
 		// TODO broadcast że arena wystartowała
 		// TODO możliwość zmiany state bloku
-		void przywołajBlok(Player p, Status status) {
-			FallingBlock blok = p.getWorld().spawnFallingBlock(p.getLocation(), Bukkit.createBlockData(status.typ));
-			blok.setGravity(false);
-			blok.setDropItem(false);
-			blok.setHurtEntities(false);
-			blok.setVelocity(p.getVelocity()); // XXX 
-			status.blok = blok;
-		}
+
 		
 		void znalazł(Player kto, Player kogo) {
 			inst.staty(kto).znalezieni++;
@@ -284,7 +278,7 @@ public class Chowany extends Minigra {
 			
 			znalazł(kto, kogo);
 			
-			return false;
+			return true;
 		}
 		
 		
@@ -306,7 +300,9 @@ public class Chowany extends Minigra {
 	static class Status {
 		Material typ; // null oznacza szukającego
 		
-		FallingBlock blok; // null dla zamaskowane
+		//ArmorStand maska; // null dla zamaskowane
+		//ArmorStand armorStand;
+		ArmorStand maska;
 		Location loc;	  // null dla nie zamaskowane
 		
 		int nieruchomesekundy = -1;
@@ -327,7 +323,7 @@ public class Chowany extends Minigra {
 		Location skąd  = ev.getFrom();
 		Location gdzie = ev.getTo();
 		
-		Predicate<Function<Location, Double>> zmiana = func -> func.apply(skąd) != func.apply(gdzie);
+		Predicate<Function<Location, Double>> zmiana = func -> Math.abs(func.apply(skąd) - func.apply(gdzie)) > .1;
 		
 		if (	zmiana.test(Location::getX) ||
 				zmiana.test(Location::getY) ||

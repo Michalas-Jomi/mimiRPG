@@ -678,7 +678,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setCancelled(false);
 			break;
 		case RIGHT_CLICK_BLOCK:
-			if (baza != null && jego && baza.atakowana) {
+			if (baza != null && jego && baza.atakowana && (!blok.getType().isInteractable() || ev.getPlayer().isSneaking())) {
 				ev.setCancelled(true);
 				ev.getPlayer().sendMessage(prefix + "Nie buduj, teraz Jesteś §cAtakowany!");
 				return;
@@ -918,7 +918,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (lista.size() <= poziom) return null;
 		int i = 1*9 + 1;
 		for (ItemStack item : Config.itemy((List<?>) lista.get(poziom).get("itemy")))
-			inv.setItem(i++, item);
+			inv.setItem(i++, Func.customModelData(item, 2020));
 		while (i < 1*9 + 8)
 			inv.setItem(i++, pustyZablokowanySlot);;
 		
@@ -937,7 +937,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				continue;
 			}
 			if (item == null) return null;
-			if (!potrzebny.isSimilar(item)) return null;
+			if (!Func.customModelData(potrzebny, null).isSimilar(item)) return null;
 			int zwrot = item.getAmount() - potrzebny.getAmount();
 			if (zwrot < 0) return null;
 			if (zwrot > 0) {

@@ -1,6 +1,8 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
@@ -11,22 +13,24 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class Wilczek extends Komenda implements Listener {
+public class Wilczek extends Komenda implements Listener, Przeładowalny {
 	public static class Wilk {
 		Player p;
 		Wolf mob;
 		long czas = -1;
-		
 		
 		Wilk(Player p) {
 			this.p = p;
@@ -38,10 +42,11 @@ public class Wilczek extends Komenda implements Listener {
 						Func.czas((int) ((czas - System.currentTimeMillis()) / 1000)) + " zanim znów przywołasz swojego wilka");
 				return;
 			}
-				
+			
 			mob = (Wolf) p.getWorld().spawnEntity(p.getLocation(), EntityType.WOLF);
-			mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(2d); // TODO z configu
-			mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(2d); // TODO z configu
+			mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(wczytaj("atak", 3d));
+			mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(wczytaj("hp", 30d));
+			mob.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(wczytaj("szybkość", .22d));
 			mob.setCustomName("§aKompan §b" + p.getName());
 			mob.setCanPickupItems(false);
 			mob.setCollidable(false);
@@ -49,6 +54,7 @@ public class Wilczek extends Komenda implements Listener {
 			mob.setOwner(p);
 			mob.setAdult();
 			Func.ustawMetadate(mob, metaId, this);
+			p.sendMessage(prefix + "Przywołałeś swojego Wilka");
 		}
 		boolean teleport() {
 			boolean w = mob != null && !mob.isDead(); 
@@ -66,14 +72,14 @@ public class Wilczek extends Komenda implements Listener {
 				p.sendMessage(prefix + "Twój wilk umarł!");
 			else
 				p.sendMessage(prefix + Func.msg("%s zabił twojego Wilka!", k.a));
-			mob.remove();
+			Func.wykonajDlaNieNull(mob, Wolf::remove);
 			mob = null;
-			ustawCzas(5);// TODO z comnfigu
+			ustawCzas(wczytaj("czas po zabiciu", 15) * 60);
 		}
 		void odwołaj() {
-			mob.remove();
+			Func.wykonajDlaNieNull(mob, Wolf::remove);
 			mob = null;
-			ustawCzas(15);// TODO z configu
+			ustawCzas(wczytaj("czas po odwołaniu", 5) * 60);
 		}
 		void ustawCzas(int sekundy) {
 			czas = System.currentTimeMillis() + sekundy * 1000;
@@ -87,20 +93,26 @@ public class Wilczek extends Komenda implements Listener {
 	public Wilczek() {
 		super("wilczek", null, "piesek", "wilk", "pet");
 	}
-	
-	void przywołaj(Player p) {
+
+	static <T> T wczytaj(String sc, T domyślna) {
+		return Main.ust.wczytajLubDomyślna("Wilczek." + sc, domyślna);
+	}
+	void wykonaj(Player p, Consumer<Wilk> cons) {
 		Gracz gracz = Gracz.wczytaj(p);
 		if (gracz.wilk == null)
 			gracz.wilk = new Wilk(p);
-		gracz.wilk.przywołaj();
+		cons.accept(gracz.wilk);
 	}
-	
 	
 	@EventHandler
 	public void śmierćWilka(EntityDeathEvent ev) {
 		if (!EntityType.WOLF.equals(ev.getEntityType())) return;
 		if (ev.getEntity().hasMetadata(metaId))
 			((Wilk) ev.getEntity().getMetadata(metaId).get(0).value()).zabity();
+	}
+	@EventHandler
+	public void śmierćGracza(PlayerDeathEvent ev) {
+		Func.wykonajDlaNieNull(Gracz.wczytaj(ev.getEntity()).wilk, Wilk::odwołaj);
 	}
 	@EventHandler
 	public void teleport(PlayerTeleportEvent ev) {
@@ -111,18 +123,49 @@ public class Wilczek extends Komenda implements Listener {
 		Func.wykonajDlaNieNull(Gracz.wczytaj(ev.getPlayer()).wilk, Wilk::odwołaj);
 	}
 	
-	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		if (args.length <= 1)
+			return utab(args, "przywołaj", "odwołaj");
 		return null;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Wilczki są dla graczy ziom");
+		Player p = (Player) sender;
+		// systematyczny, dobrze ubrany, w średnim wieku, muskularny, chudy, suchy, ranny ptaszek, bezrobotny, zaczytany, zachłanny kolekcjoner, zagubiony, rządny przygód
+		// cogite ergo sum myślę więc jestem TODO usunąć
+		// pascal
+		// wiara to droga do szczęścia
+		// zródłem wiary jest serce a nie rozum
+		// zakład pascala / 129
+
+		// warto wierzyuć, bo gdy bóg jest zyskujemy życie wieczne inaczej nic nie tracimy
 		
-		przywołaj((Player) sender);
+		// człowiek jest tylko trzciną najwątlejszą w przyrodzie, ale trzciną myslącą
+		// człowiek jest elastyczny, ale myślący
+		
+		Supplier<Consumer<Wilk>> dajCons = () -> {
+			if (args.length >= 1) 
+				switch (args[0]) {
+				case "o":
+				case "odwolaj":
+				case "odwołaj":
+					p.sendMessage(prefix + "Odwołałeś swojego wilka");
+					return Wilk::odwołaj;
+				}
+			return Wilk::przywołaj;
+		};
+		
+		wykonaj(p, dajCons.get());
 		
 		return true;
+	}
+
+	@Override public void przeładuj() {}
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Wilki", "§aWłączone");
 	}
 }
 

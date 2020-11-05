@@ -316,6 +316,12 @@ public abstract class Func {
 		}
 	}
 	
+	public static ItemStack customModelData(ItemStack item, Integer customModelData) {
+		ItemMeta meta = item.getItemMeta();
+		meta.setCustomModelData(customModelData);
+		item.setItemMeta(meta);
+		return item;
+	}
 	public static ItemStack pokolorujZbroje(ItemStack item, Color kolor) {
 		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
 		meta.setColor(kolor);
@@ -468,6 +474,14 @@ public abstract class Func {
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
 		return 0 < rand && rand <= szansa;
+	}
+	public static double losuj(double min, double max) {
+		int _min = (int) (min * 10_000);
+		int _max = (int) (max * 10_000);
+		
+		double w = losuj(_min, _max);
+		
+		return w / 10_000;
 	}
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));

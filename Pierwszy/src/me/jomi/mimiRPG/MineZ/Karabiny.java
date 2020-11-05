@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -59,6 +60,8 @@ public class Karabiny implements Listener, Przeładowalny {
 		@Mapowane double dmg = 2;
 		@Mapowane ItemStack item;
 		@Mapowane ItemStack ammo;
+		@Mapowane double rozrzucenie = 0.0;
+		@Mapowane int pociski = 1;
 		
 		void strzel(Player p) {
 			if (!minąłCooldown(p)) return;
@@ -67,11 +70,8 @@ public class Karabiny implements Listener, Przeładowalny {
 				return;
 			}
 			Vector wzrok = p.getLocation().getDirection();
-			Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
-			Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
-			pocisk.setVelocity(wzrok.multiply(siłaStrzału));
-			pocisk.setInvulnerable(true);
-			pocisk.setShooter(p);
+			for (int i=0; i < pociski; i++)
+				strzel(p, wzrok);
 			
 			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, 80, (float) dzwiękPitch);
 			
@@ -82,6 +82,17 @@ public class Karabiny implements Listener, Przeładowalny {
 
 			if (attackCooldown > 0)
 				tick(p, 0);
+		}
+		private void strzel(Player p, Vector wzrok) {
+			wzrok = wzrok.clone();
+			Supplier<Double> los = () -> Func.losuj(-rozrzucenie, rozrzucenie);
+			wzrok.add(new Vector(los.get(), los.get(), los.get()));
+			
+			Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
+			Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
+			pocisk.setVelocity(wzrok.multiply(siłaStrzału));
+			pocisk.setInvulnerable(true);
+			pocisk.setShooter(p);
 		}
 		private void tick(Player p, int ticki) {
 			if (ticki > attackCooldown*20) return;
@@ -218,6 +229,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		return Func.r("Wczytane karabiny", karabiny.size());
 	}
 
+	
 	
 	public static Set<String> getKarabiny() {
 		return karabiny.keySet();
