@@ -17,4 +17,10 @@ public class Krotka<T1, T2> extends Mapowany {
 	public String toString() {
 		return "§r(" + a.toString() + "§r, " + b.toString() + "§r)";
 	}
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Krotka))
+			return false;
+		Krotka<?, ?> k2 = (Krotka<?, ?>) obj;
+		return a.equals(k2.a) && b.equals(k2.b);
+	}
 }

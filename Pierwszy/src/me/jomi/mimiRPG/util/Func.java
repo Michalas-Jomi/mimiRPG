@@ -749,7 +749,9 @@ public abstract class Func {
 		Task.wszystkie.clear();
 	}
 
-	
+	public static OfflinePlayer graczOfflineUUID(String uuid) {
+		return Bukkit.getOfflinePlayer(UUID.fromString(uuid));
+	}
 	public static OfflinePlayer graczOffline(String nick) {
 		Player p = Bukkit.getPlayer(nick);
 		if (p != null) return p;

@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+import com.google.common.collect.Lists;
 import com.iridium.iridiumskyblock.Island;
 import com.iridium.iridiumskyblock.api.IslandWorthCalculatedEvent;
 import com.iridium.iridiumskyblock.api.IslandDeleteEvent;
@@ -28,64 +29,82 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public RangiWysp() {
 		super("rangiWysp");
 	}
-
 	public static boolean warunekModułu() {
 		return Main.iridiumSkyblock && Main.chat != null;
 	}
-	
-	String ranga(double pkt) {
-		String w = "";
-		double ost = -1;
-		for (Entry<String, Object> en : Main.ust.sekcja("RangiWysp").getValues(false).entrySet()) {
-			if (en.getKey().equals("prefix")) continue;
-			try {
-				double _pkt = Func.Double(en.getValue());
-				if (_pkt <= pkt && _pkt > ost) {
-					w = en.getKey();
-					ost = _pkt;
-				}
-			} catch(Throwable e) {}
-		}
-		return Func.koloruj(w);
-	}
 
-	
-	
+	private final List<Krotka<String, Double>> rangi = Lists.newArrayList();
+
+	// EventHandler
+
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void liczeniePkt(IslandWorthCalculatedEvent ev) {
-		Island is = ev.getIsland();
-		String owner = is.getOwner();
-		String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOffline(owner));
-		
-		String suff = ranga(ev.getIslandWorth());
-		if (suff.equals(aktsuff))
-			return;
-		
-		Consumer<String> ustawRange = nick ->
-				Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), suff);
-		
-		ustawRange.accept(owner);
-		for (String member : is.getMembers())
-			ustawRange.accept(member);
+		new Thread(() -> {
+			Island is = ev.getIsland();
+			String owner = is.getOwner();
+			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOfflineUUID(owner));
+			
+			String suff = ranga(ev.getIslandWorth());
+			if (suff.equals(aktsuff))
+				return;
+			
+			Consumer<String> ustawRange = uuid ->
+					Main.chat.setPlayerSuffix(null, Func.graczOfflineUUID(uuid), suff);
+			
+			ustawRange.accept(owner);
+			for (String member : is.getMembers())
+				ustawRange.accept(member);
+		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void usuwanieWyspy(IslandDeleteEvent ev) {
-		Island is = ev.getIsland();
-		String owner = is.getOwner();
-		
-		Consumer<String> ustawRange = nick ->
-				Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), null);
-		
-		ustawRange.accept(owner);
-		for (String member : is.getMembers())
-			ustawRange.accept(member);
+		new Thread(() -> {
+			Island is = ev.getIsland();
+			String owner = is.getOwner();
+			
+			Consumer<String> ustawRange = nick ->
+					Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), null);
+			
+			ustawRange.accept(owner);
+			for (String member : is.getMembers())
+				ustawRange.accept(member);
+		}).start();
 	}
 	
+	String ranga(double pkt) {
+		String ost = rangi.isEmpty() ? "" : rangi.get(0).a;
+		for (Krotka<String, Double> krotka : rangi) {
+			if (krotka.b > pkt)
+				break;
+			ost = krotka.a;
+		}
+		return ost;
+	}
 	
-	@Override public void przeładuj() {}
-	@Override public Krotka<String, Object> raport() {
-		ConfigurationSection sekcja = Main.ust.sekcja("RangiWysp");
-		return Func.r("Rangi wysp", (sekcja == null ? 0 : (sekcja.getKeys(false).size() - (sekcja.contains("prefix") ? 1 : 0))));
+	// Override
+	
+	@Override
+	public void przeładuj() {
+		String prefix = Func.nieNullStr(Main.ust.wczytajStr("RangiWysp.prefix"));
+		rangi.clear();
+		Double ost = null;
+		boolean info = true;
+		for (Entry<String, Object> en : Main.ust.sekcja("RangiWysp").getValues(false).entrySet())
+			if (!en.getKey().equals("prefix")) {
+				double w = Func.Double(en.getValue());
+				if (info) {
+					if (ost != null && ost > w) {
+						Main.warn("Nieposortowane RangiWysp w ustawienia.yml. Należy je posortować dla poprawnego funkcjonowania");
+						info = false;
+					}
+					ost = w;
+				}
+				rangi.add(new Krotka<>(prefix + en.getKey(), w));
+			}
+	}
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Rangi wysp", rangi.size());
 	}
 	
 	@Override

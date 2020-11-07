@@ -62,5 +62,4 @@ public class Ciąg<T> extends Mapowany {
 	public T losuj() {
 		return znajdz(random.nextInt(suma) + 1);
 	}
-	
 }
