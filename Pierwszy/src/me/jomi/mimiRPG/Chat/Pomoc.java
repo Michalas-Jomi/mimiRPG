@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.Chat;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,20 +19,27 @@ public class Pomoc extends Komenda implements Przeładowalny{
 	public final Config config = new Config("Pomoc");
 	
 	public Pomoc() {
-		super("mimipomoc", prefix + "/mimipomoc <sekcja>", "pomoc", "mimihelp");
+		super("mimipomoc", prefix + "/pomoc <sekcja>", "pomoc", "mimihelp");
 	}
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return utab(args, config.klucze(false));
 	}
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length < 1) return false;
-		if (!config.klucze(false).contains(args[0]))
+		Predicate<String> pomoc = s -> {
+			if (!config.klucze(false).contains(s))
+				return false;
+			config.wczytajNapis(s).wyświetl(sender);
+			return true;
+		};
+		
+		if (args.length < 1)
+			return pomoc.test("Główna");
+		
+		if (!pomoc.test(args[0]))
 			return Func.powiadom(sender, prefix + "Niepoprawna sekcja: §e" + args[0]);
-		config.wczytajNapis(args[0]).wyświetl(sender);
 		return true;
 	}
 	
@@ -40,10 +48,8 @@ public class Pomoc extends Komenda implements Przeładowalny{
 	public void przeładuj() {
 		config.przeładuj();
 	}
-
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Pomoce", config.klucze(false).size());
-	}
-	
+	}	
 }

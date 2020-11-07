@@ -751,6 +751,9 @@ public abstract class Func {
 
 	
 	public static OfflinePlayer graczOffline(String nick) {
+		Player p = Bukkit.getPlayer(nick);
+		if (p != null) return p;
+		
 		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers())
 			if (gracz.getName().equalsIgnoreCase(nick))
 				return gracz;

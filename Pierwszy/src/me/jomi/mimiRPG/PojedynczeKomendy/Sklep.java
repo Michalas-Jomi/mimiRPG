@@ -150,7 +150,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				return;
 			}
 			
-			for (SklepItem Sitem : specjalneItemy) 
+			for (SklepItem Sitem : specjalneItemy)
 				if (Sitem.slot == slot && Sitem.strona != null &&
 					(bezpośrednia || (!bezpośrednia && Func.porównaj(Sitem.item, klikanyItem)))) {
 						Sklep.inst.otwórz(p, Sitem.strona);
@@ -224,8 +224,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			default:
 				break;
 			}
-		}
-		
+		}	
 	}
 
 	public static final String prefix = Func.prefix("Sklep");
@@ -272,7 +271,6 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		}
 		new Strona(config);
 	}
-
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Wczytane Strony Sklepu", strony.size());
@@ -280,21 +278,20 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1)
+		if (args.length <= 1 && strony.containsKey("Główna"))
 			return utab(args, strony.keySet());
 		else
 			return Lists.newArrayList();
 	}
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Sklep jest dostępny tylko dla graczy");
 		Player p = (Player) sender;
-		if (args.length >= 1)
-			otwórz(p, args[0]);
-		else if (strony.containsKey("Główna"))
+		if (strony.containsKey("Główna"))
 			otwórz(p, "Główna");
+		else if (args.length >= 1)
+			otwórz(p, Func.listToString(args));
 		else
 			p.sendMessage(prefix + "Nie podano żadnej strony");
 		return true;
