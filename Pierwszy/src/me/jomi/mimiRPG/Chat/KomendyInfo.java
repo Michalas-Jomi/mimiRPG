@@ -81,5 +81,4 @@ public class KomendyInfo extends Komenda implements Listener {
 		gracze.remove(ev.getPlayer());
 		Main.log(ev.getPlayer().getDisplayName() + "§f wyszedł z gry");
 	}
-	
 }

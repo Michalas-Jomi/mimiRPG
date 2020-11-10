@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,6 +27,7 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public HashMap<String, Minigra.Statystyki> staty = new HashMap<>();
 	
+	@Mapowane public Location łóżkoBazowe;
 	@Mapowane public Bazy.Baza baza;
 	@Mapowane public String gildia;
 	

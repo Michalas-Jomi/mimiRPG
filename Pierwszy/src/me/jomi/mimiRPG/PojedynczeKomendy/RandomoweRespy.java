@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
@@ -133,15 +134,10 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 		sender.sendMessage("");
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOW)
 	public void śmierć(PlayerRespawnEvent ev) {
-		Location łóżko = ev.getPlayer().getBedSpawnLocation();
-		if (łóżko != null)
-			ev.setRespawnLocation(łóżko);
-		else {
-			List<Location> respy = dajRespy();
-			if (respy.size() > 0)
-				ev.setRespawnLocation(Func.losuj(respy));
-		}
+		List<Location> respy = dajRespy();
+		if (respy.size() > 0)
+			ev.setRespawnLocation(Func.losuj(respy));
 	}
 }

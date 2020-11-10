@@ -291,6 +291,12 @@ public abstract class Func {
 	      assembledColorCode.append("§").append(curChar); 
 	    return assembledColorCode.toString();
 	  }
+	public static List<String> koloruj(List<String> lista) {
+		int i=0;
+		for (String linia : lista)
+			lista.set(i++, koloruj(linia));
+		return lista;
+	}
 	
 	public static double Double(Object liczba) {
 		if (liczba instanceof Double)
@@ -381,9 +387,15 @@ public abstract class Func {
 		item.setItemMeta(meta);
 		return item;
 	}
+	public static ItemStack ustawLore(ItemStack item, List<String> lore) {
+		ItemMeta meta = item.getItemMeta();
+		meta.setLore(koloruj(lore));
+		item.setItemMeta(meta);
+		return item;
+	}
 	public static ItemStack nazwij(ItemStack item, String nazwa) {
 		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(nazwa);
+		meta.setDisplayName(koloruj(nazwa));
 		item.setItemMeta(meta);
 		return item;
 	}

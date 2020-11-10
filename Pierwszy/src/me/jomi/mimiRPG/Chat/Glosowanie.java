@@ -12,9 +12,11 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Zegar;
 
+@Moduł
 public class Glosowanie extends Komenda implements Zegar {
 	public static final String prefix = Func.prefix("Głosowanie");
 

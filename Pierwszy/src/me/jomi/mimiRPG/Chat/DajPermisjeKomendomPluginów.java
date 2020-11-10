@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG.Chat;
 
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
@@ -7,6 +9,8 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -38,6 +42,13 @@ public class DajPermisjeKomendomPluginów {
 		cmd.setPermission(perm);
 		if (cmd.getPermissionMessage() == null)
 			cmd.setPermissionMessage("§cNie możesz tego użyć");
+		
+		List<String> aliasyStare = cmd.getAliases();
+		aliasyStare.add(cmd.getName());
+		List<String> aliasyNowe = Lists.newArrayList();
+		for (String alias : aliasyStare)
+			if (!(alias.length() > 1 && alias.charAt(0) == 'e' && aliasyStare.contains(alias.substring(1))))
+				aliasyNowe.add(alias);
+		cmd.setAliases(aliasyNowe);
 	}
-
 }

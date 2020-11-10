@@ -118,9 +118,13 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			return Func.powiadom(sender, "Nie ma żadnych rang wysp");
 		String prefix = "§6" + sekcja.getString("prefix", "§a§l ");
 		sender.sendMessage("§a§n|< §c-§l<>§c- §6Rangi wysp §c-§l<>§c- §a§n>|");
+		int licz = 0;
 		for (Entry<String, Object> entry : sekcja.getValues(false).entrySet())
-			if (!entry.getKey().equals("prefix"))
+			if (!entry.getKey().equals("prefix")) {
+				if (licz != 0 && licz++ % 3 == 0)
+					sender.sendMessage(" ");
 				sender.sendMessage(prefix + entry.getKey() + "§8: §e" + Func.DoubleToString(Func.Double(entry.getValue())));
+			}
 		return true;
 	}
 }

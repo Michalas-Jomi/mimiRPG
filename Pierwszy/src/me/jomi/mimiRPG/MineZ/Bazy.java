@@ -82,11 +82,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-
-
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
 @Moduł
@@ -388,6 +387,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 		
+	final String permBypass = Func.permisja("bazy.bypass");
 	public static final String prefix = Func.prefix("Baza");
 	RegionContainer regiony;
 	static Config config = new Config("Bazy");
@@ -397,6 +397,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public Bazy() {
 		super("gildia", null, "g");
 		ustawKomende("baza", "/baza [tp | ustawtp | usuń | ulepsz]", null);
+		Main.dodajPermisje(permBypass);
 		inst = this;
 		regiony = WorldGuard.getInstance().getPlatform().getRegionContainer();
 	}
@@ -659,6 +660,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 	@EventHandler(priority = EventPriority.HIGH)
 	public void preNiszczenieStawianie(PlayerInteractEvent ev) {
+		if (bypass.contains(ev.getPlayer().getName())) return;
 		if (!Func.multiEquals(ev.getAction(),
 				org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK, org.bukkit.event.block.Action.LEFT_CLICK_BLOCK)) return;
 		Block blok = ev.getClickedBlock();
@@ -678,6 +680,16 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setCancelled(false);
 			break;
 		case RIGHT_CLICK_BLOCK:
+			if (blok.getType().toString().contains("_BED")) {
+				ev.setCancelled(true);
+				if (jego) {
+					Gracz g = Gracz.wczytaj(ev.getPlayer());
+					if (g.łóżkoBazowe == null || g.łóżkoBazowe.distance(blok.getLocation()) > 2)
+						ev.getPlayer().sendMessage(prefix + "Ustawiono punkt respawnu");
+					g.łóżkoBazowe = blok.getLocation();
+					g.zapisz();
+				}
+			}
 			if (baza != null && jego && baza.atakowana && (!blok.getType().isInteractable() || ev.getPlayer().isSneaking())) {
 				ev.setCancelled(true);
 				ev.getPlayer().sendMessage(prefix + "Nie buduj, teraz Jesteś §cAtakowany!");
@@ -715,6 +727,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	BlockVector3 locToVec3(Location loc) {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
+	
+	final Set<String> bypass = Sets.newConcurrentHashSet();
 	
 	// nick zapraszającego: (zaproszony, czas)
 	private final HashMap<String, Krotka<String, Integer>> mapaZaproszeń = new HashMap<>();
@@ -865,6 +879,17 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			else
 				p.sendMessage(prefix + "Twoja baza jest już na maksymalnym poziomie");
 			break;
+		case "bypass":
+			if (!p.hasPermission(permBypass))
+				return Func.powiadom(p, prefix + "Nie możesz tego użyć");
+			if (bypass.remove(p.getName()))
+				return Func.powiadom(p, prefix + "Wyłączyłeś bypass");
+			else {
+				bypass.add(p.getName());
+				return Func.powiadom(p, prefix + "Włączyłeś bypass");
+			}
+		default:
+			return Func.powiadom(p, prefix + "Niepoprawne argumenty użyj /baza ulepsz /baza usuń");
 		}
 		return true;
 	}
@@ -904,7 +929,20 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		g.zapisz();
 		p.sendMessage(prefix + "Ulepszyłeś swoją baze");
 	}
-
+	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void śmierć(PlayerRespawnEvent ev) {
+		Gracz g = Gracz.wczytaj(ev.getPlayer());
+		if (g.łóżkoBazowe != null)
+			if (g.łóżkoBazowe.getBlock().getType().toString().contains("_BED"))
+				ev.setRespawnLocation(g.łóżkoBazowe.clone().add(0, .5, 0));
+			else {
+				g.łóżkoBazowe = null;
+				g.zapisz();
+				ev.getPlayer().sendMessage(prefix + "Twoje łóżko uległo awarii");
+			}
+	}
+	
 	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");
 	@SuppressWarnings("unchecked")
 	Inventory stwórzInvUlepszenia(int poziom) {
@@ -959,7 +997,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			break;
 		case "baza":
 			if (args.length <= 1)
-				return utab(args, "usuń", "ulepsz");
+				if (sender.hasPermission(permBypass))
+					return utab(args, "usuń", "ulepsz", "bypass");
+				else
+					return utab(args, "usuń", "ulepsz");
 		}
 		return null;
 	}

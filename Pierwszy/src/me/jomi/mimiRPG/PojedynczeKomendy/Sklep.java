@@ -3,10 +3,9 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -66,7 +65,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			nazwa = config.f.getName();
 			nazwa = nazwa.substring(0, nazwa.lastIndexOf('.'));
 			int sloty = config.wczytajLubDomyślna("rzędy", 6);
-			nazwaInv = config.wczytajLubDomyślna("nazwa", "§1§lSklep");
+			nazwaInv = Func.koloruj(config.wczytajLubDomyślna("nazwa", "§1§lSklep"));
 			
 			inv = Bukkit.createInventory(null, sloty*9, nazwaInv);
 			for (int i=0; i<inv.getSize(); i++)
@@ -102,21 +101,15 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				if (!strona.isEmpty()) {
 					specjalneItemy.add(new SklepItem(item, slot, strona));
 				} else {
-					UnaryOperator<String> cena = czynność -> {
+					BinaryOperator<String> cena = (czynność, skrót) -> {
 						int _cena = config.wczytajLubDomyślna(_slot + ".cena " + czynność, 0);
-						return _cena == 0 ? "§cBrak możliwości " + czynność : "§6Cena " + czynność + ":§e " + _cena;
+						return _cena == 0 ? "§cBrak możliwości " + czynność : "§8" + skrót + " §6Cena " + czynność + ":§e " + _cena;
 					};
+					
 					ItemMeta meta = item.getItemMeta();
 					List<String> lore = (List<String>) Func.nieNullList(meta.getLore());
-					lore.add(0, "§7------------------------------");
-					lore.add(0, "");
-					lore.add(0, "§9PPM §8- §akup");
-					lore.add(0, "§9LPM §8- §asprzedaj");
-					lore.add(0, "§9SHIFT §e+ §9PPM §8- §akup wszystko");
-					lore.add(0, "§9SHIFT §e+ §9LPM §8- §asprzedaj wszystko");
-					lore.addAll(0, config.wczytajListe("stały lore"));
-					lore.add(0, cena.apply("sprzedarzy"));
-					lore.add(0, cena.apply("kupna"));
+					lore.add(0, cena.apply("sprzedarzy", "LPM"));
+					lore.add(0, cena.apply("kupna", "PPM"));
 					meta.setLore(lore);
 					item.setItemMeta(meta);
 				}
@@ -278,7 +271,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1 && strony.containsKey("Główna"))
+		if (args.length <= 1 && !strony.containsKey("Główna"))
 			return utab(args, strony.keySet());
 		else
 			return Lists.newArrayList();

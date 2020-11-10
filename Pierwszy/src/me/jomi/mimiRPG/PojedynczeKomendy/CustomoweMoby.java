@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -67,6 +68,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		Mob rumak;
 		double szansa = 1;
 		boolean atakujGraczy = false;
+		boolean blokujTransformacje = false;
 		
 		@SuppressWarnings("unchecked")
 		public Mob(ConfigurationSection sekcja) {
@@ -98,12 +100,6 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 				for (Entry<String, Object> en : _sekcja.getValues(false).entrySet())
 					eq.add(new Krotka<>(EquipmentSlot.valueOf(slot(en.getKey())), Config.item(en.getValue())));
 			}
-		
-			if (sekcja.contains("Rumak"))
-				rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
-			
-			if (sekcja.contains("Szansa"))
-				szansa = sekcja.getDouble("Szansa");
 			
 			if (sekcja.contains("Bloki")) {
 				bloki = Lists.newArrayList();
@@ -111,14 +107,24 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 					bloki.add(Material.valueOf(klucz.toUpperCase()));
 			}
 			
-			if (sekcja.contains("atakujGraczy")) // TODO dopisać w szablonie
-				atakujGraczy = sekcja.getBoolean("atakujGraczy");
 			
 			if (sekcja.contains("drop")) {
 				drop = Lists.newArrayList(); // TODO dopisać w szablonie
 				for (Map<String, Object> mapa : (List<Map<String, Object>>) sekcja.get("drop"))
 					drop.add(new Krotka<>((double) mapa.get("szansa"), Config.item(mapa.get("item"))));
 			}
+			
+			szansa = sekcja.getDouble("Szansa", 1);
+
+			// TODO dopisać w szablonie
+			atakujGraczy = sekcja.getBoolean("atakujGraczy", false);
+			
+			// TODO dopisać w szablonie
+			blokujTransformacje = sekcja.getBoolean("blokujTransformacje", false);
+			
+
+			if (sekcja.contains("Rumak"))
+				rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
 		}
 		
 		ItemStack randItem(Set<Material> mat) {
@@ -135,6 +141,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			_eq.setBoots(randItem(CustomoweMoby.inst.buty));
 		}
 		
+
 		Entity zresp(Location loc) {
 			Entity mob = loc.getWorld().spawnEntity(loc, typ);
 			
@@ -181,6 +188,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 				ei.targetSelector = new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
 				ei.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityPlayer>(ei, EntityPlayer.class, true));
 			}
+			
 			
 			return mob;
 		}
@@ -315,6 +323,14 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		ev.getDrops().clear();
 		ev.setDroppedExp(0);
 		}
+	}
+	
+	public void transformacja(EntityTransformEvent ev) {
+		Entity mob = ev.getEntity();
+		if (!mob.hasMetadata("mimiCustomowyMob")) return;
+		Mob m = (Mob) mob.getMetadata("mimiCustomowyMob").get(0).value();
+		if (m.blokujTransformacje)
+			ev.setCancelled(true);
 	}
 	
 	void zresp(Location loc) {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.bukkit.Material;
@@ -121,12 +122,29 @@ public class Config {
 	public ItemStack wczytajItem(Object... sciezka) {
 		return item(wczytaj(sc(sciezka)));
 	}
+	@SuppressWarnings("unchecked")
 	public static ItemStack item(Object item) {
 		if (item == null) return null;
 		if (item instanceof ItemStack)
 			return (ItemStack) item;
-		String[] wejscie = ((String) item).split(" ");
+		if (item instanceof ConfigurationSection)
+			item = ((ConfigurationSection) item).getValues(false);
 		ItemStack _item;
+		if (item instanceof Map) {
+			Map<String, Object> mapa = (Map<String, Object>) item;
+			_item = item(mapa.getOrDefault("item", "Stone")).clone();
+			BiConsumer<String, BiConsumer<ItemStack, Object>> bic = (str, bic2) -> {
+				Object obj = mapa.get(str);
+				if (obj != null)
+					bic2.accept(_item, obj);
+			};
+			bic.accept("nazwa", (i, o) -> Func.nazwij(i, (String) o));
+			bic.accept("lore", (i, o) -> Func.ustawLore(i, (List<String>) o));
+			if ((boolean) mapa.getOrDefault("ench", false))
+				Func.połysk(_item);
+			return _item;
+		}
+		String[] wejscie = ((String) item).split(" ");
 		if (!Baza.itemy.containsKey(wejscie[0])) {
 			try {
 				_item = new ItemStack(Material.valueOf(wejscie[0].toUpperCase()));
