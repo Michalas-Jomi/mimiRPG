@@ -47,10 +47,13 @@ public class Config {
 				lista.add(_item(_obj));
 			return lista;
 		}
-		if (item instanceof ItemStack)
+		if (item instanceof ItemStack) {
 			for (Entry<String, ItemStack> en : Baza.itemy.entrySet())
 				if (Func.porównaj(en.getValue(), (ItemStack) item))
 					return en.getKey() + " " + ((ItemStack) item).getAmount();
+			if (((ItemStack) item).isSimilar(new ItemStack(((ItemStack) item).getType())))
+				return ((ItemStack) item).getType().toString().toLowerCase() + " " + ((ItemStack) item).getAmount();
+		}
 		return item;
 	}
 	public boolean ustawDomyślne(String sciezka, Object obj) {

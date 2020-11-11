@@ -152,7 +152,11 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			świat.spawnParticle(Particle.CLOUD, loc.getBlockX(), y, loc.getBlockZ(), 200, 2, 2, 2, 1);
 			this.loc.getChunk().setForceLoaded(ładowany);
 			loc.setY(y);
-			zbuduj();
+			try {
+				zbuduj();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 			bossbar.setVisible(false);
 			bossbar.removeAll();
 			for (int i=0; i < wszystkieDropy.size(); i++)
@@ -176,6 +180,8 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			ustawSkrzynie(loc.add(0, 0, 1).getBlock(), invs);
 			ustawSkrzynie(loc.add(-1, 0, 0).getBlock(), invs);
 			ustawDrop(invs);
+			for (Container c : invs)
+				c.update();
 			
 			loc.add(0, 1, -1).getBlock().setType(Material.BEEHIVE);
 			loc.add(1, 0, 0).getBlock().setType(Material.BEEHIVE);
@@ -194,9 +200,8 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			blok.setType(Material.BARREL, false);
 			blok.setBlockData(Bukkit.createBlockData("minecraft:barrel[facing=up,open=false]"), false);
 			Barrel skrzynia = (Barrel) blok.getState();
-			invs.add((Barrel) blok);
+			invs.add(skrzynia);
 			skrzynia.setCustomName("§cAir Drop");
-			skrzynia.update();
 		}
 		private void ustawDrop(List<Container> skrzynie) {
 			List<ItemStack> ogólne = losujDropy(dropyAirDropu);
@@ -220,7 +225,6 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 				Inventory inv = Func.losuj(skrzynie).getSnapshotInventory();
 				inv.setItem(Func.losujWZasięgu(inv.getSize()), item);
 			}
-				
 		}
 		private void włóżItem(ItemStack item, Inventory inv) {
 			if (inv.firstEmpty() == -1) return;
@@ -400,8 +404,10 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	@Override
 	public Krotka<String, Object> raport() {
 		int x = 0;
-		x += dropySkrzyń.dropy.size();
-		x += dropyAirDropu.dropy.size();
+		try { x += dropySkrzyń.dropy.size();
+		} catch(Throwable e) {}
+		try { x += dropyAirDropu.dropy.size();
+		} catch(Throwable e) {}
 		return Func.r("Wczytane dropy", x);
 	}
 	

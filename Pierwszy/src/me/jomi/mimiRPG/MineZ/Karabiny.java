@@ -52,6 +52,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		@Mapowane Sound dzwiękStrzału = Sound.ENTITY_WITHER_SHOOT;
 		@Mapowane EntityType typPocisku = EntityType.ARROW;
 		@Mapowane double dzwiękPitch = 2;
+		@Mapowane double głośność = 1;
 		@Mapowane String nazwa = "Karabin";
 		@Mapowane double attackCooldown; // w sekundach
 		@Mapowane double siłaStrzału = 3;
@@ -73,7 +74,7 @@ public class Karabiny implements Listener, Przeładowalny {
 			for (int i=0; i < pociski; i++)
 				strzel(p, wzrok);
 			
-			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, 80, (float) dzwiękPitch);
+			p.getWorld().playSound(p.getLocation(), dzwiękStrzału, (float) głośność, (float) dzwiękPitch);
 			
 			p.incrementStatistic(Statistic.USE_ITEM, Material.SNOWBALL);
 			

@@ -55,7 +55,13 @@ public class Raport extends Komenda {
 	}
 
 	public static String raport(Przeładowalny p) {
-		return raport(p.raport());
+		try {
+			return raport(p.raport());
+		} catch (Throwable e) {
+			Main.error("Błąd w raporcie " + p.getClass().getSimpleName() + " " + e.getCause());
+			e.printStackTrace();
+			return "§4" + p.getClass().getSimpleName() + " Błąd";
+		}
 	}
 	public static String raport(Krotka<String, Object> raport) {
 		return "§6" + raport.a + ": §e" + raport.b;	

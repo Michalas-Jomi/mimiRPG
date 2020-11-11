@@ -321,7 +321,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			if (Func.losuj(krotka.a))
 				mob.getWorld().dropItem(mob.getLocation(), krotka.b);
 		ev.getDrops().clear();
-		ev.setDroppedExp(0);
+		//ev.setDroppedExp(0); // TODO customowy dla null normalny
 	}
 	
 	@EventHandler

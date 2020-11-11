@@ -934,14 +934,18 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public void śmierć(PlayerRespawnEvent ev) {
 		Gracz g = Gracz.wczytaj(ev.getPlayer());
 		if (g.łóżkoBazowe != null)
-			if (g.łóżkoBazowe.getBlock().getType().toString().contains("_BED"))
-				ev.setRespawnLocation(g.łóżkoBazowe.clone().add(0, .5, 0));
+			if (g.łóżkoBazowe.getBlock().getType().toString().contains("_BED")) {
+				Location resp = g.łóżkoBazowe.clone().add(0, .5, 0);
+				ev.setRespawnLocation(resp);
+				Func.opóznij(1, () -> ev.getPlayer().teleport(resp));
+			}
 			else {
 				g.łóżkoBazowe = null;
 				g.zapisz();
 				ev.getPlayer().sendMessage(prefix + "Twoje łóżko uległo awarii");
 			}
 	}
+	
 	
 	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");
 	@SuppressWarnings("unchecked")
