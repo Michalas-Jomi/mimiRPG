@@ -502,10 +502,15 @@ public abstract class Func {
 		List<T> lista = Lists.newArrayList(zCzego);
 		if (lista.isEmpty())
 			return null;
-		return lista.get(losuj(0, lista.size()-1));
+		return lista.get(losujWZasięgu(lista.size()));
 	}
 	public static int losujWZasięgu(int max) {
 		return Func.losuj(0, max-1);
+	}
+	public static <T> T losujPop(List<T> zCzego) {
+		if (zCzego.isEmpty())
+			return null;
+		return zCzego.remove(losujWZasięgu(zCzego.size()));
 	}
 	
 	public static double zaokrąglij(double liczba, int miejsca) {

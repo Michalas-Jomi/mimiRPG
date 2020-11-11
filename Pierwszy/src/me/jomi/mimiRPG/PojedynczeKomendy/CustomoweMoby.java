@@ -317,14 +317,14 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		if (!mob.hasMetadata("mimiCustomowyMob")) return;
 		Mob m = (Mob) mob.getMetadata("mimiCustomowyMob").get(0).value();
 		if (m.drop == null) return;
-		for (Krotka<Double, ItemStack> krotka : m.drop) {
+		for (Krotka<Double, ItemStack> krotka : m.drop)
 			if (Func.losuj(krotka.a))
 				mob.getWorld().dropItem(mob.getLocation(), krotka.b);
 		ev.getDrops().clear();
 		ev.setDroppedExp(0);
-		}
 	}
 	
+	@EventHandler
 	public void transformacja(EntityTransformEvent ev) {
 		Entity mob = ev.getEntity();
 		if (!mob.hasMetadata("mimiCustomowyMob")) return;

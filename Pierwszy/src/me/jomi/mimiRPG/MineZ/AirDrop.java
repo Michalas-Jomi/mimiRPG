@@ -12,6 +12,7 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.block.Container;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -37,7 +38,6 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -170,10 +170,12 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			loc.add(0, 0, 1).getBlock().setType(Material.BEEHIVE);
 			loc.add(-1, 0, 0).getBlock().setType(Material.BEEHIVE);
 			
-			ustawDrop(loc.add(0, 1, -1).getBlock());
-			ustawDrop(loc.add(1, 0, 0).getBlock());
-			ustawDrop(loc.add(0, 0, 1).getBlock());
-			ustawDrop(loc.add(-1, 0, 0).getBlock());
+			List<Container> invs = Lists.newArrayList();
+			ustawSkrzynie(loc.add(0, 1, -1).getBlock(), invs);
+			ustawSkrzynie(loc.add(1, 0, 0).getBlock(), invs);
+			ustawSkrzynie(loc.add(0, 0, 1).getBlock(), invs);
+			ustawSkrzynie(loc.add(-1, 0, 0).getBlock(), invs);
+			ustawDrop(invs);
 			
 			loc.add(0, 1, -1).getBlock().setType(Material.BEEHIVE);
 			loc.add(1, 0, 0).getBlock().setType(Material.BEEHIVE);
@@ -188,24 +190,65 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 				}
 			});
 		}
-		void ustawDrop(Block blok) {
+		void ustawSkrzynie(Block blok, List<Container> invs) {
 			blok.setType(Material.BARREL, false);
 			blok.setBlockData(Bukkit.createBlockData("minecraft:barrel[facing=up,open=false]"), false);
 			Barrel skrzynia = (Barrel) blok.getState();
-			ustawDrop(skrzynia.getSnapshotInventory());
+			invs.add((Barrel) blok);
 			skrzynia.setCustomName("§cAir Drop");
 			skrzynia.update();
 		}
-		void ustawDrop(Inventory inv) {
-			if (dropy.ciąg.wielkość() > 0)
-				for (int i=0; i<inv.getSize(); i++)
-					inv.setItem(i, dropy.ciąg.losuj());
+		private void ustawDrop(List<Container> skrzynie) {
+			List<ItemStack> ogólne = losujDropy(dropyAirDropu);
+			
+			int naSkrzynie = ogólne.size() / skrzynie.size();
+			
+			for (Container skrzynia : skrzynie) {
+				for (int i=0; i<naSkrzynie; i++)
+					włóżItem(Func.losujPop(ogólne), skrzynia.getSnapshotInventory());
+				for (ItemStack item : losujDropy(dropySkrzyń))
+					włóżItem(item, skrzynia.getSnapshotInventory());
+			}
+			
+			for (int i=0; i<ogólne.size(); i++) {
+				ItemStack item = Func.losujPop(ogólne);
+				if (item == null) return;
+				włóżItem(item, Func.losuj(skrzynie).getSnapshotInventory());
+			}
+			
+			for (ItemStack item : ogólne) {
+				Inventory inv = Func.losuj(skrzynie).getSnapshotInventory();
+				inv.setItem(Func.losujWZasięgu(inv.getSize()), item);
+			}
+				
+		}
+		private void włóżItem(ItemStack item, Inventory inv) {
+			if (inv.firstEmpty() == -1) return;
+			for (int i = 0; i<inv.getSize()*2; i++) {
+				int slot = Func.losujWZasięgu(inv.getSize());
+				ItemStack itemNaSlocie = inv.getItem(slot);
+				if (itemNaSlocie == null || itemNaSlocie.getType().isAir()) {
+					inv.setItem(slot, item);
+					return;
+				}
+			}
+			inv.setItem(inv.firstEmpty(), item);
+		}
+		private List<ItemStack> losujDropy(Dropy dropy) {
+			List<ItemStack> lista = Lists.newArrayList();
+			
+			for (Box box : dropy.dropy)
+				if (Func.losuj(box.szansa))
+					lista.add(box.getItem());
+			
+			return lista;
 		}
 	}
 	static final String metaId = "mimiAriDrop";
 	
 	Config config = new Config("AirDropy");
-	Dropy dropy;
+	Dropy dropySkrzyń;
+	Dropy dropyAirDropu;
 
 	static AirDrop inst;
 	public AirDrop() {
@@ -215,17 +258,20 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	
 	public static class Box extends Mapowany {
 		@Mapowane ItemStack item;
-		@Mapowane int szansa;
+		@Mapowane double szansa;
+		@Mapowane int minIlość = 1;
+		@Mapowane int maxIlość = 1;
+		
+		ItemStack getItem() {
+			ItemStack item = this.item.clone();
+			
+			item.setAmount(Func.losuj(minIlość, maxIlość));
+			
+			return item;
+		}
 	}
 	public static class Dropy extends Mapowany {
 		@Mapowane List<Box> dropy;
-		
-		Ciąg<ItemStack> ciąg = new Ciąg<>();
-		
-		public void Init() {
-			for (Box box : dropy)
-				ciąg.dodaj(box.item, box.szansa);
-		}
 	}
 
 	void przywołaj() {
@@ -343,7 +389,8 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	@Override
 	public void przeładuj() {
 		config.przeładuj();
-		dropy = (Dropy) config.wczytaj("dropy");
+		dropySkrzyń   = (Dropy) config.wczytaj("dropy na skrzynie");
+		dropyAirDropu = (Dropy) config.wczytaj("dropy na airdrop");
 	
 		czasRespienia = config.wczytajLubDomyślna("czasRespienia", 120) * 20;
 		prędkośćSpadania = config.wczytajLubDomyślna("prędkośćSpadania", 1.0);
@@ -353,9 +400,8 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	@Override
 	public Krotka<String, Object> raport() {
 		int x = 0;
-		try {
-			x = dropy.ciąg.wielkość();
-		} catch(Throwable e) {}
+		x += dropySkrzyń.dropy.size();
+		x += dropyAirDropu.dropy.size();
 		return Func.r("Wczytane dropy", x);
 	}
 	
