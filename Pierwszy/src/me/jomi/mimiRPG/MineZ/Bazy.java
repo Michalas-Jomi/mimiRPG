@@ -3,7 +3,6 @@ package me.jomi.mimiRPG.MineZ;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +86,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
 @Moduł
@@ -135,7 +133,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		void dołącz(Player p) {
-			
 			Gracz g = Gracz.wczytaj(p.getName());
 			
 			dodajRegiony(g);
@@ -829,7 +826,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				if (_gildia == null)
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia już nie istnieje");
 				_gildia.dołącz(sender);
-				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", zapraszający, nazwaGildi, sender.getName()));
+				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", nazwaGildi, zapraszający, sender.getName()));
 
 				mapaZaproszeń.remove(zapraszający);
 				break;
@@ -950,42 +947,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				g.zapisz();
 				ev.getPlayer().sendMessage(prefix + "Twoje łóżko uległo awarii");
 			}
-	}
-	
-	final Set<String> tepani = Sets.newConcurrentHashSet();
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void tp(PlayerTeleportEvent ev) {
-		Player p = ev.getPlayer();
-		
-		if (tepani.contains(p.getName()))
-			return;
-		
-		String gildia = Gracz.wczytaj(p).gildia;
-		if (gildia == null || gildia.isEmpty()) return;
-
-		
-		Collection<Entity> ens = ev.getPlayer().getWorld().getNearbyEntities(ev.getFrom(), 10, 10, 10);
-		Func.opóznij(1, () -> {
-			tepani.add(ev.getPlayer().getName());
-			Set<String> tepaniAkt = Sets.newConcurrentHashSet();
-			for (Entity e : ens)
-				if (e instanceof Player) {
-					if (tepani.contains(e.getName()))
-						continue;
-					String _gildia = Gracz.wczytaj(e.getName()).gildia;
-					if (_gildia == null)
-						continue;
-					if (gildia.equals(_gildia)) {
-						tepani.add(p.getName());
-						tepaniAkt.add(p.getName());
-						e.teleport(p);
-						e.sendMessage(Gildia.prefix + "Zostałeś przeteleportowany wraz z towarzyszem z Gildi " + p.getDisplayName());
-					}
-				}
-			tepani.remove(p.getName());
-			for (String nick : tepaniAkt)
-				tepani.remove(nick);
-		});
 	}
 	
 	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");
