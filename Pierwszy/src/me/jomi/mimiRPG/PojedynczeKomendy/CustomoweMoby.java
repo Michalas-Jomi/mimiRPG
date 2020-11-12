@@ -66,6 +66,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		NBTTagCompound tag = new NBTTagCompound();
 		List<Material> bloki;
 		Mob rumak;
+		Integer exp = -1;
 		double szansa = 1;
 		boolean atakujGraczy = false;
 		boolean blokujTransformacje = false;
@@ -114,6 +115,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 					drop.add(new Krotka<>((double) mapa.get("szansa"), Config.item(mapa.get("item"))));
 			}
 			
+			
 			szansa = sekcja.getDouble("Szansa", 1);
 
 			// TODO dopisać w szablonie
@@ -125,6 +127,9 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 
 			if (sekcja.contains("Rumak"))
 				rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
+		
+			// TODO dopisać w szablonie
+			exp = (Integer) sekcja.get("exp", null);
 		}
 		
 		ItemStack randItem(Set<Material> mat) {
@@ -321,7 +326,8 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			if (Func.losuj(krotka.a))
 				mob.getWorld().dropItem(mob.getLocation(), krotka.b);
 		ev.getDrops().clear();
-		//ev.setDroppedExp(0); // TODO customowy dla null normalny
+		if (m.exp != null)
+			ev.setDroppedExp(m.exp);
 	}
 	
 	@EventHandler

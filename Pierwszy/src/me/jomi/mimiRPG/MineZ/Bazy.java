@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.MineZ;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +87,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 // TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
 @Moduł
@@ -396,7 +398,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	
 	public Bazy() {
 		super("gildia", null, "g");
-		ustawKomende("baza", "/baza [tp | ustawtp | usuń | ulepsz]", null);
+		ustawKomende("baza", "/baza [usuń | ulepsz]", null);
 		Main.dodajPermisje(permBypass);
 		inst = this;
 		regiony = WorldGuard.getInstance().getPlatform().getRegionContainer();
@@ -806,6 +808,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (args.length < 2)
 				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa>");
 			
+			if (args[1].length() > 30)
+				return Func.powiadom(sender, Gildia.prefix + "Zbyt długa nazwa gildi");
+			
 			if (Gildia.istnieje(args[1]))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("gildia %s już istnieje", args[1]));
 			
@@ -861,10 +866,20 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	boolean komendaBaza(Player p, String[] args) {
 		if (args.length < 1) return false;
+		if (args[0].equalsIgnoreCase("bypass")) {
+			if (!p.hasPermission(permBypass))
+				return Func.powiadom(p, prefix + "Nie możesz tego użyć");
+			if (bypass.remove(p.getName()))
+				return Func.powiadom(p, prefix + "Wyłączyłeś bypass");
+			else {
+				bypass.add(p.getName());
+				return Func.powiadom(p, prefix + "Włączyłeś bypass");
+			}
+		}
 		Gracz g = Gracz.wczytaj(p.getName());
 		if (g.baza == null)
 			return Func.powiadom(p, prefix + "Nie masz bazy");
-		switch (args[0]) {
+		switch (args[0].toLowerCase()) {
 		case "usuń":
 			if (args.length < 2 || !g.baza.nazwa.equals(args[1]))
 				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
@@ -879,15 +894,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			else
 				p.sendMessage(prefix + "Twoja baza jest już na maksymalnym poziomie");
 			break;
-		case "bypass":
-			if (!p.hasPermission(permBypass))
-				return Func.powiadom(p, prefix + "Nie możesz tego użyć");
-			if (bypass.remove(p.getName()))
-				return Func.powiadom(p, prefix + "Wyłączyłeś bypass");
-			else {
-				bypass.add(p.getName());
-				return Func.powiadom(p, prefix + "Włączyłeś bypass");
-			}
 		default:
 			return Func.powiadom(p, prefix + "Niepoprawne argumenty użyj /baza ulepsz /baza usuń");
 		}
@@ -946,6 +952,41 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			}
 	}
 	
+	final Set<String> tepani = Sets.newConcurrentHashSet();
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void tp(PlayerTeleportEvent ev) {
+		Player p = ev.getPlayer();
+		
+		if (tepani.contains(p.getName()))
+			return;
+		
+		String gildia = Gracz.wczytaj(p).gildia;
+		if (gildia == null || gildia.isEmpty()) return;
+
+		
+		Collection<Entity> ens = ev.getPlayer().getWorld().getNearbyEntities(ev.getFrom(), 10, 10, 10);
+		Func.opóznij(1, () -> {
+			tepani.add(ev.getPlayer().getName());
+			Set<String> tepaniAkt = Sets.newConcurrentHashSet();
+			for (Entity e : ens)
+				if (e instanceof Player) {
+					if (tepani.contains(e.getName()))
+						continue;
+					String _gildia = Gracz.wczytaj(e.getName()).gildia;
+					if (_gildia == null)
+						continue;
+					if (gildia.equals(_gildia)) {
+						tepani.add(p.getName());
+						tepaniAkt.add(p.getName());
+						e.teleport(p);
+						e.sendMessage(Gildia.prefix + "Zostałeś przeteleportowany wraz z towarzyszem z Gildi " + p.getDisplayName());
+					}
+				}
+			tepani.remove(p.getName());
+			for (String nick : tepaniAkt)
+				tepani.remove(nick);
+		});
+	}
 	
 	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");
 	@SuppressWarnings("unchecked")
