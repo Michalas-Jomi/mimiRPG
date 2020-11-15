@@ -54,7 +54,7 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 		return p.hasMetadata(metaBypass);
 	}
 	
-	final int maxCzas = 40;
+	int maxCzas = 40;
 	
 	public int czas() {
 		for (String klucz : Lists.newArrayList(czasy.keySet()))
@@ -173,6 +173,7 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 	@Override
 	public void przeładuj() {
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
+		maxCzas = Main.ust.wczytajLubDomyślna("Antylog.Czas", 10) * 4;
 	}
 
 	@Override

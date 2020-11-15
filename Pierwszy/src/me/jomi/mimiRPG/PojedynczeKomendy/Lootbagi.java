@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -25,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
@@ -36,11 +38,11 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
-public class Lootbagi extends Komenda implements Listener, Przeładowalny{
-	public static final String prefix = Func.prefix("Lootbagi");
-	public static final Config config = new Config("configi/lootbagi");
+public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 	public static final HashMap<String, Lootbag> lootbagi = new HashMap<>();
 	public static final HashMap<String, Inventory> itemy = new HashMap<>();
+	public static final Config config = new Config("configi/lootbagi");
+	public static final String prefix = Func.prefix("Lootbagi");
 	
 	public Lootbagi() {
 		super("lootbag");
@@ -268,6 +270,8 @@ class Lootbag {
 	protected List<ItemStack> wygrane = Lists.newArrayList();
 	protected Inventory inv;
 	private boolean broadcast;
+	private int ilośćItemów = 1;
+	
 	public Lootbag(String nazwa) {
 		this.nazwa = Func.koloruj(nazwa);
 		Lootbagi.lootbagi.put(this.nazwa, this);
@@ -295,6 +299,7 @@ class Lootbag {
 		
 		lootbag.item = config.wczytajItem(nazwa, "item");
 		lootbag.broadcast = (boolean) config.wczytajLubDomyślna(nazwa + ".broadcast", false);
+		lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
 		
 		lootbag.ustawPodgląd();
 		
@@ -311,12 +316,21 @@ class Lootbag {
 			inv.setItem(i, wygrane.get(i));
 	}
 	
-	public ItemStack losuj() {
-		return wygrane.get(Func.losuj(0, wygrane.size()-1));
+	public List<ItemStack> losuj() {
+		Set<Integer> wygrywające = Sets.newConcurrentHashSet();
+		while (wygrywające.size() < ilośćItemów && wygrywające.size() < wygrane.size())
+			wygrywające.add(Func.losujWZasięgu(wygrane.size()));
+		
+		List<ItemStack> itemy = Lists.newArrayList();
+		for (int i : wygrywające)
+			itemy.add(wygrane.get(i));
+		
+		return itemy;
 	}
 	
 	public void otwórz(Player p) {
-		p.getInventory().addItem(losuj());
+		for (ItemStack item : losuj())
+			Func.dajItem(p, item);
 		ItemStack itemWRęce = p.getInventory().getItemInMainHand();
 		itemWRęce.setAmount(itemWRęce.getAmount()-1);
 		p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation(), 50, .3, .5, .3);

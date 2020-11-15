@@ -332,6 +332,34 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return null;
 		}
 		
+		Integer idRajd = null;
+		void rajdowana(BlockBreakEvent ev, Baza baza) {
+			if (idRajd != null)
+				zrajdowana(ev, baza);
+			else {
+				Func.opóznij(1, () -> ev.getBlock().setType(Material.SOUL_CAMPFIRE));
+				idRajd = Func.opóznij(config.wczytajLubDomyślna("czas rajdowania", 5) * 20 + 1, () -> {
+					idRajd = null;
+					ev.getBlock().setType(Material.CAMPFIRE);
+				});
+			}
+		}
+		private void zrajdowana(BlockBreakEvent ev, Baza baza) {
+			Bukkit.getScheduler().cancelTask(idRajd);
+		
+			Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
+			
+			ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", "§e" + Func.listToString(
+					baza.region.getOwners().getPlayers(), 0, "§6, §e")));
+			for (String owner : baza.region.getOwners().getPlayers()) {
+				Player p = Bukkit.getPlayer(owner);
+				if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
+				Main.log(prefix + Func.msg("%s zniszczył baze gracza %s", ev.getPlayer().getName(), p == null ? owner : p.getName()));
+			}
+			
+			usuń();
+		}
+		
 		void usuń() {
 			for (String owner : region.getOwners().getPlayers()) {
 				Gracz g = Gracz.wczytaj(owner);
@@ -631,7 +659,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void niszczenie(BlockBreakEvent ev) {
-		if (!ev.getBlock().getType().equals(Material.CAMPFIRE)) return;
+		if (!Func.multiEquals(ev.getBlock().getType(), Material.CAMPFIRE, Material.SOUL_CAMPFIRE)) return;
 		
 		Baza baza = znajdzBaze(ev.getBlock().getLocation());
 		if (baza == null) return;
@@ -647,17 +675,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return;
 		}
 		
-		Func.opóznij(1, () -> ev.getBlock().setType(Material.AIR));
-		
-		ev.getPlayer().sendMessage(prefix + Func.msg("Zniszczyłeś baze gracza %s", "§e" + Func.listToString(
-				baza.region.getOwners().getPlayers(), 0, "§6, §e")));
-		for (String owner : baza.region.getOwners().getPlayers()) {
-			Player p = Bukkit.getPlayer(owner);
-			if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
-			Main.log(prefix + Func.msg("%s zniszczył baze gracza %s", ev.getPlayer(), p == null ? owner : p.getDisplayName()));
-		}
-
-		baza.usuń();
+		baza.rajdowana(ev, baza);
 	}
 		
 	@EventHandler(priority = EventPriority.HIGH)
@@ -678,7 +696,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		switch (ev.getAction()) {
 		case LEFT_CLICK_BLOCK:
-			if (blok.getType().equals(Material.CAMPFIRE))
+			if (Func.multiEquals(blok.getType(), Material.CAMPFIRE, Material.SOUL_CAMPFIRE))
 				ev.setCancelled(false);
 			break;
 		case RIGHT_CLICK_BLOCK:

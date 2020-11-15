@@ -1,9 +1,7 @@
 package me.jomi.mimiRPG.SkyBlock;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -34,7 +32,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
@@ -45,30 +46,115 @@ import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
 
 @Moduł
 public class Spawnery extends Komenda implements Przeładowalny, Listener {
+	public static class Ulepszenie extends Mapowany {
+		public static class Ulepszenia extends Mapowany {
+			public static class Atrybut extends Mapowany {
+				@Mapowane ItemStack item;
+				@Mapowane double mnoznik;
+				@Mapowane List<String> opis;
+				@Mapowane List<Integer> koszty;
+			}
+			@Mapowane Atrybut zasięg;
+			@Mapowane Atrybut liczebnosc;
+			@Mapowane Atrybut Szybkosc;
+			@Mapowane double SzybkośćDzielnik = 3;
+			@Mapowane double SzybkośćPoczatkowa = 40;
+		}
+		@Mapowane Ulepszenia ulepszenia;
+		@Mapowane EntityType mob;
+		@Mapowane double cena;
+	}
+	public static class ListUlepszen extends Mapowany {
+		@Mapowane List<Ulepszenie> ulepszenia;
+	}
+	
+	
 	public static final String prefix = Func.prefix("Spawner");
 	
-	ItemStack pustySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§9§l ");
-	Inventory inv;
-	int sloty;
+	final static ItemStack pustySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "§9§l ");
+	Inventory inv; // TODO usunąć
+	static int sloty;
 	
 	final HashMap<String, CreatureSpawner> panele = new HashMap<>();
+	
+	// TODO ulepszanie mob1 -> mob2
+	// co któryś mob resetować upgrd spawnera
+	
+	/*
+	 * ulepszenia:
+	 * - mob: <mob>
+	 *   cena: <double> # opcjonalne
+	 *   ulepszenia: # opcjonalne
+	        # ulepszanie nie wymusza wykupywania wszystkich tierów po kolei, umożliwia wykupywanie niższych tierów
+			  ulepszenia:
+			    # zasięg w jakim spawner respi moby (SpawnRange)
+			    # poziom + 1
+			    Zasięg:
+			      item: prismarine_shard
+			      slot: 10
+			      koszty: [100, 200.5, 300, 400]
+			      # zasięg w jakim musi być gracz aby spawner działał (RequiredPlayerRange)
+			      # poziom * mnożnik
+			      mnożnik: 4
+			      #opis # opcjonalne
+			    
+			    # maksymalna ilość respionych mobów na raz (SpawnCount)
+			    # poziom
+			    Liczebność:
+			      item: prismarine_crystals
+			      slot: 19
+			      koszty: [100, 200, 250, 300, 500]
+			      # maksymalna ilość zrespionych mobów w pobliżu (MaxNearbyEntities)
+			      # poziom * mnożnik
+			      mnożnik: 2.3
+			      # opis na itemie # opcjonalne
+			      opis:
+			        - '&dLiczebność to fajna sprawa jest'
+			    
+			    # szybkość respienia mobów (MaxSpawnDelay / MinSpawnDelay)
+			    Szybkość:
+			      item: sugar
+			      slot: 28
+			      koszty: [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+			      # początkowa ilość sekund
+			      początkowa: 40 # opcjonalne domyślnie 40
+			      # ilość ujmowanych sekund na poziom (MaxSpawnDelay)
+			      # (poziom - 1) * mnożnik
+			      mnożnik: 4
+			      # najszybsze możliwe zrespienia moba
+			      # MinSpawnDelay = MaxSpawnDelay / dzielnik
+			      dzielnik: 3
+			      #opis # opcjonalne
+	 * 
+	 * 
+	 * 
+	 */
+	
+	List<Ulepszenie> ulepszenia;
+	
+	int marginesy;
 	
 	public Spawnery() {
 		super("spawner", "/spawner <mob> (gracz)");
 		Main.dodajPermisje("spawnery.bypass");
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
+	@SuppressWarnings("unchecked")
 	public void przeładuj() {
+		Config config = new Config("configi/Spawnery");
+		
 		sloty = 9 * Math.max(1, Math.min(6, Main.ust.wczytajLubDomyślna("Spawnery.rzędy", 6)));
 		
 		inv = Bukkit.createInventory(null, sloty, "§9§lSpawner");
 		for (int i=0; i<sloty; i++)
 			inv.setItem(i, pustySlot);
 		
-		int marginesy = Main.ust.wczytajInt("Spawnery.marginesy");
-		Consumer<String> ulepszenia = typ -> {
+		marginesy = Main.ust.wczytajInt("Spawnery.marginesy");
+		
+		ulepszenia = (List<Ulepszenie>) config.wczytaj("Spawnery.ulepszenia");
+		
+		/*Consumer<String> ulepszenia = typ -> {
 			String sc = "Spawnery.ulepszenia." + typ + ".";
 			int slot = Main.ust.wczytajInt(sc + "slot");
 			if (slot <= -1 || slot >= sloty)
@@ -97,7 +183,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 
 		ulepszenia.accept("Liczebność");
 		ulepszenia.accept("Szybkość");
-		ulepszenia.accept("Zasięg");
+		ulepszenia.accept("Zasięg");*/
 	}
 	@Override
 	public Krotka<String, Object> raport() {
