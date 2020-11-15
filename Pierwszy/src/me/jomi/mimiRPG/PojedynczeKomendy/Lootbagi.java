@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -60,7 +61,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny{
 		return Func.r("Lootbagi", lootbagi.size());
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void użycie(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
 		ItemStack item = ev.getItem();

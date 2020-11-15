@@ -158,8 +158,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (nick.equals(przywódca))
 				if (gracze.size() == 0)
 					config.ustaw_zapisz(nazwa, null);
-				else
+				else {
 					przywódca = gracze.remove(0);
+					zapisz();
+				}
 		}
 		
 		void dodajRegiony(Gracz g) {
@@ -391,7 +393,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	RegionContainer regiony;
 	static Config config = new Config("Bazy");
 	
-	static Bazy inst;
+	public static Bazy inst;
 	
 	public Bazy() {
 		super("gildia", null, "g");
@@ -652,6 +654,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		for (String owner : baza.region.getOwners().getPlayers()) {
 			Player p = Bukkit.getPlayer(owner);
 			if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
+			Main.log(prefix + Func.msg("%s zniszczył baze gracza %s", ev.getPlayer(), p == null ? owner : p.getDisplayName()));
 		}
 
 		baza.usuń();
@@ -712,7 +715,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 
 	
-	Baza znajdzBaze(Location loc) {
+	public Baza znajdzBaze(Location loc) {
 		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
 			Baza baza = Baza.wczytaj(loc.getWorld(), region);
 			if (baza != null)
@@ -881,6 +884,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (args.length < 2 || !g.baza.nazwa.equals(args[1]))
 				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
 			g.baza.usuń();
+			Main.log(prefix + Func.msg("%s usunął swoją bazę", p.getDisplayName()));
 			return Func.powiadom(p, prefix + "Usunąłeś swoją bazę");
 		case "ulepsz":
 			if (((List<?>) config.wczytaj("ulepszenia bazy")).size() > g.baza.poziom + 1)
@@ -933,20 +937,28 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		p.sendMessage(prefix + "Ulepszyłeś swoją baze");
 	}
 	
+	
+	final Set<String> setUmierających = Sets.newConcurrentHashSet();
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void śmierć(PlayerRespawnEvent ev) {
 		Gracz g = Gracz.wczytaj(ev.getPlayer());
-		if (g.łóżkoBazowe != null)
+		if (g.łóżkoBazowe != null) {
+			if (setUmierających.contains(ev.getPlayer().getName())) {
+				ev.getPlayer().sendMessage(prefix + "Za szybko umierasz. Twoje łóżko nie nadąrza");
+				return;
+			}
 			if (g.łóżkoBazowe.getBlock().getType().toString().contains("_BED")) {
 				Location resp = g.łóżkoBazowe.clone().add(0, .5, 0);
 				ev.setRespawnLocation(resp);
 				Func.opóznij(1, () -> ev.getPlayer().teleport(resp));
-			}
-			else {
+				setUmierających.add(ev.getPlayer().getName());
+				Func.opóznij(20 * 60 * config.wczytajLubDomyślna("łóżkoCooldownRespuMinuty", 5), () -> setUmierających.remove(ev.getPlayer().getName()));
+			} else {
 				g.łóżkoBazowe = null;
 				g.zapisz();
 				ev.getPlayer().sendMessage(prefix + "Twoje łóżko uległo awarii");
 			}
+		}
 	}
 	
 	final ItemStack pustyZablokowanySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "§1§l §2§o");

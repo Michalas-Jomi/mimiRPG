@@ -68,7 +68,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 			this.loc = new Location(loc.getWorld(), x, loc.getY(), z);
 			this.loc.add(.5, 0, .5);
 			
-			bossbar = Bukkit.createBossBar("§bZrzut zostanie zrzucony na " + loc.getBlockX() + "x " + loc.getBlockZ() + "z", BarColor.GREEN, BarStyle.SOLID);
+			bossbar = Bukkit.createBossBar("§bAirDrop zostanie zrzucony na " + loc.getBlockX() + "x " + loc.getBlockZ() + "z", BarColor.GREEN, BarStyle.SOLID);
 			for (Player p : Bukkit.getOnlinePlayers())
 				bossbar.addPlayer(p);
 			bossbar.setVisible(true);

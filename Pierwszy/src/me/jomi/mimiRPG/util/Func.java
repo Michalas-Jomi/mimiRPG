@@ -962,6 +962,15 @@ public abstract class Func {
 		
 		return lista;
 	}
+	public static <T> T nowaInstancja(Class<T> clazz) throws InstantiationException, IllegalAccessException {
+		try {
+			return clazz.getConstructor().newInstance();
+		} catch (Throwable e) {}
+		try {
+			return clazz.getDeclaredConstructor().newInstance();
+		} catch (Throwable e) {}
+		return clazz.newInstance();
+	}
 
 	public static <T1, T2> List<T2> wykonajWszystkim(Iterable<T1> lista, Function<T1, T2> func) {
 		List<T2> _lista = Lists.newArrayList();

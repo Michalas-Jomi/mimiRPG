@@ -12,7 +12,7 @@ public abstract class Mapowany implements ConfigurationSerializable {
 		Mapowany obj = null;
 		String klasa = (String) mapa.get("=mimi=");
 		try {
-			obj = (Mapowany) Class.forName(klasa).newInstance();
+			obj = (Mapowany) Func.nowaInstancja(Class.forName(klasa, false, Main.classLoader));
 		} catch (ClassNotFoundException e) {
 			Main.error("Nieodnaleziono klasy " + klasa);
 		} catch (Throwable e) {

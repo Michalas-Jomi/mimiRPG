@@ -43,6 +43,7 @@ import com.sk89q.worldguard.WorldGuard;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -305,7 +306,8 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		for (Player p : Bukkit.getOnlinePlayers())
 			if (Func.multiEquals(p.getGameMode(), GameMode.SURVIVAL, GameMode.ADVENTURE) &&
 					Func.losuj(dzień(p.getWorld()) ? dzienna_szansa_zrespawnowania_dla_gracza : nocna_szansa_zrespawnowania_dla_gracza))
-				zresp(p.getLocation());
+				if (!Main.włączonyModół(Bazy.class) || Bazy.inst.znajdzBaze(p.getLocation()) == null)
+					zresp(p.getLocation());
 		return czas_odświeżania_ticki;
 	}
 

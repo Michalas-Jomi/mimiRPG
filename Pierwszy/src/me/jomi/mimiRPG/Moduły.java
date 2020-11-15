@@ -96,7 +96,7 @@ class Klasa {
 	Object włącz() throws InstantiationException, IllegalAccessException {
 		if (włączony) return inst;
 		if (inst == null)
-			inst = klasa.newInstance();
+			inst = Func.nowaInstancja(klasa);
 		Main.zarejestruj(inst);
 		włączony = true;
 		return inst;
