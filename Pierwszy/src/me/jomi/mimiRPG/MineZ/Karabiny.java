@@ -240,7 +240,6 @@ public class Karabiny implements Listener, Przeładowalny {
 	}
 
 	
-	
 	public static Set<String> getKarabiny() {
 		return karabiny.keySet();
 	}

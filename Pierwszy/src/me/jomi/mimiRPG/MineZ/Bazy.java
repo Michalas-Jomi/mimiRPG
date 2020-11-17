@@ -274,7 +274,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					BlockVector3.at(x+dx, y+dy, z+dz),
 					BlockVector3.at(x-dx, y-1, z-dz)
 					);
-			Bazy.inst.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
+			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
 			DefaultDomain owners = new DefaultDomain();
 			owners.addPlayer(p.getName());
 			region.setOwners(owners);
@@ -318,7 +318,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					BlockVector3.at(x+dx, y+dy, z+dz),
 					BlockVector3.at(x-dx, y-1,  z-dz)
 					);
-			if (Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
+			if (Bazy.regiony.get(BukkitAdapter.adapt(świat))
 					.getApplicableRegions(region)
 					.testState(null, Main.flagaStawianieBaz))
 				return new Baza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
@@ -335,7 +335,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					region.getMinimumPoint().add(-xz, 0, -xz)
 					);
 			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.ALLOW);
-			boolean w = Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
+			boolean w = Bazy.regiony.get(BukkitAdapter.adapt(świat))
 					.getApplicableRegions(regionKontrolny)
 					.testState(null, Main.flagaStawianieBaz);
 			region.setFlag(Main.flagaStawianieBaz, StateFlag.State.DENY);
@@ -406,7 +406,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					region.getMinimumPoint(),
 					region.getMaximumPoint()
 					);
-			Bazy.inst.regiony.get(BukkitAdapter.adapt(świat)).addRegion(nowy);
+			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(nowy);
 			
 			nowy.setFlag(Flags.BLOCK_BREAK, StateFlag.State.ALLOW);
 			nowy.setFlag(Main.flagaC4, 		StateFlag.State.ALLOW);
@@ -447,7 +447,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 	final String permBypass = Func.permisja("bazy.bypass");
 	public static final String prefix = Func.prefix("Baza");
-	RegionContainer regiony;
+	static RegionContainer regiony;
 	static Config config = new Config("Bazy");
 	
 	public static Bazy inst;
@@ -463,26 +463,25 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return Main.rg != null;
 	}
 	
-	static int _id = 0;
-	@EventHandler
-	public void explozja(ExplosionPrimeEvent ev) {
-		if (!ev.getEntity().getScoreboardTags().contains("mimiC4"))
-			return;
-		ev.setCancelled(true);
-		
-		final ConfigurationSection mapa = config.sekcja("c4");
-		if (mapa == null)
-			return;
-		
-		final List<String> niezniszczalne = config.wczytajListe("c4.niezniszczalne");
+	static class Explozja {
+		static int _id = 0;
+		final int id;
+		final List<Block> bloki = Lists.newArrayList();
 		final List<Krotka<Block, Material>> kolejka = Lists.newArrayList();
-		Function<Block, String> dajDate = blok -> blok.getBlockData().getAsString(false).substring(10 + blok.getType().toString().length());
-		Consumer<Block> zniszcz = blok -> {
+		final List<String> niezniszczalne = config.wczytajListe("c4.niezniszczalne");
+		final double zasięg = config.wczytajLubDomyślna("ustawienia.zaiśieg c4", 5d);
+		final Location loc;
+		Explozja(Location loc) {
+			id = _id++;
+			this.loc = loc;
+		}
+		
+		private void zniszcz(Block blok) {
 			final String mat = blok.getType().toString();
-			final String str = (String) mapa.get(mat);
+			final String str = config.sekcja("c4").getString(mat);
 			
 			if (str != null) {
-				final String data = dajDate.apply(blok);
+				final String data = dajDate(blok);
 				blok.setBlockData(Bukkit.createBlockData(Material.valueOf(str), data), false);
 				
 				if (mat.endsWith("_DOOR"))
@@ -516,12 +515,52 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				}
 			} else if (!niezniszczalne.contains(mat))
 				blok.setType(Material.AIR);
-		};
+		}
+		
+		void zakończ() {
+			Set<String> wybuchnięte = Sets.newConcurrentHashSet();
+			
+			for (Block blok : bloki) {
+				String str = blok.getLocation().toString();
+				if (wybuchnięte.contains(str)) continue;
+				wybuchnięte.add(str);
+				zniszcz(blok);
+			}
+			
+			for (Snowball sniezka : loc.getWorld().getEntitiesByClass(Snowball.class))
+				if (sniezka.hasMetadata("mimiChwilowaBazaC4"))
+					sniezka.remove();
+			
+			
+			for (Krotka<Block, Material> krotka : kolejka)
+				if (krotka.a.getType() != krotka.b)
+					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate(krotka.a)), false);
+			
+			
+			RegionManager regiony = Bazy.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
+			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
+					locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
+			for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
+				Func.wykonajDlaNieNull(Baza.wczytaj(loc.getWorld(), region), Baza::atak);
+		}
+		
+	}
+	static String dajDate (Block blok) {
+		return blok.getBlockData().getAsString(false).substring(10 + blok.getType().toString().length());
+	}	
+	@EventHandler
+	public void explozja(ExplosionPrimeEvent ev) {
+		if (!ev.getEntity().getScoreboardTags().contains("mimiC4"))
+			return;
+		ev.setCancelled(true);
+		
+		final ConfigurationSection mapa = config.sekcja("c4");
+		if (mapa == null)
+			return;
 		
 		Location loc = ev.getEntity().getLocation();
-		RegionManager regiony = Bazy.inst.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
 		final float zasięg = ev.getRadius();
-		int mx = (int) (zasięg*2+1);
+		//int mx = (int) (zasięg*2+1);
 		loc.add(-zasięg, -zasięg, -zasięg);
 		
 		float r = zasięg/3*2;
@@ -548,35 +587,25 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		Supplier<Double> los = () -> Math.random() * (Func.losuj(.5) ? 1 : -1);
 		
-		
-		Krotka<List<Block>, Integer> bloki = new Krotka<>(Lists.newArrayList(), _id++);
+		Explozja explozja = new Explozja(loc);
 		World w = ev.getEntity().getWorld();
 		for (int i=0; i<ile; i++) {
 			Snowball s = (Snowball) w.spawnEntity(loc, EntityType.SNOWBALL);
 			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5));
-			Func.ustawMetadate(s, "mimiC4Sniezka", bloki);
+			Func.ustawMetadate(s, "mimiC4Sniezka", explozja);
 		}
 		
-		for (Krotka<Block, Material> krotka : kolejka)
-			if (krotka.a.getType() != krotka.b)
-				krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
-		
-		ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
-				locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
-		for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
-			Func.wykonajDlaNieNull(Baza.wczytaj(loc.getWorld(), region), baza -> {
-				boolean atakowana = baza.atakowana;
-				baza.atak();
-				if (atakowana) return;
-			});
+		Func.opóznij(config.wczytajLubDomyślna("ustawienia.ticki snieżek c4", 20), explozja::zakończ);
 	}
 	
-	@EventHandler
-	@SuppressWarnings("unchecked")
+	@EventHandler(priority = EventPriority.LOW)
 	public void __(ProjectileHitEvent ev) {
-		try {
-			Func.wykonajDlaNieNull(ev.getHitBlock(), b -> ((Krotka<List<Block>, Integer>) ev.getEntity().getMetadata("mimiC4Sniezka").get(0).value()).a.add(b));
-		} catch (Throwable e) {}
+		if (!ev.getEntity().hasMetadata("mimiC4Sniezka")) return;
+		Func.wykonajDlaNieNull(ev.getHitBlock(), b -> {
+			Explozja ex = (Explozja) ev.getEntity().getMetadata("mimiC4Sniezka").get(0).value();
+			if (ex.zasięg >= b.getLocation().distance(ex.loc))
+				ex.bloki.add(b);
+		});
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -650,7 +679,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 							((ConfigurationSection) mapa.get("baza")).getValues(false)) != null;
 					
 					if (mapa.containsKey("schemat") && !blokuj && 
-							Bazy.inst.regiony.get(BukkitAdapter.adapt(świat))
+							Bazy.regiony.get(BukkitAdapter.adapt(świat))
 								.getApplicableRegions(BlockVector3.at(x, y, z))
 								.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
 							wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
@@ -771,7 +800,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	RegionManager regiony(World świat) {
 		return regiony.get(BukkitAdapter.adapt(świat));
 	}
-	BlockVector3 locToVec3(Location loc) {
+	static BlockVector3 locToVec3(Location loc) {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 	
