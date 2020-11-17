@@ -1,9 +1,12 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -21,6 +24,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
@@ -31,11 +35,15 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
 @Moduł
-public class Antylog implements Listener, Zegar, Przeładowalny {
+public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Antylog");
 	final HashMap<String, Set<String>> gracze = new HashMap<>();
 	final HashMap<String, Integer> 	   czasy  = new HashMap<>();
 
+	public Antylog() {
+		super("antylogbypass");
+	}
+	
 	
 	static final String metaBypass = "mimiAntylogBypass";
 	public static void włączBypass(Player p) {
@@ -175,9 +183,27 @@ public class Antylog implements Listener, Zegar, Przeładowalny {
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
 		maxCzas = Main.ust.wczytajLubDomyślna("Antylog.Czas", 10) * 4;
 	}
-
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Dozwolone Komendy Antyloga", dozwolone.size());
+	}
+	
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		return null;
+	}
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Tylko dla graczy");
+		Player p = (Player) sender;
+		if (maBypass(p)) {
+			p.removeMetadata(metaBypass, Main.plugin);
+			p.sendMessage(prefix + "Wyłączono Bypass");
+		} else {
+			włączBypass(p);
+			p.sendMessage(prefix + "Właczono Bypass");
+		}
+		return true;
 	}
 }

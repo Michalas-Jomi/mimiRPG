@@ -63,7 +63,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			String owner = is.getOwner();
 			
 			Consumer<String> ustawRange = nick ->
-					Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), null);
+					Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), "");
 			
 			ustawRange.accept(owner);
 			for (String member : is.getMembers())
