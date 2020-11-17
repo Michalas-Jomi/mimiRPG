@@ -31,6 +31,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -38,6 +39,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -461,122 +463,120 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return Main.rg != null;
 	}
 	
-	
+	static int _id = 0;
 	@EventHandler
 	public void explozja(ExplosionPrimeEvent ev) {
-		if (ev.getEntity().getScoreboardTags().contains("mimiC4")) {
-			ev.setCancelled(true);
+		if (!ev.getEntity().getScoreboardTags().contains("mimiC4"))
+			return;
+		ev.setCancelled(true);
+		
+		final ConfigurationSection mapa = config.sekcja("c4");
+		if (mapa == null)
+			return;
+		
+		final List<String> niezniszczalne = config.wczytajListe("c4.niezniszczalne");
+		final List<Krotka<Block, Material>> kolejka = Lists.newArrayList();
+		Function<Block, String> dajDate = blok -> blok.getBlockData().getAsString(false).substring(10 + blok.getType().toString().length());
+		Consumer<Block> zniszcz = blok -> {
+			final String mat = blok.getType().toString();
+			final String str = (String) mapa.get(mat);
 			
-			final ConfigurationSection mapa = config.sekcja("c4");
-			if (mapa == null)
-				return;
-			
-			final List<String> niezniszczalne = config.wczytajListe("c4.niezniszczalne");
-			final List<Krotka<Block, Material>> kolejka = Lists.newArrayList();
-			Function<Block, String> dajDate = blok -> {
-				return blok.getBlockData().getAsString(false).substring(10 + blok.getType().toString().length());
-			};
-			Consumer<Block> zniszcz = blok -> {
-				final String mat = blok.getType().toString();
-				final String str = (String) mapa.get(mat);
+			if (str != null) {
+				final String data = dajDate.apply(blok);
+				blok.setBlockData(Bukkit.createBlockData(Material.valueOf(str), data), false);
 				
-				if (str != null) {
-					final String data = dajDate.apply(blok);
-					blok.setBlockData(Bukkit.createBlockData(Material.valueOf(str), data), false);
+				if (mat.endsWith("_DOOR"))
+					kolejka.add(new Krotka<>(
+							blok.getLocation().add(0, data.contains("half=upper") ? -1 : 1, 0).getBlock(),
+							Material.valueOf(str))
+							);
+				else if (mat.endsWith("_BED")) {
+					UnaryOperator<String> znajdz = co -> {
+						String w = data.substring(data.indexOf(co + "=") + co.length() + 1);
+						int i = w.indexOf(",");
+						if (i == -1) i = w.length()-2;
+						return w.substring(0, i);
+					};
 					
-					if (mat.endsWith("_DOOR"))
-						kolejka.add(new Krotka<>(
-								blok.getLocation().add(0, data.contains("half=upper") ? -1 : 1, 0).getBlock(),
-								Material.valueOf(str))
-								);
-					else if (mat.endsWith("_BED")) {
-						UnaryOperator<String> znajdz = co -> {
-							String w = data.substring(data.indexOf(co + "=") + co.length() + 1);
-							int i = w.indexOf(",");
-							if (i == -1) i = w.length()-2;
-							return w.substring(0, i);
-						};
-						
-						int x = 0;
-						int z = 0;
-						switch (znajdz.apply("facing")) {
-						case "north": z = -1; break;
-						case "south": z = 1;  break;
-						case "west":  x = -1; break;
-						case "east":  x = 1;  break;
-						}
+					int x = 0;
+					int z = 0;
+					switch (znajdz.apply("facing")) {
+					case "north": z = -1; break;
+					case "south": z = 1;  break;
+					case "west":  x = -1; break;
+					case "east":  x = 1;  break;
+					}
 
-						int i = data.contains("part=foot") ? 1 : -1;
-						
-						kolejka.add(new Krotka<>(
-								blok.getLocation().add(x*i, 0, z*i).getBlock(),
-								Material.valueOf(str))
-								);
-					}
+					int i = data.contains("part=foot") ? 1 : -1;
+					
+					kolejka.add(new Krotka<>(
+							blok.getLocation().add(x*i, 0, z*i).getBlock(),
+							Material.valueOf(str))
+							);
 				}
-				else if (!niezniszczalne.contains(mat))
-					blok.setType(Material.AIR);
-			};
-			
-			Location loc = ev.getEntity().getLocation();
-			Location _loc = loc.clone();
-			RegionManager regiony = Bazy.inst.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
-			final float zasięg = ev.getRadius();
-			int mx = (int) (zasięg*2+1);
-			loc.add(-zasięg, -zasięg, -zasięg);
-			
-			float r = zasięg/3*2;
-			_loc.getWorld().spawnParticle(Particle.CLOUD, 		_loc, (int) zasięg*50, r, r, r, 0);
-			_loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, _loc, (int) zasięg*20, r, r, r, 0);
-			r *= .4;
-			_loc.getWorld().spawnParticle(Particle.CLOUD, 		_loc, (int) zasięg*20, r, r, r, 0);
-			_loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, _loc, (int) zasięg*15, r, r, r, 0);
-			r *= 1.5;
-			_loc.getWorld().spawnParticle(Particle.FLAME, _loc, (int) zasięg*20, r, r, r, .1);
-			
-			_loc.getWorld().playSound(_loc, Sound.ENTITY_RAVAGER_STEP, 100, 0);
-			
-			BiConsumer<Float, Double> uderz = (Zasięg, dmg) -> {
-				for (Entity mob : _loc.getWorld().getNearbyEntities(_loc, Zasięg, Zasięg, Zasięg))
-					if (mob instanceof Damageable && !mob.isInvulnerable())
-						((Damageable) mob).damage(dmg);
-			};
-			uderz.accept(zasięg+3,   	4d);
-			uderz.accept(zasięg/3*2.5f, 8d);
-			uderz.accept(zasięg/3, 		8d);
-			
-			
-			for (int y=0; y<mx; y++) {
-				for (int z=0; z<mx; z++) {
-					for (int x=0; x<mx; x++) {
-						if (!loc.getBlock().getType().isAir()) {
-							double dystans = _loc.distance(loc);
-							if (dystans <= zasięg) {
-								int szansa = dystans < zasięg/3*1 ? 90 : (dystans < zasięg/3*2 ? 60 : 30);
-								if (Func.losuj(1, 100) <= szansa &&
-										regiony.getApplicableRegions(locToVec3(loc)).testState(null, Main.flagaC4))
-									zniszcz.accept(loc.getBlock());
-							}
-						}
-						loc.add(1, 0, 0);
-					}
-					loc.add(-mx, 0, 1);
-				}
-				loc.add(0, 1, -mx);
-			}
-			for (Krotka<Block, Material> krotka : kolejka)
-				if (krotka.a.getType() != krotka.b)
-					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
-			
-			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
-					locToVec3(_loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(_loc.clone().add(-zasięg, -zasięg, -zasięg)));
-			for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
-				Func.wykonajDlaNieNull(Baza.wczytaj(_loc.getWorld(), region), baza -> {
-					boolean atakowana = baza.atakowana;
-					baza.atak();
-					if (atakowana) return;
-				});
+			} else if (!niezniszczalne.contains(mat))
+				blok.setType(Material.AIR);
+		};
+		
+		Location loc = ev.getEntity().getLocation();
+		RegionManager regiony = Bazy.inst.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
+		final float zasięg = ev.getRadius();
+		int mx = (int) (zasięg*2+1);
+		loc.add(-zasięg, -zasięg, -zasięg);
+		
+		float r = zasięg/3*2;
+		loc.getWorld().spawnParticle(Particle.CLOUD, 		loc, (int) zasięg*50, r, r, r, 0);
+		loc.getWorld().spawnParticle(Particle.SMOKE_LARGE,	loc, (int) zasięg*20, r, r, r, 0);
+		r *= .4;
+		loc.getWorld().spawnParticle(Particle.CLOUD, 		loc, (int) zasięg*20, r, r, r, 0);
+		loc.getWorld().spawnParticle(Particle.SMOKE_LARGE,	loc, (int) zasięg*15, r, r, r, 0);
+		r *= 1.5;
+		loc.getWorld().spawnParticle(Particle.FLAME, loc, (int) zasięg*20, r, r, r, .1);
+		
+		loc.getWorld().playSound(loc, Sound.ENTITY_RAVAGER_STEP, 100, 0);
+		
+		BiConsumer<Float, Double> uderz = (Zasięg, dmg) -> {
+			for (Entity mob : loc.getWorld().getNearbyEntities(loc, Zasięg, Zasięg, Zasięg))
+				if (mob instanceof Damageable && !mob.isInvulnerable())
+					((Damageable) mob).damage(dmg);
+		};
+		uderz.accept(zasięg+3,   	4d);
+		uderz.accept(zasięg/3*2.5f, 8d);
+		uderz.accept(zasięg/3, 		8d);
+		
+		int ile = config.wczytajLubDomyślna("ustawienia.śnieżki w C4", 50);
+		
+		Supplier<Double> los = () -> Math.random() * (Func.losuj(.5) ? 1 : -1);
+		
+		
+		Krotka<List<Block>, Integer> bloki = new Krotka<>(Lists.newArrayList(), _id++);
+		World w = ev.getEntity().getWorld();
+		for (int i=0; i<ile; i++) {
+			Snowball s = (Snowball) w.spawnEntity(loc, EntityType.SNOWBALL);
+			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5));
+			Func.ustawMetadate(s, "mimiC4Sniezka", bloki);
 		}
+		
+		for (Krotka<Block, Material> krotka : kolejka)
+			if (krotka.a.getType() != krotka.b)
+				krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate.apply(krotka.a)), false);
+		
+		ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
+				locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
+		for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
+			Func.wykonajDlaNieNull(Baza.wczytaj(loc.getWorld(), region), baza -> {
+				boolean atakowana = baza.atakowana;
+				baza.atak();
+				if (atakowana) return;
+			});
+	}
+	
+	@EventHandler
+	@SuppressWarnings("unchecked")
+	public void __(ProjectileHitEvent ev) {
+		try {
+			Func.wykonajDlaNieNull(ev.getHitBlock(), b -> ((Krotka<List<Block>, Integer>) ev.getEntity().getMetadata("mimiC4Sniezka").get(0).value()).a.add(b));
+		} catch (Throwable e) {}
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
