@@ -88,7 +88,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-// TODO title w actionbarze przy wchodzeniu/wychodzeniu z bazy
 @Moduł
 public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static class Gildia extends Mapowany {
@@ -97,6 +96,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		@Mapowane List<String> gracze;
 		@Mapowane String przywódca;
 		@Mapowane String nazwa;
+		@Mapowane String tag;
 
 		void zapisz() {
 			config.ustaw_zapisz(nazwa, this);
@@ -130,6 +130,45 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					return true;
 			return false;
 		}
+		static boolean istniejeTag(String tag) {
+			for (String klucz : config.klucze(false)) {
+				try {
+					Gildia g = (Gildia) config.wczytaj(klucz);
+					if (tag.equals(g.tag))
+						return true;
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}
+			return false;
+		}
+		
+		void ustawTag(Player p, String tag) {
+			if (istniejeTag(tag)) {
+				p.sendMessage(prefix + "Ten tag już jest zajęty");
+				return;
+			}
+			
+			this.tag = tag;
+			zapisz();
+			
+			new Thread(this::odświeżTag).start();
+			
+			wyświetlCzłonkom(prefix + Func.msg("%s ustawił tag gildi %s na %s", p.getName(), nazwa, tag()));
+		}
+		
+		String tag() {
+			return "§3[§d" + tag + "§3]";
+		}
+		
+		// wymagane używanie asynchroniczne
+		void odświeżTag() {
+			String tag = tag();
+			Consumer<String> cons = nick -> Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), tag);
+			cons.accept(przywódca);
+			for (String gracz : gracze)
+				cons.accept(gracz);
+		}
 		
 		
 		static void przeładuj() {
@@ -138,18 +177,13 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return;
 			}
 			new Thread(() -> {
-				for (String nazwa : config.klucze(false)) {
+				for (String nazwa : config.klucze(false))
 					try {
 						Gildia g = (Gildia) config.wczytaj(nazwa);
-						String nazwaGildi = "§3[§d" + g.nazwa + "§3]";
-						Consumer<String> cons = nick -> Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), nazwaGildi);
-						cons.accept(g.przywódca);
-						for (String gracz : g.gracze)
-							cons.accept(gracz);
+						g.odświeżTag();
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}
-				}
 			}).start();
 		}
 		
@@ -165,7 +199,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			g.zapisz();
 			
 			if (Main.chat != null)
-				Main.chat.setPlayerSuffix(null, p, "§3[§d" + nazwa + "§3]");
+				Main.chat.setPlayerSuffix(null, p, tag());
 		}
 		void opuść(String nick) {
 			Gracz g = Gracz.wczytaj(nick);
@@ -189,6 +223,15 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			if (Main.chat != null)
 				new Thread(() -> Main.chat.setPlayerSuffix(null, Func.graczOffline(g.nick), "")).start();;
+		}
+		
+		void przekażLidera(String członek) {
+			if (gracze.remove(członek))
+				throw new Error("Członek nie należy do gildi");
+			wyświetlCzłonkom(prefix + Func.msg("%s przekazał dowodzenie %s", przywódca, członek));
+			gracze.add(przywódca);
+			przywódca = członek;
+			zapisz();
 		}
 		
 		void dodajRegiony(Gracz g) {
@@ -272,7 +315,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region = new ProtectedCuboidRegion(
 					nazwaBazy,
 					BlockVector3.at(x+dx, y+dy, z+dz),
-					BlockVector3.at(x-dx, y-1, z-dz)
+					BlockVector3.at(x-dx, Math.max(50, y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 5)), z-dz)
 					);
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
 			DefaultDomain owners = new DefaultDomain();
@@ -560,8 +603,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		Location loc = ev.getEntity().getLocation();
 		final float zasięg = ev.getRadius();
-		//int mx = (int) (zasięg*2+1);
-		loc.add(-zasięg, -zasięg, -zasięg);
 		
 		float r = zasięg/3*2;
 		loc.getWorld().spawnParticle(Particle.CLOUD, 		loc, (int) zasięg*50, r, r, r, 0);
@@ -591,11 +632,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		World w = ev.getEntity().getWorld();
 		for (int i=0; i<ile; i++) {
 			Snowball s = (Snowball) w.spawnEntity(loc, EntityType.SNOWBALL);
-			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5));
+			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5)); // TODO większy multiply
 			Func.ustawMetadate(s, "mimiC4Sniezka", explozja);
 		}
 		
-		Func.opóznij(config.wczytajLubDomyślna("ustawienia.ticki snieżek c4", 20), explozja::zakończ);
+		Func.opóznij(config.wczytajLubDomyślna("ustawienia.ticki snieżek c4", 10), explozja::zakończ);
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -830,6 +871,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		};
 			
 		switch (args[0].toLowerCase()) {
+		case "z":
 		case "zaproś":
 		case "zapros":
 			if (args.length < 2) 
@@ -856,6 +898,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			sender.sendMessage(Gildia.prefix + Func.msg("Wysłano zaproszenie dla gracza %s, które wygaśnie za %s", args[1], Func.czas(czasZaproszeń)));
 			
 			break;
+		case "w":
 		case "wyrzuć":
 		case "wyrzuc":
 			if (!maGildie.getAsBoolean()) break;
@@ -868,6 +911,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s wyrzucił %s z gildi", gildia.nazwa, sender.getName(), args[1]));
 			Func.napisz(args[1], Gildia.prefix + Func.msg("Zostałeś wyrzucony z gildi %s przez %s", gildia.nazwa, sender.getName()));
 			break;
+		case "o":
 		case "opuść":
 		case "opuśc":
 		case "opusć":
@@ -877,12 +921,13 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s opuścił gildię", gildia.nazwa, sender.getName()));
 			sender.sendMessage(Gildia.prefix + Func.msg("Opuściłeś gildię %s", gildia.nazwa));
 			break;
+		case "s":
 		case "stwórz":
 		case "stworz":
 			if (args.length < 2)
 				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa>");
 			
-			if (args[1].length() > Main.ust.wczytajLubDomyślna("Gildia.nazwa.maksymalna długość", 10))
+			if (args[1].length() > Main.ust.wczytajLubDomyślna("Gildia.nazwa.maksymalna długość", 30))
 				return Func.powiadom(sender, Gildia.prefix + "Za długa nazwa gildi");
 			
 			if (Gildia.istnieje(args[1]))
@@ -890,6 +935,41 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			Gildia.stwórz(args[1], sender.getName());
 			sender.sendMessage(Gildia.prefix + Func.msg("Gildia %s została utworzona", args[1]));
+			break;
+		case "n":
+		case "napisz":
+			if (args.length < 2)
+				return Func.powiadom(sender, Gildia.prefix + "Nie podano żadnej wiadomości");
+			gildia.napiszDoCzłonków(sender, Func.listToString(args, 1));
+			break;
+		case "t":
+		case "tag":
+			if (gildia.przywódca.equalsIgnoreCase(sender.getName()))
+				return Func.powiadom(sender, Gildia.prefix + "Tylko przywódca gildi może zmienić tag gildi");
+			
+			if (args.length < 2)
+				return Func.powiadom(Gildia.prefix, sender, "Nie podano żadnego tagu");
+			
+			String tag = args[1];
+			
+			if (tag.length() > Main.ust.wczytajLubDomyślna("Gildia.tag.maksymalna długość", 4))
+				return Func.powiadom(sender, Gildia.prefix + "Ten tag jest za długi");
+			
+			gildia.ustawTag(sender, tag);
+			break;
+		case "l":
+		case "lider":
+			if (gildia.przywódca.equalsIgnoreCase(sender.getName()))
+				return Func.powiadom(sender, prefix + "Tylko przywódca może przekazać swoje stanowisko");
+
+			if (args.length < 2)
+				return Func.powiadom(Gildia.prefix, sender, "Nie podano gracza");
+			
+			try {
+				gildia.przekażLidera(args[1]);
+			} catch (Error e) {
+				sender.sendMessage(Gildia.prefix + Func.msg("%s nie nalezy do twojej gildi", args[1]));
+			}
 			break;
 		case "dołącz": // musi byc na dole bo nie ma bezpośrednio break
 			try {
@@ -906,14 +986,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", nazwaGildi, zapraszający, sender.getName()));
 
 				mapaZaproszeń.remove(zapraszający);
-				break;
 			} catch (Throwable e) {}
-		case "n":
-		case "napisz":
-			if (args.length < 2)
-				return Func.powiadom(sender, Gildia.prefix + "Nie podano żadnej wiadomości");
-			gildia.napiszDoCzłonków(sender, Func.listToString(args, 1));
-			break;
 		default:
 			return edytor(sender);
 		}
@@ -935,7 +1008,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return new Napis("§a" + nick, String.format("§6Koordynaty: §e%sx %sy %sz", b.getX(), b.getY(), b.getZ()));
 			};
 			Gildia gildia = Gildia.wczytaj(g.gildia);
-			n.dodaj("\n\n\n\n\n§9Gracze gildi " + gildia.nazwa + ":\n");
+			n.dodaj("\n\n\n\n\n§9Gracze gildi " + gildia.nazwa + " " + gildia.tag() + ":\n");
 			n.dodaj("§e§l- §e^§b");
 			n.dodaj(dajNick.apply(gildia.przywódca));
 			n.dodaj("§e^\n");
@@ -1104,7 +1177,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		switch (cmd.getName()) {
 		case "gildia":
 			if (args.length <= 1)
-				return utab(args, "zaproś", "wyrzuć", "opuść", "stwórz");
+				return utab(args, "zaproś", "wyrzuć", "opuść", "stwórz", "tag", "lider");
 			break;
 		case "baza":
 			if (args.length <= 1)

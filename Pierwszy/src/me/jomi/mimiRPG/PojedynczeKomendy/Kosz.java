@@ -6,8 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftItem;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -59,9 +59,9 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		kolejka.clear();
 		for (World w : Bukkit.getWorlds())
 			if (!omijaneŚwiaty.contains(w.getName()))
-				for (Entity en : w.getEntitiesByClasses(CraftItem.class))
+				for (Entity en : w.getEntitiesByClasses(Item.class))
 					if (en.getTicksLived() > żywotność) {
-						CraftItem item = (CraftItem) en;
+						Item item = (Item) en;
 						kolejka.add(item.getItemStack());
 						item.remove();
 					}
