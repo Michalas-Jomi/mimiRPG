@@ -147,8 +147,8 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		info(atakujący.getName());
 		info(atakowany.getName());
 		
-		atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 1, false, false, false));
-		atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 1, false, false, false));
+		atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
+		atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
 	}
 	
 	@EventHandler
@@ -181,6 +181,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	@Override
 	public void przeładuj() {
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
+		dozwolone.add("antylogbypass");
 		maxCzas = Main.ust.wczytajLubDomyślna("Antylog.Czas", 10) * 4;
 	}
 	@Override

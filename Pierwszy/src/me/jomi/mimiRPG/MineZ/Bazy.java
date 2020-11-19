@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.MineZ;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -158,7 +161,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		String tag() {
-			return "§3[§d" + tag + "§3]";
+			if (tag == null)
+				return "";
+			return Func.koloruj(Main.ust.wczytajLubDomyślna("Gildie.tag", "§0[§2<tag>§0]").replace("<tag>", tag));
 		}
 		
 		// wymagane używanie asynchroniczne
@@ -226,7 +231,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		void przekażLidera(String członek) {
-			if (gracze.remove(członek))
+			if (!gracze.remove(członek))
 				throw new Error("Członek nie należy do gildi");
 			wyświetlCzłonkom(prefix + Func.msg("%s przekazał dowodzenie %s", przywódca, członek));
 			gracze.add(przywódca);
@@ -306,6 +311,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		@Mapowane String nazwaŚwiata;
 		
 		
+		static int getMinY() {
+			return Bazy.config.wczytajLubDomyślna("ustawienia.najniższyh poziom bazy", 50);
+		}
+		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
 			this.świat = świat;
@@ -315,7 +324,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region = new ProtectedCuboidRegion(
 					nazwaBazy,
 					BlockVector3.at(x+dx, y+dy, z+dz),
-					BlockVector3.at(x-dx, Math.max(50, y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 5)), z-dz)
+					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 5)), z-dz)
 					);
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
 			DefaultDomain owners = new DefaultDomain();
@@ -350,6 +359,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			Gracz g = Gracz.wczytaj(p.getName());
 			if (g.baza != null) {
 				p.sendMessage(prefix + "Nie możesz postawić więcej baz");
+				Bazy.inst.blokuj = true;
+				return null;
+			}
+			if (y < getMinY()) {
+				p.sendMessage(prefix + "Nie możesz postawić bazy tak nisko");
 				Bazy.inst.blokuj = true;
 				return null;
 			}
@@ -668,7 +682,24 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (g1 != null && g1.equals(g2))
 			ev.setCancelled(true);
 	}
-		
+	
+	
+	int min() {
+		return config.wczytajInt("ustawienia.godzinyRajdów.min godz safe");
+	}
+	int max() {
+		return config.wczytajInt("ustawienia.godzinyRajdów.max godz safe");
+	}
+	boolean możnaRajdować() {
+		int aktH = ZonedDateTime.now().getHour();
+		int min = min();
+		int max = max();
+		return !(aktH >= min && aktH < max);
+	}
+	String rajdowanieMsg() {
+		return "Nie możesz rajdować baz w godzinach " + min() + "-" + max();
+	}
+	
 	boolean blokuj;
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void stawianie(BlockPlaceEvent ev) {
@@ -693,6 +724,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 
 					// C4
 					if (mapa.containsKey("c4")) {
+						if (!możnaRajdować()) {
+							ev.getPlayer().sendMessage(prefix + rajdowanieMsg());
+							return;
+						}
 						Map<String, Object> mapaC4 = ((ConfigurationSection) mapa.get("c4")).getValues(false);
 						
 						float zasięg = (float) (double) mapaC4.getOrDefault("zasięg", 1f);
@@ -708,6 +743,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 						try { 
 							tnt.setCustomName(ev.getItemInHand().getItemMeta().getDisplayName());
 						} catch (Exception e) {}
+						
+						Main.log(prefix + Func.msg("%s postawił c4 na koordynatach %sx %sy %sz", ev.getPlayer().getName(), ev.getBlock().getX(), ev.getBlock().getY(), ev.getBlock().getZ()));
 						
 						zabierzItem.run();
 						return;
@@ -772,7 +809,49 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return;
 		}
 		
-		baza.rajdowana(ev, baza);
+		if (!możnaRajdować()) {
+			Func.powiadom(prefix, ev.getPlayer(), rajdowanieMsg());
+			return;
+		}
+		
+		// spradza czy blok jest solidny (np. ironBlock, dirt, glass, nie kraty, plotki itp)
+		// zwraca true jeśli przez blok nie da sie zniszczyć
+		Predicate<Location> solidny = loc -> {
+			Material mat = loc.getBlock().getType();
+			return mat.isOccluding() || Func.multiEquals(mat, Material.GLASS, Material.GLOWSTONE) ||
+					mat.toString().contains("_LEAVES");
+		};
+		
+		Location loc = ev.getBlock().getLocation();
+		if (
+				solidny.test(loc.clone().add(1, 0, 0)) &&
+				solidny.test(loc.clone().add(0, 1, 0)) &&
+				solidny.test(loc.clone().add(0, 0, 1)) &&
+				solidny.test(loc.clone().add(-1, 0, 0)) &&
+				solidny.test(loc.clone().add(0, -1, 0)) &&
+				solidny.test(loc.clone().add(0, 0, -1))
+				)
+			podejrzany(ev.getPlayer());
+		else
+			baza.rajdowana(ev, baza);
+	}
+	void podejrzany(Player p) {
+		for (OfflinePlayer op : Bukkit.getOperators())
+			try {
+				if (!op.isOnline())
+					return;
+				Player oop = (Player) op;
+				oop.sendMessage(prefix + "§4" + p.getName() + " podejrzany o cheaty/bugi podczas rajdu");
+			} catch (Throwable e) {
+				Main.error("Bazy.podejrzany()", e, e.getMessage());
+			}
+		Main.log(prefix + "§4" + p.getName() + " podejrzany o cheaty/bugi podczas rajdu");
+		Config config = new Config("Podejrzani o cheaty");
+		List<String> lista = config.wczytajListe("podejrzani");
+		if (!lista.contains(p.getName())) {
+			lista.add(p.getName());
+			config.ustaw_zapisz("podejrzani", lista);
+		}
 	}
 		
 	@EventHandler(priority = EventPriority.HIGH)
@@ -944,8 +1023,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			break;
 		case "t":
 		case "tag":
-			if (gildia.przywódca.equalsIgnoreCase(sender.getName()))
-				return Func.powiadom(sender, Gildia.prefix + "Tylko przywódca gildi może zmienić tag gildi");
+			if (!maGildie.getAsBoolean()) break;
+			if (!przywódca.getAsBoolean()) break;
 			
 			if (args.length < 2)
 				return Func.powiadom(Gildia.prefix, sender, "Nie podano żadnego tagu");
@@ -959,8 +1038,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			break;
 		case "l":
 		case "lider":
-			if (gildia.przywódca.equalsIgnoreCase(sender.getName()))
-				return Func.powiadom(sender, prefix + "Tylko przywódca może przekazać swoje stanowisko");
+			if (!maGildie.getAsBoolean()) break;
+			if (!przywódca.getAsBoolean()) break;
 
 			if (args.length < 2)
 				return Func.powiadom(Gildia.prefix, sender, "Nie podano gracza");
