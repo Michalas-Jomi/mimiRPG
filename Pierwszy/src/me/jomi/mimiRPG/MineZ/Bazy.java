@@ -78,6 +78,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -119,7 +120,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			Gildia gildia = new Gildia();
 			gildia.przywódca = przywódca;
 			gildia.nazwa = nazwa;
-			gildia.zapisz();;
+			gildia.zapisz();
 			
 			g.gildia = nazwa;
 			g.zapisz();
@@ -400,9 +401,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 
 		public Baza() {}// konstruktor dla Mapowanego
-		public void Init() {
+		public void Init() throws NiepoprawneDemapowanieException {
 			świat = Bukkit.getWorld(nazwaŚwiata);
 			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
+			if (region == null)
+				throw new NiepoprawneDemapowanieException();
 		}
 		
 		static Baza wczytaj(World świat, ProtectedRegion region) {

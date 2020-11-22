@@ -172,8 +172,8 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				for (int i=0; i<4*9 && limit > 0; i++)
 					if ((item2 = pinv.getItem(i)) != null && Func.porównaj(finalnyItem, item2))
 						if (item2.getAmount() > limit) {
-							limit = 0;
 							item2.setAmount(item2.getAmount() - limit);
+							limit = 0;
 						} else {
 							limit -= item2.getAmount();
 							pinv.setItem(i, null);

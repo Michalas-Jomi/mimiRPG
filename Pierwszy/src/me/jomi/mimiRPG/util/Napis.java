@@ -33,42 +33,42 @@ public class Napis implements ConfigurationSerializable {
 	
 
 	public Napis(String tekst, String hover, String treść, ClickEvent.Action akcja) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 		this.clickEvent(akcja, treść);
 		this.hover(hover);
 	}
 	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treść) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 		this.clickEvent(akcja, treść);
 		this.hover(hover);
 	}
 	public Napis(String tekst, ClickEvent.Action akcja, String treść) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 		this.clickEvent(akcja, treść);
 	}
 	public Napis(String tekst, String hover, String executowanaKomenda) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 		this.clickEvent(executowanaKomenda.endsWith(">> ") ? Action.SUGGEST_COMMAND : Action.RUN_COMMAND, executowanaKomenda);
 		this.hover(hover);
 	}
 	public Napis(String tekst, String hover) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 		this.hover(hover);
 	}
 	public Napis(String tekst) {
-		txt = new TextComponent(tekst);
+		txt = new TextComponent(Func.koloruj(tekst));
 	}
 	public Napis() {
 		txt = new TextComponent("");
 	}
 	
 	public Napis hover(String tekst) {
-		Text t = new Text(tekst);
+		Text t = new Text(Func.koloruj(tekst));
 		txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, t));
 		return this;
 	}
 	public Napis clickEvent(ClickEvent.Action akcja, String treść) {
-		txt.setClickEvent(new ClickEvent(akcja, treść));
+		txt.setClickEvent(new ClickEvent(akcja, Func.koloruj(treść)));
 		return this;
 	}
 
@@ -79,7 +79,7 @@ public class Napis implements ConfigurationSerializable {
 	}
 	public Napis dodaj(String... co) {
 		for (String _co : co)
-			txt.addExtra(_co);
+			txt.addExtra(Func.koloruj(_co));
 		return this;
 	}
 	public Napis dodaj(Napis... co) {
