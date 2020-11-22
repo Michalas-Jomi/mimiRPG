@@ -181,7 +181,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	@Override
 	public void przeładuj() {
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
-		dozwolone.add("antylogbypass");
+		dozwolone.add("/antylogbypass");
 		maxCzas = Main.ust.wczytajLubDomyślna("Antylog.Czas", 10) * 4;
 	}
 	@Override

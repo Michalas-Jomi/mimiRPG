@@ -536,9 +536,12 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			this.loc = loc;
 		}
 		
-		private void zniszcz(Block blok) {
+		private void zniszcz(Block blok, RegionManager regiony) {
 			final String mat = blok.getType().toString();
 			final String str = config.sekcja("c4").getString(mat);
+			
+			if (!regiony.getApplicableRegions(locToVec3(blok.getLocation())).testState(null, Main.flagaC4))
+				return;
 			
 			if (str != null) {
 				final String data = dajDate(blok);
@@ -578,13 +581,17 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		void zakończ() {
+			RegionManager regiony = Bazy.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
+			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
+					locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
+			
 			Set<String> wybuchnięte = Sets.newConcurrentHashSet();
 			
 			for (Block blok : bloki) {
 				String str = blok.getLocation().toString();
 				if (wybuchnięte.contains(str)) continue;
 				wybuchnięte.add(str);
-				zniszcz(blok);
+				zniszcz(blok, regiony);
 			}
 			
 			for (Snowball sniezka : loc.getWorld().getEntitiesByClass(Snowball.class))
@@ -597,9 +604,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					krotka.a.setBlockData(Bukkit.createBlockData(krotka.b, dajDate(krotka.a)), false);
 			
 			
-			RegionManager regiony = Bazy.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
-			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
-					locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
 			for (ProtectedRegion region : regiony.getApplicableRegions(_region).getRegions())
 				Func.wykonajDlaNieNull(Baza.wczytaj(loc.getWorld(), region), Baza::atak);
 		}
