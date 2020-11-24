@@ -261,7 +261,7 @@ class Event {
 		gracze.add(p);
 		NowyEkwipunek.dajNowy(p, loc_zbiórka, gamemode);
 		for (Player gracz : gracze)
-			gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", gracz.getDisplayName(), gracze.size(), max_gracze));
+			gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", p.getDisplayName(), gracze.size(), max_gracze));
 		if (gracze.size() >= max_gracze)
 			zbiórka = Math.max(zbiórka, 5);
 		return;
@@ -294,7 +294,7 @@ class Event {
 
 	void start() {
 		if (gracze.size() < min_gracze) {
-			Bukkit.broadcastMessage(Func.msg("Event %s przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
+			Bukkit.broadcastMessage(Func.msg("Event %s nie wystartował przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
 			koniec();
 			return;
 		}

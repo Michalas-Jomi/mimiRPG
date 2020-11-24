@@ -167,7 +167,7 @@ public class SuperItem extends Komenda implements Listener {
 				multiKrotka.a++;
 				Func.wykonajDlaNieNull(multiKrotka.b, Bukkit.getScheduler()::cancelTask);
 				multiKrotka.b = Func.opóznij(20, () -> mapaUżyć.remove(ev.getPlayer().getName()));
-				ev.getPlayer().performCommand(en.getValue());
+				ev.getPlayer().chat("/" + en.getValue());
 				ev.setCancelled(true);
 				return;
 			}

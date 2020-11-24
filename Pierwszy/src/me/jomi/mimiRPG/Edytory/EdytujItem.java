@@ -1,6 +1,5 @@
 package me.jomi.mimiRPG.Edytory;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -97,7 +96,7 @@ public class EdytujItem extends Komenda {
 			}
 			opcja(n, "dodaj", "lore dodaj", "dodać nową linie", true, () -> "§6");
 			opcja(n, "←", "", "powrócić", false, () -> "§6");
-			n.dodaj("");
+			n.dodaj("\n");
 			
 			n.wyświetl(p);
 		}
@@ -108,9 +107,8 @@ public class EdytujItem extends Komenda {
 			UnaryOperator<String> wyraz = str -> str.startsWith("generic_") ? str.substring(8) : str;
 			
 			Function<Attribute, String> atrybut = attr -> {
-				Collection<AttributeModifier> attrs = meta.getAttributeModifiers(attr);
-				if (attrs != null)
-					for (AttributeModifier modifire : attrs)
+				try {
+					for (AttributeModifier modifire : meta.getAttributeModifiers(attr))
 						if (modifire.getSlot().equals(slot.slot)) {
 							String kolor = modifire.getAmount() >= 0 ? "§a" : "§c";
 							if (modifire.getOperation().equals(Operation.ADD_NUMBER))
@@ -118,6 +116,7 @@ public class EdytujItem extends Komenda {
 							else
 								return kolor + Func.DoubleToString(modifire.getAmount() * 100) + "%";
 						}
+				} catch (Throwable e) {}
 				return "";
 			};
 			
@@ -137,12 +136,12 @@ public class EdytujItem extends Komenda {
 			n.wyświetl(p);
 		}
 	
-		static void enchanty(Player p, ItemStack item) {
+		static void enchanty(Player p, ItemStack item, boolean wszystkie) {
 			Napis n = new Napis("\n\n\n\n\n\n§6§lEnchanty\n");
 			boolean jasny = false;
 			Function<Integer, String> func = lvl -> lvl != 0 ? " §a(" + lvl + ")" : "";
 			for (Enchantment enchant : Enchantment.values())
-				if (enchant.canEnchantItem(item) || item.getType().equals(Material.ENCHANTED_BOOK)) {
+				if (wszystkie || enchant.canEnchantItem(item)) {
 					n.dodaj(new Napis(
 							(jasny ? "§7" : "§8") + enchant.getKey().getKey().toLowerCase() + 
 									func.apply(item.getType().equals(Material.ENCHANTED_BOOK) ? 
@@ -155,6 +154,10 @@ public class EdytujItem extends Komenda {
 				}
 			
 			n.dodaj("\n");
+			if (wszystkie)
+				opcja(n, "pasujące", "enchant", "wyświetlić tylko pasujące enchanty", false, () -> "§6");
+			else 
+				opcja(n, "wszystkie", "enchant-a", "wyświetlić wszystkie enchanty", false, () -> "§6");
 			opcja(n, "←", "", "powrócić", false, () -> "§6");
 			n.dodaj("\n");
 			n.wyświetl(p);
@@ -207,7 +210,10 @@ public class EdytujItem extends Komenda {
 					}
 				}
 				item.setItemMeta(meta);
-				Edytor.enchanty(p, item);
+				Edytor.enchanty(p, item, item.getType().equals(Material.ENCHANTED_BOOK));
+				return;
+			case "enchant-w":
+				Edytor.enchanty(p, item, true);
 				return;
 			case "lore":
 				if (args.length != 1) {

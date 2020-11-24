@@ -135,7 +135,7 @@ class _Glosowanie {
 			p.sendMessage(prefix + "Już zagłosowałeś na to");
 		} else {
 			głosujący.add(p.getName());
-			Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 zagłosował na §e" + this);
+			Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 zagłosował na §e" + this + "użyj §e§o/vote " + nazwa + "§6 aby zagłosować");
 			if (głosujący.size() >= potrzebneGłosy) {
 				Bukkit.broadcastMessage(prefix + "Głosowanie §e" + nazwa + " §6 zostało zakończone §aPomyślnie");
 				Glosowanie.mapa.remove(nazwa);

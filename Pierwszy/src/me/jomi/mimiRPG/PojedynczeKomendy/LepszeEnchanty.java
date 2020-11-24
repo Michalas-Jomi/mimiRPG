@@ -18,14 +18,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class LepszeEnchanty implements Listener {
-	
+public class LepszeEnchanty implements Listener, Przeładowalny {
 	public boolean jestLepszymEnchantem(ItemStack item) {
-		return item.getType().equals(Material.ENCHANTED_BOOK) &&
-				item.getItemMeta().hasItemFlag(ItemFlag.HIDE_ENCHANTS);
+		return  item != null && 
+				item.getType().equals(Material.ENCHANTED_BOOK) &&
+				(!wymaganaFlaga() || item.getItemMeta().hasItemFlag(ItemFlag.HIDE_ENCHANTS));
 	}
 	
 	@EventHandler(priority = EventPriority.HIGH)
@@ -59,4 +63,14 @@ public class LepszeEnchanty implements Listener {
 		else
 			ev.getCursor().setItemMeta(ksiazka);
 	}
+
+	boolean wymaganaFlaga() { // TODO dodać w szablonie
+		return Main.ust.wczytajLubDomyślna("LepszeEnchanty.wymagana Flaga enchantów", true);
+	}
+	
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Wymagana flaga", wymaganaFlaga() ? "Tak" : "Nie");
+	}
+	@Override public void przeładuj() {}
 }
