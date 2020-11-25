@@ -242,8 +242,8 @@ public class BonusoweSkrzynki extends Komenda implements Listener, Przeładowaln
 		default:
 			return;
 		}
-		ev.setCancelled(true);
 		Func.wykonajDlaNieNull(mapaSkrzyń.get(ev.getClickedBlock().getLocation()), skrzynia -> {
+					ev.setCancelled(true);
 					Func.opóznij(1, () -> k.a.accept(skrzynia));
 					Func.wykonajDlaNieNull(k.b, Runnable::run);
 				});

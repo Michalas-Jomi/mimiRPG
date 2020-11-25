@@ -722,8 +722,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
 					ev.setCancelled(true);
 					
-					if (Func.multiEquals(ev.getBlockReplacedState().getType(), Material.WATER, Material.LAVA)) return;
-					
 					Runnable zabierzItem = () -> {
 						item.setAmount(item.getAmount()-1);
 						ev.getPlayer().getEquipment().setItemInMainHand(item);
@@ -756,6 +754,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 						zabierzItem.run();
 						return;
 					}
+
+					if (Func.multiEquals(ev.getBlockReplacedState().getType(), Material.WATER, Material.LAVA)) return;
 					
 					// Baza/Schemat
 					// jeśli baza nie może być postawiona przez flage -> blokuj = true
@@ -860,7 +860,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			config.ustaw_zapisz("podejrzani", lista);
 		}
 	}
-		
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void preNiszczenieStawianie(PlayerInteractEvent ev) {
 		if (bypass.contains(ev.getPlayer().getName())) return;
@@ -924,7 +924,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		return null;
 	}
-	RegionManager regiony(World świat) {
+	public RegionManager regiony(World świat) {
 		return regiony.get(BukkitAdapter.adapt(świat));
 	}
 	static BlockVector3 locToVec3(Location loc) {
