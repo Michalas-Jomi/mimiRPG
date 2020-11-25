@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -86,6 +87,10 @@ public class Config {
 	}
 	public ConfigurationSection sekcja(Object... sciezka) {
 		return plik.getConfigurationSection(sc(sciezka));
+	}
+	@SuppressWarnings("unchecked")
+	public <T> Collection<T> wartości(Class<T> clazz) {
+		return (Collection<T>) plik.getValues(false).values();
 	}
 	
 	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}

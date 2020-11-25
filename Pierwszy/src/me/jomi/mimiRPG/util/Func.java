@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -36,9 +37,11 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -482,6 +485,22 @@ public abstract class Func {
 			return true;
 		}
 	}
+	public static void zabierzItem(Inventory inv, int slot) {
+		zabierzItem(slot, inv::getItem, inv::setItem);
+	}
+	public static void zabierzItem(PlayerInventory inv, EquipmentSlot slot) {
+		zabierzItem(slot, inv::getItem, inv::setItem);
+	}
+	private static <T> void zabierzItem(T slot, Function<T, ItemStack> get, BiConsumer<T, ItemStack> set) {
+		ItemStack item = get.apply(slot);
+		item.setAmount(item.getAmount() - 1);
+		if (item.getAmount() <= 0) {
+			item.setType(Material.GLASS_PANE);
+			item.setType(Material.AIR);
+			set.accept(slot, null);
+		} else
+			set.accept(slot, item);
+	}
 	
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
@@ -503,6 +522,10 @@ public abstract class Func {
 		if (lista.isEmpty())
 			return null;
 		return lista.get(losujWZasięgu(lista.size()));
+	}
+
+	public static <T> T losuj(T[] t) {
+		return t.length == 0 ? null : t[losujWZasięgu(t.length)];
 	}
 	public static int losujWZasięgu(int max) {
 		return Func.losuj(0, max-1);

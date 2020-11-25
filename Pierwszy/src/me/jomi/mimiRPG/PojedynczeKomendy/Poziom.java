@@ -127,7 +127,7 @@ public class Poziom extends Komenda implements Listener{
 				return true;
 			
 			// Nadawanie itemka
-			if (0 < ile) {
+			if (10 <= ile) {
 				ItemStack item = zabutelkuj(ile);
 				p.giveExp(-ile);
 				p.getInventory().addItem(item);
@@ -135,7 +135,7 @@ public class Poziom extends Komenda implements Listener{
 				return true;
 			}
 			else {
-				p.sendMessage(prefix + "Ilość musi być poprawną liczbą całkowitą większą od 0");
+				p.sendMessage(prefix + "Nie możesz zabutelkować mniej niż 10 expa");
 				return true;
 			}
 		}

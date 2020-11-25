@@ -9,8 +9,13 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -42,7 +47,7 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
-public class Main extends JavaPlugin {
+public class Main extends JavaPlugin implements Listener {
 	// Api Vaults
 	public static boolean ekonomia = false;
 	public static Permission perms;
@@ -121,6 +126,7 @@ public class Main extends JavaPlugin {
 		włączVault();
 		włączIridiumSkyblock();
             
+		zarejestruj(this);
 		zarejestruj(new Baza());
 		new Mimi();
         new Raport();
@@ -231,6 +237,27 @@ public class Main extends JavaPlugin {
 	
 	public static boolean włączonyModół(Class<?> modół) {
 		return Moduły.włączony(modół.getSimpleName());
+	}
+
+	
+	public static final String tagBlokWyciąganiaZEq = "mimiBlokadaWyciąganiaZEq";
+	public static final String tagBlokOtwarciaJednorazowy = "mimiJednorazowyBlokOtwarciaEq";
+	@EventHandler
+	public void blokWyciągania(InventoryClickEvent ev) {
+		if (ev.getWhoClicked().getScoreboardTags().contains(tagBlokWyciąganiaZEq)) {
+			int slot = ev.getRawSlot();
+			if (slot >= 0 && slot < ev.getInventory().getSize() || ev.getClick().equals(ClickType.DOUBLE_CLICK))
+				ev.setCancelled(true);
+		}
+	}
+	@EventHandler
+	public void zamykanieEq(InventoryCloseEvent ev) {
+		ev.getPlayer().removeScoreboardTag(tagBlokWyciąganiaZEq);
+	}
+	@EventHandler
+	public void otiweranieEq(InventoryOpenEvent ev) {
+		if (ev.getPlayer().removeScoreboardTag(tagBlokOtwarciaJednorazowy))
+			ev.setCancelled(true);
 	}
 }
 
