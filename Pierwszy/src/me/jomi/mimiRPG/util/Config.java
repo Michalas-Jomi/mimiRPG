@@ -92,6 +92,9 @@ public class Config {
 	public <T> Collection<T> wartości(Class<T> clazz) {
 		return (Collection<T>) plik.getValues(false).values();
 	}
+	public Map<String, Object> mapa(boolean pełna) {
+		return plik.getValues(pełna);
+	}
 	
 	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}
 	public int 	   wczytajInt	 (String sciezka) {return plik.getInt(sciezka);}

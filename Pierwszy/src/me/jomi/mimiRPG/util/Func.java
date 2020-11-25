@@ -476,6 +476,13 @@ public abstract class Func {
         item.setItemMeta(meta);
         return item;	
 	}
+	public static ItemStack dajGłowe(OfflinePlayer p) {
+		ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+		SkullMeta Cmeta = (SkullMeta) item.getItemMeta();
+		Cmeta.setOwningPlayer(p);
+		item.setItemMeta(Cmeta);
+		return item;
+	}
 	public static boolean dajItem(Player p, ItemStack item) {
 		if (p.getInventory().firstEmpty() == -1) {
 			p.getWorld().dropItem(p.getLocation(), item);

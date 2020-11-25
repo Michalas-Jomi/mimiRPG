@@ -18,9 +18,11 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion.CircularInheritan
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.util.Func;
 
+@Moduł
 public class RegionyFrakcyjne extends Komenda {
 	public static final String prefix = Func.prefix("Regiony Frakcyjne");
 	public static boolean warunekModułu() {

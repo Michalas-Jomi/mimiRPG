@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
@@ -240,9 +241,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	
+	// Nie pozwala wymować nic z aktualnie, bądz dopiero będącego otwartym eq, aż do jego zamknięcia
 	public static final String tagBlokWyciąganiaZEq = "mimiBlokadaWyciąganiaZEq";
+	// Zamknie pierwsze otwarte menu i zniknie
 	public static final String tagBlokOtwarciaJednorazowy = "mimiJednorazowyBlokOtwarciaEq";
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void blokWyciągania(InventoryClickEvent ev) {
 		if (ev.getWhoClicked().getScoreboardTags().contains(tagBlokWyciąganiaZEq)) {
 			int slot = ev.getRawSlot();
@@ -250,11 +253,11 @@ public class Main extends JavaPlugin implements Listener {
 				ev.setCancelled(true);
 		}
 	}
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		ev.getPlayer().removeScoreboardTag(tagBlokWyciąganiaZEq);
 	}
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void otiweranieEq(InventoryOpenEvent ev) {
 		if (ev.getPlayer().removeScoreboardTag(tagBlokOtwarciaJednorazowy))
 			ev.setCancelled(true);

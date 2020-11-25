@@ -34,6 +34,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public List<Integer> DzienneNagrodyodebrane = Lists.newArrayList();
 	@Mapowane public int DzienneNagrodyOst;
 	
+	@Mapowane public int HitmanOstatnieZgłoszenie;
+	
 	@Mapowane public HashMap<String, String> superItemy = new HashMap<>();
 	
 	public Wilczek.Wilk wilk;

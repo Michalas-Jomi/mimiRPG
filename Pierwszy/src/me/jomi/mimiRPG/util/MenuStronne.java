@@ -21,7 +21,7 @@ public class MenuStronne {
 	public List<ItemStack> itemy = Lists.newArrayList();
 	
 	public MenuStronne(int rzędy, String nazwa) {
-		inv = Bukkit.createInventory(null, rzędy*9, nazwa);
+		inv = Bukkit.createInventory(null, rzędy*9, Func.koloruj(nazwa));
 		wielkość = rzędy*9-9;
 		for (int i=wielkość+1; i<rzędy*9-1; i++)
 			inv.setItem(i, nic_dolne);

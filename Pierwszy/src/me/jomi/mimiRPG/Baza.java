@@ -2,6 +2,7 @@ package me.jomi.mimiRPG;
 
 import java.util.HashMap;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,8 +10,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
 
 public class Baza implements Listener {
+	public static final ItemStack pustySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static ConfigurationSection grupy;
