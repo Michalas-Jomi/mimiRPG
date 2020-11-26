@@ -27,6 +27,7 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public HashMap<String, Minigra.Statystyki> staty = new HashMap<>();
 	
+	@Mapowane public int BazaOstatnieStawianie;
 	@Mapowane public Location łóżkoBazowe;
 	@Mapowane public Bazy.Baza baza;
 	@Mapowane public String gildia;

@@ -92,8 +92,8 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 		}
 		while (i < inv.getSize() && i >= 0)
 			inv.setItem(i++, pusty);
-		odbierający.add(p.getName());
 		p.openInventory(inv);
+		odbierający.add(p.getName());
 	}
 	@EventHandler
 	public void klikaniEq(InventoryClickEvent ev) {

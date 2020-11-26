@@ -90,7 +90,6 @@ public class Poziom extends Komenda implements Listener{
 		int expAkt = (int)((expNextLvl - expAktLvl) * xp + expAktLvl);
 		
 		return expAkt;
-		
 	}
 
 	@Override

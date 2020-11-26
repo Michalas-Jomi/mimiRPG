@@ -325,7 +325,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region = new ProtectedCuboidRegion(
 					nazwaBazy,
 					BlockVector3.at(x+dx, y+dy, z+dz),
-					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 5)), z-dz)
+					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 1)), z-dz)
 					);
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
 			DefaultDomain owners = new DefaultDomain();
@@ -368,6 +368,19 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				Bazy.inst.blokuj = true;
 				return null;
 			}
+			if (!bypass.contains(p.getName())) {
+				int czas = Main.ust.wczytajLubDomyślna("Bazy.deley stawiania baz", 12*60*60);
+				czas = czas - (int) ((System.currentTimeMillis() / 1000) - g.BazaOstatnieStawianie);
+				if (czas > 0) {
+					Func.powiadom(p, prefix + "Musisz poczekać jeszcze " + Func.czas(czas) + " zanim postawisz następną bazę");
+					Bazy.inst.blokuj = true;
+					return null;
+				}
+			}
+			
+			g.BazaOstatnieStawianie = (int) (System.currentTimeMillis() / 1000);
+			g.zapisz();
+			
 			int dx = (int) mapa.get("dx");
 			int dy = (int) mapa.get("dy");
 			int dz = (int) mapa.get("dz");
@@ -931,7 +944,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 	
-	final Set<String> bypass = Sets.newConcurrentHashSet();
+	final static Set<String> bypass = Sets.newConcurrentHashSet();
 	
 	// nick zapraszającego: (zaproszony, czas)
 	private final HashMap<String, Krotka<String, Integer>> mapaZaproszeń = new HashMap<>();

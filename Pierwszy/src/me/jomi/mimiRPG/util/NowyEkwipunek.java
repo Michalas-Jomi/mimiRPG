@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
-import me.jomi.mimiRPG.util.Krotka;
 
 
 public class NowyEkwipunek {

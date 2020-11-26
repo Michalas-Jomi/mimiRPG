@@ -21,8 +21,8 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.NowyEkwipunek;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.NowyEkwipunek;
 
 @Moduł
 public class ZabezpieczGracza extends Komenda implements Listener{
