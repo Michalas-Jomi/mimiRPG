@@ -2,7 +2,6 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.bukkit.Bukkit;
@@ -34,8 +33,6 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Consumer;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -124,7 +121,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 			Func.opóznij(10, k.b);
 			p.removeScoreboardTag(Main.tagBlokOtwarciaJednorazowy);
 			p.openInventory(inv);
-			otwarteOtwieranie.add(p.getName());
+			otwarteOtwieranie.put(p.getName(), inv);
 		}
 
 		void podgląd(Player p) {
@@ -152,7 +149,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix("Szkatułki");
 	static final HashMap<Location, Skrzynka> mapaSkrzyń = new HashMap<>();
 	static final HashMap<String, Skrzynka> edytujący = new HashMap<>();
-	static final Set<String> otwarteOtwieranie = Sets.newConcurrentHashSet();
+	static final HashMap<String, Inventory> otwarteOtwieranie = new HashMap<>();
 	static final Material[] szybki = new Material[16];
 	static {
 		int i=0;
@@ -169,13 +166,13 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (otwarteOtwieranie.contains(ev.getWhoClicked().getName()))
+		if (otwarteOtwieranie.containsKey(ev.getWhoClicked().getName()))
 			ev.setCancelled(true);
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (otwarteOtwieranie.contains(ev.getPlayer().getName()))
-			Func.opóznij(1, () -> ev.getPlayer().openInventory(ev.getInventory()));
+		if (otwarteOtwieranie.containsKey(ev.getPlayer().getName()))
+			Func.opóznij(1, () -> ev.getPlayer().openInventory(otwarteOtwieranie.get(ev.getPlayer().getName())));
 		else 
 			Func.wykonajDlaNieNull(edytujący.remove(ev.getPlayer().getName()), skrzynka -> {
 				List<ItemStack> itemy = Lists.newArrayList();
@@ -287,11 +284,11 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (!(sender instanceof Player))
-			return Func.powiadom(sender, prefix + "Tylko gracz może tego użyć");
 		if (args.length < 2)
 			return false;
-		Player p = (Player) sender;
+		Player p = null;
+		if (sender instanceof Player)
+			p = (Player) sender;
 		try {
 			p = Bukkit.getPlayer(args[2]);
 		} catch (Throwable e) {}

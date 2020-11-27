@@ -332,8 +332,9 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		TileEntityMobSpawner _spawner = (TileEntityMobSpawner) ((CraftWorld) spawner.getWorld()).getHandle().getTileEntity(blockPos);
 		_spawner.load(_spawner.getBlock(), tag);
 	}
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void niszczenie(BlockBreakEvent ev) {
+		if (ev.isCancelled()) return;
 		if (!ev.getBlock().getType().equals(Material.SPAWNER)) return;
 		
 		ev.setExpToDrop(0);

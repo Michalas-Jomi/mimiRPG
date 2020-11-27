@@ -117,6 +117,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				p.sendMessage(prefix + "Nie możesz utworzyć nowej gildi puki nie opuścisz aktualnej");
 				return null;
 			}
+			if (nazwa.contains(".")) {
+				Player p = Bukkit.getPlayer(przywódca);
+				p.sendMessage(prefix + "Nie możesz utworzyć gildi o tej nazwie");
+				return null;
+			}
 			Gildia gildia = new Gildia();
 			gildia.przywódca = przywódca;
 			gildia.nazwa = nazwa;
@@ -378,9 +383,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				}
 			}
 			
-			g.BazaOstatnieStawianie = (int) (System.currentTimeMillis() / 1000);
-			g.zapisz();
-			
 			int dx = (int) mapa.get("dx");
 			int dy = (int) mapa.get("dy");
 			int dz = (int) mapa.get("dz");
@@ -391,8 +393,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					);
 			if (Bazy.regiony.get(BukkitAdapter.adapt(świat))
 					.getApplicableRegions(region)
-					.testState(null, Main.flagaStawianieBaz))
+					.testState(null, Main.flagaStawianieBaz)) {
+				g.BazaOstatnieStawianie = (int) (System.currentTimeMillis() / 1000);
+				g.zapisz();
 				return new Baza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
+			}
 			Bazy.inst.blokuj = true;
 			ev.getPlayer().sendMessage(Bazy.prefix + "Nie możesz tu postawić swojej bazy");
 			return null;
