@@ -383,7 +383,4 @@ public abstract class MinigraDrużynowa extends Minigra {
 		if (arena != null && !arena.grane)
 			ev.setCancelled(true);
 	}
-	
-
-
 }

@@ -88,7 +88,7 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 			else if (i == dziś)
 				inv.setItem(i, doOdebrania);
 			else
-				inv.setItem(i, Func.nazwij(niedostępny.clone(), "&a&lDzień &c&l" + i));
+				inv.setItem(i, Func.nazwij(niedostępny.clone(), "&a&lDzień &c&l" + (i+1)));
 		}
 		while (i < inv.getSize() && i >= 0)
 			inv.setItem(i++, pusty);
