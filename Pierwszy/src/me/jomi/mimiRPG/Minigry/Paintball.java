@@ -11,7 +11,6 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
@@ -70,8 +69,7 @@ public class Paintball extends MinigraDrużynowa {
 		void wybuch(Projectile pocisk, Drużyna drużyna, Function<Entity, Arena> arena, Entity trafiony) {
 			Location loc = pocisk.getLocation();
 			
-			Consumer<Double> particle = zasięg -> loc.getWorld().spawnParticle(Particle.REDSTONE, loc, (int) (double) zasięg*40 + 1,
-					zasięg, zasięg, zasięg, 0, new Particle.DustOptions(drużyna.kolor, 1));
+			Consumer<Double> particle = zasięg -> drużyna.particle(loc, (int) (double) zasięg*40 + 1, zasięg, zasięg, zasięg);
 			
 			for (int i=1; i <= 3; i++)
 				particle.accept(zasięg / 3 * i);

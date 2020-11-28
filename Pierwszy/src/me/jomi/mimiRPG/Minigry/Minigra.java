@@ -99,7 +99,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return true;
 		}
 		
-		boolean opuść(Player p) {
+		final boolean opuść(Player p) {
 			String nick = p.getName();
 			for (int i=0; i<gracze.size(); i++)
 				if (gracze.get(i).getName().equals(nick))
@@ -157,11 +157,24 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return true;
 		}
 
+		
 		void koniec() {
 			grane = false;
 			while (!gracze.isEmpty())
 				opuść(0, false);
+			for (Integer id : doAnulowania)
+				Bukkit.getScheduler().cancelTask(id);
+			doAnulowania.clear();
 		}
+		private Set<Integer> doAnulowania = Sets.newConcurrentHashSet();
+		void opóznijTask(int ticki, Runnable runnable) {
+			Krotka<Integer, ?> k = new Krotka<>();
+			doAnulowania.add(k.a = Func.opóznij(ticki, () -> {
+				doAnulowania.remove(k.a);
+				runnable.run();
+			}));
+		}
+		
 		
 		
 		// util

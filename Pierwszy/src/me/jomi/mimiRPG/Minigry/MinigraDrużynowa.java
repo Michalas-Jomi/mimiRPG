@@ -8,7 +8,9 @@ import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +34,7 @@ import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.ItemCreator;
 import me.jomi.mimiRPG.util.KolorRGB;
 
 public abstract class MinigraDrużynowa extends Minigra {
@@ -190,7 +193,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 		
 		
-		void ubierz(Player p) {
+		final void ubierz(Player p) {
 			ubierz(p, getInstMinigraDrużynowa().drużyna(p));
 		}
 		<D extends Drużyna> void wybierzDrużyne(Player p, D drużyna) {
@@ -225,7 +228,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		<D extends Drużyna> void ubierz(Player p, D drużyna, boolean hełm, boolean spodnie, boolean klata, boolean buty) {
 			Color kolor = drużyna.kolor;
 			Function<Material, ItemStack> dajItem = mat -> 
-					Func.pokolorujZbroje(Func.stwórzItem(mat, " "), kolor);
+				Func.pokolorujZbroje(ItemCreator.nowy(mat).nazwa(" ").unbreakable().stwórz(), kolor);
 			PlayerInventory inv = p.getInventory();
 			if (hełm)	inv.setHelmet(		dajItem.apply(Material.LEATHER_HELMET));
 			if (klata)	inv.setChestplate(	dajItem.apply(Material.LEATHER_CHESTPLATE));
@@ -312,7 +315,6 @@ public abstract class MinigraDrużynowa extends Minigra {
 		
 		Color kolor;
 		String napisy;
-
 		
 		// Init
 		public void Init() {
@@ -320,6 +322,15 @@ public abstract class MinigraDrużynowa extends Minigra {
 			this.napisy = kolorRGB.kolorChat();	
 		}
 	
+		
+		
+		// util
+		
+		public void particle(Location loc, int ile, double dx, double dy, double dz) {
+			loc.getWorld().spawnParticle(Particle.REDSTONE, loc, ile, dx, dy, dz, 0, new Particle.DustOptions(kolor, 1));
+		}
+		
+		
 		
 		// Override
 		@Override

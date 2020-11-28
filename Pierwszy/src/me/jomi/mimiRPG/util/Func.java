@@ -37,6 +37,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -53,6 +54,7 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
@@ -492,6 +494,9 @@ public abstract class Func {
 			return true;
 		}
 	}
+	public static boolean dajItem(Projectile p, ItemStack item) {
+		return p.getShooter() != null && dajItem(p, item);
+	}
 	public static void zabierzItem(Inventory inv, int slot) {
 		zabierzItem(slot, inv::getItem, inv::setItem);
 	}
@@ -507,6 +512,16 @@ public abstract class Func {
 			set.accept(slot, null);
 		} else
 			set.accept(slot, item);
+	}
+	
+	public static void ustawPuste(Inventory inv) {
+		for (int i=0; i<inv.getSize(); i++)
+			inv.setItem(i, Baza.pustySlot);
+	}
+	public static void wypełnij(Inventory inv) {
+		int slot;
+		while ((slot = inv.firstEmpty()) != -1)
+			inv.setItem(slot, Baza.pustySlot);
 	}
 	
 	public static boolean losuj(double szansa) {
