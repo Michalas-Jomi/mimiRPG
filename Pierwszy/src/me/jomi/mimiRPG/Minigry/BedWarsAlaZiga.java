@@ -10,6 +10,7 @@ import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
@@ -26,22 +27,43 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import com.google.common.collect.Lists;
+
+import me.jomi.mimiRPG.Baza;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Napis;
+import net.minecraft.server.v1_16_R2.EntityHuman;
+import net.minecraft.server.v1_16_R2.EntityInsentient;
+import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 @Moduł
 public class BedWarsAlaZiga extends MinigraDrużynowa {
 	public static final String prefix = Func.prefix("Bedwars ala Ziga");
+	public static class PustyHolder implements InventoryHolder {
+		private Inventory inv;
+		public PustyHolder(int rzędy, String nazwa) {
+			inv = Bukkit.createInventory(this, rzędy*9, Func.koloruj(nazwa));
+		}
+		@Override
+		public Inventory getInventory() {
+			return inv;
+		}
+	}
 	public static class Arena extends MinigraDrużynowa.Arena {
 		@Mapowane List<Drużyna> drużyny;
 		@Mapowane List<Ruda> rudy;
@@ -50,10 +72,21 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		@Mapowane int czasOchronySercaPoZniszczeniu = 15;
 		@Mapowane double mnożnikCzekaniaRespawnu = 1; // 1 -> ilość minut gry = ilość sekund czekania
 		
+		@Mapowane List<SklepItemStrona> itemyDoKupienia;
+		@Mapowane List<Ulepszenie> ulepszeniaDoKupienia;
+		
 		final HashMap<String, Serce> oznaczeni = new HashMap<>();
 		
 		
 		int sekundyStartu;
+		
+		static final Inventory guiGłówne;
+		static {
+			guiGłówne = new PustyHolder(3, "&4&lUlepszenia").getInventory();
+			Func.ustawPuste(guiGłówne);
+			guiGłówne.setItem(12, Func.stwórzItem(Material.NETHERITE_SWORD, "&4Itemki",		"&bPrzedmioty jednorazowe"));
+			guiGłówne.setItem(14, Func.stwórzItem(Material.ENCHANTED_BOOK,  "&aUlepszenia", "&bTrwałe wzmocnienia"));
+		}
 		
 		
 		// obsługa start/koniec
@@ -94,6 +127,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		
 		
+		
 		// util
 		
 		void particleSerc() {
@@ -101,6 +135,15 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 				Player p = Bukkit.getPlayer(en.getKey());
 				en.getValue().drużyna.particle(p.getLocation().add(0, 5, 0), 100, 0, 5, 0);
 			}
+		}
+
+		void otwórzSklep(Player p, InventoryHolder strona) {
+			p.openInventory(strona.getInventory());
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		void otwórzSklep(Player p, Inventory inv) {
+			p.openInventory(inv);
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
 		}
 		
 		@Override
@@ -120,12 +163,23 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 
 		@Override Supplier<? extends me.jomi.mimiRPG.Minigry.Minigra.Statystyki> noweStaty() { return Statystyki::new; }
 	}
-	public static class Drużyna extends MinigraDrużynowa.Drużyna {
+	public static class Drużyna extends MinigraDrużynowa.Drużyna implements InventoryHolder  {
 		public static enum Slot {
 			miecz,
 			łuk,
 			armor,
 			narzędzie;
+			
+			boolean pasuje(Material mat) {
+				String nazwa = mat.toString();
+				switch (this) {
+				case łuk:		return mat.equals(Material.BOW);
+				case miecz:		return nazwa.contains("_SWORD") || nazwa.contains("_AXE");
+				case narzędzie:	return nazwa.contains("_AXE") || nazwa.contains("_PICKAXE") || nazwa.contains("_SHOVEL");
+				case armor:		return nazwa.contains("_CHESTPLATE") || nazwa.contains("_HELMET") || nazwa.contains("_BOOTS") || nazwa.contains("_LEGGINGS");
+				}
+				return false;
+			}
 		}
 		public enum Enchant {
 			Wydajność(Enchantment.DIG_SPEED, Slot.narzędzie),
@@ -142,7 +196,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			Płomień(Enchantment.ARROW_FIRE, Slot.łuk),
 			Uderzenie(Enchantment.ARROW_KNOCKBACK, Slot.łuk);
 
-			int lvl;
 			Slot slot;
 			Enchantment ench;
 			Enchant(Enchantment ench, Slot slot) {
@@ -152,50 +205,62 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		@Mapowane Location serceLoc;
 		@Mapowane Location respawnLoc;
+		@Mapowane Location locMobaSklepu;
 		Serce serce;
-
-		static final Inventory guiGłówne;
-		static {
-			guiGłówne = Bukkit.createInventory(null, 3*9, Func.koloruj("&lUlepszenia"));
-			Func.ustawPuste(guiGłówne);
-			guiGłówne.setItem(12, Func.stwórzItem(Material.NETHERITE_SWORD, "&4Itemki",		"&bPrzedmioty jednorazowe"));
-			guiGłówne.setItem(14, Func.stwórzItem(Material.ENCHANTED_BOOK,  "&aUlepszenia", "&bTrwałe wzmocnienia"));
-		}
 
 		Inventory ec;
 		
-		Inventory guiUlepszenia;
-		Inventory guiItemki;
+		Inventory guiUlepszeń;
+		
+		Entity mobSklepu;
 		
 		void przygotujStart(Arena arena) {
 			serce = new Serce(arena, this);
-			for (Enchant ench : Enchant.values())
-				ench.lvl = 0;
 			
 			ec = Bukkit.createInventory(null, 9, Func.koloruj(napisy + "Enderchest"));
 			
+			przygotujGuiUlepszenia();
+			zrespMobaSklepu();
+		}
+		private void zrespMobaSklepu() {
+			mobSklepu = locMobaSklepu.getWorld().spawnEntity(locMobaSklepu, EntityType.HUSK);
+			mobSklepu.setInvulnerable(true);
+			mobSklepu.setGravity(false);
+			mobSklepu.setSilent(true);
 			
-			guiUlepszenia = Bukkit.createInventory(null, 5*9, Func.koloruj("&lUlepszenia Drużynowe"));
-			Func.ustawPuste(guiUlepszenia);
+			Func.ustawMetadate(mobSklepu, metaMobSklepu, serce.arena);
 			
-			guiUlepszenia.setItem(12, Func.stwórzItem(Material.ENCHANTED_BOOK, "&aWydajność"));
+			EntityInsentient ei = (EntityInsentient) ((CraftEntity) mobSklepu).getHandle();
+			ei.targetSelector 	= new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
+			ei.goalSelector 	= new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
+			ei.goalSelector.a(8, new PathfinderGoalLookAtPlayer(ei, EntityHuman.class, 8.0F));
+		}
+		private void przygotujGuiUlepszenia() {
+			// Ulepszenia Enchanty
+			guiUlepszeń = Bukkit.createInventory(this, 5*9, Func.koloruj("&lUlepszenia Drużynowe"));
+			Func.ustawPuste(guiUlepszeń);
 			
-			guiUlepszenia.setItem(14, Func.stwórzItem(Material.ENCHANTED_BOOK, "&cOstrość"));
-			guiUlepszenia.setItem(15, Func.stwórzItem(Material.ENCHANTED_BOOK, "&cOdrzut"));
-			guiUlepszenia.setItem(16, Func.stwórzItem(Material.ENCHANTED_BOOK, "&cZaklęty Ogień"));
+			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
+				ustawItemUlepszenia(upgr, 1);
+		}
+		void ustawItemUlepszenia(Ulepszenie upgr, int lvl) {
+			ItemStack item = Func.nazwij(upgr.ikona.clone(), "&c" + nazwa);
+			if (lvl >= upgr.ceny.size()) {
+				item.setType(Material.BARRIER);
+				item.setAmount(1);
+			} else {
+				for (ItemStack cena : upgr.ceny.get(lvl - 1).cena)
+					Func.dodajLore(item, "&a" + cena.getType().toString().toLowerCase() + " &9x &b" + cena.getAmount());
+				item.setAmount(lvl);
+			}
 			
-			guiUlepszenia.setItem(21, Func.stwórzItem(Material.ENCHANTED_BOOK, "&bOchrona"));
-			guiUlepszenia.setItem(22, Func.stwórzItem(Material.ENCHANTED_BOOK, "&bCiernie"));
-			
-			guiUlepszenia.setItem(30, Func.stwórzItem(Material.ENCHANTED_BOOK, "&eNieskończoność"));
-			guiUlepszenia.setItem(31, Func.stwórzItem(Material.ENCHANTED_BOOK, "&eMoc"));
-			guiUlepszenia.setItem(32, Func.stwórzItem(Material.ENCHANTED_BOOK, "&ePłomień"));
-			guiUlepszenia.setItem(33, Func.stwórzItem(Material.ENCHANTED_BOOK, "&eUderzenie"));
+			guiUlepszeń.setItem(upgr.slot, item);
 		}
 		void koniec() {
 			Func.wykonajDlaNieNull(serce, serce -> serce.serce.remove());
-			guiUlepszenia = null;
-			guiItemki = null;
+			Func.wykonajDlaNieNull(mobSklepu, Entity::remove);
+			guiUlepszeń = null;
+			mobSklepu = null;
 			ec = null;
 		}
 		
@@ -209,13 +274,138 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			
 			ec = nowy;
 		}
+
+		void kliknięte(Player p, int slot) {
+			ItemStack item = guiUlepszeń.getItem(slot);
+			if (Baza.pustySlot.isSimilar(item))
+				return;
+			if (item.getType().equals(Material.BARRIER)) {
+				p.sendMessage(prefix + "Wykupiono już maksymalny poziom ulepszenia");
+				return;
+			}
+			PlayerInventory inv = p.getInventory();
+			Enchant ench = Enchant.valueOf(item.getItemMeta().getDisplayName().substring(2));
+			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
+				if (ench.equals(upgr.enchant)) {
+					List<ItemStack> cena = upgr.ceny.get(item.getAmount()).cena;
+					
+					if (!Func.posiada(inv, cena)) {
+						p.sendMessage(prefix + "Nie stać cię na to");
+						break;
+					}
+					
+					Func.zabierz(inv, cena);
+					
+					serce.arena.powiadomDrużyne(this, "%s zakupił %s %s", napisy + p.getName(), ench.toString(), item.getAmount());
+					
+					zenchantój(ench, item.getAmount());
+					
+					ustawItemUlepszenia(upgr, item.getAmount() + 1);
+					
+					break;
+				}
+			
+		}
+
 		
+		void zenchantój(ItemStack item) {
+			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
+				if (upgr.enchant.slot.pasuje(item.getType())) {
+					int lvl = guiUlepszeń.getItem(upgr.slot).getAmount() - 1;
+					if (lvl > 0)
+						item.addUnsafeEnchantment(upgr.enchant.ench, lvl);
+				}
+		}
+		private void zenchantój(Enchant ench, int lvl) {
+			for (Player p : serce.arena.gracze)
+				if (serce.arena.inst.drużyna(p).equals(this))
+					zenchantój(p.getInventory(), ench, lvl);
+			zenchantój(ec, ench, lvl);
+		}
+		private void zenchantój(Inventory inv, Enchant ench, int lvl) {
+			for (ItemStack item : inv) 
+				if (item != null && ench.slot.pasuje(item.getType()))
+					item.addUnsafeEnchantment(ench.ench, lvl);
+		}
+		
+		@Override
+		public Inventory getInventory() {
+			return guiUlepszeń;
+		}
 	}
 	public static class Ruda extends Mapowany {
 		@Mapowane Material blok = Material.IRON_ORE;
 		@Mapowane int sekundyOdrespiania = 10;
 		@Mapowane ItemStack drop;
 	}
+	public static class SklepItemStrona extends Mapowany implements InventoryHolder {
+		@Mapowane String nazwa = "Itemki";
+		@Mapowane List<SklepItem> itemy;
+		@Mapowane int rzędy = 6;
+		
+		private Inventory inv;
+		
+		private void stwórzInv() {
+			inv = Bukkit.createInventory(this, rzędy*9, Func.koloruj("&4&l" + nazwa));
+			Func.ustawPuste(inv);
+			for (SklepItem sitem : Lists.reverse(itemy)) {
+				ItemStack item = sitem.item.clone();
+				for (ItemStack cena : sitem.cena)
+					Func.dodajLore(item, "&a" + cena.getType().toString().toLowerCase() + " &9x &b" + cena.getAmount());
+				inv.setItem(sitem.slot, sitem.item);
+			}
+		}
+		SklepItem znajdzItem(int slot) {
+			for (SklepItem sitem : itemy)
+				if (sitem.slot == slot)
+					return sitem;
+			return null;
+		}
+		
+		@Override
+		public Inventory getInventory() {
+			if (inv == null)
+				stwórzInv();
+			return inv;
+		}
+	}
+	public static class SklepItem extends Mapowany {
+		@Mapowane int slot;
+		@Mapowane ItemStack item;
+		
+		@Mapowane int zmieńStrone = -1;
+		@Mapowane List<ItemStack> cena;
+		
+		void kliknięty(Player p, Arena arena) {
+			if (zmieńStrone != -1) {
+				arena.otwórzSklep(p, arena.itemyDoKupienia.get(zmieńStrone));
+				return;
+			}
+			
+			PlayerInventory inv = p.getInventory();
+			if (!Func.posiada(inv, cena)) {
+				p.sendMessage(prefix + "Nie stać cię na to");
+				return;
+			}
+
+			Func.zabierz(inv, cena);
+			
+			ItemStack item = this.item.clone();
+			arena.inst.drużyna(p).zenchantój(item);
+			inv.addItem(item);
+			
+			new Napis(prefix + "Kupiłeś ").dodaj(Napis.item(item)).wyświetl(p);
+		}
+	}
+	public static class Ulepszenie extends Mapowany {
+		public static class UlepszenieCena extends Mapowany {
+			@Mapowane List<ItemStack> cena;
+		}
+		@Mapowane int slot;
+		@Mapowane ItemStack ikona;
+		@Mapowane Drużyna.Enchant enchant;
+		@Mapowane List<UlepszenieCena> ceny;
+	}	
 	public static class Statystyki extends Minigra.Statystyki {
 
 		@Override
@@ -251,6 +441,8 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			zresp();
 		}
 	}
+	
+	
 	
 	// EventHandler
 	
@@ -306,9 +498,36 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	}
 	
 	@EventHandler
-	public void zdejmowanieZbroji(InventoryClickEvent ev) {
-		if (ev.getSlotType().equals(SlotType.ARMOR))
-			Func.wykonajDlaNieNull(arena(ev.getWhoClicked()), a -> ev.setCancelled(true));
+	public void klikanieEq(InventoryClickEvent ev) {
+		Func.wykonajDlaNieNull(arena(ev.getWhoClicked()), arena -> {
+			int slot = ev.getRawSlot();
+			Inventory inv = ev.getInventory();
+			if (slot < 0 || slot >= inv.getSize())
+				return;
+			
+			if (inv.getHolder() != null && inv.getHolder() instanceof PustyHolder) {
+				if (slot == 12)
+					arena.otwórzSklep((Player) ev.getWhoClicked(), arena.itemyDoKupienia.get(0));
+				else if (slot == 14)
+					arena.otwórzSklep((Player) ev.getWhoClicked(), drużyna(ev.getWhoClicked()).guiUlepszeń);
+				return;
+			}
+			
+			// Zdejmowanie Zbroji
+			if (ev.getSlotType().equals(SlotType.ARMOR)) {
+				ev.setCancelled(true);
+				return;
+			}
+			
+			
+			// Sklep Itemów
+			if (inv.getHolder() != null && inv.getHolder() instanceof SklepItemStrona)
+				Func.wykonajDlaNieNull(((SklepItemStrona) inv.getHolder()).znajdzItem(slot),
+						sitem -> sitem.kliknięty((Player) ev.getWhoClicked(), arena));
+			else if (inv.getHolder() != null && inv.getHolder() instanceof Drużyna)
+				((Drużyna) inv.getHolder()).kliknięte((Player) ev.getWhoClicked(), slot);
+		});
+		
 	}
 	
 	@EventHandler
@@ -321,29 +540,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	}
 	
 	
-	@EventHandler
-	public void respawn(PlayerRespawnEvent ev) {
-		Func.wykonajDlaNieNull(drużyna(ev.getPlayer()), drużyna -> {
-			ev.setRespawnLocation(drużyna.respawnLoc);
-			ev.getPlayer().setGameMode(GameMode.SPECTATOR);
-			Arena arena = arena(ev.getPlayer());
-			int czasGry = (int) ((System.currentTimeMillis() / 1000) - arena.czasStartu);
-			int czekanie = czasGry / 60;
-			Krotka<Integer, Runnable> k = new Krotka<>(czekanie + 1, null);
-			k.b = () -> {
-				ev.getPlayer().sendTitle("§bZginołeś", "§aZa " + --k.a + " sekund zrespisz się", 0, 30, 20);
-				if (k.a > 0)
-					arena.opóznijTask(20, k.b);
-				else {
-					ev.getPlayer().teleport(drużyna.respawnLoc);
-					ev.getPlayer().setGameMode(GameMode.SURVIVAL);
-					ev.getPlayer().sendTitle("§eWskrzeszenie", "§aZ prochów powstałeś!", 0, 30, 20);
-					arena.ubierz(ev.getPlayer(), drużyna);
-				}
-			};
-			k.b.run();
-		});
-	}
 	@Override
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void śmierć(PlayerDeathEvent ev) {
@@ -375,8 +571,39 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			});
 		});
 	}
+	@EventHandler
+	public void respawn(PlayerRespawnEvent ev) {
+		Func.wykonajDlaNieNull(drużyna(ev.getPlayer()), drużyna -> {
+			ev.setRespawnLocation(drużyna.respawnLoc);
+			ev.getPlayer().setGameMode(GameMode.SPECTATOR);
+			Arena arena = arena(ev.getPlayer());
+			int czasGry = (int) ((System.currentTimeMillis() / 1000) - arena.czasStartu);
+			int czekanie = czasGry / 60;
+			Krotka<Integer, Runnable> k = new Krotka<>(czekanie + 1, null);
+			k.b = () -> {
+				ev.getPlayer().sendTitle("§bZginołeś", "§aZa " + --k.a + " sekund zrespisz się", 0, 30, 20);
+				if (k.a > 0)
+					arena.opóznijTask(20, k.b);
+				else {
+					ev.getPlayer().teleport(drużyna.respawnLoc);
+					ev.getPlayer().setGameMode(GameMode.SURVIVAL);
+					ev.getPlayer().sendTitle("§eWskrzeszenie", "§aZ prochów powstałeś!", 0, 30, 20);
+					arena.ubierz(ev.getPlayer(), drużyna);
+				}
+			};
+			k.b.run();
+		});
+	}
 	
-	
+	@EventHandler
+	public void klikanieMoba(PlayerInteractAtEntityEvent ev) {
+		Func.wykonajDlaNieNull(sklep(ev.getRightClicked()), arena1 -> {
+			Func.wykonajDlaNieNull(arena(ev.getPlayer()), arena2 -> {
+				if (arena1.equals(arena2))
+					arena1.otwórzSklep(ev.getPlayer(), Arena.guiGłówne);
+			});
+		});
+	}
 	
 	
 	
@@ -392,7 +619,9 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		
 		return w;
 	}
-	
+
+	static final String metaMobSklepu = "mimiBedWarsAlaZigaMobSklepu";
+	Arena sklep(Entity p) {return metadata(p, metaMobSklepu); }
 	static final String metaSerce = "mimiBedWarsAlaZigaSerce";
 	Serce serce(Entity p) {return metadata(p, metaSerce); }
 	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }

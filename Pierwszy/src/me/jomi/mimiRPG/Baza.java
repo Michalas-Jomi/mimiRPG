@@ -50,6 +50,6 @@ public class Baza implements Listener {
 	
 	@EventHandler
 	public void opuszczanieGry(PlayerQuitEvent ev) {
-		Gracz.mapa.remove(ev.getPlayer().getName());
+		Gracz.mapa.remove(ev.getPlayer().getName().toLowerCase());
 	}
 }

@@ -513,6 +513,44 @@ public abstract class Func {
 		} else
 			set.accept(slot, item);
 	}
+	public static boolean posiada(Inventory inv, List<ItemStack> itemy) {
+		List<ItemStack> potrzebne = Lists.newArrayList();
+		for (ItemStack item : itemy) potrzebne.add(item.clone());
+		
+		for (ItemStack _item : inv) {
+			Func.wykonajDlaNieNull(_item, item -> {
+				int ile = item.getAmount();
+				ItemStack pitem;
+				for (int i=0; i<potrzebne.size(); i++)
+					if ((pitem = potrzebne.get(i)).isSimilar(item)) {
+						int a = pitem.getAmount();
+						pitem.setAmount(a - ile);
+						if (pitem.getAmount() <= 0)
+							potrzebne.remove(i--);
+						if ((ile -= a) <= 0)
+							break;
+					}
+			});
+		}
+		
+		return itemy.isEmpty();
+	}
+	public static void zabierz(Inventory inv, List<ItemStack> itemy) {
+		for (ItemStack _item : itemy) {
+			Func.wykonajDlaNieNull(_item, item -> {
+				ItemStack iitem;
+				item = item.clone();
+				for (int i=0; i<inv.getSize() && item.getAmount() > 0; i++)
+					if ((iitem = inv.getItem(i)).isSimilar(item)) {
+						int a = iitem.getAmount();
+						iitem.setAmount(a - item.getAmount());
+						item.setAmount(item.getAmount() - a);
+						if (iitem.getAmount() <= 0)
+							inv.setItem(i, null);
+					}
+			});
+		}
+	}
 	
 	public static void ustawPuste(Inventory inv) {
 		for (int i=0; i<inv.getSize(); i++)

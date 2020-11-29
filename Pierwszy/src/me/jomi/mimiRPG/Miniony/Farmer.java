@@ -18,7 +18,7 @@ import net.minecraft.server.v1_16_R2.EntityHuman;
 import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
-public class Farmer extends Minion{
+public class Farmer extends Minion {
 
 	private static ItemStack hełm 	 = Func.dajGłówkę("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjc3ZDQxNWY5YmFhNGZhNGI1ZTA1OGY1YjgxYmY3ZjAwM2IwYTJjOTBhNDgzMWU1M2E3ZGJjMDk4NDFjNTUxMSJ9fX0=");
 	private static ItemStack klata 	 = Func.stwórzItem(Material.IRON_CHESTPLATE);

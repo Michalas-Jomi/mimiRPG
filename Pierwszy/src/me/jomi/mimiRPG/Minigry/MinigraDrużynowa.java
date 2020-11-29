@@ -237,6 +237,15 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 		
 		
+		// util
+		
+		<D extends Drużyna> void powiadomDrużyne(D drużyna, String msg, Object... uzupełnienia) {
+			for (Player p : gracze)
+				if (getInstMinigraDrużynowa().drużyna(p).equals(drużyna))
+					p.sendMessage(getInstMinigraDrużynowa().getPrefix() + Func.msg(msg, uzupełnienia));
+		}
+		
+		
 		// Override
 		
 		@Override
