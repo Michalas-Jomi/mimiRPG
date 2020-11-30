@@ -220,6 +220,8 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	@EventHandler
 	public void klikanieSkrzyni(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
+		if (otwarteOtwieranie.containsKey(p.getName()))
+			return;
 		Krotka<Consumer<Skrzynka>, Runnable> k = new Krotka<>(null, null);
 		switch (ev.getAction()) {
 		case LEFT_CLICK_BLOCK:

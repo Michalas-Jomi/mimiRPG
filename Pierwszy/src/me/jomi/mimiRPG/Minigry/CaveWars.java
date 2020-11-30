@@ -106,11 +106,10 @@ public class CaveWars extends MinigraDrużynowa {
 			});
 		}
 		@Override
-		Player opuść(int i, boolean info) {
-			Player p = super.opuść(i, info);
+		void opuść(Player p, int i, boolean info) {
+			super.opuść(p, i, info);
 			p.removePotionEffect(PotionEffectType.NIGHT_VISION);
 			p.removePotionEffect(PotionEffectType.GLOWING);
-			return p;
 		}
 		@Override
 		void koniec() {

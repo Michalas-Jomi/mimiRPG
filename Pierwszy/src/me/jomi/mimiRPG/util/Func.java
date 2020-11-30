@@ -365,7 +365,7 @@ public abstract class Func {
 		List<String> lore = meta.getLore();
 		if (lore == null)
 			lore = Lists.newArrayList();
-		lore.add(linia);
+		lore.add(koloruj(linia));
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		return item;
@@ -533,7 +533,7 @@ public abstract class Func {
 			});
 		}
 		
-		return itemy.isEmpty();
+		return potrzebne.isEmpty();
 	}
 	public static void zabierz(Inventory inv, List<ItemStack> itemy) {
 		for (ItemStack _item : itemy) {
@@ -541,7 +541,7 @@ public abstract class Func {
 				ItemStack iitem;
 				item = item.clone();
 				for (int i=0; i<inv.getSize() && item.getAmount() > 0; i++)
-					if ((iitem = inv.getItem(i)).isSimilar(item)) {
+					if ((iitem = inv.getItem(i)) != null && iitem.isSimilar(item)) {
 						int a = iitem.getAmount();
 						iitem.setAmount(a - item.getAmount());
 						item.setAmount(item.getAmount() - a);

@@ -157,7 +157,7 @@ public class EdytujItem extends Komenda {
 			if (wszystkie)
 				opcja(n, "pasujące", "enchant", "wyświetlić tylko pasujące enchanty", false, () -> "§6");
 			else 
-				opcja(n, "wszystkie", "enchant-a", "wyświetlić wszystkie enchanty", false, () -> "§6");
+				opcja(n, "wszystkie", "enchant-w", "wyświetlić wszystkie enchanty", false, () -> "§6");
 			opcja(n, "←", "", "powrócić", false, () -> "§6");
 			n.dodaj("\n");
 			n.wyświetl(p);

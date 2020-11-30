@@ -102,12 +102,14 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		final boolean opuść(Player p) {
 			String nick = p.getName();
 			for (int i=0; i<gracze.size(); i++)
-				if (gracze.get(i).getName().equals(nick))
-					return opuść(i, true) != null;
+				if (gracze.get(i).getName().equals(nick)) {
+					opuść(p, i, true);
+					return true;
+				}
 			return false;
 		}
-		Player opuść(int i, boolean info) {
-			Player p = gracze.remove(i);
+		void opuść(Player p, int i, boolean info) {
+			gracze.remove(i);
 
 			NowyEkwipunek.wczytajStary(p);
 			
@@ -140,7 +142,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
 						nazwa, gracze.size(), strMaxGracze()));
 			}
-			return p;
 		}
 
 		boolean wygrana(Player p) {
@@ -161,7 +162,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		void koniec() {
 			grane = false;
 			while (!gracze.isEmpty())
-				opuść(0, false);
+				opuść(gracze.get(0), 0, false);
 			for (Integer id : doAnulowania)
 				Bukkit.getScheduler().cancelTask(id);
 			doAnulowania.clear();

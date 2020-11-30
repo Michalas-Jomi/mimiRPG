@@ -16,6 +16,7 @@ import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -26,7 +27,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -75,10 +75,10 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		@Mapowane List<SklepItemStrona> itemyDoKupienia;
 		@Mapowane List<Ulepszenie> ulepszeniaDoKupienia;
 		
-		final HashMap<String, Serce> oznaczeni = new HashMap<>();
+		final HashMap<String, List<Serce>> oznaczeni = new HashMap<>();
 		
 		
-		int sekundyStartu;
+		int czasStartuAreny;
 		
 		static final Inventory guiGłówne;
 		static {
@@ -103,7 +103,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 				p.teleport(inst.drużyna(p).respawnLoc);
 				p.setGameMode(GameMode.SURVIVAL);
 			}
-			sekundyStartu = (int) (System.currentTimeMillis() / 1000);
+			czasStartuAreny = (int) (System.currentTimeMillis() / 1000);
 		}
 		@Override
 		void koniec() {
@@ -113,28 +113,38 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 				drużyna.koniec();
 		}
 		@Override
-		Player opuść(int i, boolean info) {
-			Player p = super.opuść(i, info);
+		void opuść(Player p, int i, boolean info) {
 			upuśćSerce(p);
-			return p;
+			super.opuść(p, i, info);
 		}
 		
 		void upuśćSerce(Player p) {
-			Serce serce = oznaczeni.remove(p.getName());
-			if (serce == null) return;
-			serce.powrót();
-			napiszGraczom("%s upuścił serce drużyny %s", p.getName(), serce.drużyna);
+			Func.wykonajDlaNieNull(oznaczeni.remove(p.getName()), lista -> lista.forEach(serce -> {
+				serce.powrót();
+				napiszGraczom("%s upuścił serce drużyny %s", p.getName(), serce.drużyna);
+			}));
 		}
 		
 		
 		
 		// util
 		
-		void particleSerc() {
-			for (Entry<String, Serce> en : oznaczeni.entrySet()) {
+		void sekunda() {
+			for (Entry<String, List<Serce>> en : oznaczeni.entrySet()) {
 				Player p = Bukkit.getPlayer(en.getKey());
-				en.getValue().drużyna.particle(p.getLocation().add(0, 5, 0), 100, 0, 5, 0);
+				en.getValue().forEach(serce -> particleNiesionychSerc(serce, p.getLocation().add(.5, .5, .5)));
+				Drużyna drużyna = inst.drużyna(p);
+				if (drużyna.serce.serce != null && !drużyna.serce.serce.isDead() && p.getLocation().distance(drużyna.serceLoc) <= 5)
+					for (Serce serce : en.getValue()) {
+						napiszGraczom("%s wyeliminował drużynę %s donosząc ich serce do swojego!", drużyna.napisy + p.getName(), serce.drużyna);
+						for (int i = gracze.size() - 1; i >= 0; i--)
+							if (inst.drużyna(gracze.get(i)).equals(serce.drużyna))
+								opuść(gracze.get(i), i, true);
+					}
 			}
+		}
+		private void particleNiesionychSerc(Serce serce, Location loc) {
+			serce.drużyna.particle(loc, 100, .1, 2, .1);
 		}
 
 		void otwórzSklep(Player p, InventoryHolder strona) {
@@ -144,11 +154,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		void otwórzSklep(Player p, Inventory inv) {
 			p.openInventory(inv);
 			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-		}
-		
-		@Override
-		<D extends MinigraDrużynowa.Drużyna> void ubierz(Player p, D drużyna, boolean hełm, boolean spodnie, boolean klata, boolean buty) {
-			
 		}
 		
 		
@@ -227,6 +232,8 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			mobSklepu.setInvulnerable(true);
 			mobSklepu.setGravity(false);
 			mobSklepu.setSilent(true);
+			if (mobSklepu instanceof LivingEntity)
+				((LivingEntity) mobSklepu).setCollidable(false);
 			
 			Func.ustawMetadate(mobSklepu, metaMobSklepu, serce.arena);
 			
@@ -240,11 +247,11 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			guiUlepszeń = Bukkit.createInventory(this, 5*9, Func.koloruj("&lUlepszenia Drużynowe"));
 			Func.ustawPuste(guiUlepszeń);
 			
-			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
+			for (Ulepszenie upgr : Lists.reverse(serce.arena.ulepszeniaDoKupienia))
 				ustawItemUlepszenia(upgr, 1);
 		}
 		void ustawItemUlepszenia(Ulepszenie upgr, int lvl) {
-			ItemStack item = Func.nazwij(upgr.ikona.clone(), "&c" + nazwa);
+			ItemStack item = Func.nazwij(upgr.ikona.clone(), "&c" + upgr.enchant);
 			if (lvl >= upgr.ceny.size()) {
 				item.setType(Material.BARRIER);
 				item.setAmount(1);
@@ -287,7 +294,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			Enchant ench = Enchant.valueOf(item.getItemMeta().getDisplayName().substring(2));
 			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
 				if (ench.equals(upgr.enchant)) {
-					List<ItemStack> cena = upgr.ceny.get(item.getAmount()).cena;
+					List<ItemStack> cena = upgr.ceny.get(item.getAmount() - 1).cena;
 					
 					if (!Func.posiada(inv, cena)) {
 						p.sendMessage(prefix + "Nie stać cię na to");
@@ -304,7 +311,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 					
 					break;
 				}
-			
 		}
 
 		
@@ -318,14 +324,19 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		private void zenchantój(Enchant ench, int lvl) {
 			for (Player p : serce.arena.gracze)
-				if (serce.arena.inst.drużyna(p).equals(this))
+				if (serce.arena.inst.drużyna(p).equals(this)) {
 					zenchantój(p.getInventory(), ench, lvl);
+					zenchantój(p.getItemOnCursor(), ench, lvl);
+				}
 			zenchantój(ec, ench, lvl);
 		}
 		private void zenchantój(Inventory inv, Enchant ench, int lvl) {
 			for (ItemStack item : inv) 
-				if (item != null && ench.slot.pasuje(item.getType()))
-					item.addUnsafeEnchantment(ench.ench, lvl);
+				zenchantój(item, ench, lvl);
+		}
+		private void zenchantój(ItemStack item, Enchant ench, int lvl) { 
+			if (item != null && ench.slot.pasuje(item.getType()))
+				item.addUnsafeEnchantment(ench.ench, lvl);
 		}
 		
 		@Override
@@ -352,7 +363,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 				ItemStack item = sitem.item.clone();
 				for (ItemStack cena : sitem.cena)
 					Func.dodajLore(item, "&a" + cena.getType().toString().toLowerCase() + " &9x &b" + cena.getAmount());
-				inv.setItem(sitem.slot, sitem.item);
+				inv.setItem(sitem.slot, item);
 			}
 		}
 		SklepItem znajdzItem(int slot) {
@@ -427,6 +438,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			this.arena = arena;
 			this.drużyna = drużyna;
 			życia = arena.życiaSerc;
+			zresp();
 		}
 		
 		void zresp() {
@@ -435,10 +447,18 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		
 		void oznacz(Player p) {
-			arena.oznaczeni.put(p.getName(), this);
+			List<Serce> lista = Func.nieNullList(arena.oznaczeni.get(p.getName()));
+			lista.add(this);
+			arena.oznaczeni.put(p.getName(), lista);
 		}
 		void powrót() {
 			zresp();
+		}
+	
+		
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof Serce && obj != null && this.drużyna.equals(((Serce) obj).drużyna);
 		}
 	}
 	
@@ -514,7 +534,8 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			}
 			
 			// Zdejmowanie Zbroji
-			if (ev.getSlotType().equals(SlotType.ARMOR)) {
+			if (ev.getInventory() instanceof PlayerInventory) {
+				Main.log(ev.getRawSlot(), ev.getSlot(), ev.getSlotType());
 				ev.setCancelled(true);
 				return;
 			}
@@ -551,7 +572,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			ev.getDrops().remove(inv.getItem(EquipmentSlot.LEGS));
 			ev.getDrops().remove(inv.getItem(EquipmentSlot.FEET));
 			
-			Func.wykonajDlaNieNull(arena.oznaczeni.remove(ev.getEntity().getName()), serce -> {
+			Func.wykonajDlaNieNull(arena.oznaczeni.remove(ev.getEntity().getName()), lista -> lista.forEach(serce -> {
 				Player kiler = ev.getEntity().getKiller();
 				Drużyna dk = drużyna(kiler);
 				if (kiler != null)
@@ -568,7 +589,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 					arena.napiszGraczom("%s zginął! Serce drużyny %s powróciło na swoje miejsce i jest gotowe do ponownego przejęcia!",
 							drużyna(ev.getEntity()).napisy + ev.getEntity().getName(), serce.drużyna);
 				}
-			});
+			}));
 		});
 	}
 	@EventHandler
@@ -577,7 +598,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			ev.setRespawnLocation(drużyna.respawnLoc);
 			ev.getPlayer().setGameMode(GameMode.SPECTATOR);
 			Arena arena = arena(ev.getPlayer());
-			int czasGry = (int) ((System.currentTimeMillis() / 1000) - arena.czasStartu);
+			int czasGry = (int) ((System.currentTimeMillis() / 1000) - arena.czasStartuAreny);
 			int czekanie = czasGry / 60;
 			Krotka<Integer, Runnable> k = new Krotka<>(czekanie + 1, null);
 			k.b = () -> {
@@ -615,7 +636,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		
 		for (Minigra.Arena arena : mapaAren.values())
 			if (arena.grane)
-				((Arena) arena).particleSerc();
+				((Arena) arena).sekunda();
 		
 		return w;
 	}

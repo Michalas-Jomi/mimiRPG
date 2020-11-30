@@ -96,13 +96,12 @@ public abstract class MinigraDrużynowa extends Minigra {
 			return true;
 		}
 		@Override
-		Player opuść(int i, boolean info) {
-			Player p = super.opuść(i, info);
+		void opuść(Player p, int i, boolean info) {
 			Drużyna drużyna = getInstMinigraDrużynowa().drużyna(p);
 			if (drużyna != null)
 				drużyna.gracze--;
 			p.removeMetadata(getInstMinigraDrużynowa().getMetaDrużynaId(), Main.plugin);
-			return p;
+			super.opuść(p, i, info);
 		}
 		<D extends Drużyna> boolean wygrana(D drużyna) {
 			if (!grane) return true;
