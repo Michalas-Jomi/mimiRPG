@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,6 +41,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -53,6 +55,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
@@ -552,6 +565,25 @@ public abstract class Func {
 		}
 	}
 	
+	public static class FuncIdHolder implements InventoryHolder {
+		private static int _id = 0;
+		private final int id;
+		private Inventory inv;
+		
+		private FuncIdHolder() { this.id = _id++; }
+		public int getId() { return id; }
+		@Override public Inventory getInventory() { return inv; }
+	}
+	public static Krotka<Inventory, Integer> stwórzInvZId(int rzędy, String nazwa) {
+		FuncIdHolder holder = new FuncIdHolder();
+		return new Krotka<>(holder.inv = stwórzInv(holder, rzędy, nazwa), holder.id);
+	}
+	public static Inventory stwórzInv(int rzędy, String nazwa) {
+		return stwórzInv(null, rzędy, nazwa);
+	}
+	public static Inventory stwórzInv(InventoryHolder holder, int rzędy, String nazwa) {
+		return Bukkit.createInventory(holder, rzędy * 9, koloruj(nazwa));
+	}
 	public static void ustawPuste(Inventory inv) {
 		for (int i=0; i<inv.getSize(); i++)
 			inv.setItem(i, Baza.pustySlot);
@@ -1114,5 +1146,39 @@ public abstract class Func {
 	}
 	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
 		return new IteratorBloków(róg1, róg2);
+	}
+	
+	
+	public static boolean wklejSchemat(String schematScieżka, Location loc) {
+		return wklejSchemat(schematScieżka, loc.getWorld(), locToVec3(loc));
+	}
+	public static boolean wklejSchemat(String schematScieżka, World świat, int x, int y, int z) {
+		return wklejSchemat(schematScieżka, świat, BlockVector3.at(x, y, z));
+	}
+	public static boolean wklejSchemat(String schematScieżka, World świat, BlockVector3 vec3) {
+		String scieżka = Main.path + schematScieżka;
+		File file = new File(scieżka);
+		try (ClipboardReader reader = ClipboardFormats.findByFile(file).getReader(new FileInputStream(file));
+				EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(świat))) {
+			Operations.complete(
+					new ClipboardHolder(reader.read())
+		            .createPaste(editSession)
+		            .to(vec3)
+		            .ignoreAirBlocks(true)
+		            .build()
+		            );
+		} catch (IOException  e) {
+			Main.warn("Nie odnaleziono pliku " + scieżka + " schemat z Bazy.yml nie został wybudowany.");
+			return false;
+		} catch (WorldEditException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+	public static RegionManager regiony(World świat) {
+		return WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(świat));
+	}
+	public static BlockVector3 locToVec3(Location loc) {
+		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 }

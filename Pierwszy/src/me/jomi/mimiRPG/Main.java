@@ -28,6 +28,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.iridium.iridiumskyblock.IridiumSkyblock;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flag;
@@ -61,6 +62,8 @@ public class Main extends JavaPlugin implements Listener {
     public static StringFlag flagaCustomoweMoby;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
+	// Api WorldEdit
+	public static WorldEdit we;
 
 	
 	public static JavaPlugin plugin;
@@ -83,6 +86,13 @@ public class Main extends JavaPlugin implements Listener {
 				WorldGuard.getInstance().getFlagRegistry().register(flaga);
 		} catch (NoClassDefFoundError e) {
 			brakPluginu("WorldGuard");
+		}
+	}
+	private void włączWorldEdit() {
+		try {
+			we = WorldEdit.getInstance();
+		} catch (NoClassDefFoundError e) {
+			brakPluginu("WorldEdit");
 		}
 	}
 	private void włączVault() {
@@ -121,6 +131,7 @@ public class Main extends JavaPlugin implements Listener {
 		ust = new Config("ustawienia");
 		
 		włączWorldGuard();
+		włączWorldEdit();
 	}
 	@Override
 	public void onEnable() {

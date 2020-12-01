@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.Minigry;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
@@ -10,6 +11,7 @@ import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderCrystal;
@@ -36,7 +38,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.google.common.collect.Lists;
-
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -53,6 +54,9 @@ import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 @Moduł
 public class BedWarsAlaZiga extends MinigraDrużynowa {
+	public static boolean warunekModułu() {
+		return Main.rg != null;
+	}
 	public static final String prefix = Func.prefix("Bedwars ala Ziga");
 	public static class PustyHolder implements InventoryHolder {
 		private Inventory inv;
@@ -74,6 +78,12 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		
 		@Mapowane List<SklepItemStrona> itemyDoKupienia;
 		@Mapowane List<Ulepszenie> ulepszeniaDoKupienia;
+		
+		@Mapowane String schemat;
+		@Mapowane Location locSchemat;
+		@Mapowane Location rógAreny1;
+		@Mapowane Location rógAreny2;
+		
 		
 		final HashMap<String, List<Serce>> oznaczeni = new HashMap<>();
 		
@@ -125,14 +135,31 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			}));
 		}
 		
-		
+		void regeneruj() {
+			regeneruj(Func.blokiIterator(rógAreny1, rógAreny2));
+		}
+		void regeneruj(Iterator<Block> it) {
+			int licz = 0;
+			int mx = Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Max Bloki", 50_000);
+			while (it.hasNext()) {
+				Block blok = it.next();
+				if (blok.getType().equals(Material.AIR))
+					continue;
+				blok.setType(Material.AIR, false);
+				if (++licz >= mx) {
+					Func.opóznij(Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Ticki Przerw", 1), () -> regeneruj(it));
+					return;
+				}
+			}
+			Func.wklejSchemat(schemat, locSchemat);
+		}
 		
 		// util
 		
 		void sekunda() {
 			for (Entry<String, List<Serce>> en : oznaczeni.entrySet()) {
 				Player p = Bukkit.getPlayer(en.getKey());
-				en.getValue().forEach(serce -> particleNiesionychSerc(serce, p.getLocation().add(.5, .5, .5)));
+				en.getValue().forEach(serce -> particleNiesionychSerc(serce, p, 4));
 				Drużyna drużyna = inst.drużyna(p);
 				if (drużyna.serce.serce != null && !drużyna.serce.serce.isDead() && p.getLocation().distance(drużyna.serceLoc) <= 5)
 					for (Serce serce : en.getValue()) {
@@ -143,8 +170,10 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 					}
 			}
 		}
-		private void particleNiesionychSerc(Serce serce, Location loc) {
-			serce.drużyna.particle(loc, 100, .1, 2, .1);
+		private void particleNiesionychSerc(Serce serce, Player p, int n) {
+			if (n <= 0) return;
+			serce.drużyna.particle(p.getLocation().add(.5, .5, .5), 100, .1, 2, .1);
+			Func.opóznij(5, () -> particleNiesionychSerc(serce, p, n - 1));
 		}
 
 		void otwórzSklep(Player p, InventoryHolder strona) {
@@ -266,8 +295,10 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		void koniec() {
 			Func.wykonajDlaNieNull(serce, serce -> serce.serce.remove());
 			Func.wykonajDlaNieNull(mobSklepu, Entity::remove);
+			serce.uderzone = null;
 			guiUlepszeń = null;
 			mobSklepu = null;
+			serce = null;
 			ec = null;
 		}
 		
@@ -432,7 +463,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		
 		int życia;
 		
-		boolean chronione;
+		Long uderzone = null;
 		
 		public Serce(Arena arena, Drużyna drużyna) {
 			this.arena = arena;
@@ -455,6 +486,21 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			zresp();
 		}
 	
+		void ustawCooldown() {
+			if (uderzone == null) return;
+			long cały = arena.czasOchronySercaPoZniszczeniu * 1000;
+			long teraz = uderzone - System.currentTimeMillis();
+			
+			int procent = (int) ((teraz / cały) * 50);
+			
+			StringBuilder nazwa = new StringBuilder("§a");
+			int i = 0;
+			while (i++ < procent) nazwa.append('|');
+			nazwa.append("§c");
+			while (i++ < 50) nazwa.append('|');
+			
+			Func.opóznij(2, this::ustawCooldown);
+		}
 		
 		@Override
 		public boolean equals(Object obj) {
@@ -466,7 +512,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	
 	// EventHandler
 	
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenie(BlockBreakEvent ev) {
 		Func.wykonajDlaNieNull(arena(ev.getPlayer()), arena -> {
 			for (Ruda ruda : arena.rudy)
@@ -496,11 +542,12 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 					});
 				return;
 			}
-			if (serce.drużyna.equals(drużyna(ev.getDamager()))) {
+			Drużyna drużyna = drużyna(ev.getDamager());
+			if (serce.drużyna.equals(drużyna)) {
 				ev.getDamager().sendMessage(prefix + "Nie możesz zniszczyć serca swojej drużyny!");
 				return;
 			}
-			if (serce.chronione) {
+			if (serce.uderzone != null) {
 				ev.getDamager().sendMessage(prefix + "Poczekaj chwile zanim uderzysz");
 				return;
 			}
@@ -508,11 +555,19 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			if (--serce.życia <= 0) {
 				ev.getEntity().remove();
 				serce.oznacz((Player) ev.getDamager());
-				serce.arena.napiszGraczom("%s ukradł serce drużyny %s", drużyna(ev.getDamager()).napisy + ev.getDamager().getName(), serce.drużyna);
+				serce.arena.napiszGraczom("%s ukradł serce drużyny %s", drużyna.napisy + ev.getDamager().getName(), serce.drużyna);
 			} else {
-				serce.chronione = true;
-				serce.arena.opóznijTask(serce.arena.czasOchronySercaPoZniszczeniu * 20, () -> serce.chronione = false);
+				serce.uderzone = System.currentTimeMillis();
+				serce.arena.opóznijTask(serce.arena.czasOchronySercaPoZniszczeniu * 20, () -> {
+					serce.uderzone = null;
+					serce.serce.setCustomName("");
+					serce.serce.setCustomNameVisible(false);
+				});
 				serce.arena.napiszGraczom("Serce drużyny %s zostało uszkodzone! (%s/%s)", serce.drużyna.toString(), serce.życia, serce.arena.życiaSerc);
+				Location loc = serce.drużyna.serceLoc;
+				loc.getWorld().createExplosion(5, 5, 5, 5, false, false);
+				serce.serce.setCustomNameVisible(true);
+				serce.ustawCooldown();
 			}
 		});
 	}
@@ -630,6 +685,20 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	
 	// Override
 
+	@Override
+	Minigra.Arena zaczynanaArena() {
+		if (zaczynanaArena != null) 
+			return zaczynanaArena;
+		
+		Arena arena = (Arena) super.zaczynanaArena();
+		if (arena == null) 
+			return null;
+		
+		arena.regeneruj();
+		
+		return arena;
+	}
+	
 	@Override
 	public int czas() {
 		int w = super.czas();

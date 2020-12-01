@@ -19,7 +19,6 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion.CircularInheritan
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł
@@ -41,7 +40,7 @@ public class RegionyFrakcyjne extends Komenda {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().contains("regionyfrakcyjne")) {
-			RegionManager regiony = Bazy.inst.regiony(Bukkit.getWorld(args[0]));
+			RegionManager regiony = Func.regiony(Bukkit.getWorld(args[0]));
 			ProtectedRegion region = regiony.getRegion(args[1]);
 			ProtectedCuboidRegion nowy = new ProtectedCuboidRegion(
 					args[2] + args[1],
@@ -63,7 +62,7 @@ public class RegionyFrakcyjne extends Komenda {
 			sender.sendMessage(prefix + "Podmieniono region");
 		} else {
 			Pattern patern = Pattern.compile(Func.listToString(args, 1));
-			RegionManager regiony = Bazy.inst.regiony(Bukkit.getWorld(args[0]));
+			RegionManager regiony = Func.regiony(Bukkit.getWorld(args[0]));
 			Set<String> doUsunięcia = Sets.newConcurrentHashSet();
 			for (ProtectedRegion region : regiony.getRegions().values())
 				if (patern.matcher(region.getId()).find())

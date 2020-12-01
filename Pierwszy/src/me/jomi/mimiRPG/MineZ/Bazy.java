@@ -1,8 +1,5 @@
 package me.jomi.mimiRPG.MineZ;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -52,17 +49,8 @@ import org.bukkit.util.Vector;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
-import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
-import com.sk89q.worldedit.session.ClipboardHolder;
-
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.Flags;
@@ -321,6 +309,55 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return Bazy.config.wczytajLubDomyślna("ustawienia.najniższyh poziom bazy", 50);
 		}
 		
+		static int odświeżConfigiGraczy() {
+			int licz = 0;
+
+			Pattern patern = Pattern.compile("baza-?\\d+x-?\\d+y-?\\d+z");
+			for (World world : Bukkit.getWorlds())
+				for (ProtectedRegion region : regiony.get(BukkitAdapter.adapt(world)).getRegions().values())
+					try {
+						if (patern.matcher(region.getId()).find()) {
+							Baza baza = new Baza();
+							baza.nazwa = region.getId();
+							baza.nazwaŚwiata = world.getName();
+							baza.poziom = config.wczytajLubDomyślna("Naprawa.p" + (region.getMaximumPoint().getBlockX() - region.getMinimumPoint().getBlockX()), -12345);
+							if (baza.poziom == -12345)
+								Main.error("Brak odpowiednika dla " + region.getMaximumPoint().getBlockX() + " - " + region.getMinimumPoint().getBlockX() + " id:" + region.getId());
+							for (String owner : region.getOwners().getPlayers()) {
+								Gracz g = Gracz.wczytaj(owner);
+								g.baza = baza;
+								g.zapisz();
+							}
+							licz++;
+						}
+					} catch (Throwable e) {
+						Main.error(region.getId());
+						e.printStackTrace();
+					}
+			
+			for (Entry<String, Object> en : Gildia.config.mapa(false).entrySet()) {
+				try {
+					Gildia gildia = (Gildia) en.getValue();
+					
+					 Gracz g = Gracz.wczytaj(gildia.przywódca);
+					 g.gildia = gildia.nazwa;
+					 g.zapisz();
+					for (String nick : gildia.gracze) {
+						g = Gracz.wczytaj(nick);
+						g.gildia = gildia.nazwa;
+						g.zapisz();
+					}
+				} catch (Throwable e) {
+					Main.error(en, en.getKey(), en.getValue());
+					e.printStackTrace();
+				}
+			}
+			
+			
+			
+			return licz;
+		}
+		
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
 			this.świat = świat;
@@ -421,7 +458,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		public Baza() {}// konstruktor dla Mapowanego
 		public void Init() throws NiepoprawneDemapowanieException {
 			świat = Bukkit.getWorld(nazwaŚwiata);
-			region = (ProtectedCuboidRegion) Bazy.inst.regiony(świat).getRegion(nazwa);
+			region = (ProtectedCuboidRegion) Func.regiony(świat).getRegion(nazwa);
 			if (region == null)
 				throw new NiepoprawneDemapowanieException();
 		}
@@ -490,7 +527,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			nowy.setFlag(Main.flagaC4, 		StateFlag.State.ALLOW);
 			nowy.setPriority(region.getPriority() - 1);
 			
-			Bazy.inst.regiony(świat).removeRegion(region.getId());
+			Func.regiony(świat).removeRegion(region.getId());
 			
 			if (atakowana)
 				Bukkit.getScheduler().cancelTask(idTasku);
@@ -558,7 +595,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			final String mat = blok.getType().toString();
 			final String str = config.sekcja("c4").getString(mat);
 			
-			if (!regiony.getApplicableRegions(locToVec3(blok.getLocation())).testState(null, Main.flagaC4))
+			if (!regiony.getApplicableRegions(Func.locToVec3(blok.getLocation())).testState(null, Main.flagaC4))
 				return;
 			
 			if (str != null) {
@@ -601,7 +638,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		void zakończ() {
 			RegionManager regiony = Bazy.regiony.get(BukkitAdapter.adapt(loc.getWorld()));
 			ProtectedCuboidRegion _region = new ProtectedCuboidRegion("mimiChwilowaBazaC4",
-					locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
+					Func.locToVec3(loc.clone().add(zasięg, zasięg, zasięg)), Func.locToVec3(loc.clone().add(-zasięg, -zasięg, -zasięg)));
 			
 			Set<String> wybuchnięte = Sets.newConcurrentHashSet();
 			
@@ -785,7 +822,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 							Bazy.regiony.get(BukkitAdapter.adapt(świat))
 								.getApplicableRegions(BlockVector3.at(x, y, z))
 								.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
-							wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
+							Func.wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
 								zabierz = true;
 					
 					if (zabierz) 
@@ -794,27 +831,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				}
 			}
 	}
-	boolean wklejSchemat(String schematScieżka, World świat, int x, int y, int z) {
-		String scieżka = Main.path + schematScieżka;
-		File file = new File(scieżka);
-		ClipboardFormat format = ClipboardFormats.findByFile(file);
-		try (ClipboardReader reader = format.getReader(new FileInputStream(file));
-				EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(świat))) {
-			Operations.complete(
-					new ClipboardHolder(reader.read())
-		            .createPaste(editSession)
-		            .to(BlockVector3.at(x, y, z))
-		            .ignoreAirBlocks(true)
-		            .build()
-		            );
-		} catch (IOException  e) {
-			Main.warn("Nie odnaleziono pliku " + scieżka + " schemat z Bazy.yml nie został wybudowany.");
-			return false;
-		} catch (WorldEditException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}	
 
 	@EventHandler(priority = EventPriority.LOW)
 	public void niszczenie(BlockBreakEvent ev) {
@@ -935,18 +951,12 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 
 	
 	public Baza znajdzBaze(Location loc) {
-		for (ProtectedRegion region : regiony(loc.getWorld()).getApplicableRegions(locToVec3(loc))) {
+		for (ProtectedRegion region : Func.regiony(loc.getWorld()).getApplicableRegions(Func.locToVec3(loc))) {
 			Baza baza = Baza.wczytaj(loc.getWorld(), region);
 			if (baza != null)
 				return baza;
 		}
 		return null;
-	}
-	public RegionManager regiony(World świat) {
-		return regiony.get(BukkitAdapter.adapt(świat));
-	}
-	static BlockVector3 locToVec3(Location loc) {
-		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 	
 	final static Set<String> bypass = Sets.newConcurrentHashSet();

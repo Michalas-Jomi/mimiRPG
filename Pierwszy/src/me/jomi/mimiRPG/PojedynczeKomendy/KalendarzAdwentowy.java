@@ -36,7 +36,7 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 		ustawKomende("edytujKalendarzAdwentowy", null, null);
 	}
 	final String nazwaConfigu = "configi/KalendarzAdwentowy";
-	private final ItemStack doOdebrania = Func.stwórzItem(Material.YELLOW_STAINED_GLASS_PANE, "&a&lOdebierz");
+	private final ItemStack doOdebrania = Func.stwórzItem(Material.YELLOW_STAINED_GLASS_PANE, "&a&lOdbierz");
 	private final ItemStack odebrany 	= Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, "&a&lOdebrane");
 	private final ItemStack niedostępny = Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, "", "&cdziś nie jest odpowiedni dzień na ten item");
 	private final ItemStack pusty		= Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&1&l ");
@@ -53,7 +53,7 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Itemy Adventowe", itemy.size());
+		return Func.r("Itemy Adwentowe", itemy.size());
 	}
 	
 	@Override
@@ -78,20 +78,16 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 	
 	Set<String> odbierający = Sets.newConcurrentHashSet();
 	void odbierz(Player p) {
-		Inventory inv = Bukkit.createInventory(null, ((itemy.size() - 1) / 9 + 1) * 9, Func.koloruj("&4&lKalendarz Adventowy"));
+		Inventory inv = Bukkit.createInventory(null, ((itemy.size() - 1) / 9 + 1) * 9, Func.koloruj("&4&lKalendarz Adwentowy"));
 		Gracz g = Gracz.wczytaj(p);
 		int i = -1;
 		int dziś = ZonedDateTime.now().getDayOfMonth();
-		for (int j=0; j < itemy.size(); j++) {
-			if (g.DzienneNagrodyodebrane.contains(++i))
-				inv.setItem(i, odebrany);
-			else if (i == dziś)
-				inv.setItem(i, doOdebrania);
-			else
-				inv.setItem(i, Func.nazwij(niedostępny.clone(), "&a&lDzień &c&l" + (i+1)));
-		}
-		while (i < inv.getSize() && i >= 0)
-			inv.setItem(i++, pusty);
+		for (int j=0; j < itemy.size(); j++)
+			if (g.DzienneNagrodyodebrane.contains(++i)) inv.setItem(i, odebrany);
+			else if (i == (dziś - 1)) 					inv.setItem(i, doOdebrania);
+			else 										inv.setItem(i, Func.nazwij(niedostępny.clone(), "&a&lDzień &c&l" + (i+1)));
+		while (++i < inv.getSize() && i >= 0)
+			inv.setItem(i, pusty);
 		p.openInventory(inv);
 		odbierający.add(p.getName());
 	}
@@ -103,8 +99,8 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 				return;
 			ev.setCancelled(true);
 			Gracz g = Gracz.wczytaj(ev.getWhoClicked().getName());
-			if (ev.getRawSlot() == ZonedDateTime.now().getDayOfMonth() &&
-					!g.DzienneNagrodyodebrane.contains(ev.getRawSlot())) {
+			if (slot + 1 == ZonedDateTime.now().getDayOfMonth() &&
+					!g.DzienneNagrodyodebrane.contains(slot)) {
 				Func.dajItem((Player) ev.getWhoClicked(), itemy.get(g.DzienneNagrodyodebrane.size()));
 				ev.getWhoClicked().sendMessage(prefix + "Otrzymałeś dzisiejszą nagrodę");
 				g.DzienneNagrodyodebrane.add(slot);
