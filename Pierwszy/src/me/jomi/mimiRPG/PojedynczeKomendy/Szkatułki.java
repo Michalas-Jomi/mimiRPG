@@ -16,6 +16,7 @@ import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -171,21 +172,22 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (otwarteOtwieranie.containsKey(ev.getPlayer().getName()))
-			Func.opóznij(1, () -> ev.getPlayer().openInventory(otwarteOtwieranie.get(ev.getPlayer().getName())));
+		HumanEntity p = ev.getPlayer();
+		if (otwarteOtwieranie.containsKey(p.getName()))
+			Func.opóznij(1, () -> Func.wykonajDlaNieNull(otwarteOtwieranie.get(p.getName()), p::openInventory));
 		else 
-			Func.wykonajDlaNieNull(edytujący.remove(ev.getPlayer().getName()), skrzynka -> {
+			Func.wykonajDlaNieNull(edytujący.remove(p.getName()), skrzynka -> {
 				List<ItemStack> itemy = Lists.newArrayList();
 				for (ItemStack item : ev.getInventory())
 					Func.wykonajDlaNieNull(item, itemy::add);
 				if (itemy.isEmpty())
-					ev.getPlayer().sendMessage(prefix + "Nie możesz ustawić pustego dropu");
+					p.sendMessage(prefix + "Nie możesz ustawić pustego dropu");
 				else {
 					Box box = (Box) config.wczytaj(ev.getView().getTitle());
 					box.skrzynka.itemy = itemy;
 					config.ustaw_zapisz(ev.getView().getTitle(), box);
 					przeładuj();
-					ev.getPlayer().sendMessage(prefix + "Zapisano skrzynkę");
+					p.sendMessage(prefix + "Zapisano skrzynkę");
 				}
 			});
 	}
