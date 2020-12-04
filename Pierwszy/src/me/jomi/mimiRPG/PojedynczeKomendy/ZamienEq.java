@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -37,12 +39,14 @@ public class ZamienEq extends Komenda{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
-		if (args.length >= 2 && istnieje(sender, args[0]) && istnieje(sender, args[1])) {
-			zamień(sender, args[0], args[1]);
-		} else if (args.length == 1) {
-			if (!(sender instanceof Player)) return false;
-			zamień(sender, sender.getName(), args[0]);
-		}
+		if (istnieje(sender, args[0]))
+			if (args.length >= 2 && istnieje(sender, args[1]))
+				zamień(sender, args[0], args[1]);
+			else if (args.length == 1) {
+				if (!(sender instanceof Player))
+					return false;
+				zamień(sender, sender.getName(), args[0]);
+			}
 		return true;
 	}
 	private void zamień(CommandSender sender, String nick1, String nick2) {
@@ -50,29 +54,42 @@ public class ZamienEq extends Komenda{
 			sender.sendMessage(prefix + "Nie możesz zamiń eq gracza z nim samym");
 			return;
 		}
-		
-		Player p;
-		p = Bukkit.getPlayer(nick1);
-		if (p != null) p.kickPlayer("§6Zamiana eq z §e" + nick2);
-		p = Bukkit.getPlayer(nick2);
-		if (p != null) p.kickPlayer("§6Zamiana eq z §e" + nick1);
+
+		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick1), Player::saveData);
+		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2), Player::saveData);
 		
 		String u1 = Func.graczOffline(nick1).getUniqueId().toString();
 		String u2 = Func.graczOffline(nick2).getUniqueId().toString();
+
+		if (new File(sc("aaaSWITCH", false)).delete() || new File(sc("aaaSWITCH", true)).delete())
+			Main.warn(prefix + "Wykryto starego switcha, usuwanie go");
 		
 		// u1 -> switch
-		if (!Func.przenieśPlik(sc(u1, false), sc("aaaSWITCH", false)))  Main.log("§eNie odnaleziono pliku gracza", nick1, "Gracz", nick2, "otrzyma pusty ekwipunek");
-		Func.przenieśPlik(	   sc(u1, true),  sc("aaaSWITCH", true));
+		przenieś(sc(u1, false), sc("aaaSWITCH", false));
+		przenieś(sc(u1, true),  sc("aaaSWITCH", true));
 		
 		// u2 -> u1
-		if (!Func.przenieśPlik(sc(u2, false), sc(u1, false))) Main.log("§eNie odnaleziono pliku gracza", nick2, "Gracz", nick1, "otrzyma pusty eqwipunek");
-		Func.przenieśPlik(	   sc(u2, true),  sc(u1, true));
+		przenieś(sc(u2, false), sc(u1, false));
+		przenieś(sc(u2, true),  sc(u1, true));
 		
 		// switch -> u2
-		Func.przenieśPlik(sc("aaaSWITCH", false), sc(u2, false));
-		Func.przenieśPlik(sc("aaaSWITCH", true),  sc(u2, true));
+		przenieś(sc("aaaSWITCH", false), sc(u2, false));
+		przenieś(sc("aaaSWITCH", true),  sc(u2, true));
+		
+		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick1), Player::loadData);
+		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2), Player::loadData);
 		
 		Main.log("Zamieniono eq, ec i exp graczy", nick1, nick2);
+	}
+	private void przenieś(String co, String gdzie) {
+		File f = new File(co);
+		if (!f.exists())
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		f.renameTo(new File(gdzie));
 	}
 	private String sc(String uuid, boolean old) {
 		return "world/playerdata/" + uuid + ".dat" + (old ? "_old" : "");

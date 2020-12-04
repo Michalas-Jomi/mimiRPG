@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.util;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -38,6 +39,8 @@ public class PanelStronny {
 	public PanelStronny(int rządki, String nazwa) {
 		this.nazwa = Func.koloruj(nazwa);
 		this.rządki = rządki;
+		
+		dodajStrone();
 	}
 	
 	
@@ -55,7 +58,7 @@ public class PanelStronny {
 			holder.inv.setItem(rządki*9, poprzedniaStrona);
 		
 		return holder.inv;
-}
+	}
 	void dodajStrone() {
 		Inventory inv = stwórzInv();
 		
@@ -64,6 +67,23 @@ public class PanelStronny {
 			strony.get(holder.strona - 1).setItem(rządki*9+8, następnaStrona);
 		
 		strony.add(inv);
+	}
+	
+	
+	public void otwórzPanel(Player p) {
+		if (strony.size() == 0)
+			dodajStrone();
+		p.openInventory(strony.get(0));
+	}
+	
+	public int ileStron() {
+		return strony.size();
+	}
+	public int ileKolumn() {
+		return strony.size() * 9;
+	}
+	public int ileRzędów() {
+		return rządki;
 	}
 	
 	

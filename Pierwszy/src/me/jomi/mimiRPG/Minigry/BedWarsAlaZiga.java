@@ -12,7 +12,6 @@ import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
@@ -47,10 +46,6 @@ import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
-import net.minecraft.server.v1_16_R2.EntityHuman;
-import net.minecraft.server.v1_16_R2.EntityInsentient;
-import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 @Moduł
 public class BedWarsAlaZiga extends MinigraDrużynowa {
@@ -261,15 +256,12 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			mobSklepu.setInvulnerable(true);
 			mobSklepu.setGravity(false);
 			mobSklepu.setSilent(true);
-			if (mobSklepu instanceof LivingEntity)
+			if (mobSklepu instanceof LivingEntity) {
 				((LivingEntity) mobSklepu).setCollidable(false);
-			
+				((LivingEntity) mobSklepu).setAI(false);
+				((LivingEntity) mobSklepu).setCanPickupItems(false);
+			}
 			Func.ustawMetadate(mobSklepu, metaMobSklepu, serce.arena);
-			
-			EntityInsentient ei = (EntityInsentient) ((CraftEntity) mobSklepu).getHandle();
-			ei.targetSelector 	= new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
-			ei.goalSelector 	= new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
-			ei.goalSelector.a(8, new PathfinderGoalLookAtPlayer(ei, EntityHuman.class, 8.0F));
 		}
 		private void przygotujGuiUlepszenia() {
 			// Ulepszenia Enchanty
@@ -293,9 +285,9 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			guiUlepszeń.setItem(upgr.slot, item);
 		}
 		void koniec() {
-			Func.wykonajDlaNieNull(serce, serce -> serce.serce.remove());
+			Func.wykonajDlaNieNull(serce, serce -> Func.wykonajDlaNieNull(serce.serce, Entity::remove));
+			Func.wykonajDlaNieNull(serce, serce -> serce.uderzone = null);
 			Func.wykonajDlaNieNull(mobSklepu, Entity::remove);
-			serce.uderzone = null;
 			guiUlepszeń = null;
 			mobSklepu = null;
 			serce = null;
@@ -719,7 +711,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }
 	
 
-	private final Config configAreny = new Config("configi/BedWarsAlaZiga Areny");
+	static final Config configAreny = new Config("configi/BedWarsAlaZiga Areny");
 	@Override Config getConfigAreny()	 { return configAreny; }
 
 	@Override String getMetaStatystyki() { return "mimiBedWarsAlaZigaStaty"; }

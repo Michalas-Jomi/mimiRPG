@@ -1,14 +1,18 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.MineZ;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +23,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
@@ -26,10 +31,16 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.Przeładowalny;
 
+
+// TODO zamiast w configu trzymać to w configach Graczy
 @Moduł
-public class połączoneEq implements Przeładowalny, Listener {
+public class połączoneEq extends Komenda implements Listener {
+	public połączoneEq() {
+		super("połączEq", "/połączEq (gracz)");
+	}
+
+
 	public static class Ekwipunki extends Mapowany implements InventoryHolder {
 		public static class Itemki implements ConfigurationSerializable {
 			public Inventory eq;
@@ -38,7 +49,7 @@ public class połączoneEq implements Przeładowalny, Listener {
 			@SuppressWarnings("unchecked")
 			public Krotka<Inventory, Inventory> getEq(Ekwipunki eqs) {
 				if (mapa != null) {
-					eq = Bukkit.createInventory(eqs, 4*9, "Ekwipunek");
+					eq = Bukkit.createInventory(eqs, 5*9, "Ekwipunek");
 					ec = Bukkit.createInventory(eqs, 3*9, "Ender Chest");
 
 					BiConsumer<Inventory, HashMap<Integer, ItemStack>> bic = (inv, mapa) -> mapa.forEach(inv::setItem);
@@ -64,8 +75,13 @@ public class połączoneEq implements Przeładowalny, Listener {
 				Function<Inventory, HashMap<Integer, ItemStack>> func = inv -> {
 					HashMap<Integer, ItemStack> mapa = new HashMap<>();
 					
-					Krotka<Integer, ?> k = new Krotka<>(0, 0);
-					inv.forEach(item -> mapa.put(k.a++, item));
+					Krotka<Integer, ?> k = new Krotka<>(-1, 0);
+
+					if (inv != null)
+						inv.forEach(item -> {
+							k.a++;
+							Func.wykonajDlaNieNull(item, _item -> mapa.put(k.a, _item));
+						});
 					
 					return mapa;
 				};
@@ -80,6 +96,12 @@ public class połączoneEq implements Przeładowalny, Listener {
 		@Mapowane public Itemki s2;
 		@Mapowane public Itemki s3;
 		
+		public void Init() {
+			s1.getEq(this);
+			s2.getEq(this);
+			s3.getEq(this);
+		}
+		
 		@Override public Inventory getInventory() { return null; }
 	}
 	
@@ -88,28 +110,38 @@ public class połączoneEq implements Przeładowalny, Listener {
 		p.saveData();
 
 		Ekwipunki eqs = new Ekwipunki();
+		eqs.s1 = new Ekwipunki.Itemki();
+		eqs.s2 = new Ekwipunki.Itemki();
+		eqs.s3 = new Ekwipunki.Itemki();
 		
 		BiConsumer<String, Ekwipunki.Itemki> cons = (scieżka, itemki) -> {
-			File nowe = new File(scieżka + "/" + uuid + ".dat");
-			if (!nowe.exists())
+			final String nowe = scieżka + "/" + uuid + ".dat";
+			final String stare = "world/playerdata/" + uuid + ".dat";
+			final String chwilowy = scieżka + "/mimi chwilowy pliczek.dat";
+			
+			
+			
+			File nowy = new File(nowe);
+			if (!nowy.exists())
 				try {
-					nowe.createNewFile();
+					nowy.createNewFile();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			File stare = new File("world/playerdata/" + uuid + ".dat");
-			File chwilowy = new File(scieżka + "/mimi chwilowy pliczek.dat");
-			stare.renameTo(new File(chwilowy.getAbsolutePath()));
-			nowe.renameTo(new File(stare.getAbsolutePath()));
-			stare.renameTo(new File(nowe.getAbsolutePath()));
+			
+			new File(stare).renameTo(new File(chwilowy));
+			new File(nowe).renameTo(new File(stare));
+			new File(chwilowy).renameTo(new File(nowe));
 			
 			p.loadData();
+			
+			new File(stare).delete();
 			
 			itemki.eq = Bukkit.createInventory(eqs, 5*9, "Ekwipunek " + scieżka);
 			itemki.ec = Bukkit.createInventory(eqs, 3*9, "Ender Chest " + scieżka);
 			
 			int i=0;
-			for (ItemStack item : p.getInventory())  itemki.eq.setItem(i++, item);
+			for (ItemStack item : p.getInventory()) itemki.eq.setItem(i++, item);
 			i = 0;
 			for (ItemStack item : p.getEnderChest()) itemki.ec.setItem(i++, item);
 		
@@ -121,7 +153,7 @@ public class połączoneEq implements Przeładowalny, Listener {
 		cons.accept("s3", eqs.s3);
 		cons.accept("s2", eqs.s1);
 		
-		config.ustaw_zapisz(p.getName(), eqs);
+		getConfig(p.getUniqueId()).ustaw_zapisz(p.getName(), eqs);
 	}
 
 	static final Inventory gui;
@@ -134,12 +166,12 @@ public class połączoneEq implements Przeładowalny, Listener {
 		
 		Func.wypełnij(gui);
 
-		gui.setItem(11, Func.stwórzItem(Material.CHEST, 1, "&1&lEkwipunek &l&lMine&4&lZ &a&ls1"));
-		gui.setItem(13, Func.stwórzItem(Material.CHEST, 2, "&1&lEkwipunek &l&lMine&4&lZ &a&ls2"));
-		gui.setItem(15, Func.stwórzItem(Material.CHEST, 3, "&1&lEkwipunek &l&lMine&4&lZ &a&ls3"));
-		gui.setItem(20, Func.stwórzItem(Material.ENDER_CHEST, 1, "&1&5Ender Chest &l&lMine&4&lZ &a&ls1"));
-		gui.setItem(22, Func.stwórzItem(Material.ENDER_CHEST, 2, "&1&5Ender Chest &l&lMine&4&lZ &a&ls2"));
-		gui.setItem(24, Func.stwórzItem(Material.ENDER_CHEST, 3, "&1&5Ender Chest &l&lMine&4&lZ &a&ls3"));
+		gui.setItem(11, Func.stwórzItem(Material.CHEST, 1, "&1&lEkwipunek &7&lMine&4&lZ &a&ls1"));
+		gui.setItem(13, Func.stwórzItem(Material.CHEST, 2, "&1&lEkwipunek &7&lMine&4&lZ &a&ls2"));
+		gui.setItem(15, Func.stwórzItem(Material.CHEST, 3, "&1&lEkwipunek &7&lMine&4&lZ &a&ls3"));
+		gui.setItem(20, Func.stwórzItem(Material.ENDER_CHEST, 1, "&1&5Ender Chest &7&lMine&4&lZ &a&ls1"));
+		gui.setItem(22, Func.stwórzItem(Material.ENDER_CHEST, 2, "&1&5Ender Chest &7&lMine&4&lZ &a&ls2"));
+		gui.setItem(24, Func.stwórzItem(Material.ENDER_CHEST, 3, "&1&5Ender Chest &7&lMine&4&lZ &a&ls3"));
 	}
 	
 	
@@ -169,7 +201,10 @@ public class połączoneEq implements Przeładowalny, Listener {
 		default: return;
 		}
 		
-		Ekwipunki eqs = (Ekwipunki) config.wczytaj(ev.getWhoClicked().getName());
+		Ekwipunki eqs = (Ekwipunki) getConfig(ev.getWhoClicked().getUniqueId()).wczytaj(ev.getWhoClicked().getName());
+		if (eqs == null)
+			połącz((Player) ev.getWhoClicked());
+		eqs = (Ekwipunki) getConfig(ev.getWhoClicked().getUniqueId()).wczytaj(ev.getWhoClicked().getName());
 		try {
 			Ekwipunki.Itemki itemki = (Ekwipunki.Itemki) Ekwipunki.class.getDeclaredField("s" + ev.getCurrentItem().getAmount()).get(eqs);
 			ev.getWhoClicked().openInventory((Inventory) Krotka.class.getDeclaredField(fk).get(itemki.getEq(eqs)));
@@ -180,18 +215,33 @@ public class połączoneEq implements Przeładowalny, Listener {
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		if (ev.getInventory().getHolder() instanceof Ekwipunki && ev.getInventory().getHolder() != null)
-			config.ustaw_zapisz(ev.getPlayer().getName(), ev.getInventory().getHolder());
+			getConfig(ev.getPlayer().getUniqueId()).ustaw_zapisz(ev.getPlayer().getName(), ev.getInventory().getHolder());
 	}
 	
 	
-	final Config config = new Config("configi/PołączoneEq");
+	Config getConfig(UUID uuid) {
+		return new Config("configi/PołączoneEq/" + uuid);
+	}
 	
 	@Override
-	public void przeładuj() {
-		config.przeładuj();
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		return null;
 	}
+
+
 	@Override
-	public Krotka<String, Object> raport() {
-		return Func.r("wczytane eq", config.klucze(false).size());
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		Player p = null;
+		if (sender instanceof Player)
+			p = (Player) sender;
+		if (args.length > 0)
+			p = Bukkit.getPlayer(args[0]);
+		
+		if (p == null)
+			return false;
+		
+		otwórz(p);
+		
+		return true;
 	}
 }

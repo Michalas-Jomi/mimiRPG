@@ -74,7 +74,7 @@ import me.jomi.mimiRPG.Mapowany;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {
-		return "§2[§a" + nazwa + "§2]§6 ";
+		return koloruj("§2[§a" + nazwa + "§2]§6 ");
 	}
 	public static String msg(String tekst, Object... uzupełnienia) {
 		for (Object u : uzupełnienia)
