@@ -13,11 +13,38 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Moduły implements Przeładowalny {
+	static class Klasa {
+		Class<?> klasa;
+		Object inst;
+		boolean włączony = false;
+		Klasa(Class<?> klasa) {
+			this.klasa = klasa;
+		}
+		
+		Object włącz() throws InstantiationException, IllegalAccessException {
+			if (włączony) return inst;
+			if (inst == null)
+				inst = Func.nowaInstancja(klasa);
+			Main.zarejestruj(inst);
+			włączony = true;
+			return inst;
+		}
+		void wyłącz() {
+			if (!włączony) return;
+			if (inst != null)
+				Main.wyrejestruj(inst);
+			włączony = false;
+		}
+		
+		public String toString() {
+			return "Moduły.Klasa(" + klasa.getSimpleName() + ")~" + (włączony ? "Włączona" : "Wyłączona");
+		}
+	}
+	
 	int włączone = 0;
 	
-	static final HashMap<String, Klasa> mapa = new HashMap<>();
-	
 	static final List<Class<?>> klasy = Lists.newArrayList();
+	static final HashMap<String, Klasa> mapa = new HashMap<>();
 	 
 	public Moduły() {
 		for (Class<?> clazz : Func.wszystkieKlasy())
@@ -75,7 +102,7 @@ public class Moduły implements Przeładowalny {
 					Main.log("§cWyłączono Moduł: " + nazwa);
 			}
 		}
-		if (przeładować)
+		if (przeładować && Main.pluginEnabled)
 			Bukkit.getServer().reloadData();
 	}
 
@@ -83,32 +110,4 @@ public class Moduły implements Przeładowalny {
 		Klasa klasa = mapa.get(moduł);
 		return klasa == null ? false : klasa.włączony;
 	}	
-}
-
-class Klasa {
-	Class<?> klasa;
-	Object inst;
-	boolean włączony = false;
-	Klasa(Class<?> klasa) {
-		this.klasa = klasa;
-	}
-	
-	Object włącz() throws InstantiationException, IllegalAccessException {
-		if (włączony) return inst;
-		if (inst == null)
-			inst = Func.nowaInstancja(klasa);
-		Main.zarejestruj(inst);
-		włączony = true;
-		return inst;
-	}
-	void wyłącz() {
-		if (!włączony) return;
-		if (inst != null)
-			Main.wyrejestruj(inst);
-		włączony = false;
-	}
-	
-	public String toString() {
-		return "Moduły.Klasa(" + klasa.getSimpleName() + ")~" + (włączony ? "Włączona" : "Wyłączona");
-	}
 }
