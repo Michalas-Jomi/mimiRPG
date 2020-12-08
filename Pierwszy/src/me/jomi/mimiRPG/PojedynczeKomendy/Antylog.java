@@ -16,13 +16,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.sk89q.worldguard.protection.flags.Flags;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -99,11 +102,11 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		}
 		gracze.remove(nick);
 		
-		Player p = Bukkit.getPlayer(nick);
-		if (p == null) return;
-		p.sendMessage(prefix + "Nie jesteś już w walce");
-		p.removePotionEffect(PotionEffectType.GLOWING);
-		info(nick);
+		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> {
+			p.sendMessage(prefix + "Nie jesteś już w walce");
+			p.removePotionEffect(PotionEffectType.GLOWING);
+			info(nick);
+		});
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -175,6 +178,23 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 			ev.getPlayer().sendMessage(prefix + "Ta komenda nie jest dozwola w trakcie walki");
 			Main.log(prefix + Func.msg("Anulowano graczowi %s komendę %s", ev.getPlayer().getDisplayName(), msg));
 		}
+	}
+	
+	@EventHandler
+	public void chodzenie(PlayerMoveEvent ev) {
+		if (Main.rg != null && czasy.containsKey(ev.getPlayer().getName()) &&
+				!Func.regiony(ev.getTo().getWorld()).getApplicableRegions(Func.locToVec3(ev.getTo())).testState(null, Flags.PVP)) {
+			ev.setCancelled(true);
+			ev.getPlayer().sendMessage(prefix + "Nie możesz tam wejść w trakcie walki!");
+		}
+	}
+	@EventHandler
+	public void tp(PlayerTeleportEvent ev) {
+		if (czasy.containsKey(ev.getPlayer().getName()))
+			if (Main.ust.wczytajLubDomyślna("Antylog.tp." + ev.getCause(), false)) {
+				ev.setCancelled(true);
+				ev.getPlayer().sendMessage(prefix + "Nie możesz się teleportować w trakcie walki");
+			}
 	}
 
 	Set<String> dozwolone;

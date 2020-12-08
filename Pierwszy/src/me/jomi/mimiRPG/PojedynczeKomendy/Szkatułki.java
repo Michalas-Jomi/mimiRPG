@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.bukkit.Bukkit;
@@ -34,6 +35,8 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.util.Consumer;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -219,10 +222,11 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 				});
 		}
 	}
+	private Set<String> tmp = Sets.newConcurrentHashSet();
 	@EventHandler
 	public void klikanieSkrzyni(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
-		if (otwarteOtwieranie.containsKey(p.getName()))
+		if (otwarteOtwieranie.containsKey(p.getName()) || tmp.contains(p.getName()))
 			return;
 		Krotka<Consumer<Skrzynka>, Runnable> k = new Krotka<>(null, null);
 		switch (ev.getAction()) {
@@ -230,8 +234,12 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 			k.a = skrzynia ->  skrzynia.podgląd(p);
 			break;
 		case RIGHT_CLICK_BLOCK:
-			k.b = () -> p.addScoreboardTag(Main.tagBlokOtwarciaJednorazowy);
+			k.b = () -> {
+				tmp.add(p.getName());
+				p.addScoreboardTag(Main.tagBlokOtwarciaJednorazowy);
+			};
 			k.a = skrzynia -> {
+				tmp.remove(p.getName());
 				if (p.getInventory().getItemInMainHand().isSimilar(skrzynia.klucz)) {
 					Func.zabierzItem(p.getInventory(), EquipmentSlot.HAND);
 					skrzynia.otwórz(p);
@@ -244,8 +252,8 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		}
 		Func.wykonajDlaNieNull(mapaSkrzyń.get(ev.getClickedBlock().getLocation()), skrzynia -> {
 					ev.setCancelled(true);
-					Func.opóznij(1, () -> k.a.accept(skrzynia));
 					Func.wykonajDlaNieNull(k.b, Runnable::run);
+					Func.opóznij(1, () -> k.a.accept(skrzynia));
 				});
 	}
 	

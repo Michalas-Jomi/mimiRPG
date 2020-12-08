@@ -195,6 +195,8 @@ public class EdytorOgólny {
 			case "Double":		return Double.parseDouble(args[i]);
 			case "float":
 			case "Float":		return Float.parseFloat(args[i]);
+			case "boolean":
+			case "Boolean":		return Boolean.parseBoolean(args[i]);
 			case "String":		return Func.listToString(args, i);
 			case "Location":	return p.getLocation();
 			case "char":
@@ -240,6 +242,8 @@ public class EdytorOgólny {
 					n.dodaj(Napis.item((ItemStack) objekt).clickEvent(Action.RUN_COMMAND, scieżka + ">>"));
 				else if (objekt instanceof Location)
 					n.dodaj(new Napis("§e" + Func.locToString((Location) objekt), "§bKliknij aby ustawić", scieżka + ">>"));
+				else if (obiekt instanceof Boolean)
+					n.dodaj(new Napis((Boolean) objekt ? "§aTak" : "§cNie", "§bKliknij aby zmienić", scieżka + ">> " + !((Boolean) objekt)));
 				else
 					n.dodaj(new Napis("§e" + objekt, "§bKliknij aby ustawić", scieżka + ">> "));
 				return n;

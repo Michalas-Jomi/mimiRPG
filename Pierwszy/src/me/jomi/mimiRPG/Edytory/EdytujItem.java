@@ -28,11 +28,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class EdytujItem extends Komenda {
-	public EdytujItem() {
-	    super("edytujitem", null, "ei");
-	}
 	public static String prefix = Func.prefix("Edytuj Item");
-	
 	static class Edytor {
 		static void główna(Player p, ItemMeta meta) {
 			Napis n = new Napis("\n\n\n\n\n" + prefix + " §a~~Edytor~~\n");
@@ -49,7 +45,7 @@ public class EdytujItem extends Komenda {
 			
 			n.dodaj("\n\n");
 			
-			opcjaGłówna(n, "nazwa", 		"ustawić",  true, meta.getDisplayName(), null);
+			opcjaGłówna(n, "nazwa", 		"ustawić",  true, Func.odkoloruj(meta.getDisplayName()), null);
 			opcjaGłówna(n, "enchant", 		"edytować", false, null);
 			opcjaGłówna(n, "lore", 			"edytować", false, null);
 			opcjaGłówna(n, "modifire", 		"edytować", false, null);
@@ -147,7 +143,7 @@ public class EdytujItem extends Komenda {
 									func.apply(item.getType().equals(Material.ENCHANTED_BOOK) ? 
 ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchantLevel(enchant) : item.getEnchantmentLevel(enchant)),
 							"§bKliknij aby ustawić",
-							"/edytujitem enchant " + enchant.getKey().getKey().toLowerCase() + " >> "
+							"/edytujitem enchant" + (wszystkie ? "-w" : "") + " " + enchant.getKey().getKey().toLowerCase() + " >> "
 							));
 					n.dodaj(jasny ? "\n" : " ");
 					jasny = !jasny;
@@ -162,7 +158,6 @@ public class EdytujItem extends Komenda {
 			n.dodaj("\n");
 			n.wyświetl(p);
 		}
-	
 	}
 	private enum Slot{
 		ręka(EquipmentSlot.HAND),
@@ -177,8 +172,13 @@ public class EdytujItem extends Komenda {
 		Slot(EquipmentSlot slot) {
 			this.slot = slot;
 		}
-		
 	}
+	
+	
+	public EdytujItem() {
+	    super("edytujitem", null, "ei");
+	}
+	
 	
 	void edytor(Player p, ItemStack item, String[] args) {
 		ItemMeta meta = item.getItemMeta();
@@ -195,6 +195,7 @@ public class EdytujItem extends Komenda {
 				meta.setDisplayName(Func.koloruj(Func.listToString(args, 2)));
 				break;
 			case "enchant":
+			case "enchant-w":
 				if (args.length != 1) {
 					int lvl = Func.Int(args[3], 0);
 					Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(args[1]));
@@ -210,10 +211,7 @@ public class EdytujItem extends Komenda {
 					}
 				}
 				item.setItemMeta(meta);
-				Edytor.enchanty(p, item, item.getType().equals(Material.ENCHANTED_BOOK));
-				return;
-			case "enchant-w":
-				Edytor.enchanty(p, item, true);
+				Edytor.enchanty(p, item, item.getType().equals(Material.ENCHANTED_BOOK) || args[0].equals("enchant-w"));
 				return;
 			case "lore":
 				if (args.length != 1) {
@@ -282,7 +280,6 @@ public class EdytujItem extends Komenda {
 		item.setItemMeta(meta);
 		Edytor.główna(p, meta);
 	}
-	
 	
 	
 	@Override

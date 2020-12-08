@@ -499,6 +499,8 @@ public abstract class Func {
 		return item;
 	}
 	public static boolean dajItem(Player p, ItemStack item) {
+		if (item == null || item.getType().equals(Material.AIR))
+			return false;
 		if (p.getInventory().firstEmpty() == -1) {
 			p.getWorld().dropItem(p.getLocation(), item);
 			return false;

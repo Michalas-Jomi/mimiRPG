@@ -56,7 +56,6 @@ public class KompasPvP implements Zegar {
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Najbliższy gracz: §a" + najbliższy.getDisplayName() + " " + (int) dystans + "m"));
 	}
 
-
 	// TODO szablon w configu
 	@Override
 	public int czas() {
