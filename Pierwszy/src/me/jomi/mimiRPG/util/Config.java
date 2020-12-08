@@ -41,7 +41,7 @@ public class Config {
 		plik.set(sciezka, _item(obj));
 	}
 	@SuppressWarnings("unchecked")
-	private Object _item(Object item) {
+	protected static Object _item(Object item) {
 		if (item instanceof List) {
 			List<Object> lista = Lists.newArrayList();
 			for (Object _obj : (List<Object>) item)
@@ -116,11 +116,13 @@ public class Config {
 			return domyślna.get();
 		return (T) obj;
 	}
+	
 	public List<String> wczytajListe(Object... sciezka){
 		List<String> lista = plik.getStringList(sc(sciezka));
 		if (lista == null) lista = Lists.newArrayList();
 		return lista;
 	}
+	
 	@SuppressWarnings("unchecked")
 	public List<ItemStack> wczytajItemy(Object... sciezka) {
 		List<ItemStack> lista = Lists.newArrayList();
@@ -176,6 +178,41 @@ public class Config {
 		
 		return _itemy;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Drop> wczytajDropy(Object... scieżka) {
+		List<Drop> lista = Lists.newArrayList();
+		Object objListy = wczytaj(sc(scieżka));
+		for (Object obj : (List<Object>) objListy)
+			lista.add(drop(obj));
+		return lista;
+		
+	}
+	public Drop wczytajDrop(Object... scieżka) {
+		return drop(wczytaj(sc(scieżka)));
+	}
+	@SuppressWarnings("unchecked")
+	public static Drop drop(Object drop) {
+		if (drop == null) return null;
+		if (drop instanceof Drop)
+			return (Drop) drop;
+		if (drop instanceof ItemStack)
+			return new Drop((ItemStack) drop);
+		if (drop instanceof ConfigurationSection)
+			drop = ((ConfigurationSection) drop).getValues(false);
+		if (drop instanceof Map)
+			return new Drop((Map<String, Object>) drop);
+		return Drop.wczytaj((String) drop);
+	}
+	public static List<Drop> dropy(List<?> dropy) {
+		List<Drop> _dropy = Lists.newArrayList();
+		
+		for (Object drop : dropy)
+			_dropy.add(drop(drop));
+		
+		return _dropy;
+	}
+	
 	
 	public Napis wczytajNapis(Object... sciezka) {
 		return _napis(wczytaj(sc(sciezka)));

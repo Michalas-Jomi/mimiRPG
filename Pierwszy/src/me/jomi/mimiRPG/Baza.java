@@ -10,12 +10,14 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
 
 public class Baza implements Listener {
 	public static final ItemStack pustySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
+	public static final HashMap<String, Drop> dropy = new HashMap<>();
 	public static ConfigurationSection grupy;
 	
 	public Baza() {	
@@ -27,6 +29,7 @@ public class Baza implements Listener {
 		config.przeładuj();
 									
 		wczytajCustomoweItemy();
+		wczytajDropy();
 		wczytajGrupy();
 	}
 
@@ -41,7 +44,13 @@ public class Baza implements Listener {
 		itemy.clear();
 		Config config = new Config("Customowe Itemy");
 		for (String klucz : config.klucze(false))
-			itemy.put(klucz, (ItemStack) config.wczytaj(klucz));
+			itemy.put(klucz, (ItemStack) config.wczytajItem(klucz));
+	}
+	private static void wczytajDropy() {
+		dropy.clear();
+		Config config = new Config("Dropy");
+		for (String klucz : config.klucze(false))
+			dropy.put(klucz, (Drop) config.wczytajDrop(klucz));
 	}
 	private static void wczytajGrupy() {
 		grupy = config.sekcja("grupy");

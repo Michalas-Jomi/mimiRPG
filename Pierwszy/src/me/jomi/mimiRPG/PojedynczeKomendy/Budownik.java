@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.SkyBlock;
+package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
 import java.util.List;
