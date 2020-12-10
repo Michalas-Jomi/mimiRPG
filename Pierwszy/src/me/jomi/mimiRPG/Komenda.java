@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.util.Func;
 
 public abstract class Komenda implements TabExecutor {
-	List<PluginCommand> _komendy = Lists.newArrayList();
+	protected List<PluginCommand> _komendy = Lists.newArrayList();
 	boolean _zarejestrowane_komendy = true;
 	public Komenda(String komenda) {
 		ustawKomende(komenda, null, null);
@@ -37,21 +37,22 @@ public abstract class Komenda implements TabExecutor {
 	 * @param aliasy lista alternatywnych nazw dla komendy
 	 * 
 	 */
-	protected void ustawKomende(String komenda, String użycie, List<String> aliasy) {
+	protected PluginCommand ustawKomende(String komenda, String użycie, List<String> aliasy) {
 		if (użycie == null)
 			użycie = "/" + komenda;
 		try {
+			PluginCommand cmd = komenda(komenda, użycie, aliasy);
 	    	Field fCommandMap = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 	        fCommandMap.setAccessible(true);
 	        CommandMap commandMap = (CommandMap) fCommandMap.get(Bukkit.getPluginManager());
-	        commandMap.register(Main.plugin.getName(), komenda(komenda, użycie, aliasy));
+	        commandMap.register(Main.plugin.getName(), cmd);
+			cmd.setTabCompleter(this);
+			cmd.setExecutor(this);
+			return cmd;
 	    } catch (Exception e) {
 	    	Main.error("Nie udało sie Stworzyć komendy " + komenda);
-	    	return;
+	    	return null;
 	    }
-		PluginCommand cmd = Main.plugin.getCommand(komenda);
-		cmd.setTabCompleter(this);
-		cmd.setExecutor(this);
 	}
 	private PluginCommand komenda(String nazwa, String użycie, List<String> aliasy) throws Exception {
 		Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);

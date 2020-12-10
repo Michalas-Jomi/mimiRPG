@@ -15,9 +15,11 @@ import org.bukkit.potion.PotionEffectType;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class Efekty implements Listener {
+public class Efekty implements Listener, Przeładowalny {
   static void dajEfekty(Player p) {
     byte b;
     int i;
@@ -43,11 +45,16 @@ public class Efekty implements Listener {
       p.removePotionEffect(effekt.getType()); 
   }
   
-  static void przeładuj() {
+  @Override
+  public void przeładuj() {
     for (Player p : Bukkit.getOnlinePlayers()) {
       wyczyśćEfekty(p);
       dajEfekty(p);
     } 
+  }
+  @Override
+  public Krotka<String, Object> raport() {
+  	return Func.r("Wczytane Efekty", "Włączone");
   }
   
   @EventHandler
