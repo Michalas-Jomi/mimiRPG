@@ -3,7 +3,6 @@ package me.jomi.mimiRPG;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.google.common.collect.Lists;
@@ -103,7 +102,7 @@ public class Moduły implements Przeładowalny {
 			}
 		}
 		if (przeładować && Main.pluginEnabled)
-			Bukkit.getServer().reloadData();
+			Main.reloadBukkitData();
 	}
 
 	public static boolean włączony(String moduł) {

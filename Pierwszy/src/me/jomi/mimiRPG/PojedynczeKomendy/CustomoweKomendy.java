@@ -60,6 +60,7 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 
 	@Override
 	public void przeładuj() {
+		Krotka<Boolean, ?> k = new Krotka<>(false, null);
 		Func.wykonajDlaNieNull(Main.ust.sekcja("CustomoweKomendy.komendy"), sekcja -> {
 			for (String komenda : sekcja.getKeys(false))
 				Func.wykonajDlaNieNull(sekcja.getConfigurationSection(komenda), sekcjaKomendy -> {
@@ -68,9 +69,12 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 					for (PluginCommand cmd : _komendy)
 						if (cmd.getName().equals(komenda))
 							return;
+					k.a = true;
 					ustawKomende(komenda, null, sekcjaKomendy.getStringList("aliasy"));
 				});
 		});
+		if (k.a)
+			Main.reloadBukkitData();
 	}
 	@Override
 	public Krotka<String, Object> raport() {

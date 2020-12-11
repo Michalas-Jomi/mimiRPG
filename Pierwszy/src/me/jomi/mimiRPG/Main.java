@@ -40,6 +40,7 @@ import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.Budownik;
+import me.jomi.mimiRPG.PojedynczeKomendy.CustomoweCraftingi;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
@@ -251,6 +252,12 @@ public class Main extends JavaPlugin implements Listener {
 		return Moduły.włączony(modół.getSimpleName());
 	}
 
+	public static void reloadBukkitData() {
+		Bukkit.getServer().reloadData();
+		for (Class<?> clazz : new Class<?>[] {CustomoweCraftingi.class})
+			if (Main.włączonyModół(clazz))
+				Przeładuj.przeładuj(Bukkit.getConsoleSender(), clazz.getSimpleName());
+	}
 	
 	// Nie pozwala wymować nic z aktualnie, bądz dopiero będącego otwartym eq, aż do jego zamknięcia
 	public static final String tagBlokWyciąganiaZEq = "mimiBlokadaWyciąganiaZEq";

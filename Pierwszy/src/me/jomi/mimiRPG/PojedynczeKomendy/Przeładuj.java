@@ -41,12 +41,12 @@ public class Przeładuj extends Komenda {
 			przeładuj(sender, p);
 		sender.sendMessage("§aPrzeładowano wszystko");
 	}
-	private void przeładuj(CommandSender sender, String co) {
+	public static void przeładuj(CommandSender sender, String co) {
 		Baza.przeładuj();
 		przeładuj(sender, Przeładowalny.przeładowalne.get(co));
 		sender.sendMessage("§aPrzeładowano " + co);
 	}
-	private void przeładuj(CommandSender sender, Przeładowalny p) {
+	public static void przeładuj(CommandSender sender, Przeładowalny p) {
 		p.przeładuj();
 		String r = Raport.raport(p);
 		if (sender instanceof Player)

@@ -134,6 +134,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenieBloku(BlockBreakEvent ev) {
+		if (ev.isCancelled()) return;
 		if (ev.getPlayer().getGameMode().equals(GameMode.CREATIVE)) return;
 		String mat = ev.getBlock().getType().toString();
 		if (!mapa.containsKey(mat)) return;

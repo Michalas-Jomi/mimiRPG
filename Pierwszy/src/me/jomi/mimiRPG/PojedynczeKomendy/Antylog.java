@@ -132,6 +132,8 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		
 		if (Bukkit.getPlayer(atakowany.getName()) == null) return;
 		
+		if (atakowany.getName().equals(atakujący.getName())) return;
+		
 		czasy.put(atakujący.getName(), 0);
 		czasy.put(atakowany.getName(), 0);
 
@@ -150,8 +152,10 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		info(atakujący.getName());
 		info(atakowany.getName());
 		
-		atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
-		atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
+		if (Main.ust.wczytajLubDomyślna("Antylog.glowing", true)) {
+			atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
+			atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
+		}
 	}
 	
 	@EventHandler
