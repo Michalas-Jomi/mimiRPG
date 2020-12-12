@@ -314,5 +314,9 @@ Minigry:
   Budowanie Aren:
     Max Bloki: 50000 # maksymalna ilość bloków dla pojedyńczego odbudowania między przerwami
     Ticki Przerw: 1 # ilość ticków między odbudowywaniem
+  Golf:
+    czas na uderzenie: 300
+    kijki: [1, 2, 3, 5, 10]
+    fly: true
 
 

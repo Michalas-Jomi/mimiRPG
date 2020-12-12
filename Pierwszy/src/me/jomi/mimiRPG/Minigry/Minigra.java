@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -163,17 +164,21 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			grane = false;
 			while (!gracze.isEmpty())
 				opuść(gracze.get(0), 0, false);
-			for (Integer id : doAnulowania)
-				Bukkit.getScheduler().cancelTask(id);
-			doAnulowania.clear();
+			try {
+				for (Integer id : doAnulowania)
+					Bukkit.getScheduler().cancelTask(id);
+				doAnulowania.clear();
+			} catch (IllegalPluginAccessException e) {}
 		}
 		private Set<Integer> doAnulowania = Sets.newConcurrentHashSet();
 		void opóznijTask(int ticki, Runnable runnable) {
 			Krotka<Integer, ?> k = new Krotka<>();
-			doAnulowania.add(k.a = Func.opóznij(ticki, () -> {
-				doAnulowania.remove(k.a);
-				runnable.run();
-			}));
+			try {
+				doAnulowania.add(k.a = Func.opóznij(ticki, () -> {
+					doAnulowania.remove(k.a);
+					runnable.run();
+				}));
+			} catch (IllegalPluginAccessException e) {}
 		}
 		
 		
