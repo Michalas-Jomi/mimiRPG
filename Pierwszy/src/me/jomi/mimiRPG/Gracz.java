@@ -14,6 +14,7 @@ import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Wilczek;
 import me.jomi.mimiRPG.Minigry.Minigra;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
+import me.jomi.mimiRPG.PojedynczeKomendy.Zadania;
 import me.jomi.mimiRPG.util.Config;
 
 public class Gracz extends Mapowany {
@@ -38,6 +39,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public int HitmanOstatnieZgłoszenie;
 	
 	@Mapowane public HashMap<String, String> superItemy = new HashMap<>();
+	
+	@Mapowane public Zadania.ZadaniaGracza zadania;
 	
 	public Wilczek.Wilk wilk;
 	

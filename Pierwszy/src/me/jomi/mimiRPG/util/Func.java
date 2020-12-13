@@ -316,26 +316,39 @@ public abstract class Func {
 		return lista;
 	}
 	
-	public static double Double(Object liczba) {
+	public static double DoubleObj(Object liczba) {
 		if (liczba instanceof Double)
 			return (double) liczba;
 		if (liczba instanceof Integer)
 			return (int) liczba;
 		return Double((String) liczba, 0);
 	}
-	public static double Double(String liczba, double domyślna) {
+	public static double Double(String liczba) throws NumberFormatException {
+		liczba = liczba.trim();
+		int mn = 1;
+		if (liczba.endsWith("%")) {
+			liczba = liczba.substring(0, liczba.length() - 1);
+			mn = 100;
+		}
 		if (liczba.contains("."))
-			try {
-				return Double.parseDouble(liczba.trim());
-			} catch(NumberFormatException er) {
-				return domyślna;
-			}
-		return Int(liczba, (int) domyślna);
+			return Double.parseDouble(liczba) / mn;
+		return ((double) Int(liczba)) / mn;
+	}
+	public static int Int(String liczba) throws NumberFormatException {
+		return Integer.parseInt(liczba.trim());
+	}
+	
+	public static double Double(String liczba, double domyślna) {
+		try {
+			return Double(liczba);
+		} catch(NumberFormatException e) {
+			return domyślna;
+		}
 	}
 	public static int Int(String liczba, int domyslna) {
 		try {
-			return Integer.parseInt(liczba.trim());
-		} catch(NumberFormatException nfe) {
+			return Int(liczba);
+		} catch(NumberFormatException e) {
 			return domyslna;
 		}
 	}

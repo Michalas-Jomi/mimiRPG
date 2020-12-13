@@ -3,12 +3,16 @@ package me.jomi.mimiRPG.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.Lists;
 
@@ -27,50 +31,91 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	public int min_ilość = -1;
 	public int max_ilość = -1;
 	
-	public int rollePerPoziom = 0; // TODO dopisać przy tworzeniu
-	public double szansaPerPoziom = 0; // TODO dopisać przy tworzeniu
+	public int rollePerPoziom = 0;
+	public double szansaPerPoziom = 0;
 	
 	// item
-	// item szansa
-	// item szansa ilość
-	// item szansa ilość xrolle
-	// item szansa min_ilość-max_ilość
-	// item szansa min_ilość-max_ilość xrolle
+	// item szansa(%)
+	// item szansa(%) ilość
+	// item szansa(%) ilość (modifiers...)
+	// item szansa(%) min_ilość-max_ilość
+	// item szansa(%) min_ilość-max_ilość (modifiers...)
+	// item szansa(%) min_ilość-max_ilość
 	// mat
-	// mat szansa
+	// mat szansa(%)
 	// ...
 	// drop
-	// drop szansa
+	// drop szansa(%)
 	// ...
+	//
+	// modifiers: xrolle +szansa(%) +xrolle
+	
 	public static Drop wczytaj(String nazwa) {
 		String[] części = nazwa.split(" ");
-		Drop drop = Baza.dropy.get(części[0]);
-		drop = drop == null ? new Drop(Config.item(części[0])) : drop.clone();
+
+		Drop _drop = Baza.dropy.get(części[0]);
+		Drop drop = _drop == null ? new Drop(Config.item(części[0])) : _drop.clone();
+		
+		boolean syntax[] = new boolean[]{false, false, false};
+		
+		Consumer<String> modifier = str -> {
+			boolean plus = str.startsWith("+");
+			if (plus)
+				str = str.substring(1);
+			
+			boolean roll = str.startsWith("x");
+			if (roll)
+				str = str.substring(1);
+			
+			Object obj;
+			try {
+				obj = roll ? Func.Int(str) : Func.Double(str);
+			} catch(NumberFormatException e) {
+				Main.warn(String.format("Niepoprawna liczba w Dropie: %s \"%s\"", str, nazwa));
+				return;
+			}
+			
+			
+			
+			int i;
+			if (roll && !plus) {
+				drop.rolle = (int) obj;
+				i = 0;
+			} else if (roll && plus) {
+				drop.rollePerPoziom = (int) obj;
+				i = 1;
+			} else if (!roll && plus) {
+				drop.szansaPerPoziom = (double) obj;
+				i = 2;
+			} else {
+				Main.warn("Nieprawidłowy modifier w Dropie: \"" + nazwa + "\" wymagany jeden z prefixów\n\"x\" - rolle; \"+x\" - rollePerPoziom; \"+\" - szansaPerPoziom");
+				return;
+			}
+			
+			if (syntax[i])
+				Main.warn("Powielony modifier w Dropie \"" + new String[]{"x", "+x", "+"}[i] + "\", używanie wcześniejszego\"" + nazwa + "\"");
+			syntax[i] = true;			
+		};
+		
 		switch (części.length) {
 		default:
-			Main.warn("Niepoprawna ilość parametrów dropu " + nazwa + " pomijanie nadwyżkowych");
+			Main.warn("Nadprogramowa ilość modifierów dropu " + nazwa);
+		case 6:
+		case 5:
 		case 4:
-			if ((drop.rolle = Func.Int(części[3], -1)) <= 0) {
-				Main.warn(String.format("Niepoprawna liczba rolli drop %s \"%s\", rolle muszą być liczbą dodatnią", nazwa.split(" ")[3], nazwa));
-				drop.rolle = 1;
-			}
+			for (int i=części.length-1; i > 2; i--)
+				modifier.accept(części[i]);
 		case 3:
 			String[] minmax = części[2].split("-");
 			drop.min_ilość = Func.Int(minmax[0], -1);
 			drop.max_ilość = minmax.length > 1 ? Func.Int(minmax[1], -1) : drop.min_ilość;
 		case 2:
-			int mn = 1;
-			if (części[1].endsWith("%")) {
-				części[1] = części[1].substring(0, części[1].length() - 1);
-				mn = 100;
-			}
-			if ((drop.szansa = Func.Double(części[1], -1) / mn) < 0) {
+			if ((drop.szansa = Func.Double(części[1], -1)) < 0) {
 				Main.warn(String.format("Niepoprawna szansa dropu %s \"%s\", przyjmowanie szansa = 1.0 (100%)", nazwa.split(" ")[1], nazwa));
 				drop.szansa = 1;
 			}
-		case 1:
-			return drop;
 		}
+		return drop;
 	}
 	public Drop(ItemStack item) {
 		this.item = item;
@@ -78,10 +123,16 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	@SuppressWarnings("unchecked")
 	public Drop(Map<String, Object> mapa) {
 		tylkoJeden = (boolean) mapa.getOrDefault("tylko jeden", false);
+		
 		max_ilość = (int) mapa.getOrDefault("max ilość", -1);
 		min_ilość = (int) mapa.getOrDefault("min ilość", -1);
-		szansa = Func.Double(mapa.getOrDefault("szansa", 1));
+		
+		szansa = Func.DoubleObj(mapa.getOrDefault("szansa", 1));
 		rolle = (int) mapa.getOrDefault("rolle", 1);
+		
+		szansaPerPoziom = Func.DoubleObj(mapa.getOrDefault("szansaPerPoziom", 1));
+		rollePerPoziom = (int) mapa.getOrDefault("rollePerPoziom", 1);
+		
 		if ((item = Config.item(mapa.get("item"))) == null)
 			Func.wykonajDlaNieNull((List<Object>) mapa.get("drop"), dropy -> {
 				drop = Lists.newArrayList();
@@ -91,59 +142,46 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	@Override
 	public Map<String, Object> serialize() {
 		HashMap<String, Object> mapa = new HashMap<>();
-		if (tylkoJeden) 		mapa.put("tylko jeden", tylkoJeden);
+		if (rolle != 1)			mapa.put("rolle", rolle);
+		if (szansa < 1)			mapa.put("szansa", szansa);
 		if (max_ilość != -1) 	mapa.put("max ilość", max_ilość);
 		if (min_ilość != -1) 	mapa.put("min ilość", min_ilość);
-		if (szansa < 1)			mapa.put("szansa", szansa);
-		if (rolle != 1)			mapa.put("rolle", rolle);
+		if (tylkoJeden) 		mapa.put("tylko jeden", tylkoJeden);
+		if (rollePerPoziom != 0)mapa.put("rollePerPoziom",  rollePerPoziom);
+		if (szansaPerPoziom!= 0)mapa.put("szansaPerPoziom", szansaPerPoziom);
 		if (item != null) 		mapa.put("item", Config._item(item));
 		else 					mapa.put("drop", drop);
 		return mapa;
 	}
 	
 	
-	/*public boolean dropnij(Player p) {
-		boolean w = false;
-		for (int i=0; i<rolle; i++) {
-			boolean ww = Func.losuj(szansa);
-			w = w || ww;
-			if (ww)
-				if (item != null)
-					Func.dajItem(p, item);
-				else
-					for (Drop drop : this.drop)
-						if (drop.dropnij(p) && tylkoJeden)
-							break;
+	public static int poziom(LivingEntity e, ItemStack item) {
+		int w = 0;
+		
+		if (e != null && e.hasPotionEffect(PotionEffectType.LUCK))
+			w += e.getPotionEffect(PotionEffectType.LUCK).getAmplifier() + 1;
+		if (e != null && e.hasPotionEffect(PotionEffectType.UNLUCK))
+			w -= e.getPotionEffect(PotionEffectType.UNLUCK).getAmplifier() + 1;
+		
+		if (item != null) {
+			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
+			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 		}
+		
 		return w;
-	}*/
-	public boolean dropnij(Location loc) {
-		return dropnij(loc, 0);
 	}
-	public boolean dropnij(Location loc, int poziom) {
-		List<ItemStack> itemy = dropnij(poziom);
-		itemy.forEach(item -> loc.getWorld().dropItem(loc, item));
-		return !itemy.isEmpty();
-	}
-	public boolean dropnij(Inventory inv) {
-		return dropnij(inv, 0);
-	}
-	public boolean dropnij(Inventory inv, int poziom) {
-		List<ItemStack> itemy = dropnij(poziom);
-		itemy.forEach(inv::addItem);
-		return !itemy.isEmpty();
-	}
-	public boolean dropnij(Player p) {
-		return dropnij(p, 0);
-	}
-	public boolean dropnij(Player p, int poziom) {
-		List<ItemStack> itemy = dropnij(poziom);
-		itemy.forEach(item -> Func.dajItem(p, item));
-		return !itemy.isEmpty();
-	}
-	public List<ItemStack> dropnij() {
-		return dropnij(0);
-	}
+	
+	public boolean dropnij(Location loc) 			 { return dropnij(loc, 0); }
+	public boolean dropnij(Location loc, int poziom) { return dropnij(poziom, item -> loc.getWorld().dropItem(loc, item)); }
+	
+	public boolean dropnij(Inventory inv)			  {	return dropnij(inv, 0); }
+	public boolean dropnij(Inventory inv, int poziom) {	return dropnij(poziom, inv::addItem); }
+	
+	public boolean dropnij(Player p) 				 { return dropnij(p, poziom(p, null)); }
+	public boolean dropnij(Player p, ItemStack item) { return dropnij(p, poziom(p, item)); }
+	public boolean dropnij(Player p, int poziom) 	 { return dropnij(poziom, item -> Func.dajItem(p, item)); }
+	
+	public List<ItemStack> dropnij() { return dropnij(0); }
 	public List<ItemStack> dropnij(int poziom) {
 		List<ItemStack> itemy = Lists.newArrayList();
 		for (int i=0; i<(rolle + poziom * rollePerPoziom); i++)
@@ -155,6 +193,12 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 						if (!drop.dropnij(poziom).isEmpty() && tylkoJeden)
 							break;
 		return itemy;
+	}
+	
+	private boolean dropnij(int poziom, Consumer<ItemStack> cons) {
+		List<ItemStack> itemy = dropnij(poziom);
+		itemy.forEach(cons);
+		return !itemy.isEmpty();
 	}
 	
 	@Override

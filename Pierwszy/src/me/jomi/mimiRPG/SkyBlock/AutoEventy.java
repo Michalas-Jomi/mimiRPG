@@ -226,6 +226,8 @@ class Event {
 	final List<Player> gracze = Lists.newArrayList();
 	boolean koniec = false;
 	
+	boolean grane = false;
+	
 	Event(List<ItemStack> itemy, RodzajEventu rodzaj, Location meta1, Location meta2, GameMode gamemode, double nagroda,
 			int min_gracze, int max_gracze, String nazwa, int zbiórka, int czas, Location loc_start, Location loc_zbiórka) {
 		this.itemy = itemy;
@@ -274,7 +276,7 @@ class Event {
 						gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + "§e" + gracze.size() + "§6/§e" + max_gracze);
 				gracze.remove(i);
 				NowyEkwipunek.wczytajStary(p);
-				if (rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
+				if (grane && rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
 					wygrał(gracze.get(0));
 				return;
 			}
@@ -287,6 +289,7 @@ class Event {
 	}
 	void koniec() {
 		koniec = true;
+		grane = false;
 		for (Player p : Lists.newCopyOnWriteArrayList(gracze))
 			opuść(p);
 		AutoEventy.inst.event = null;
@@ -304,6 +307,7 @@ class Event {
 			for (ItemStack item : itemy)
 				p.getInventory().setItem(i++, item);
 		}
+		grane = true;
 		Bukkit.broadcastMessage(Func.msg("Event %s rozpoczął się %s/%s", nazwa, gracze.size(), max_gracze));
 	}
 	

@@ -91,7 +91,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		boolean info = true;
 		for (Entry<String, Object> en : Main.ust.sekcja("RangiWysp").getValues(false).entrySet())
 			if (!en.getKey().equals("prefix")) {
-				double w = Func.Double(en.getValue());
+				double w = Func.DoubleObj(en.getValue());
 				if (info) {
 					if (ost != null && ost > w) {
 						Main.warn("Nieposortowane RangiWysp w ustawienia.yml. Należy je posortować dla poprawnego funkcjonowania");
@@ -123,7 +123,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			if (!entry.getKey().equals("prefix")) {
 				if (licz != 0 && licz++ % 3 == 0)
 					sender.sendMessage(" ");
-				sender.sendMessage(prefix + entry.getKey() + "§8: §e" + Func.DoubleToString(Func.Double(entry.getValue())));
+				sender.sendMessage(prefix + entry.getKey() + "§8: §e" + Func.DoubleToString(Func.DoubleObj(entry.getValue())));
 			}
 		return true;
 	}

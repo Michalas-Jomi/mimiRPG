@@ -366,6 +366,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	// EventHandler
 	@EventHandler
 	public void komendy(PlayerCommandPreprocessEvent ev) {
+		if (ev.getMessage().startsWith("/opuśćMinigre"))
+			return;
 		Player p = ev.getPlayer();
 		if (p.hasMetadata(getMetaId())) {
 			if (dozwoloneKomendy.contains(Func.tnij(ev.getMessage(), " ").get(0)))
