@@ -30,7 +30,7 @@ public class Debug extends Komenda {
 		try {
 			List<String> _args = Func.tnij(Func.listToString(args, 1), ".");
 			
-			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0]);
+			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Debug.class.getClassLoader());
 			Object obj = wez(klasa, null, _args.remove(0));
 			
 			for (String arg : _args)
@@ -39,6 +39,7 @@ public class Debug extends Komenda {
 			sender.sendMessage(obj.toString());
 		} catch (Throwable e) {
 			sender.sendMessage("§cNiepowodzenie " + e.getClass().getSimpleName() + " " + e.getMessage());
+			e.printStackTrace();
 		}
 		return true;
 	}

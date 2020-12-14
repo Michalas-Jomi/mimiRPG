@@ -79,7 +79,6 @@ public class Config {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		przeładuj();
 	}
 
 	public Set<String> klucze(boolean wszystkie){

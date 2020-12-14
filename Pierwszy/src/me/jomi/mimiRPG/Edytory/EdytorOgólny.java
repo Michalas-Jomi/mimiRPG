@@ -6,8 +6,9 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -25,17 +26,33 @@ import me.jomi.mimiRPG.util.Napis;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 
-public class EdytorOgólny {
+public class EdytorOgólny<T> {
 	String komenda;
-	Class<?> clazz;
+	Class<T> clazz;
 	
 	private final HashMap<String, EdytorOgólnyInst> mapa = new HashMap<>();
-
-	public EdytorOgólny(String komenda, Class<?> clazz) {
+	
+	
+	// ścieżka : (główny obiekt, obiekt na ścieżce) -> napis
+	final HashMap<String, BiFunction<T, String, Napis>> wyjątki = new HashMap<>();
+	final List<BiConsumer<T, String>> listaDlaZatwierdzenia = Lists.newArrayList();
+	
+	public void zarejestrójWyjątek(String ścieżka, BiFunction<T, String, Napis> bif) {
+		wyjątki.put(ścieżka.trim(), bif);
+	}
+	public void zarejestrujOnZatwierdz(BiConsumer<T, String> bic) {
+		listaDlaZatwierdzenia.add(bic);
+	}
+	
+	public EdytorOgólny(String komenda, Class<T> clazz) {
 		if (!komenda.startsWith("/"))
 			komenda = "/" + komenda;
 		this.komenda = komenda;
 		this.clazz = clazz;
+	}
+	
+	public boolean maEdytor(CommandSender sender) {
+		return mapa.containsKey(sender.getName());
 	}
 	
 	public boolean onCommand(CommandSender sender, String label, String args[]) {
@@ -77,9 +94,10 @@ public class EdytorOgólny {
 		CommandSender sender;
 		Player p;
 		
-		Object obiekt;
+		T obiekt;
 	
 	
+		@SuppressWarnings("unchecked")
 		public EdytorOgólnyInst(CommandSender sender, Config config, String ścieżkaWConfigu) {
 			this.ścieżka = ścieżkaWConfigu;
 			this.config = config;
@@ -89,7 +107,7 @@ public class EdytorOgólny {
 				this.p = (Player) sender;
 			
 			try {
-				obiekt = config.wczytaj(ścieżkaWConfigu);
+				obiekt = (T) config.wczytaj(ścieżkaWConfigu);
 			} catch (Throwable e) {}
 			
 			if (obiekt == null)
@@ -134,6 +152,15 @@ public class EdytorOgólny {
 						((List<Object>) ost).set(Integer.parseInt(args[i-1]), wartość);
 					} else {
 						Object wartość = konwertuj(field.getType(), args, i+1);
+						field.set(ost, wartość);
+					}
+				} else if (args[i].equals("()")) {
+					Class<?> rzutowana = Class.forName(args[i+1], false, EdytorOgólny.class.getClassLoader());
+					if (ost instanceof List) {
+						Object wartość = konwertuj(rzutowana, args, i+3);
+						((List<Object>) ost).set(Integer.parseInt(args[i-1]), wartość);
+					} else {
+						Object wartość = konwertuj(rzutowana, args, i+3);
 						field.set(ost, wartość);
 					}
 				} else if (args[i].equals("[]")) {
@@ -209,6 +236,18 @@ public class EdytorOgólny {
 	
 		Napis edytor(Object objekt, String pref, String nazwa, String scieżka, boolean wLiście) throws Throwable {
 			scieżka += nazwa + " ";
+
+			List<String> lsc = Func.tnij(scieżka.trim(), " ");
+			for (int i=0; i < lsc.size(); i++)
+				if (Func.Int(lsc.get(i), -1) != -1)
+					lsc.set(i, "<int>");
+			String sc = String.join(" ", lsc);
+			if (wyjątki.containsKey(sc)) {
+				Napis n = wyjątki.get(sc).apply(obiekt, scieżka);
+				if (n == null)
+					return new Napis();
+				return new Napis(pref).dodaj(n);
+			}
 			
 			if (objekt instanceof ConfigurationSerializable && !objekt.getClass().getName().startsWith("org.bukkit")) {
 				pref += "-";
@@ -242,7 +281,7 @@ public class EdytorOgólny {
 					n.dodaj(Napis.item((ItemStack) objekt).clickEvent(Action.RUN_COMMAND, scieżka + ">>"));
 				else if (objekt instanceof Location)
 					n.dodaj(new Napis("§e" + Func.locToString((Location) objekt), "§bKliknij aby ustawić", scieżka + ">>"));
-				else if (obiekt instanceof Boolean)
+				else if (objekt instanceof Boolean)
 					n.dodaj(new Napis((Boolean) objekt ? "§aTak" : "§cNie", "§bKliknij aby zmienić", scieżka + ">> " + !((Boolean) objekt)));
 				else
 					n.dodaj(new Napis("§e" + objekt, "§bKliknij aby ustawić", scieżka + ">> "));
@@ -251,6 +290,7 @@ public class EdytorOgólny {
 		}
 			
 		void zatwierdz() throws Throwable {
+			listaDlaZatwierdzenia.forEach(cons -> cons.accept(obiekt, ścieżka));
 			config.ustaw_zapisz(ścieżka, obiekt);
 			sender.sendMessage("Zapisano w " + ścieżka + " w " + config.path());
 		}

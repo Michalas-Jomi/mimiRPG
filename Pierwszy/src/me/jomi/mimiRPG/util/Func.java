@@ -134,6 +134,9 @@ public abstract class Func {
 		return System.currentTimeMillis() / 1000;
 	}
 
+	public static String enumToString(Enum<?> en) {
+		return en.toString().toLowerCase().replace("_", " ");
+	}
 	public static String DoubleToString(double liczba) {
 		String całości = IntToString((int) liczba);
 		double r = liczba - (int) liczba;
@@ -580,6 +583,18 @@ public abstract class Func {
 		}
 	}
 	
+	public static abstract class abstractHolder implements InventoryHolder {
+		protected Inventory inv;
+		
+		public abstractHolder(int rzędy, String nazwa) {
+			inv = Func.stwórzInv(this, rzędy, nazwa);
+		}
+		
+		@Override
+		public Inventory getInventory() {
+			return inv;
+		}
+	}
 	public static class FuncIdHolder implements InventoryHolder {
 		private static int _id = 0;
 		private final int id;
@@ -975,8 +990,8 @@ public abstract class Func {
 	private static Object zmapuj_wez(Field field, Object obj) throws Throwable {
 		Object w = field.get(obj);
 		if (w == null) return w;
-		if (field.getType().isEnum())
-			return field.getType().getMethod("name").invoke(w);
+		if (w.getClass().isEnum())
+			return Func.dajMetode(w.getClass(), "name").invoke(w);
 		return w;
 	}
 

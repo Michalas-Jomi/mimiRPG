@@ -16,6 +16,7 @@ import me.jomi.mimiRPG.Minigry.Minigra;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Zadania;
 import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
 
 public class Gracz extends Mapowany {
 	@Mapowane public String nick;
@@ -40,7 +41,7 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public HashMap<String, String> superItemy = new HashMap<>();
 	
-	@Mapowane public Zadania.ZadaniaGracza zadania;
+	@Mapowane public Zadania.ZadaniaGracza zadania = Func.utwórz(Zadania.ZadaniaGracza.class);
 	
 	public Wilczek.Wilk wilk;
 	

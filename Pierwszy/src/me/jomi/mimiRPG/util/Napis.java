@@ -136,7 +136,7 @@ public class Napis implements ConfigurationSerializable {
 	public static Napis item(ItemStack item) {
 		net.minecraft.server.v1_16_R2.ItemStack item2 = CraftItemStack.asNMSCopy(item);
 		Napis n = new Napis("§b[§9"+item.getAmount() + "§3x§b " +
-			(item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item2.getName().getString()) 
+			((item.hasItemMeta() && item.getItemMeta().hasDisplayName()) ? item.getItemMeta().getDisplayName() : item2.getName().getString()) 
 			+ "§b]§r");
 		Item b = new Item(
 				item.getType().toString().toLowerCase(),

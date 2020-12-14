@@ -18,7 +18,7 @@ import me.jomi.mimiRPG.util.Func;
 public class EdytorUogólniony extends Komenda {
 	public static final String prefix = Func.prefix("Edytor Ogólny");
 	
-	final HashMap<String, EdytorOgólny> mapa = new HashMap<>();
+	final HashMap<String, EdytorOgólny<?>> mapa = new HashMap<>();
 	
 	
 	public EdytorUogólniony() {
@@ -38,7 +38,7 @@ public class EdytorUogólniony extends Komenda {
 		if (args.length < 1) return false;
 		switch(args[0].toLowerCase()) {
 		case "edytor":
-			EdytorOgólny edytor = mapa.get(sender.getName());
+			EdytorOgólny<?> edytor = mapa.get(sender.getName());
 			if (edytor == null)
 				return Func.powiadom(prefix, sender, "Aby korzystać z edytora najpierw utwórz edytor");
 			return edytor.onCommand(sender, label, args);
@@ -46,7 +46,7 @@ public class EdytorUogólniony extends Komenda {
 			if (args.length < 2)
 				return Func.powiadom(prefix, sender, "/eo nowy <package.klasa>");
 			try {
-				mapa.put(sender.getName(), new EdytorOgólny("/edytorogólny", Class.forName(args[1], false, Main.classLoader)));
+				mapa.put(sender.getName(), new EdytorOgólny<>("/edytorogólny", Class.forName(args[1], false, Main.classLoader)));
 			} catch (Throwable e) {
 				return Func.powiadom(prefix, sender, "Nieprawidłowa klasa %s", args[1]);
 			}
