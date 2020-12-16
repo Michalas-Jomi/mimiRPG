@@ -86,12 +86,6 @@ public abstract class Func {
 		return new Krotka<>(info, stan);
 	}
 	
-	public static void napisz(String komu, String co) {
-		Player p = Bukkit.getPlayer(komu);
-		if (p != null)
-			p.sendMessage(co);
-	}
-	
 	public static String odpolszcz(String text) {
 		char[] znaki = text.toLowerCase().toCharArray();
 		int i = 0;
@@ -405,7 +399,7 @@ public abstract class Func {
 		if (lore == null) lore = Lists.newArrayList();
 		while (nrLini >= lore.size())
 			lore.add("");
-		lore.set(nrLini, linia);
+		lore.set(nrLini, koloruj(linia));
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		return item;
@@ -508,7 +502,9 @@ public abstract class Func {
         return item;	
 	}
 	public static ItemStack dajGłowe(OfflinePlayer p) {
-		ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+		return ustawGłowe(p, new ItemStack(Material.PLAYER_HEAD));
+	}
+	public static ItemStack ustawGłowe(OfflinePlayer p, ItemStack item) {
 		SkullMeta Cmeta = (SkullMeta) item.getItemMeta();
 		Cmeta.setOwningPlayer(p);
 		item.setItemMeta(Cmeta);
@@ -701,6 +697,53 @@ public abstract class Func {
 				min.apply(a, b),
 				max.apply(a, b)
 				);
+	}
+	/**
+	 * 
+	 * @param <T> typ objektów listy
+	 * @param numer szukany numer (rezulatat "wartość")
+	 * @param posortowanaLista posortowana rosnąco Lista według wartości wynikających z "wartość"
+	 * @param wartość funkcja zwracająca wartość dla obiektu listy
+	 * @return zwraca obiekt którego wartość == "numer", jesli
+	 * jeśli na osi punkt od "numer" nie istnieje, zwrócony zostanie istniejący punkt po jego prawej stronie
+	 */
+	public static <T> T wyszukajBinarnieP(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
+		return posortowanaLista.get(wyszukajBinarniePIndex(numer, posortowanaLista, wartość));
+	}
+	public static <T> int wyszukajBinarniePIndex(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
+		int l = 0;
+		int r = posortowanaLista.size() - 1;
+		
+		while (l < r) {
+			int s = l + ((r - l) / 2);
+			double w = wartość.apply(posortowanaLista.get(s));
+			
+			if (w < numer)
+				l = s + 1;
+			else
+				r = s;
+		}
+		return l;
+	}
+	public static <T> void insort(T obj, List<T> posortowanaLista, Function<T, Double> wartość) {
+		posortowanaLista.add(wyszukajBinarniePIndex(wartość.apply(obj), posortowanaLista, wartość), obj);
+	}
+	public static <T> int wyszukajBinarnieLIndex(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
+		int l = 0;
+		int r = posortowanaLista.size() - 1;
+		
+		while (l < r) {
+			int s = (int) Math.round(l + ((r - l) / 2d));
+			double w = wartość.apply(posortowanaLista.get(s));
+			
+			if (w == numer)
+				return s;
+			if (w > numer)
+				r = s - 1;
+			else
+				l = s;
+		}
+		return r;
 	}
 	
 	@SuppressWarnings("resource")
@@ -1176,8 +1219,7 @@ public abstract class Func {
 	}
 	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
 		return new IteratorBloków(róg1, róg2);
-	}
-	
+	}	
 	
 	public static boolean wklejSchemat(String schematScieżka, Location loc) {
 		return wklejSchemat(schematScieżka, loc.getWorld(), locToVec3(loc));

@@ -1026,7 +1026,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("%s nie należy do twojej gildii", args[1]));
 			gildia.opuść(args[1]);
 			gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s wyrzucił %s z gildi", gildia.nazwa, sender.getName(), args[1]));
-			Func.napisz(args[1], Gildia.prefix + Func.msg("Zostałeś wyrzucony z gildi %s przez %s", gildia.nazwa, sender.getName()));
+			Func.wykonajDlaNieNull(Bukkit.getPlayer(args[1]), gracz ->
+					gracz.sendMessage(Gildia.prefix + Func.msg("Zostałeś wyrzucony z gildi %s przez %s", gildia.nazwa, sender.getName())));
 			break;
 		case "o":
 		case "opuść":
@@ -1326,8 +1327,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Set<String> doUsunięcia = Sets.newConcurrentHashSet();
 		for (Entry<String, Krotka<String, Integer>> en : mapaZaproszeń.entrySet())
 			if ((en.getValue().b -= 1) <= 0) {
-				Func.napisz(en.getKey(), Gildia.prefix + Func.msg("Zaproszenie do gildi dla %s wygasło", en.getValue().a));
-				Func.napisz(en.getValue().a, Gildia.prefix + Func.msg("Zaproszenie do gildi od %s wygasło", en.getKey()));
+				Func.wykonajDlaNieNull(Bukkit.getPlayer(en.getKey()), p ->
+						p.sendMessage(Gildia.prefix + Func.msg("Zaproszenie do gildi dla %s wygasło", en.getValue().a)));
+				Func.wykonajDlaNieNull(Bukkit.getPlayer(en.getValue().a), p ->
+						p.sendMessage(Gildia.prefix + Func.msg("Zaproszenie do gildi od %s wygasło", en.getKey())));
 				doUsunięcia.add(en.getKey());
 			}
 		for (String nick : doUsunięcia)

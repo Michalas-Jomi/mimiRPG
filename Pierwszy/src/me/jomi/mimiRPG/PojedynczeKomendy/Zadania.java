@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -432,9 +433,15 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		// /zadaniaadmin <nick> [(opcje per zadanie)... <nazwy zadań>...] - otwiera panel z dostępnymi zadaniami z listy <nazwy zadań>
 		Player p = Bukkit.getPlayer(args[0]);
-		if (p == null)
-			return Func.powiadom(sender, "Ten gracz nie jest aktualnie online!");
-		
+		if (p == null) {
+			for (Entity e : Bukkit.selectEntities(sender, args[0]))
+				if (e instanceof Player) {
+					p = (Player) e;
+					break;
+				}
+			if (p == null)
+				return Func.powiadom(sender, "Ten gracz nie jest aktualnie online!");
+		}
 		//	(zadanie, args1 ? przyjmować : odbierać)
 		List<Krotka<Zadanie, Boolean>> zadania = Lists.newArrayList();
 		boolean dostarczone = false;

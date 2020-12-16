@@ -45,19 +45,7 @@ public class Ciąg<T> extends Mapowany {
 	}
 
 	public T znajdz(int numer) {
-		int l = 0;
-		int r = lista.size() - 1;
-		
-		while (l < r) {
-			int s = l + ((r - l) / 2);
-			int w = lista.get(s).a;
-			
-			if (w < numer)
-				l = s + 1;
-			else
-				r = s;
-		}
-		return lista.get(l).b;
+		return Func.wyszukajBinarnieP(numer, lista, k -> (double)(int)k.a).b;
 	}
 	public T losuj() {
 		return znajdz(random.nextInt(suma) + 1);
