@@ -3,8 +3,8 @@ package me.jomi.mimiRPG.SkyBlock;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -44,7 +44,6 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is
 //TODO /is kick/wyrzuć - wyrzucenie z wyspy na spawn, nie jako członka
-//TODO /is invite/zaproś
 //TODO /is delete
 //TODO /is regen
 //TODO /is booster
@@ -55,6 +54,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 //TODO /is visit
 //TODO tabcompleter do wyboru angielski/polski
 //TODO przycisk back w menu wyspy
+//TODO limity bloków
+//TODO ulepszanie limitów bloków
+//TODO /is biome
+//TODO tepać na home spadających w przepaść
 
 
 @Moduł
@@ -67,10 +70,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane int idWyspy;
 	}
 	public static class Holder implements InventoryHolder {
-		private final Inventory inv;
-		final TypInv typ;
-		final Wyspa wyspa;
+		private Inventory inv;
+		TypInv typ;
+		Wyspa wyspa;
 		public Holder(Wyspa wyspa, TypInv typ, int rzędy) {
+			init(wyspa, typ, rzędy, Func.enumToString(typ));
+		}
+		public Holder(Wyspa wyspa, TypInv typ, int rzędy, String nazwa) {
+			init(wyspa, typ, rzędy, nazwa);
+		}
+		private final void init(Wyspa wyspa, TypInv typ, int rzędy, String nazwa) {
 			inv = Func.stwórzInv(this, rzędy, Func.enumToString(typ));
 			Func.ustawPuste(inv);
 			this.typ = typ;
@@ -184,56 +193,83 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// (loc.distance(new Location(loc.getWorld(), 0, 100, 0), id wyspy)
 		static final List<Krotka<Double, Integer>> listaLokacji = Lists.newArrayList();
+		
+
 		static Wyspa wczytaj(Location loc) {
 			int id = Func.wyszukajBinarnieLIndex(loc.distance(new Location(loc.getWorld(), 0, 100, 0)), listaLokacji, k -> k.a);
-			
 			Wyspa wyspa;
 			for (int i=id; i <= id+1; i++)
 				if ((wyspa = wczytaj(i)) != null && wyspa.zawiera(loc))
 					return wyspa;
-
+			
 			return null;
 		}
+		static Wyspa wczytaj(Player p) {
+			return wczytaj(Gracz.wczytaj(p));
+		}
+		static Wyspa wczytaj(Gracz g) {
+			return g.wyspa == -1 ? null : wczytaj(g.wyspa);
+		}
+		static final WeakHashMap<Integer, Wyspa> mapaWysp = new WeakHashMap<>();
 		static Wyspa wczytaj(int id) {
-			return (Wyspa) getConfig(id).wczytaj("wyspa");
+			Wyspa wyspa = mapaWysp.get(id);
+			if (wyspa == null)
+				mapaWysp.put(id, wyspa = (Wyspa) getConfig(id).wczytaj("wyspa"));
+			return wyspa;
 		}
 		
  		static Config getConfig(int id) {
 			return new Config("configi/Wyspy/" + id);
 		}
 
+ 		
  		// Permisje
  		
- 		@Mapowane HashMap<String, String> permsKody = new HashMap<>(); // grupa: Permisje
+ 		@Mapowane List<String> permsKody; // grupa: Permisje // posortowane według priorytetów
  		final HashMap<String, Permisje> perms = new HashMap<>();
  		void Init() {
- 			for (Entry<String, String> en : permsKody.entrySet()) {
+ 			for (String nazwaKod : permsKody) {
+ 				List<String> nazwaIKod = Func.tnij(nazwaKod, " ");
  				Permisje perm = new Permisje();
+ 				
+ 				perm.grupa = nazwaIKod.get(0);
+ 				String kod = nazwaIKod.get(1);
+ 				
  				Field[] fields = Permisje.class.getDeclaredFields();
 				try {
-					perm.grupa = en.getKey();
 	 				for (int i=1; i < fields.length; i++)
-						fields[i].set(perm, en.getValue().length() > i && en.getValue().charAt(i-1) == '1');
+						fields[i].set(perm, kod.length() > i && kod.charAt(i-1) == '1');
 	 				for (int i=fields.length; i < fields.length + warpy.size(); i++)
-	 					perm.warpy.add(en.getValue().charAt(fields.length + i) == '1');
+	 					perm.warpy.add(kod.charAt(fields.length + i) == '1');
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
 				}
- 				perms.put(en.getKey(), perm);
+ 				perms.put(perm.grupa, perm);
  			}
  		}
  		void odświeżKodPermisji(Permisje perm) {
  			StringBuilder strB = new StringBuilder();
-				Field[] fields = Permisje.class.getDeclaredFields();
-				for (int i=1; i < fields.length; i++)
-					try {
-						strB.append(fields[i].getBoolean(perm) ? '1' : '0');
-					} catch (IllegalArgumentException | IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				for (Boolean warp : perm.warpy)
-					strB.append(warp ? '1' : '0');
-			permsKody.put(perm.grupa, strB.toString());
+ 			strB.append(perm.grupa).append(' ');
+ 			
+ 			Field[] fields = Permisje.class.getDeclaredFields();
+			for (int i=1; i < fields.length; i++)
+				try {
+					strB.append(fields[i].getBoolean(perm) ? '1' : '0');
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			for (Boolean warp : perm.warpy)
+				strB.append(warp ? '1' : '0');
+			
+			
+			for (int i=0; i < permsKody.size(); i++)
+				if (permsKody.get(i).startsWith(perm.grupa)) {
+					permsKody.set(i, strB.toString());
+					break;
+				}
+ 		}
+ 		void odświeżWszystkiePermisje() {
+ 			Lists.newArrayList(perms.values()).forEach(this::odświeżKodPermisji);
  		}
  		
  		
@@ -404,6 +440,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// /is home
+		
+		public void tpHome(Player p) {
+			p.teleport(locHome);
+			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
+		}
+		
+		
 		// /is public /is private
 
 		@Mapowane boolean prywatna = true;
@@ -514,6 +558,83 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// /is invite /is join
+		
+		private static final String metaZaproszenie = "mimiSkyblockZaproszenie";
+		public void zaproś(Player p, Player kogo) {
+			// TODO spradzanie limitu członków wyspy
+			
+			if (Gracz.wczytaj(kogo).wyspa != -1) {
+				Func.powiadom(prefix, p, "%s ma już wyspę", kogo.getDisplayName());
+				return;
+			}
+			
+			Func.ustawMetadate(kogo, metaZaproszenie, p);
+			
+			Inventory inv = new Holder(this, TypInv.ZAPROSZENIE, 3, "&4Zaproszenie na wyspe " + p.getDisplayName()).getInventory();
+			inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, "&aDołącz do wyspy &7" + p.getDisplayName()));
+			inv.setItem(14, Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, "&aOdrzuć zaproszenie do wyspy &7" + p.getDisplayName()));
+			kogo.openInventory(inv);
+			kogo.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+			
+			
+			
+			p.sendMessage(prefix + "Wysłano zaproszenie na wyspy do " + kogo.getDisplayName());
+		}
+		void przyjmijZaproszenie(Player p) {
+			// TODO ponowne spradzanie limitu członków wyspy
+			
+			członkowie.put(p.getName(), "członek");
+			zapisz();
+			
+			Gracz g = Gracz.wczytaj(p);
+			g.wyspa = id;
+			g.zapisz();
+			
+			powiadomCzłonków("%s dołączył wyspy", p.getName());
+			
+			p.removeMetadata(metaZaproszenie, Main.plugin);
+		}
+		void odrzućZaproszenie(Player p) {
+			Player zapraszający = (Player) p.getMetadata(metaZaproszenie).get(0).value();
+			
+			Func.powiadom(prefix, p, "Odrzuciłeś zaproszenie do wyspy %s", zapraszający.getDisplayName());
+			Func.powiadom(prefix, p, "%s odrzucił twoje zaproszenie do wyspy", zapraszający.getDisplayName());
+			
+			p.removeMetadata(metaZaproszenie, Main.plugin);
+		}
+		void klikanieZaproszenia(Player p, int slot) {
+			Consumer<Player> cons = null;
+			
+			switch (slot) {
+			case 12: cons = this::przyjmijZaproszenie;	break;
+			case 14: cons = this::odrzućZaproszenie;	break;
+			}
+			
+			Func.wykonajDlaNieNull(cons, _cons -> {
+				p.closeInventory();
+				_cons.accept(p);
+			});
+			
+		}
+		
+		
+		// /is leave
+		
+		public void opuść(Player p) {
+			powiadomCzłonków("%s opuścił wyspę", p.getDisplayName());
+
+			członkowie.remove(p.getName());
+			zapisz();
+			
+			Gracz g = Gracz.wczytaj(p);
+			g.wyspa = -1;
+			g.zapisz();
+			
+			// TODO tepać na spawn
+		}
+		
+		
 		// ogólne odniesienia
 		
 		void klikany(Player p, TypInv typ, InventoryClickEvent ev) {
@@ -526,11 +647,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			case WARPY:
 				klikanyInvWarp(p, ev.getRawSlot(), ev.getCurrentItem());
 				break;
+			case ZAPROSZENIE:
+				klikanieZaproszenia(p, ev.getRawSlot());
+				break;
 			}
 		}
 		void zamykany(Player p, TypInv typ, InventoryCloseEvent ev) {
 			if (typ == TypInv.MAGAZYN)
 				zamknięcieMagazynu();
+			else if (typ == TypInv.ZAPROSZENIE)
+				odrzućZaproszenie(p);
 		}
 		
 		public Krotka<Location, Location> rogi() {
@@ -560,6 +686,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// util
+		
+		void powiadomCzłonków(String msg, Object... uzupełnienia) {
+			msg = Func.msg(msg, uzupełnienia);
+			if (!msg.startsWith(prefix))
+				msg = prefix + msg;
+			String _msg = msg;
+			członkowie.keySet().forEach(nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(_msg)));
+		}
+		
+		
 		// Override
 		
 		@Override
@@ -574,7 +711,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		BANK,
 		MAGAZYN,
 		TOP,
-		WARPY;
+		WARPY,
+		ZAPROSZENIE;
 	}
 	
 	static SkyBlock inst;
@@ -737,6 +875,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		Player p2;
+
 		Gracz g = null;
 		Player p = null;
 		if (sender instanceof Player) {
@@ -750,11 +890,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// zakładam g.wyspa != -1 | gracz ma wyspe
 		
 		switch (args[0]) {
-		case "home":
-		case "dom":
-			p.teleport(wyspa.locHome);
-			p.sendMessage(prefix + "Zostałeś przeteleportowany na swoją wyspe");
-			break;
 		case "bank":
 			wyspa.otwórzBank(p);
 			break;
@@ -765,6 +900,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		case "sethome":
 		case "ustawdom":
 			wyspa.ustawHome(p);
+			break;
+		case "home":
+		case "dom":
+			wyspa.tpHome(p);
 			break;
 		case "public":
 		case "publiczna":
@@ -794,6 +933,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		case "bypass": // TODO pamiętać o permisjach
 			ustawBypass(p, !maBypass(p));
 			sender.sendMessage(prefix + (maBypass(p) ? "w" : "wy") + "łączono bypass");
+			break;
+		case "invite":
+		case "zaproś":
+			p2 = Bukkit.getPlayer(args[0]);
+			if (p2 == null)
+				return Func.powiadom(sender, prefix + Func.msg("%s nie jest online", args[0]));
+			wyspa.zaproś(p, p2);
+			break;
+		case "leave":
+		case "opuść":
+			wyspa.opuść(p);
 			break;
 		}
 		return true;
