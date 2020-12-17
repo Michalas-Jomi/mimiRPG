@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -104,8 +105,9 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 		
 		dodajGłówke(of, kogo.getName());
 		
-		Bukkit.broadcastMessage(prefix + Func.msg("%s zlecił zabicie %s! Zabij i zdobądz nagrode!",
-				kto.getDisplayName(), kogo.getDisplayName()));
+		Location loc = kogo.getLocation();
+		Bukkit.broadcastMessage(prefix + Func.msg("%s zlecił zabicie %s(%sx %sy %sz)! Zabij i zdobądz nagrode!",
+				kto.getDisplayName(), kogo.getDisplayName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
 	}
 	
 	

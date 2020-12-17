@@ -41,6 +41,8 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		ustawKomende("targ", null, null);
 		przeładuj();
 	}
+	
+	@Override
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
 		config.przeładuj();
@@ -54,9 +56,11 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		for (String nick : gracze)
 			Itemy.addAll((List<ItemStack>) config.wczytaj(nick));
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Itemy Targu", Itemy.size());
 	}
+	
 	private static ItemStack przetwórzItem(ItemStack item, double cena, String gracz) {
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
@@ -79,6 +83,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		item.setItemMeta(meta);
 		return item;
 	}
+	
 	private static boolean dajMenu(Player p) {
 		if (!Main.ekonomia) {
 			p.sendMessage(prefix + "Ta komenda nie działa poprawnie! wpisz §e/raport §6aby dowiedzieć się więcej");
@@ -197,7 +202,8 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			{p.sendMessage(prefix + "Twój ekwipunek jest pełny"); return;}
 		String nick = p.getName();
 		List<ItemStack> oferty = (List<ItemStack>) config.wczytaj(nick);
-		oferty.remove(item);
+		if (!oferty.remove(item))
+			{p.sendMessage(prefix + "Tej oferty nie ma już na rynku"); return;}; 
 		if (oferty.size() == 0) {
 			gracze.remove(nick);
 			config.ustaw("gracze", gracze);

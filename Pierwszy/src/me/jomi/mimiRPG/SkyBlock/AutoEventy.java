@@ -273,7 +273,7 @@ class Event {
 			if (gracze.get(i).getName().equals(p.getName())) {
 				if (!koniec)
 					for (Player gracz : gracze)
-						gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + "§e" + gracze.size() + "§6/§e" + max_gracze);
+						gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + " §e" + gracze.size() + "§6/§e" + max_gracze);
 				gracze.remove(i);
 				NowyEkwipunek.wczytajStary(p);
 				if (grane && rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
