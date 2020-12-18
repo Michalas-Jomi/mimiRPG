@@ -1071,6 +1071,11 @@ public abstract class Func {
 		if (obj != null)
 			func.accept(obj);
 	}
+	@SuppressWarnings("unchecked")
+	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func) {
+		if (obj != null && clazz.isInstance(obj))
+			func.accept((T) obj);
+	}
 	public static <T, V> V zwrotDlaNieNull(T obj, Function<T, V> func) {
 		if (obj != null)
 			return func.apply(obj);
@@ -1150,6 +1155,7 @@ public abstract class Func {
 		
 		return lista;
 	}
+	@SuppressWarnings("deprecation")
 	public static <T> T nowaInstancja(Class<T> clazz) throws InstantiationException, IllegalAccessException {
 		try {
 			return clazz.getConstructor().newInstance();
