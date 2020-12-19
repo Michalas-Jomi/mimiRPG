@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
@@ -16,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -32,7 +34,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -48,10 +49,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 //TODO /is
-//TODO /is kick/wyrzuć - wyrzucenie z wyspy na spawn, nie jako członka
-//TODO /is regen
 //TODO /is booster
-//TODO /is members
 //TODO /is coop
 //TODO /is upgrade
 //TODO tabcompleter do wyboru angielski/polski
@@ -61,9 +59,6 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 //TODO /is biome
 //TODO /is name - ustawia nazwe wyspy
 //TODO tepać na home spadających w przepaść
-//TODO /is addpermissiongroup
-//TODO /is delpermissiongroup
-//TODO /is edyitHierarchyPermissionGroup
 //TODO /is addwarp
 //TODO /is delwarp
 
@@ -71,6 +66,9 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 @Moduł
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Skyblock");
+	private static interface TypInvConsumer {
+		void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
+	}
 	public static class TopInfo extends Mapowany {
 		@Mapowane int pkt;// TODO pamiętać o zmianach
 		@Mapowane List<String> opis; // TODO pamiętać o zmianach
@@ -99,7 +97,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return inv;
 		}
 	}
-	public static class Wyspa extends Mapowany{
+	public static class Wyspa extends Mapowany {
 		public Wyspa() {}// Konstruktor dla mapowanego
 		public static class Permisje {
 			// TODO blokować usuwanie permisje gdy ktoś ma ją przypisaną
@@ -237,10 +235,54 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return new Config("configi/Wyspy/" + id);
 		}
 
+
+		@Mapowane HashMap<String, String> członkowie = new HashMap<>(); // nick: nazwaGrupyPermisji
+		@Mapowane Poziomy poziomy = Func.utwórz(Poziomy.class);
+		@Mapowane Location locŚrodek;
+		@Mapowane String nazwa;
+		@Mapowane String typ; // TODO wczytywać schematic
+		@Mapowane int id;
+
+
+		private void usuń() {
+			double dys0 = locŚrodek.distance(new Location(locŚrodek.getWorld(), 0, 100, 0));
+			if (listaLokacji.remove(Func.wyszukajBinarnieLIndex(dys0, listaLokacji, k -> k.a)).b != id) {
+				Main.warn("Znaleziony BUG! Niepoprawnie wyszukawana wyspa errorid:1 Wyspa.usuń()");
+				inst.przeładuj();
+				return;
+			}
+			configData.ustaw("wyspy loc." + id, null);
+			
+			członkowie.keySet().forEach(nick -> {
+				// TODO tepać ich na spawn jeśli są online
+				Gracz g = Gracz.wczytaj(nick);
+				g.wyspa = -1;
+				g.zapisz();
+			});
+			
+			getConfig(id).usuń();
+			
+			powiadomCzłonków("Wyspa została usunięta");
+			
+			Krotka<Location, Location> rogi = rogi();
+			Func.wykonajNaBlokach(rogi.a, rogi.b, blok -> {
+				if (blok.getType() == Material.AIR)
+					return false;
+				blok.setType(Material.AIR, false);
+				return true;
+			});
+		}
+		
+		public boolean zawiera(Location loc) {
+			Krotka<Location, Location> rogi = rogi();
+			return Func.zawiera(loc, rogi.a, rogi.b);
+		}
+		
+ 		
  		
  		// Permisje
  		
- 		static final List<String> permsNietykalne = Arrays.asList("właściciel", "odwiedzający");
+ 		static final List<String> permsNietykalne = Arrays.asList("właściciel", "odwiedzający"); // TODO domyślne permisje
  		@Mapowane List<String> permsKody; // grupa: Permisje // posortowane według priorytetów
  		final HashMap<String, Permisje> perms = new HashMap<>();
  		void Init() {
@@ -294,409 +336,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
  		}
  		
  		
-		@Mapowane HashMap<String, String> członkowie = new HashMap<>(); // nick: nazwaGrupyPermisji
-		@Mapowane Poziomy poziomy = Func.utwórz(Poziomy.class);
-		@Mapowane Location locŚrodek;
-		@Mapowane String nazwa;
-		@Mapowane String typ; // TODO wczytywać schematic
-		@Mapowane int id;
-
-		
-		private void usuń() {
-			double dys0 = locŚrodek.distance(new Location(locŚrodek.getWorld(), 0, 100, 0));
-			if (listaLokacji.remove(Func.wyszukajBinarnieLIndex(dys0, listaLokacji, k -> k.a)).b != id) {
-				Main.warn("Znaleziony BUG! Niepoprawnie wyszukawana wyspa errorid:1 Wyspa.usuń()");
-				inst.przeładuj();
-				return;
-			}
-			configData.ustaw("wyspy loc." + id, null);
-			
-			członkowie.keySet().forEach(nick -> {
-				// TODO tepać ich na spawn jeśli są online
-				Gracz g = Gracz.wczytaj(nick);
-				g.wyspa = -1;
-				g.zapisz();
-			});
-			
-			getConfig(id).usuń();
-			
-			powiadomCzłonków("Wyspa została usunięta");
-			
-			// TODO usunąć bloki
-		}
-		
-		public boolean zawiera(Location loc) {
-			return false; // TODO napisać
-		}
-		
 		Permisje permisje(Player p) {
 			if (maBypass(p))
-				return perms.get("właściciel"); // TODO domyślne permisje
-			try {
-				return perms.get(członkowie.get(p.getName()));
-			} catch (Throwable e) {
-				return perms.get("odwiedzający"); // TODO domyślne permisje
-			}
+				return perms.get("właściciel");
+			return permisje(p.getName());
+		}
+		Permisje permisje(String nick) {
+			return perms.get(członkowie.getOrDefault(nick, "odwiedzający"));
 		}
 		
 		
-		
-		// /is bank
-		
-		@Mapowane int exp;
-		@Mapowane int kasa;
-		public void otwórzBank(Player p) {
-			p.openInventory(getInvBank());
-			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-		}
-		static int slotBankKasa = 11; 	   // TODO wczytywać
-		static int slotBankExp = 13; 	  // ^
-		static int slotBankMagazyn = 15; // ^
-		private Inventory invBank = null;
-		private Inventory getInvBank() {
-			if (invBank == null) {
-				invBank = new Holder(this, TypInv.BANK, 3).getInventory();
-				invBank.setItem(slotBankKasa,	Func.stwórzItem(Material.PAPER, "&6Pieniądze", ""));
-				invBank.setItem(slotBankExp,	Func.stwórzItem(Material.EXPERIENCE_BOTTLE, "&6Exp", ""));
-				invBank.setItem(slotBankMagazyn,Func.stwórzItem(Material.CHEST, "&6Magazyn"));
-				odświeżInvBank();
-			}
-			
-			return invBank;
-		}
-		private void odświeżInvBank() {
-			Func.ustawLore(invBank.getItem(slotBankKasa), "&7Dostępne środki: &a" + kasa + "$", 0);
-			Func.ustawLore(invBank.getItem(slotBankExp),  "&7Zgromadzony Exp: &a" + exp, 0);
-		}
-		public void wpłaćExp(Player p, int ile) {
-			if (ile == 0 || (ile > 0 && Poziom.policzCałyExp(p) < ile))
-				return;
-			p.giveExp(-ile);
-			exp += ile;
-			odświeżInvBank();
-			zapisz();
-			Main.log(prefix + p.getName() + "wpłacił " + ile + " expa do banku, całkowita ilość: " + exp);
-		}
-		public void wpłaćPieniądze(Player p, int ile) {
-			if (ile == 0 || (ile > 0 && Main.econ.getBalance(p) < ile))
-				return;
-			Main.econ.withdrawPlayer(p, ile);
-			kasa += ile;
-			odświeżInvBank();
-			zapisz();
-			Main.log(prefix + p.getName() + "wpłacił " + ile + "$ do banku, całkowita ilość: " + kasa);	
-		}
-		private void klikanyBank(Player p, int slot, ClickType clickType) {
-			int min;
-			int prawy;
-			Supplier<Integer> lewy;
-			
-			BiConsumer<Player, Integer> bic = null;
-			if (slot == slotBankKasa) {
-				lewy = () -> Math.abs((int) Main.econ.getBalance(p));
-				bic = this::wpłaćPieniądze;
-				min = 1000;
-				prawy = kasa;
-			} else if (slot == slotBankExp) {
-				lewy = () -> Poziom.policzCałyExp(p);
-				bic = this::wpłaćExp;
-				min = 1725;
-				prawy = exp;
-			} else if (slot == slotBankMagazyn) {
-				otwórzMagazyn(p);
-				return;
-			} else
-				return;
 
-			int ile;
-			switch (clickType) {
-			// wpłacanie
-			case LEFT:		 ile = Math.min(min, lewy.get());	break;
-			case SHIFT_LEFT: ile = lewy.get();					break;
-			// wypłacanie
-			case RIGHT:		  ile = -Math.min(min, prawy);		break;
-			case SHIFT_RIGHT: ile = -prawy;						break;
-			default:
-				return;
-			}
-				
-			bic.accept(p, ile);
-			
-		}
-		
-		
-		// /is storage
-
-		@Mapowane List<ItemStack> magazynItemów;
-		public void otwórzMagazyn(Player p) {
-			p.openInventory(getInvMagazyn());
-		}
-		private Inventory invMagazyn = null;
-		private Inventory getInvMagazyn() {
-			if (invMagazyn == null) {
-				invMagazyn = new Holder(this, TypInv.MAGAZYN, poziomy.magazyn + 1).getInventory();
-				invMagazyn.clear();
-				int i=0;
-				for (ItemStack item : magazynItemów)
-					invMagazyn.setItem(i++, item);
-			}
-			return invMagazyn;
-		}
-		private void zamknięcieMagazynu() {
-			magazynItemów.clear();
-			invMagazyn.forEach(magazynItemów::add);
-			zapisz();
-		}
-		
-		
-		// /is sethome
-
-		@Mapowane Location locHome;
-		public void ustawHome(Player p) {
-			if (!permisje(p).ustawienie_home_wyspy)
-				p.sendMessage(prefix + "Nie masz uprawnień na ustawnie home wyspy");
-			else {
-				locHome = p.getLocation();
-				zapisz();
-				p.sendMessage(prefix + "Ustawiono nowy home wyspy");
-			}
-		}
-		
-		
-		// /is home
-		
-		public void tpHome(Player p) {
-			p.teleport(locHome);
-			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
-		}
-		
-		
-		// /is public /is private
-
-		@Mapowane boolean prywatna = true;
-		public void ustawPubliczna(Player p) {
-			ustawPubliczność(p, true);
-		}
-		public void ustawPrywatna(Player p) {
-			if (ustawPubliczność(p, false)) {
-				// TODO wyrzucić wszystkich z wyspy
-			}
-		}
-		private boolean ustawPubliczność(Player p, boolean publiczna) {
-			String msg = publiczna ? "publiczn" : "prywatn";
-			if (prywatna == publiczna) {
-				prywatna = !prywatna;
-				zapisz();
-				p.sendMessage(prefix + "Ustawiono wyspę na " + msg + "ą");
-				return true;
-			} else
-				p.sendMessage(prefix + "Twoja wyspa jest już " + msg + "a");
-			return false;
-		}
-		
-		
-		// /is warps
-		
-		@Mapowane List<Warp> warpy; 
-		public void otwórzWarpy(Player p) {
-			p.openInventory(getInvWarpy(p));
-			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-		}
-		private Inventory getInvWarpy(Player p) {
-			Inventory invWarpy = new Holder(this, TypInv.WARPY, (warpy.size() - 1) / 9 + 1).getInventory();
-			
-			Permisje perms = permisje(p);
-			
-			int i = -1;
-			for (Warp warp : warpy)
-				invWarpy.setItem(++i,
-						Func.stwórzItem(
-								perms.warpy.get(i) ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS_PANE,
-								"&9&l" + warp.nazwa
-						)
-				);
-			
-			return invWarpy;
-		}
-		private void klikanyInvWarp(Player p, int slot, ItemStack item) {
-			if (slot >= warpy.size() || slot < 0)
-				return;
-			if (item.getType() == Material.LIME_STAINED_GLASS_PANE)
-				tpToWarp(p, warpy.get(slot));
-			else
-				p.sendMessage(prefix + "Nie masz uprawnień na korzystanie z tego warpa");
-		}
-		public void tpToWarp(Player p, Warp warp) {
-			p.teleport(warp.loc);
-			p.sendMessage(prefix + Func.msg("Zostałeś przeteleportowany na warp %s", warp.nazwa));
-		}
-		
-		
-		// /is value
-
-		@Mapowane int pkt;
-		int ostatnieLiczenie = 0;
-		public void wartość(Player p) {
-			int teraz = (int) (System.currentTimeMillis() / 1000);
-			
-			int mineło = teraz - ostatnieLiczenie;
-			
-			if (mineło >= czasCooldownuLiczeniaWartości || maBypass(p)) {
-				ostatnieLiczenie = teraz;
-				p.sendMessage(prefix + "Liczenie wartości wyspy");
-				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
-					policzWartość();
-					if (Gracz.wczytaj(p).wyspa != id)
-						p.sendMessage(prefix + Func.msg("Aktualna wartość ich wyspy: %s", pkt));
-					członkowie.keySet().forEach(nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), gracz ->
-							gracz.sendMessage(prefix + Func.msg("Aktualna wartość twojej wyspy: %s", pkt))));
-				});
-			} else
-				p.sendMessage(prefix + Func.msg("musisz jeszcze poczekać %s żeby ponownie przeliczyć wartość wyspy",
-						Func.czas(czasCooldownuLiczeniaWartości - mineło)));
-			
-		}
-		public int policzWartość() {
-			int ile = 0;
-			Set<Material> omijane = Sets.newConcurrentHashSet();
-			
-			Krotka<Location, Location> rogi = rogi();
-			
-			for (Block blok : Func.bloki(rogi.a, rogi.b)) {
-				Material mat = blok.getType();
-				if (omijane.contains(mat))
-					continue;
-				int pkt = punktacja.get(mat);
-				if (pkt == 0)
-					omijane.add(mat);
-				else
-					ile += pkt;
-			}
-			
-			if (ile != pkt) {
-				pkt = ile;
-				zapisz();
-			}
-			return ile;
-		}
-		
-		
-		// /is invite /is join
-		
-		private static final String metaZaproszenie = "mimiSkyblockZaproszenie";
-		public void zaproś(Player p, Player kogo) {
-			// TODO spradzanie limitu członków wyspy
-			
-			if (Gracz.wczytaj(kogo).wyspa != -1) {
-				Func.powiadom(prefix, p, "%s ma już wyspę", kogo.getDisplayName());
-				return;
-			}
-			
-			Func.ustawMetadate(kogo, metaZaproszenie, p);
-			
-			Inventory inv = new Holder(this, TypInv.ZAPROSZENIE, 3, "&4Zaproszenie na wyspe " + p.getDisplayName()).getInventory();
-			inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, "&aDołącz do wyspy &7" + p.getDisplayName()));
-			inv.setItem(14, Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, "&aOdrzuć zaproszenie do wyspy &7" + p.getDisplayName()));
-			kogo.openInventory(inv);
-			kogo.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-			
-			
-			
-			p.sendMessage(prefix + "Wysłano zaproszenie na wyspy do " + kogo.getDisplayName());
-		}
-		void przyjmijZaproszenie(Player p) {
-			// TODO ponowne spradzanie limitu członków wyspy
-			
-			członkowie.put(p.getName(), "członek");
-			zapisz();
-			
-			Gracz g = Gracz.wczytaj(p);
-			g.wyspa = id;
-			g.zapisz();
-			
-			powiadomCzłonków("%s dołączył wyspy", p.getName());
-			
-			p.removeMetadata(metaZaproszenie, Main.plugin);
-		}
-		void odrzućZaproszenie(Player p) {
-			Player zapraszający = (Player) p.getMetadata(metaZaproszenie).get(0).value();
-			
-			Func.powiadom(prefix, p, "Odrzuciłeś zaproszenie do wyspy %s", zapraszający.getDisplayName());
-			Func.powiadom(prefix, p, "%s odrzucił twoje zaproszenie do wyspy", zapraszający.getDisplayName());
-			
-			p.removeMetadata(metaZaproszenie, Main.plugin);
-		}
-		void klikanieZaproszenia(Player p, int slot) {
-			Consumer<Player> cons = null;
-			
-			switch (slot) {
-			case 12: cons = this::przyjmijZaproszenie;	break;
-			case 14: cons = this::odrzućZaproszenie;	break;
-			}
-			
-			Func.wykonajDlaNieNull(cons, _cons -> {
-				p.closeInventory();
-				_cons.accept(p);
-			});
-			
-		}
-		
-		
-		// /is leave
-		
-		public void opuść(Player p) {
-			powiadomCzłonków("%s opuścił wyspę", p.getDisplayName());
-
-			członkowie.remove(p.getName());
-			zapisz();
-			
-			Gracz g = Gracz.wczytaj(p);
-			g.wyspa = -1;
-			g.zapisz();
-			
-			// TODO tepać na spawn
-		}
-		
-		
-		// /is visit
-		
-		public void odwiedz(Player p) {
-			if (członkowie.containsKey(p.getName()))
-				tpHome(p);
-			else if (prywatna)
-				p.sendMessage(prefix + "Ta wyspa jest prywatna");
-			else {
-				p.teleport(locHome);
-				powiadomCzłonków("%s Odwiedza twoją wyspę", p.getDisplayName());
-				p.sendMessage(prefix + Func.msg("Odwiedzasz wyspę %s", nazwa));
-			}
-		}
-		
-		
-		// /is delete //TODO tylko własciciel
-		
-		public void usuń(Player p) {
-			Inventory inv = new Holder(this, TypInv.USUŃ, 3, "&4Usunąć wyspe?").getInventory();
-
-			inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, "&aTak, usuń wyspę"));
-			inv.setItem(14, Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, "&4Nie, nie usuwał wyspy"));
-			
-			p.openInventory(inv);
-			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-		}
-		void klikanyUsuń(Player p, int slot) {
-			switch (slot) {
-			case 12: 
-				usuń();
-			case 14:
-				break;
-			default:
-				return;
-			}
-			p.closeInventory();
-		}
-
-		
 		// /is permissions
 		
 		public void permisjeInv(Player p) {
@@ -908,14 +558,472 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// /is warps
+		
+		@Mapowane List<Warp> warpy; 
+		public void otwórzWarpy(Player p) {
+			p.openInventory(getInvWarpy(p));
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		private Inventory getInvWarpy(Player p) {
+			Inventory invWarpy = new Holder(this, TypInv.WARPY, (warpy.size() - 1) / 9 + 1).getInventory();
+			
+			Permisje perms = permisje(p);
+			
+			int i = -1;
+			for (Warp warp : warpy)
+				invWarpy.setItem(++i,
+						Func.stwórzItem(
+								perms.warpy.get(i) ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS_PANE,
+								"&9&l" + warp.nazwa
+						)
+				);
+			
+			return invWarpy;
+		}
+		private void klikanyInvWarp(Player p, int slot, ItemStack item) {
+			if (slot >= warpy.size() || slot < 0)
+				return;
+			if (item.getType() == Material.LIME_STAINED_GLASS_PANE)
+				tpToWarp(p, warpy.get(slot));
+			else
+				p.sendMessage(prefix + "Nie masz uprawnień na korzystanie z tego warpa");
+		}
+		public void tpToWarp(Player p, Warp warp) {
+			p.teleport(warp.loc);
+			p.sendMessage(prefix + Func.msg("Zostałeś przeteleportowany na warp %s", warp.nazwa));
+		}
+				
+		
+		// /is bank
+		
+		@Mapowane int exp;
+		@Mapowane int kasa;
+		public void otwórzBank(Player p) {
+			p.openInventory(getInvBank());
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		static int slotBankKasa = 11; 	   // TODO wczytywać
+		static int slotBankExp = 13; 	  // ^
+		static int slotBankMagazyn = 15; // ^
+		private Inventory invBank = null;
+		private Inventory getInvBank() {
+			if (invBank == null) {
+				invBank = new Holder(this, TypInv.BANK, 3).getInventory();
+				invBank.setItem(slotBankKasa,	Func.stwórzItem(Material.PAPER, "&6Pieniądze", ""));
+				invBank.setItem(slotBankExp,	Func.stwórzItem(Material.EXPERIENCE_BOTTLE, "&6Exp", ""));
+				invBank.setItem(slotBankMagazyn,Func.stwórzItem(Material.CHEST, "&6Magazyn"));
+				odświeżInvBank();
+			}
+			
+			return invBank;
+		}
+		private void odświeżInvBank() {
+			Func.ustawLore(invBank.getItem(slotBankKasa), "&7Dostępne środki: &a" + kasa + "$", 0);
+			Func.ustawLore(invBank.getItem(slotBankExp),  "&7Zgromadzony Exp: &a" + exp, 0);
+		}
+		public void wpłaćExp(Player p, int ile) {
+			if (ile == 0 || (ile > 0 && Poziom.policzCałyExp(p) < ile))
+				return;
+			p.giveExp(-ile);
+			exp += ile;
+			odświeżInvBank();
+			zapisz();
+			Main.log(prefix + p.getName() + "wpłacił " + ile + " expa do banku, całkowita ilość: " + exp);
+		}
+		public void wpłaćPieniądze(Player p, int ile) {
+			if (ile == 0 || (ile > 0 && Main.econ.getBalance(p) < ile))
+				return;
+			Main.econ.withdrawPlayer(p, ile);
+			kasa += ile;
+			odświeżInvBank();
+			zapisz();
+			Main.log(prefix + p.getName() + "wpłacił " + ile + "$ do banku, całkowita ilość: " + kasa);	
+		}
+		private void klikanyBank(Player p, int slot, ClickType clickType) {
+			int min;
+			int prawy;
+			Supplier<Integer> lewy;
+			
+			BiConsumer<Player, Integer> bic = null;
+			if (slot == slotBankKasa) {
+				lewy = () -> Math.abs((int) Main.econ.getBalance(p));
+				bic = this::wpłaćPieniądze;
+				min = 1000;
+				prawy = kasa;
+			} else if (slot == slotBankExp) {
+				lewy = () -> Poziom.policzCałyExp(p);
+				bic = this::wpłaćExp;
+				min = 1725;
+				prawy = exp;
+			} else if (slot == slotBankMagazyn) {
+				otwórzMagazyn(p);
+				return;
+			} else
+				return;
+
+			int ile;
+			switch (clickType) {
+			// wpłacanie
+			case LEFT:		 ile = Math.min(min, lewy.get());	break;
+			case SHIFT_LEFT: ile = lewy.get();					break;
+			// wypłacanie
+			case RIGHT:		  ile = -Math.min(min, prawy);		break;
+			case SHIFT_RIGHT: ile = -prawy;						break;
+			default:
+				return;
+			}
+				
+			bic.accept(p, ile);
+			
+		}
+		
+		
+		// /is storage
+
+		@Mapowane List<ItemStack> magazynItemów;
+		public void otwórzMagazyn(Player p) {
+			p.openInventory(getInvMagazyn());
+		}
+		private Inventory invMagazyn = null;
+		private Inventory getInvMagazyn() {
+			if (invMagazyn == null) {
+				invMagazyn = new Holder(this, TypInv.MAGAZYN, poziomy.magazyn + 1).getInventory();
+				invMagazyn.clear();
+				int i=0;
+				for (ItemStack item : magazynItemów)
+					invMagazyn.setItem(i++, item);
+			}
+			return invMagazyn;
+		}
+		private void zamknięcieMagazynu() {
+			magazynItemów.clear();
+			invMagazyn.forEach(magazynItemów::add);
+			zapisz();
+		}
+		
+		
+		// /is sethome
+
+		@Mapowane Location locHome;
+		public void ustawHome(Player p) {
+			if (!permisje(p).ustawienie_home_wyspy)
+				p.sendMessage(prefix + "Nie masz uprawnień na ustawnie home wyspy");
+			else {
+				locHome = p.getLocation();
+				zapisz();
+				p.sendMessage(prefix + "Ustawiono nowy home wyspy");
+			}
+		}
+		
+		
+		// /is home
+		
+		public void tpHome(Player p) {
+			p.teleport(locHome);
+			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
+		}
+		
+		
+		// /is public /is private
+
+		@Mapowane boolean prywatna = true;
+		public void ustawPubliczna(Player p) {
+			ustawPubliczność(p, true);
+		}
+		public void ustawPrywatna(Player p) {
+			if (ustawPubliczność(p, false)) {
+				// TODO wyrzucić wszystkich z wyspy
+			}
+		}
+		private boolean ustawPubliczność(Player p, boolean publiczna) {
+			String msg = publiczna ? "publiczn" : "prywatn";
+			if (prywatna == publiczna) {
+				prywatna = !prywatna;
+				zapisz();
+				p.sendMessage(prefix + "Ustawiono wyspę na " + msg + "ą");
+				return true;
+			} else
+				p.sendMessage(prefix + "Twoja wyspa jest już " + msg + "a");
+			return false;
+		}
+		
+		
+		// /is value
+
+		@Mapowane int pkt;
+		int ostatnieLiczenie = 0;
+		public void wartość(Player p) {
+			int teraz = (int) (System.currentTimeMillis() / 1000);
+			
+			int mineło = teraz - ostatnieLiczenie;
+			
+			if (mineło >= czasCooldownuLiczeniaWartości || maBypass(p)) {
+				ostatnieLiczenie = teraz;
+				p.sendMessage(prefix + "Liczenie wartości wyspy");
+				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+					policzWartość();
+					if (Gracz.wczytaj(p).wyspa != id)
+						p.sendMessage(prefix + Func.msg("Aktualna wartość ich wyspy: %s", pkt));
+					członkowie.keySet().forEach(nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), gracz ->
+							gracz.sendMessage(prefix + Func.msg("Aktualna wartość twojej wyspy: %s", pkt))));
+				});
+			} else
+				p.sendMessage(prefix + Func.msg("musisz jeszcze poczekać %s żeby ponownie przeliczyć wartość wyspy",
+						Func.czas(czasCooldownuLiczeniaWartości - mineło)));
+			
+		}
+		public int policzWartość() {
+			int ile = 0;
+			Set<Material> omijane = Sets.newConcurrentHashSet();
+			
+			Krotka<Location, Location> rogi = rogi();
+			
+			for (Block blok : Func.bloki(rogi.a, rogi.b)) {
+				Material mat = blok.getType();
+				if (omijane.contains(mat))
+					continue;
+				int pkt = punktacja.get(mat);
+				if (pkt == 0)
+					omijane.add(mat);
+				else
+					ile += pkt;
+			}
+			
+			if (ile != pkt) {
+				pkt = ile;
+				zapisz();
+			}
+			return ile;
+		}
+		
+		
+		// /is invite /is join
+		
+		private static final String metaZaproszenie = "mimiSkyblockZaproszenie";
+		public void zaproś(Player p, Player kogo) {
+			// TODO spradzanie limitu członków wyspy
+			// TODO jakiś cooldown na tą samą osobe
+			
+			if (Gracz.wczytaj(kogo).wyspa != -1) {
+				Func.powiadom(prefix, p, "%s ma już wyspę", kogo.getDisplayName());
+				return;
+			}
+			
+			Func.ustawMetadate(kogo, metaZaproszenie, p);
+			
+			Main.panelTakNie(kogo,
+					"&4Zaproszenie na wyspe " + p.getDisplayName(),
+					"&aDołącz do wyspy &7" + p.getDisplayName(),
+					"&cOdrzuć zaproszenie do wyspy &7" + p.getDisplayName(),
+					() -> przyjmijZaproszenie(kogo),
+					() -> odrzućZaproszenie(kogo));
+			
+			p.sendMessage(prefix + "Wysłano zaproszenie na wyspy do " + kogo.getDisplayName());
+		}
+		void przyjmijZaproszenie(Player p) {
+			// TODO ponowne spradzanie limitu członków wyspy
+			
+			członkowie.put(p.getName(), "członek");
+			zapisz();
+			
+			Gracz g = Gracz.wczytaj(p);
+			g.wyspa = id;
+			g.zapisz();
+			
+			powiadomCzłonków("%s dołączył wyspy", p.getName());
+			
+			p.removeMetadata(metaZaproszenie, Main.plugin);
+			
+			odświeżInvMembers();
+		}
+		void odrzućZaproszenie(Player p) {
+			Player zapraszający = (Player) p.getMetadata(metaZaproszenie).get(0).value();
+			
+			Func.powiadom(prefix, p, "Odrzuciłeś zaproszenie do wyspy %s", zapraszający.getDisplayName());
+			Func.powiadom(prefix, p, "%s odrzucił twoje zaproszenie do wyspy", zapraszający.getDisplayName());
+			
+			p.removeMetadata(metaZaproszenie, Main.plugin);
+		}
+
+		
+		// /is leave
+		
+		public void opuść(Player p) {
+			powiadomCzłonków("%s opuścił wyspę", p.getDisplayName());
+
+			członkowie.remove(p.getName());
+			zapisz();
+			
+			Gracz g = Gracz.wczytaj(p);
+			g.wyspa = -1;
+			g.zapisz();
+			
+			odświeżInvMembers();
+			
+			// TODO tepać na spawn
+		}
+		
+		
+		// /is visit
+		
+		public void odwiedz(Player p) {
+			if (członkowie.containsKey(p.getName()))
+				tpHome(p);
+			else if (prywatna)
+				p.sendMessage(prefix + "Ta wyspa jest prywatna");
+			else {
+				p.teleport(locHome);
+				powiadomCzłonków("%s Odwiedza twoją wyspę", p.getDisplayName());
+				p.sendMessage(prefix + Func.msg("Odwiedzasz wyspę %s", nazwa));
+			}
+		}
+		
+		
+		// /is delete //TODO tylko własciciel
+		
+		public void usuń(Player p) {
+			Main.panelTakNie(p, "&4Usunąć wyspe?", "&aTak, usuń wyspę", "&4Nie, nie usuwał wyspy", this::usuń, null);
+		}
+		
+		
+		// /is members
+		
+		public void otwórzMembers(Player p) {
+			p.openInventory(getInvMembers(p));
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		private Inventory getInvMembers(Player p) {
+			Inventory inv = new Holder(this, TypInv.CZŁONKOWIE, Func.potrzebneRzędy(członkowie.size())).getInventory();
+			
+			Permisje perm = permisje(p);
+			
+			int i = 0;
+			boolean był = false;
+			String[] nicki = new String[członkowie.size()];
+			for (String grupa : permsKody) {
+				grupa = kodToStrPerm(grupa);
+				for (Entry<String, String> en : członkowie.entrySet())
+					if (grupa.equals(en.getValue())) {
+						nicki[i] = en.getKey();
+						ItemStack item = Func.stwórzItem(Material.PLAYER_HEAD, "&9&l" + en.getKey(), "&6Ranga: &a" + grupa);
+						if (był)
+							Func.dodajLore(Func.dodajLore(item, "&8LPM aby awansować"), "&8PPM aby degradować");
+						inv.setItem(i++, item);
+					}
+				if (!był && grupa.equals(perm.grupa))
+					był = true;
+			}
+			
+			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+				if (inv.getViewers().isEmpty())
+					return;
+				for (int j=0; j < nicki.length; j++)
+					Func.ustawGłowe(Func.graczOffline(nicki[j]), inv.getItem(j));
+			});
+			
+			return inv;
+		}
+		void klikanyInvMembers(Player p, ItemStack item, ClickType typ) {
+			if (!item.getType().equals(Material.PLAYER_HEAD) || !Func.multiEquals(typ, ClickType.RIGHT, ClickType.LEFT))
+				return;
+			String nick2 = item.getItemMeta().getDisplayName().substring(4);
+			
+			Permisje permP = permisje(p);
+			Permisje perm2 = permisje(nick2);
+			
+			
+			int mn = typ == ClickType.LEFT ? -1 : 1;
+			int indexPerm2 = indexPerm(perm2);
+			
+			if (indexPerm(permP) >= indexPerm2 + mn || permsNietykalne.contains(kodToStrPerm(indexPerm2 + mn))) {
+				p.sendMessage(prefix + "Nie możesz tego zrobić");
+				return;
+			}
+			
+			permsKody.add(indexPerm2 + mn, permsKody.remove(indexPerm2));
+			odświeżInvMembers();
+			zapisz();
+			
+			p.sendMessage(prefix + Func.msg("%s gracza %s!", mn == -1 ? "Awansowałeś" : "Zdegradowałeś", nick2));
+			Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2), p2 -> p.sendMessage(prefix + Func.msg("%s %s cię!", p.getDisplayName(), mn == -1 ? "Awansował" : "Zdegradował")));
+		}
+		
+		void odświeżInvMembers() {
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				Inventory inv = p.getOpenInventory().getTopInventory();
+				Func.wykonajDlaNieNull(inv.getHolder(), Holder.class, holder -> {
+					if (holder.wyspa.equals(this) && holder.typ == TypInv.CZŁONKOWIE)
+						otwórzMembers(p);
+				});
+			}
+		}
+		
+		
+		// /is kick
+		
+		public void wyrzuć(Player p, String kogo) {
+			if (p.getName().equalsIgnoreCase(kogo)) {
+				p.sendMessage(prefix + "zamiast tego użyć /is opuść");
+				return;
+			}
+			if (!członkowie.containsKey(kogo)) {
+				for (String nick : członkowie.keySet())
+					if (nick.equalsIgnoreCase(kogo)) {
+						kogo = nick;
+						break;
+					}
+				if (!członkowie.containsKey(kogo)) {
+					Player kogoP = Bukkit.getPlayer(kogo);
+					if (kogoP == null) {
+						p.sendMessage(prefix + Func.msg("%s nie jest online i nie należy do twojej wyspy", kogo));
+						return;
+					}
+					if (zawiera(kogoP.getLocation())) {
+						// TODO tepać na spawn kogoP
+						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", kogoP.getDisplayName()));
+						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", p.getDisplayName()));
+					}
+					return;
+				}
+			}
+			powiadomCzłonków("%s wyrzucił %s z wyspy!", p.getName(), kogo);
+			
+			członkowie.remove(kogo);
+			
+			Gracz g = Gracz.wczytaj(kogo);
+			g.wyspa = -1;
+			g.zapisz();
+			
+			// TODO tepać "kogo" na spawn
+		}
+		
+		
+		// /is biome
+		
+		public void zmieńBiom(Player p, String biom) {
+			Krotka<Location, Location> rogi = rogi();
+			World świat = locŚrodek.getWorld();
+			// TODO obsługa komendy
+			// TODO panel
+			// TODO dostępne biomy
+			Biome biome = Biome.valueOf(biom.toUpperCase()); // TODO obsługa błedu
+			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> 
+				Func.wykonajNaBlokach(rogi.a, rogi.b, (x, y, z) -> {
+						świat.setBiome(x, y, z, biome);
+						return true;
+			}));
+		}
+		
+		
+		
+		
 		
 		// ogólne odniesienia
 		
 		void zamykany(Player p, TypInv typ, InventoryCloseEvent ev) {
 			if (typ == TypInv.MAGAZYN)
 				zamknięcieMagazynu();
-			else if (typ == TypInv.ZAPROSZENIE)
-				odrzućZaproszenie(p);
 		}
 		
 		public Krotka<Location, Location> rogi() {
@@ -954,12 +1062,27 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			String _msg = msg;
 			członkowie.keySet().forEach(nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(_msg)));
 		}
-		
+
 		Permisje kodToPerm(int i) {
 			return kodToPerm(permsKody.get(i));
 		}
 		Permisje kodToPerm(String kod) {
-			return perms.get(kod.substring(0, kod.indexOf(' ')));
+			return perms.get(kodToStrPerm(kod));
+		}
+		String kodToStrPerm(int i) {
+			return kodToStrPerm(permsKody.get(i));
+		}
+		String kodToStrPerm(String kod) {
+			return kod.substring(0, kod.indexOf(' '));
+		}
+		int indexPerm(Permisje perm) {
+			return indexPerm(perm.grupa);
+		}
+		int indexPerm(String perm) {
+			for (int i=0; i < permsKody.size(); i++)
+				if (kodToStrPerm(i).equals(perm))
+					return i;
+			throw new Error("Permisja " + perm + " nie została odnaleziona");
 		}
 		
 		
@@ -973,17 +1096,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return obj instanceof Wyspa && ((Wyspa) obj).id == this.id;
 		}		
 	}
-	private static interface TypInvConsumer {
-		void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
-		
-	}
 	static enum TypInv {
 		TOP				((wyspa, p, typ, ev) -> {}),
 		MAGAZYN			((wyspa, p, typ, ev) -> {}),
 		BANK			((wyspa, p, typ, ev) -> wyspa.klikanyBank(p, ev.getRawSlot(), ev.getClick())),
-		USUŃ			((wyspa, p, typ, ev) -> wyspa.klikanyUsuń(p, ev.getRawSlot())),
 		WARPY			((wyspa, p, typ, ev) -> wyspa.klikanyInvWarp(p, ev.getRawSlot(), ev.getCurrentItem())),
-		ZAPROSZENIE		((wyspa, p, typ, ev) -> wyspa.klikanieZaproszenia(p, ev.getRawSlot())),
+		CZŁONKOWIE		((wyspa, p, typ, ev) -> wyspa.klikanyInvMembers(p, ev.getCurrentItem(), ev.getClick())),
 		PERMISJE		((wyspa, p, typ, ev) -> wyspa.klikanyPermisjeEdytujInv(p, ev.getRawSlot(), ev.getView().getTitle(), ev.getCurrentItem())),
 		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot()));
 		
@@ -1044,7 +1162,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		return invTop;
 	}
-	BukkitTask taskInvTop;
+	private BukkitTask taskInvTop;
 	void odświeżInvTop() {
 		if (taskInvTop != null) {
 			taskInvTop.cancel();
@@ -1073,10 +1191,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	
 	static final HashMap<Material, Integer> punktacja = new HashMap<>(); // TODO wczytywać
 	
-	// TODO Do wczytania
-	static int rzędyTopki = 3; // "topka.rzędy" 1..6
-	static List<Integer> slotyTopki; // "topka.sloty"
-	static List<TopInfo> topInfo;// "topka.gracze" // przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
+	static int rzędyTopki = 3;
+	static List<Integer> slotyTopki;
+	static List<TopInfo> topInfo;// TODO przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
 	static World światWysp;
 	static World światNether;
 	static int yWysp;
@@ -1128,14 +1245,22 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	// Override
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void przeładuj() {
 		Wyspa.listaLokacji.clear();
-		
 		Func.wykonajDlaNieNull(configData.sekcja("wyspy loc"), sekcja ->
 				sekcja.getValues(false).entrySet().forEach(en ->
 						Func.insort(new Krotka<>((double) en.getValue(), Func.Int(en.getKey())), Wyspa.listaLokacji, k -> k.a))
 		);
 		
+		
+		rzędyTopki = Math.max(1, Math.min(6, Main.ust.wczytajInt("Skyblock.topka.rzędy")));
+		slotyTopki = Func.nieNullList((List<Integer>) Main.ust.wczytaj("Skyblock.topka.sloty"));
+		topInfo = Func.nieNullList((List<TopInfo>) Main.ust.wczytaj("SkyBlock.topka.gracze"));
+		światWysp = Bukkit.getWorld(Main.ust.wczytajLubDomyślna("Skyblock.świat.zwykły", "SkyblockNormalny"));
+		światNether = Bukkit.getWorld(Main.ust.wczytajLubDomyślna("Skyblock.świat.nether", "SkyblockNether"));
+		yWysp = Main.ust.wczytajLubDomyślna("Skyblock.y wysp", 100);
+		czasCooldownuLiczeniaWartości = Main.ust.wczytajLubDomyślna("Skyblock.cooldown.liczenie punktów", 60*30);
 	}
 	@Override
 	public Krotka<String, Object> raport() {
@@ -1248,6 +1373,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		case "permsedit":
 		case "edytujpermisje":
 			wyspa.edytorPermisji(p, args);
+			break;
+		case "members":
+		case "członkowie":
+			wyspa.otwórzMembers(p);
+			break;
+		case "kick":
+		case "wyrzuć":
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is wyrzuć <nick>");
+			wyspa.wyrzuć(p, args[1]);
+			break;
 		}
 		return true;
 	}

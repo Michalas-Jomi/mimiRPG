@@ -911,7 +911,10 @@ public abstract class Func {
 			_inv.setItem(i, inv.getItem(i).clone());
 		return _inv;
 	}
-
+	public static int potrzebneRzędy(int sloty) {
+		return (sloty - 1) / 9 + 1;
+	}
+	
 	public static class Task {
 		static final List<Task> wszystkie = Lists.newArrayList();
 		Runnable lambda;
@@ -1076,6 +1079,15 @@ public abstract class Func {
 		if (obj != null && clazz.isInstance(obj))
 			func.accept((T) obj);
 	}
+	public static <T> void wykonajDlaNieNull(T obj, Predicate<T> warunek, Consumer<T> func) {
+		if (obj != null && warunek.test(obj))
+			func.accept(obj);
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Predicate<T> warunek, Consumer<T> func) {
+		if (obj != null && clazz.isInstance(obj) && warunek.test((T) obj))
+			func.accept((T) obj);
+	}
 	public static <T, V> V zwrotDlaNieNull(T obj, Function<T, V> func) {
 		if (obj != null)
 			return func.apply(obj);
@@ -1184,6 +1196,7 @@ public abstract class Func {
 		}
 		
 	}
+	// TODO klasy IteratorBloków i IteratorBlokówXYZ są bardzo podobne
 	static class IteratorBloków implements Iterator<Block> {
 		Krotka<Integer, Integer> kx;
 		Krotka<Integer, Integer> ky;
@@ -1220,12 +1233,79 @@ public abstract class Func {
 			return blok;
 		}
 	}
+	static class IteratorBlokówXYZ implements Iterator<Boolean> {
+		Krotka<Integer, Integer> kx;
+		Krotka<Integer, Integer> ky;
+		Krotka<Integer, Integer> kz;
+		PredicateXYZ funcXYZ;
+		boolean next = true;
+		World świat;
+		int x;
+		int y;
+		int z;
+		
+		IteratorBlokówXYZ(Location róg1, Location róg2, PredicateXYZ funcXYZ) {
+			this.funcXYZ = funcXYZ;
+			świat = róg1.getWorld();
+			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
+					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
+			kx = krotka.apply(Location::getBlockX); x = kx.a;
+			ky = krotka.apply(Location::getBlockY); y = ky.a;
+			kz = krotka.apply(Location::getBlockZ); z = kz.a;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next;
+		}
+		@Override
+		public Boolean next() {
+			boolean w = funcXYZ.test(x, y, z);
+			if (++x > kx.b) {
+				x = kx.a;
+				if (++z > kz.b) {
+					z = kz.a;
+					next = ++y <= ky.b;
+				}
+			}
+			return w;
+		}
+	}
 	public static Iterable<Block> bloki(Location róg1, Location róg2) {
 		return new IterableBloków(blokiIterator(róg1, róg2));
 	}
 	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
 		return new IteratorBloków(róg1, róg2);
-	}	
+	}
+	public static void wykonajNaBlokach(Location róg1, Location róg2, Predicate<Block> cons) {
+		wykonajNaBlokach(blokiIterator(róg1, róg2), cons);
+	}
+	private static void wykonajNaBlokach(Iterator<Block> it, Predicate<Block> cons) {
+		int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000);
+		int licz = 0;
+		
+		while (it.hasNext())
+			if (cons.test(it.next()) && ++licz >= mx) {
+				Func.opóznij(Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1), () -> wykonajNaBlokach(it, cons));
+				return;
+			}
+	}
+	public static interface PredicateXYZ {
+		public boolean test(int x, int y, int z);
+	}
+	public static void wykonajNaBlokach(Location róg1, Location róg2, PredicateXYZ cons) {
+		wykonajNaBlokach(new IteratorBlokówXYZ(róg1, róg2, cons));
+	}
+	private static void wykonajNaBlokach(Iterator<Boolean> it) {
+		int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000);
+		int licz = 0;
+		
+		while (it.hasNext())
+			if (it.next() && ++licz >= mx) {
+				Func.opóznij(Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1), () -> wykonajNaBlokach(it));
+				return;
+			}
+	}
 	
 	public static boolean wklejSchemat(String schematScieżka, Location loc) {
 		return wklejSchemat(schematScieżka, loc.getWorld(), locToVec3(loc));

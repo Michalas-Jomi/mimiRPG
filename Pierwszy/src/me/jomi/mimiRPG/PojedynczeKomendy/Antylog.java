@@ -25,6 +25,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 
 import me.jomi.mimiRPG.Komenda;
@@ -187,7 +188,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	@EventHandler
 	public void chodzenie(PlayerMoveEvent ev) {
 		if (Main.rg != null && czasy.containsKey(ev.getPlayer().getName()) &&
-				!Func.regiony(ev.getTo().getWorld()).getApplicableRegions(Func.locToVec3(ev.getTo())).testState(null, Flags.PVP)) {
+				!Func.regiony(ev.getTo().getWorld()).getApplicableRegions(Func.locToVec3(ev.getTo())).testState(WorldGuardPlugin.inst().wrapPlayer(ev.getPlayer()), Flags.PVP)) {
 			ev.setCancelled(true);
 			ev.getPlayer().sendMessage(prefix + "Nie możesz tam wejść w trakcie walki!");
 		}

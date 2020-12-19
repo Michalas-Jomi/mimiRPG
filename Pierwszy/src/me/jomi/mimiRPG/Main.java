@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +18,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -258,6 +260,45 @@ public class Main extends JavaPlugin implements Listener {
 			if (Main.włączonyModół(clazz))
 				Przeładuj.przeładuj(Bukkit.getConsoleSender(), clazz.getSimpleName());
 	}
+
+	
+	private static class PanelTakNieHolder extends Func.abstractHolder {
+		Runnable tak;
+		Runnable nie;
+		public PanelTakNieHolder(String nazwa, Runnable tak, Runnable nie) {
+			super(3, nazwa);
+			this.tak = tak;
+			this.nie = nie;
+		}
+	}
+	public static void panelTakNie(Player p, String tytuł, String Tak, String Nie, Runnable tak, Runnable nie) {
+		Inventory inv = new PanelTakNieHolder(tytuł, tak, nie).getInventory();
+		
+		inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS, Tak));
+		inv.setItem(14, Func.stwórzItem(Material.LIME_STAINED_GLASS, Nie));
+		
+		p.openInventory(inv);
+		p.addScoreboardTag(tagBlokWyciąganiaZEq);
+	}
+	@EventHandler
+	public void klikanieEqtaknie(InventoryClickEvent ev) {
+		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), PanelTakNieHolder.class, holder -> {
+			if (ev.getRawSlot() == 12)
+				Func.wykonajDlaNieNull(holder.tak, Runnable::run);
+			else if (ev.getRawSlot() == 14)
+				Func.wykonajDlaNieNull(holder.nie, Runnable::run);
+			else
+				return;
+			ev.getWhoClicked().closeInventory();
+		});
+	}
+	@EventHandler
+	public void zamykanieEqtaknie(InventoryCloseEvent ev) {
+		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), PanelTakNieHolder.class, holder -> Func.wykonajDlaNieNull(holder.nie, Runnable::run));
+	}
+	
+	
+	
 	
 	// Nie pozwala wymować nic z aktualnie, bądz dopiero będącego otwartym eq, aż do jego zamknięcia
 	public static final String tagBlokWyciąganiaZEq = "mimiBlokadaWyciąganiaZEq";

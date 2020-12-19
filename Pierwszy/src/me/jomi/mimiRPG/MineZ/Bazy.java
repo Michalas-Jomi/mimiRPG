@@ -523,8 +523,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					);
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(nowy);
 			
-			nowy.setFlag(Flags.BLOCK_BREAK, StateFlag.State.ALLOW);
-			nowy.setFlag(Main.flagaC4, 		StateFlag.State.ALLOW);
+			nowy.setFlag(Flags.BLOCK_BREAK, 	StateFlag.State.ALLOW);
+			nowy.setFlag(Main.flagaC4, 			StateFlag.State.ALLOW);
+			nowy.setFlag(Main.flagaStawianieBaz,StateFlag.State.DENY);
 			nowy.setPriority(region.getPriority() - 1);
 			
 			Func.regiony(świat).removeRegion(region.getId());
