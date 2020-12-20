@@ -51,6 +51,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.Metadatable;
 
+import com.earth2me.essentials.Essentials;
+import com.earth2me.essentials.spawn.EssentialsSpawn;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
@@ -127,7 +129,7 @@ public abstract class Func {
 	public static long czasSekundy() {
 		return System.currentTimeMillis() / 1000;
 	}
-
+	
 	public static String enumToString(Enum<?> en) {
 		return en.toString().toLowerCase().replace("_", " ");
 	}
@@ -1045,6 +1047,26 @@ public abstract class Func {
 		return w;
 	}
 
+	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1) { 												return _stwórzMape(k1, v1);}
+	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2) { 									return _stwórzMape(k1, v1, k2, v2);}
+	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2, K k3, V v3) { 						return _stwórzMape(k1, v1, k2, v2, k3, v3);} 
+	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) { 			return _stwórzMape(k1, v1, k2, v2, k3, v3, k4, v4);}
+	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) { return _stwórzMape(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5);}
+	@SuppressWarnings("unchecked")
+	private static <K, V> HashMap<K, V> _stwórzMape(Object... objs) {
+		HashMap<K, V> mapa = new HashMap<>();
+		for (int i=0; i < objs.length; i += 2)
+			mapa.put((K) objs[i], (V) objs[i+1]);
+		return mapa;
+	}
+	@SuppressWarnings("unchecked")
+	public static <K, V> HashMap<K, V> stwórzMape(Krotka<K, V>... krotki) {
+		HashMap<K, V> mapa = new HashMap<>();
+		for (Krotka<K, V> krotka : krotki)
+			mapa.put(krotka.a, krotka.b);
+		return mapa;
+	}
+	
 	public static <K, V> List<V> wezUstaw(Map<K, List<V>> mapa, K klucz) {
 		List<V> obj = mapa.get(klucz);
 		if (obj == null)
@@ -1272,6 +1294,20 @@ public abstract class Func {
 				Func.opóznij(Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1), () -> wykonajNaBlokach(it));
 				return;
 			}
+	}
+	
+	public static void tpSpawn(Player p) {
+		p.teleport(spawn(p));
+	}
+	public static Location spawn(Player p) {
+        if (Bukkit.getPluginManager().isPluginEnabled("EssentialsSpawn")) {
+            EssentialsSpawn essentialsSpawn = (EssentialsSpawn) Bukkit.getPluginManager().getPlugin("EssentialsSpawn");
+            Essentials essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+            return essentialsSpawn.getSpawn(essentials.getUser(p).getGroup());
+        } else {
+            World świat = Bukkit.getWorld("world");
+            return (świat == null ? Bukkit.getWorlds().get(0) : świat).getSpawnLocation();
+        }
 	}
 	
 	public static boolean wklejSchemat(String schematScieżka, Location loc) {

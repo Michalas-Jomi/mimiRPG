@@ -57,19 +57,12 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 //TODO przycisk back w menu wyspy
 //TODO limity bloków
 //TODO ulepszanie limitów bloków
-//TODO /is biome
-//TODO /is name - ustawia nazwe wyspy
 //TODO tepać na home spadających w przepaść
-//TODO /is addwarp
-//TODO /is delwarp
 
 
 @Moduł
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Skyblock");
-	private static interface TypInvConsumer {
-		void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
-	}
 	public static class TopInfo extends Mapowany {
 		@Mapowane int pkt;// TODO pamiętać o zmianach
 		@Mapowane List<String> opis; // TODO pamiętać o zmianach
@@ -121,11 +114,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			boolean wyrzucanie_odwiedzających;
 			
-			boolean reset_wyspy;
-			
 			boolean zmiana_prywatności;
 			
-			boolean używaniePortalu;
+			boolean używanie_portalu;
 			
 			boolean coop;
 			
@@ -149,6 +140,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			boolean zmiana_dropu; // TODO możliwość wyłączenia poszczzególnego dropu z cobla, w tym cobla
 			
 			boolean zmiana_nazwy_wyspy;
+			
+			boolean tworzenie_warpów;
+			boolean usuwanie_warpów;
 			
 			
 			List<Boolean> warpy = Lists.newArrayList(); // v
@@ -194,11 +188,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			configData.zapisz();
 			
+			p.teleport(wyspa.locHome);
 			
 			Gracz g = Gracz.wczytaj(p);
 			g.wyspa = wyspa.id;
 			g.zapisz();
-			
 			
 			return wyspa;
 		}
@@ -255,7 +249,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			configData.ustaw("wyspy loc." + id, null);
 			
 			członkowie.keySet().forEach(nick -> {
-				// TODO tepać ich na spawn jeśli są online
+				Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), Func::tpSpawn);
 				Gracz g = Gracz.wczytaj(nick);
 				g.wyspa = -1;
 				g.zapisz();
@@ -332,7 +326,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					break;
 				}
  		}
- 		void odświeżWszystkiePermisje() {
+ 		void odświeżKodyWszystkichPermisji() {
  			Lists.newArrayList(perms.values()).forEach(this::odświeżKodPermisji);
  		}
  		
@@ -432,8 +426,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				Field[] pola = Permisje.class.getDeclaredFields();
 				if (slot < pola.length - 2)
 					Permisje.class.getDeclaredField(item.getItemMeta().getDisplayName().substring(2).replace(" ", "_")).set(perm, red);
-				else
+				else {
 					perm.warpy.set(slot - pola.length + 2, red);
+					odświeżInvWarpy();
+				}
 				item.setType(red ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
 				odświeżKodPermisji(perm);
 			} catch (Throwable e) {
@@ -594,7 +590,81 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			p.teleport(warp.loc);
 			p.sendMessage(prefix + Func.msg("Zostałeś przeteleportowany na warp %s", warp.nazwa));
 		}
-				
+		
+		void odświeżInvWarpy() {
+			for (Player p : Bukkit.getOnlinePlayers())
+				Func.wykonajDlaNieNull(p.getOpenInventory().getTopInventory().getHolder(), Holder.class, holder -> {
+					if (holder.wyspa.equals(this))
+						if (holder.typ == TypInv.WARPY)
+							otwórzWarpy(p);
+						else if (holder.typ == TypInv.DEL_WARP)
+							otwórzInvDelWarp(p);
+						
+				});
+		}
+		
+		// /is addwarp
+		
+		public void dodajWarp(Player p, String nazwa) {
+			// TODO limit warpów
+			
+			if (!zawiera(p.getLocation())) {
+				p.sendMessage(prefix + "Nie możesz tu ustawić warpa wyspy");
+				return;
+			}
+			
+			Warp warp = new Warp();
+			warp.loc = p.getLocation();
+			warp.nazwa = Func.koloruj(nazwa);
+			warpy.add(warp);
+			
+			perms.values().forEach(perm -> perm.warpy.add(true));
+			
+
+			odświeżInvWarpy();
+			
+			odświeżKodyWszystkichPermisji();
+			odświeżEdytoryPermisji();
+
+			zapisz();
+		}
+		
+		// /is delwarp
+		
+		public void otwórzInvDelWarp(Player p) {
+			p.openInventory(dajInvDelWarp(p));
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		Inventory dajInvDelWarp(Player p) {
+			Inventory inv = new Holder(this, TypInv.DEL_WARP, Func.potrzebneRzędy(warpy.size())).getInventory();
+			
+			Permisje perm = permisje(p);
+			
+			for (int i=0; i < warpy.size(); i++)
+				inv.setItem(i, Func.stwórzItem(perm.warpy.get(i) ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE, "&b&l" + warpy.get(i).nazwa));
+			
+			return inv;
+		}
+		void klikanieInvDelWarp(Player p, int slot, Material mat) {
+			if (mat == Material.RED_STAINED_GLASS_PANE)
+				p.sendMessage(prefix + "Nie masz dostępu do tego warpu");
+			else if (mat == Material.LIME_STAINED_GLASS_PANE)
+				usuńWarp(p, slot);
+		}
+		void usuńWarp(Player p, int index) {
+			warpy.remove(index);
+			
+			perms.values().forEach(perm -> perm.warpy.remove(index));
+			
+			
+			odświeżInvWarpy();
+
+			odświeżKodyWszystkichPermisji();
+			odświeżEdytoryPermisji();
+			
+			zapisz();
+		}
+		
 		
 		// /is bank
 		
@@ -862,7 +932,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			odświeżInvMembers();
 			
-			// TODO tepać na spawn
+			Func.tpSpawn(p);
 		}
 		
 		
@@ -982,7 +1052,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						return;
 					}
 					if (zawiera(kogoP.getLocation())) {
-						// TODO tepać na spawn kogoP
+						Func.tpSpawn(kogoP);
 						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", kogoP.getDisplayName()));
 						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", p.getDisplayName()));
 					}
@@ -992,12 +1062,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			powiadomCzłonków("%s wyrzucił %s z wyspy!", p.getName(), kogo);
 			
 			członkowie.remove(kogo);
+
+			zapisz();
 			
 			Gracz g = Gracz.wczytaj(kogo);
 			g.wyspa = -1;
 			g.zapisz();
 			
-			// TODO tepać "kogo" na spawn
+			odświeżInvMembers();
+			
+			Func.wykonajDlaNieNull(Bukkit.getPlayer(kogo), Func::tpSpawn);
 		}
 		
 		
@@ -1018,6 +1092,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// /is name
+		
+		public void zmieńNazwe(Player p, String nazwa) {
+			this.nazwa = Func.koloruj(nazwa);
+			p.sendMessage(prefix + Func.msg("Zmieniono nazwę wyspy na %s", this.nazwa));
+			zapisz();
+		}
 		
 		
 		
@@ -1104,8 +1185,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		BANK			((wyspa, p, typ, ev) -> wyspa.klikanyBank(p, ev.getRawSlot(), ev.getClick())),
 		WARPY			((wyspa, p, typ, ev) -> wyspa.klikanyInvWarp(p, ev.getRawSlot(), ev.getCurrentItem())),
 		CZŁONKOWIE		((wyspa, p, typ, ev) -> wyspa.klikanyInvMembers(p, ev.getCurrentItem(), ev.getClick())),
+		DEL_WARP		((wyspa, p, typ, ev) -> wyspa.klikanieInvDelWarp(p, ev.getRawSlot(), ev.getCurrentItem().getType())),
 		PERMISJE		((wyspa, p, typ, ev) -> wyspa.klikanyPermisjeEdytujInv(p, ev.getRawSlot(), ev.getView().getTitle(), ev.getCurrentItem())),
 		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot()));
+		private static interface TypInvConsumer {
+			void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
+		}
 		
 		TypInvConsumer cons;
 		TypInv(TypInvConsumer cons) {
@@ -1311,7 +1396,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		if (g.wyspa == -1)
 			return Func.powiadom(prefix, sender, "Problem jest następujący: Brak wyspy");
 		
-		switch (args[0]) {
+		switch (args[0].toLowerCase()) {
 		case "bank":
 			wyspa.otwórzBank(p);
 			break;
@@ -1385,6 +1470,31 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (args.length < 2)
 				return Func.powiadom(sender, prefix + "/is wyrzuć <nick>");
 			wyspa.wyrzuć(p, args[1]);
+			break;
+		case "biom":
+		case "biome":
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is biome biom");
+			wyspa.zmieńBiom(p, args[1]);
+			break;
+		case "addwarp":
+		case "dodajwarp":
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is dodajwarp <nazwa>");
+			wyspa.dodajWarp(p, args[1]);
+			break;
+		case "delwarp":
+		case "remwarp":
+		case "deletewarp":
+		case "removewarp":
+		case "usuńwarp":
+			wyspa.otwórzInvDelWarp(p);
+			break;
+		case "name":
+		case "nazwa":
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is nazwa <nazwa>");
+			wyspa.zmieńNazwe(p, args[1]);
 			break;
 		}
 		return true;

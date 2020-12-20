@@ -15,5 +15,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsX-2.18.1.13.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsXSpawn-2.18.1.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
