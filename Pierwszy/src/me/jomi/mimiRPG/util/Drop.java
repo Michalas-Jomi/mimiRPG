@@ -185,6 +185,18 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	public List<ItemStack> dropnij() { return dropnij(0); }
 	public List<ItemStack> dropnij(int poziom) {
 		List<ItemStack> itemy = Lists.newArrayList();
+		
+		int licz = 500;
+		while (licz-- > 0 && (itemy.size() < (min_ilość <= -1 ? 1 : min_ilość)))
+			itemy.addAll(subDropnij(poziom));
+		
+		while (itemy.size() > (max_ilość <= -1 ? 1 : max_ilość))
+			itemy.remove(Func.losujWZasięgu(itemy.size()));
+		
+		return itemy;
+	}
+	private List<ItemStack> subDropnij(int poziom) {
+		List<ItemStack> itemy = Lists.newArrayList();
 		for (int i=0; i < (rolle + poziom * rollePerPoziom); i++)
 			if (Func.losuj(szansa + poziom * szansaPerPoziom))
 				if (item != null)

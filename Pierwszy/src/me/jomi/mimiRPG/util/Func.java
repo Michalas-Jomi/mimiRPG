@@ -904,8 +904,11 @@ public abstract class Func {
 	}
 
 	public static boolean powiadom(CommandSender p, String msg) {
+		return powiadom(p, msg, true);
+	}
+	public static boolean powiadom(CommandSender p, String msg, boolean zwrot) {
 		p.sendMessage(msg);
-		return true;
+		return zwrot;
 	}
 	public static boolean powiadom(String prefix, CommandSender sender, String msg, Object... uzupełnienia) {
 		return powiadom(sender, prefix + Func.msg(msg, uzupełnienia));
