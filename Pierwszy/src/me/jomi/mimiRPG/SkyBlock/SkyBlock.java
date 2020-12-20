@@ -34,6 +34,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -916,10 +917,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 			
 			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
-				if (inv.getViewers().isEmpty())
-					return;
 				for (int j=0; j < nicki.length; j++)
-					Func.ustawGłowe(Func.graczOffline(nicki[j]), inv.getItem(j));
+					if (inv.getViewers().isEmpty())
+						return;
+					else
+						Func.ustawGłowe(Func.graczOffline(nicki[j]), inv.getItem(j));
 			});
 			
 			return inv;

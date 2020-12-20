@@ -350,6 +350,10 @@ public abstract class Func {
 		}
 	}
 	
+	public static ItemStack ilość(ItemStack item, int ilość) {
+		item.setAmount(ilość);
+		return item;
+	}
 	public static ItemStack customModelData(ItemStack item, Integer customModelData) {
 		ItemMeta meta = item.getItemMeta();
 		meta.setCustomModelData(customModelData);
@@ -656,7 +660,7 @@ public abstract class Func {
 	
 	public static double zaokrąglij(double liczba, int miejsca) {
 		liczba *= Math.pow(10, miejsca);
-		liczba  = (double) (int) liczba;
+		liczba  = (int) liczba;
 		liczba /= Math.pow(10, miejsca);
 		return liczba;
 	}
@@ -1196,62 +1200,27 @@ public abstract class Func {
 		}
 		
 	}
-	// TODO klasy IteratorBloków i IteratorBlokówXYZ są bardzo podobne
-	static class IteratorBloków implements Iterator<Block> {
-		Krotka<Integer, Integer> kx;
-		Krotka<Integer, Integer> ky;
-		Krotka<Integer, Integer> kz;
-		boolean next = true;
-		World świat;
-		int x;
-		int y;
-		int z;
-		
-		IteratorBloków(Location róg1, Location róg2) {
-			świat = róg1.getWorld();
-			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
-					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
-			kx = krotka.apply(Location::getBlockX); x = kx.a;
-			ky = krotka.apply(Location::getBlockY); y = ky.a;
-			kz = krotka.apply(Location::getBlockZ); z = kz.a;
-		}
-		
-		@Override
-		public boolean hasNext() {
-			return next;
-		}
-		@Override
-		public Block next() {
-			Block blok = świat.getBlockAt(x, y, z);
-			if (++x > kx.b) {
-				x = kx.a;
-				if (++z > kz.b) {
-					z = kz.a;
-					next = ++y <= ky.b;
-				}
-			}
-			return blok;
-		}
+	public static interface FunctionXYZ<T> {
+		public T wykonaj(int x, int y, int z);
 	}
-	static class IteratorBlokówXYZ implements Iterator<Boolean> {
+	static class IteratorBloków<T> implements Iterator<T> {
 		Krotka<Integer, Integer> kx;
 		Krotka<Integer, Integer> ky;
 		Krotka<Integer, Integer> kz;
-		PredicateXYZ funcXYZ;
 		boolean next = true;
-		World świat;
 		int x;
 		int y;
 		int z;
 		
-		IteratorBlokówXYZ(Location róg1, Location róg2, PredicateXYZ funcXYZ) {
-			this.funcXYZ = funcXYZ;
-			świat = róg1.getWorld();
+		FunctionXYZ<T> func;
+		
+		IteratorBloków(Location róg1, Location róg2, FunctionXYZ<T> funkcja) {
 			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
 					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
 			kx = krotka.apply(Location::getBlockX); x = kx.a;
 			ky = krotka.apply(Location::getBlockY); y = ky.a;
 			kz = krotka.apply(Location::getBlockZ); z = kz.a;
+			this.func = funkcja;
 		}
 		
 		@Override
@@ -1259,8 +1228,8 @@ public abstract class Func {
 			return next;
 		}
 		@Override
-		public Boolean next() {
-			boolean w = funcXYZ.test(x, y, z);
+		public T next() {
+			T w = func.wykonaj(x, y, z);
 			if (++x > kx.b) {
 				x = kx.a;
 				if (++z > kz.b) {
@@ -1275,7 +1244,8 @@ public abstract class Func {
 		return new IterableBloków(blokiIterator(róg1, róg2));
 	}
 	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
-		return new IteratorBloków(róg1, róg2);
+		World świat = róg1.getWorld();
+		return new IteratorBloków<>(róg1, róg2, świat::getBlockAt);
 	}
 	public static void wykonajNaBlokach(Location róg1, Location róg2, Predicate<Block> cons) {
 		wykonajNaBlokach(blokiIterator(róg1, róg2), cons);
@@ -1290,11 +1260,8 @@ public abstract class Func {
 				return;
 			}
 	}
-	public static interface PredicateXYZ {
-		public boolean test(int x, int y, int z);
-	}
-	public static void wykonajNaBlokach(Location róg1, Location róg2, PredicateXYZ cons) {
-		wykonajNaBlokach(new IteratorBlokówXYZ(róg1, róg2, cons));
+	public static void wykonajNaBlokach(Location róg1, Location róg2, FunctionXYZ<Boolean> cons) {
+		wykonajNaBlokach(new IteratorBloków<>(róg1, róg2, cons));
 	}
 	private static void wykonajNaBlokach(Iterator<Boolean> it) {
 		int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000);

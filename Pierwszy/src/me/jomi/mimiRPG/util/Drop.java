@@ -166,6 +166,7 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 		if (item != null) {
 			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
 			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+			w += item.getEnchantmentLevel(Enchantment.LUCK);
 		}
 		
 		return w;
@@ -184,14 +185,17 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	public List<ItemStack> dropnij() { return dropnij(0); }
 	public List<ItemStack> dropnij(int poziom) {
 		List<ItemStack> itemy = Lists.newArrayList();
-		for (int i=0; i<(rolle + poziom * rollePerPoziom); i++)
+		for (int i=0; i < (rolle + poziom * rollePerPoziom); i++)
 			if (Func.losuj(szansa + poziom * szansaPerPoziom))
 				if (item != null)
-					itemy.add(item.clone());
+					itemy.add(Func.ilość(item.clone(), Func.losuj(min_ilość == -1 ? item.getAmount() : min_ilość, max_ilość == -1 ? item.getAmount() : max_ilość)));
 				else
-					for (Drop drop : this.drop)
-						if (!drop.dropnij(poziom).isEmpty() && tylkoJeden)
+					for (Drop drop : this.drop) {
+						List<ItemStack> subItemy = drop.dropnij(poziom);
+						itemy.addAll(subItemy);
+						if (!subItemy.isEmpty() && tylkoJeden)
 							break;
+					}
 		return itemy;
 	}
 	
@@ -210,7 +214,22 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 		drop.szansa = szansa;
 		drop.rolle = rolle;
 		drop.tylkoJeden = tylkoJeden;
+		drop.szansaPerPoziom = szansaPerPoziom;
+		drop.rollePerPoziom = rollePerPoziom;
 		return drop;
+	}
+	//// item szansa(%) min_ilość-max_ilość (modifiers...)
+	// modifiers: xrolle +szansa(%) +xrolle
+	@Override
+	public String toString() {
+		if (item != null)
+			return String.format("%s %s %s-%s x%s +%s +x%s", item, szansa, min_ilość, max_ilość, rolle, szansaPerPoziom, rollePerPoziom);
+		else {
+			StringBuilder strB = new StringBuilder("Drop(tylkoJeden=").append(tylkoJeden).append(", [\n");
+			for (Drop drop : drop)
+				strB.append(drop).append(",\n");
+			return strB.append("])").toString();
+		}
 	}
 	
 	/*
