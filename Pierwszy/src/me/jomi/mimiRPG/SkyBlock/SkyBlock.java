@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,8 +23,12 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -33,6 +38,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -41,6 +49,11 @@ import org.bukkit.scheduler.BukkitTask;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
+import net.minecraft.server.v1_16_R2.PacketPlayOutWorldBorder;
+import net.minecraft.server.v1_16_R2.WorldBorder;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -48,23 +61,24 @@ import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Ulepszenia.Ulepszenie;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 //TODO /is
 //TODO /is booster
+//TODO /is border
 //TODO /is coop
-//TODO /is upgrade
 //TODO tabcompleter do wyboru angielski/polski
 //TODO przycisk back w menu wyspy
 //TODO limity bloków
 //TODO ulepszanie limitów bloków
 //TODO tepać na home spadających w przepaść
 //TODO limity warpów i grup permisji, aby nie przekroczyły 6*9
+//TODO zablokować przepychanie bloków pistonami przez barriery
 
 @Moduł
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
@@ -97,14 +111,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return inv;
 		}
 	}
+	static class Ulepszenia {
+		public static class Ulepszenie {
+			public Ulepszenie(int wartość, double cena) {
+				this.wartość = wartość;
+				this.cena = cena;
+			}
+			public final int wartość;
+			public final double cena;
+		}
+		public static Ulepszenie[] limityBloków;
+		public static Ulepszenie[] członkowie;
+		public static Ulepszenie[] generator;
+		public static Ulepszenie[] wielkość;
+		public static Ulepszenie[] magazyn;
+		public static Ulepszenie[] warpy;
+	}
 	public static class Wyspa extends Mapowany {
 		public Wyspa() {}// Konstruktor dla mapowanego
 		public static class Permisje {
-			// TODO blokować usuwanie permisje gdy ktoś ma ją przypisaną
-			// TODO customowe grupy permisji
-			
-			// TODO lista priorytetów grup
-			
 			String grupa;
 			
 			boolean niszczenie; // v
@@ -128,6 +153,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			boolean liczenie_wartości_wyspy; // v
 			
 			boolean coop;
+			
+			boolean kupowianie_ulepszeń; // v
 			
 			boolean ustawienie_home_wyspy; // v
 			
@@ -165,12 +192,22 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		public static class Poziomy extends Mapowany {
 			// TODO ulepszanie
-			@Mapowane int członkowie;
+			@Mapowane int limityBloków;
+			@Mapowane int członkowie; // v // wartość - maksymalna ilość osób na wyspe  // Przy dodawaniu nowego pamiętać aby dodać też w klasie Ulepszenia
 			@Mapowane int generator;
-			@Mapowane int wielkość;
-			@Mapowane int łowienie;
-			@Mapowane int warpy;
-			@Mapowane int magazyn;
+			@Mapowane int wielkość; // wartość - długość boku wyspy
+			@Mapowane int magazyn; // \ // wartość - ilość rządków magazynu
+			@Mapowane int warpy; // v // wartość - maksymalna ilość warpów
+			/*
+			 * # Ulepszenia
+			 * <nazwa>:
+			 * #- wartość cena
+			 * - 0 100
+			 * - 2 200
+			 * - 5 300
+			 * 
+			 * 
+			 */
 		}
 		
 		public static Wyspa nowa(Player p, String typ) {
@@ -183,7 +220,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			wyspa.członkowie.put(p.getName(), "właściciel"); // TODO permisja domyślna właściciel, (bez możliwości usunięcia, tak jak członek i odwiedzający)
 			
 			Krotka<Integer, Integer> xz = następnaPozycja();
-			wyspa.locŚrodek = new Location(światWysp, xz.a, yWysp, xz.b);
+			wyspa.locŚrodek = new Location(światWysp, xz.a * odstęp, yWysp, xz.b * odstęp);
 			
 			wyspa.locHome = wyspa.locŚrodek.clone();
 			
@@ -192,9 +229,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			wyspa.zapisz();
 
 			
-			double dys0 = wyspa.locŚrodek.distance(new Location(wyspa.locŚrodek.getWorld(), 0, 100, 0));
-			Func.insort(new Krotka<>(dys0, wyspa.id), listaLokacji, k -> k.a);
-			configData.ustaw("wyspy loc." + wyspa.id, dys0);
+			configData.ustaw("wyspy loc." + dolnyRóg(wyspa.locŚrodek), wyspa.id);
 			
 			configData.ustaw("id następnej wyspy", wyspa.id + 1);
 			
@@ -209,30 +244,29 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return wyspa;
 		}
 		
-		// (loc.distance(new Location(loc.getWorld(), 0, 100, 0), id wyspy)
-		static final List<Krotka<Double, Integer>> listaLokacji = Lists.newArrayList();
-		
-
-		static Wyspa wczytaj(Location loc) {
-			// TODO upewnić się że jest poprawne
-			// TODO uwzględnić świat
-			int id = Func.wyszukajBinarnieLIndex(loc.distance(new Location(loc.getWorld(), 0, 100, 0)), listaLokacji, k -> k.a);
-			Wyspa wyspa;
-			for (int i=id; i <= id+1; i++)
-				if ((wyspa = wczytaj(i)) != null && wyspa.zawiera(loc))
-					return wyspa;
+		static String dolnyRóg(Location loc) {
+			int x = ((int) (loc.getX() / odstęp)) * odstęp;
+			int z = ((int) (loc.getZ() / odstęp)) * odstęp;
 			
-			return null;
+			return x + "_" + z;
 		}
-		static Wyspa wczytaj(Player p) {
+		public static Wyspa wczytaj(Location loc) {
+			String locWorldName = loc.getWorld().getName();
+			if (!(locWorldName.equals(światWysp.getName()) || (światNether != null && locWorldName.equals(światNether.getName()))))
+				return null;
+			
+			Wyspa wyspa = wczytaj(configData.wczytajLubDomyślna("wyspy loc." + dolnyRóg(loc), -1));
+			return wyspa.zawiera(loc) ? wyspa : null;
+		}
+		public static Wyspa wczytaj(Player p) {
 			return wczytaj(Gracz.wczytaj(p));
 		}
-		static Wyspa wczytaj(Gracz g) {
+		public static Wyspa wczytaj(Gracz g) {
 			return g.wyspa == -1 ? null : wczytaj(g.wyspa);
 		}
 		// id: wyspa
 		static final WeakHashMap<Integer, Wyspa> mapaWysp = new WeakHashMap<>();
-		static Wyspa wczytaj(int id) {
+		public static Wyspa wczytaj(int id) {
 			Wyspa wyspa = mapaWysp.get(id);
 			if (wyspa == null)
 				mapaWysp.put(id, wyspa = (Wyspa) getConfig(id).wczytaj("wyspa"));
@@ -252,13 +286,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 
 		private void usuń() {
-			double dys0 = locŚrodek.distance(new Location(locŚrodek.getWorld(), 0, 100, 0));
-			if (listaLokacji.remove(Func.wyszukajBinarnieLIndex(dys0, listaLokacji, k -> k.a)).b != id) {
-				Main.warn("Znaleziony BUG! Niepoprawnie wyszukawana wyspa errorid:1 Wyspa.usuń()");
-				inst.przeładuj();
-				return;
-			}
-			configData.ustaw("wyspy loc." + id, null);
+			configData.ustaw("wyspy loc." + dolnyRóg(locŚrodek), null);
 			
 			członkowie.keySet().forEach(nick -> {
 				Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), Func::tpSpawn);
@@ -281,7 +309,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		public boolean zawiera(Location loc) {
-			// TODO uwzględnić świat
+			String locWorldName = loc.getWorld().getName();
+			if (!(locWorldName.equals(światWysp.getName()) || (światNether != null && locWorldName.equals(światNether.getName()))))
+				return false;
 			Krotka<Location, Location> rogi = rogi();
 			return Func.zawiera(loc, rogi.a, rogi.b);
 		}
@@ -639,18 +669,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is addwarp
 		
-		public void dodajWarp(Player p, String nazwa) {
-			// TODO limit warpów
+		public boolean dodajWarp(Player p, String nazwa) {
+			if (warpy.size() >= Ulepszenia.warpy[poziomy.warpy].wartość)
+				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit warpów");
 			
-			if (!permisje(p).tworzenie_warpów) {
-				p.sendMessage(prefix + "Nie masz uprawnień na dodawanie warpów");
-				return;
-			}
+			if (!permisje(p).tworzenie_warpów) 
+				return Func.powiadom(p, prefix + "Nie masz uprawnień na dodawanie warpów");
 			
-			if (!zawiera(p.getLocation())) {
-				p.sendMessage(prefix + "Nie możesz tu ustawić warpa wyspy");
-				return;
-			}
+			if (!zawiera(p.getLocation()))
+				return Func.powiadom(p, prefix + "Nie możesz tu ustawić warpa wyspy");
 			
 			Warp warp = new Warp();
 			warp.loc = p.getLocation();
@@ -666,6 +693,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			odświeżEdytoryPermisji();
 
 			zapisz();
+			return false;
 		}
 		
 		// /is delwarp
@@ -814,7 +842,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		private Inventory invMagazyn = null;
 		private Inventory getInvMagazyn() {
 			if (invMagazyn == null) {
-				invMagazyn = new Holder(this, TypInv.MAGAZYN, poziomy.magazyn + 1).getInventory();
+				invMagazyn = new Holder(this, TypInv.MAGAZYN, Ulepszenia.magazyn[poziomy.magazyn].wartość).getInventory();
 				invMagazyn.clear();
 				int i=0;
 				for (ItemStack item : magazynItemów)
@@ -828,6 +856,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			zapisz();
 		}
 		
+		void odświeżMagazyn() {
+			Func.wykonajDlaNieNull(invMagazyn, inv -> {
+				Lists.newArrayList(inv.getViewers()).forEach(HumanEntity::closeInventory);
+				invMagazyn = null;
+			});
+		}
 		
 		// /is sethome
 
@@ -934,7 +968,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		private static final String metaZaproszenie = "mimiSkyblockZaproszenie";
 		public boolean zaproś(Player p, Player kogo) {
-			// TODO spradzanie limitu członków wyspy
+			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
+				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit członków");
 			// TODO jakiś cooldown na tą samą osobe
 			
 			if (!permisje(p).zapraszanie_członków)
@@ -953,8 +988,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			return Func.powiadom(p, prefix + "Wysłano zaproszenie na wyspy do " + kogo.getDisplayName(), false);
 		}
-		void przyjmijZaproszenie(Player p) {
-			// TODO ponowne spradzanie limitu członków wyspy
+		boolean przyjmijZaproszenie(Player p) {
+			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
+				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit członków");
 			
 			członkowie.put(p.getName(), "członek");
 			zapisz();
@@ -968,6 +1004,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			p.removeMetadata(metaZaproszenie, Main.plugin);
 			
 			odświeżInvMembers();
+			return false;
 		}
 		void odrzućZaproszenie(Player p) {
 			Player zapraszający = (Player) p.getMetadata(metaZaproszenie).get(0).value();
@@ -1175,18 +1212,171 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
+		// /is upgrade
+		
+		public void otwórzUlepszenia(Player p) {
+			if (permisje(p).kupowianie_ulepszeń) {
+				p.openInventory(dajInvUlepszenia());
+				p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+			} else
+				p.sendMessage(prefix + "Nie masz uprawnień do kupowania ulepszeń wyspy");
+		}
+		Inventory dajInvUlepszenia() {
+			Inventory inv = new Holder(this, TypInv.ULEPSZENIA, 4).getInventory();
+			// TODO info o cenie i parametrach
+			
+			inv.setItem(12, dajItemekInvUlepszenia(
+					"członkowie",
+					Material.PLAYER_HEAD,
+					"Członkowie",
+					"&aZwiększa limit członków wyspy",
+					ile -> "&aAktualnie dostępne &3" + ile + " &aczłonków",
+					ile -> "&aNastępny poziom: &3" + ile
+					));
+			
+			inv.setItem(13, dajItemekInvUlepszenia(
+					"wielkość",
+					Material.BARRIER,
+					"Wielkość",
+					"&aRozszerza granice wyspy",
+					w -> "&aAktualna wielkość: &3" + w + "m",
+					w -> "&aNastępny poziom: &3" + w + "m"
+					));
+			
+			
+			// TODO ulepszanie generatora
+			inv.setItem(14, Func.stwórzItem(Material.DIAMOND_ORE, "&9&lGenerator", "", "&aUlepsza drop z generatorów"));
+			
+			
+			inv.setItem(21, dajItemekInvUlepszenia(
+					"magazyn",
+					Material.CHEST,
+					"Magazyn",
+					"&aZwiększa pojemność magazynu wyspy",
+					rzędy -> "&aAktualna pojemność: &3" + (rzędy*9)   + "&a slotów",
+					rzędy -> "&aNastępny poziom: &3"    + (rzędy * 9) + "&a slotów"
+					));
+			
+			inv.setItem(22, dajItemekInvUlepszenia(
+					"warpy",
+					Material.NETHER_PORTAL,
+					"Warpy",
+					"&aZwiększa limit warpów wyspy",
+					warpy -> "&aAktualna ilość warpów: &e" + warpy,
+					warpy -> "&aNastępna ilość warpów: &3" + warpy
+					));
+			
+			inv.setItem(23, dajItemekInvUlepszenia(
+					"limityBloków",
+					Material.HOPPER,
+					"Limity Bloków",
+					"&aZwiększa limity bloków na wyspie",
+					limit -> String.format("Aktualny limit: &3%s &askrzyń &3%s &aspawnerów", limit, limit / 2),
+					limit -> String.format("Następny limit: &3%s &askrzyń &3%s &aspawnerów", limit, limit / 2)
+					));
+			
+			return inv;
+		}
+		private ItemStack dajItemekInvUlepszenia(String nazwaPola, Material mat, String nazwa, String krótkiOpis, Function<Integer, String> akt, Function<Integer, String> następny) {
+			int poziom;
+			try {
+				poziom = Poziomy.class.getDeclaredField(nazwaPola).getInt(poziomy);
+				Ulepszenia.Ulepszenie[] ulepszenia = (Ulepszenia.Ulepszenie[]) Ulepszenia.class.getDeclaredField(nazwaPola).get(null);
+				ItemStack item = Func.stwórzItem(mat,
+						"&9&l" + nazwa,
+						"",
+						"&a" + krótkiOpis,
+						"&a" + akt.apply(ulepszenia[poziom].wartość)
+						);
+				if (ulepszenia.length > poziom + 1)
+					Func.dodajLore(Func.dodajLore(item,
+							"&a" + następny.apply(ulepszenia[poziom + 1].wartość)),
+							"&aCena ulepszenia: &e" + ulepszenia[poziom + 1].cena + "$");
+				return item;
+			} catch (Throwable e) {
+				e.printStackTrace();
+				return new ItemStack(Material.CREEPER_HEAD);
+			}
+		}
+		boolean klikanyInvUlepszenia(Player p, int slot) {
+			if (!permisje(p).kupowianie_ulepszeń)
+				return Func.powiadom(p, prefix + "Nie masz uprawnień do kupowania ulepszeń wyspy");
+			
+			Func.wykonajDlaNieNull(((Supplier<String>) () -> {
+				if		(slot == 12) return "członkowie";
+				else if (slot == 13) return "wielkość";
+				else if (slot == 14) return "generator";
+				else if (slot == 21) return "warpy";
+				else if (slot == 22) return "magazyn";
+				else if (slot == 23) return "limityBloków";
+				return null;
+			}).get(), nazwaPola -> {
+				try {
+					Ulepszenia.Ulepszenie[] ulepszenia = (Ulepszenie[]) Ulepszenia.class.getDeclaredField(nazwaPola).get(null);
+					Field pole = Poziomy.class.getDeclaredField(nazwaPola);
+					
+					// TODO obsługa wujątku z indexowaniem gdy poziom jest maksymalny
+					double cena = ulepszenia[pole.getInt(poziomy) + 1].cena;
+					
+					double fundusz = Math.max(0, kasa);
+					if (Main.econ != null) {
+						double bal = Main.econ.getBalance(p);
+						if (bal > 0)
+							fundusz += bal;
+					}
+					
+					if (cena > fundusz) {
+						p.sendMessage(prefix + "Nie posiadasz wystarczająco dużo pieniędzy");
+						return;
+					}
+					
+					kasa -= cena;
+					if (kasa < 0) {
+						Main.econ.withdrawPlayer(p, -kasa);
+						kasa = 0;
+					}					
+					
+					pole.setInt(poziomy, pole.getInt(poziomy) + 1);
+					
+					zapisz();
+
+					if 		(slot == 13) odświeżBorder();
+					else if (slot == 22) odświeżMagazyn();
+					
+					powiadomCzłonków("%s zakupił ulepszenie %s", p.getDisplayName(), nazwaPola);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+				
+			});
+			
+			return false;
+		}
+		
+		
 		
 		// ogólne odniesienia
 		
-		void zamykany(Player p, TypInv typ, InventoryCloseEvent ev) {
-			if (typ == TypInv.MAGAZYN)
-				zamknięcieMagazynu();
+		void ustawBorder(Player p) {
+			WorldBorder wb = new WorldBorder();
+			wb.world = ((CraftWorld) p.getWorld()).getHandle();
+			wb.setCenter(locŚrodek.getX(), locŚrodek.getZ());
+			
+			wb.setSize(Ulepszenia.wielkość[poziomy.wielkość].wartość);
+			// TODO kolor //wb.transitionSizeBetween(d0, d1, i);
+			
+			wb.setWarningDistance(0);
+			wb.setWarningTime(0);
+			
+			((CraftPlayer) p).getHandle().playerConnection.sendPacket(new PacketPlayOutWorldBorder(wb, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
 		}
 		
-		public Krotka<Location, Location> rogi() {
-			return null; // TODO napisać
+		void odświeżBorder() {
+			Bukkit.getOnlinePlayers().forEach(p -> {
+				if (zawiera(p.getLocation()))
+					ustawBorder(p);
+			});
 		}
-		
 		
 		// zapis
 		
@@ -1242,6 +1432,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			throw new Error("Permisja " + perm + " nie została odnaleziona");
 		}
 		
+		public Krotka<Location, Location> rogi() {
+			double a = Ulepszenia.wielkość[poziomy.wielkość].wartość / 2.0;
+			return new Krotka<>(
+					locŚrodek.clone().add(-a, -locŚrodek.getY(), -a),
+					locŚrodek.clone().add(a, 256 - locŚrodek.getY(), a)
+					);
+		}
+		
 		
 		// Override
 		
@@ -1259,6 +1457,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		BANK			((wyspa, p, typ, ev) -> wyspa.klikanyBank(p, ev.getRawSlot(), ev.getClick())),
 		WARPY			((wyspa, p, typ, ev) -> wyspa.klikanyInvWarp(p, ev.getRawSlot(), ev.getCurrentItem())),
 		CZŁONKOWIE		((wyspa, p, typ, ev) -> wyspa.klikanyInvMembers(p, ev.getCurrentItem(), ev.getClick())),
+		ULEPSZENIA		((wyspa, p, typ, ev) -> wyspa.klikanyInvUlepszenia(p, ev.getRawSlot())),
 		DEL_WARP		((wyspa, p, typ, ev) -> wyspa.klikanieInvDelWarp(p, ev.getRawSlot(), ev.getCurrentItem().getType())),
 		PERMISJE		((wyspa, p, typ, ev) -> wyspa.klikanyPermisjeEdytujInv(p, ev.getRawSlot(), ev.getView().getTitle(), ev.getCurrentItem())),
 		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot()));
@@ -1292,6 +1491,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	
 	// Event Handler
 	
+	/// obsługa inv
 	@EventHandler
 	public void klikanie(InventoryClickEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {
@@ -1303,10 +1503,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder ->
-				holder.wyspa.zamykany((Player) ev.getPlayer(), holder.typ, ev));
+		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {	
+			if (holder.typ == TypInv.MAGAZYN)
+				holder.wyspa.zamknięcieMagazynu();
+		});
 	}
-	
+
+	/// permisje
 	@EventHandler
 	public void podnoszenieItemów(EntityPickupItemEvent ev) {
 		if (ev.getEntity() instanceof Player)
@@ -1354,6 +1557,26 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				if (!wyspa.permisje((Player) (dp ? ev.getDamager() : ev.getEntity())).bicie_mobów)
 					ev.setCancelled(true);
 			});
+	}
+	
+	/// border
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void dołączanieDoGry(PlayerJoinEvent ev) {
+		Player p = ev.getPlayer();
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(p.getLocation()), wyspa -> {
+			if (wyspa.członkowie.containsKey(p.getName()))
+				Func.tpSpawn(p);
+			else
+				wyspa.ustawBorder(p);
+		});
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void tepanie(PlayerTeleportEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getTo()), wyspa -> wyspa.ustawBorder(ev.getPlayer()));
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void respawn(PlayerRespawnEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getRespawnLocation()), wyspa -> wyspa.ustawBorder(ev.getPlayer()));
 	}
 	
 	
@@ -1407,6 +1630,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	static World światNether;
 	static int yWysp;
 	static int czasCooldownuLiczeniaWartości;
+	static int odstęp;
 	
 	
 	// Następna pozycja wyspy
@@ -1456,20 +1680,32 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
-		Wyspa.listaLokacji.clear();
-		Func.wykonajDlaNieNull(configData.sekcja("wyspy loc"), sekcja ->
-				sekcja.getValues(false).entrySet().forEach(en ->
-						Func.insort(new Krotka<>((double) en.getValue(), Func.Int(en.getKey())), Wyspa.listaLokacji, k -> k.a))
-		);
+		odstęp 							= Main.ust.wczytajLubDomyślna						("Skyblock.odstęp między wyspami", 150);
+		rzędyTopki 						= Math.max(1, Math.min(6, Main.ust.wczytajInt		("Skyblock.topka.rzędy")));
+		slotyTopki 						= Func.nieNullList((List<Integer>) Main.ust.wczytaj	("Skyblock.topka.sloty"));
+		topInfo 						= Func.nieNullList((List<TopInfo>) Main.ust.wczytaj	("Skyblock.topka.gracze"));
+		światWysp 						= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.zwykły", "SkyblockNormalny"));
+		światNether 					= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.nether", "SkyblockNether"));
+		yWysp 							= Main.ust.wczytajLubDomyślna						("Skyblock.y wysp", 100);
+		czasCooldownuLiczeniaWartości 	= Main.ust.wczytajLubDomyślna						("Skyblock.cooldown.liczenie punktów", 60*30);
 		
-		
-		rzędyTopki = Math.max(1, Math.min(6, Main.ust.wczytajInt("Skyblock.topka.rzędy")));
-		slotyTopki = Func.nieNullList((List<Integer>) Main.ust.wczytaj("Skyblock.topka.sloty"));
-		topInfo = Func.nieNullList((List<TopInfo>) Main.ust.wczytaj("SkyBlock.topka.gracze"));
-		światWysp = Bukkit.getWorld(Main.ust.wczytajLubDomyślna("Skyblock.świat.zwykły", "SkyblockNormalny"));
-		światNether = Bukkit.getWorld(Main.ust.wczytajLubDomyślna("Skyblock.świat.nether", "SkyblockNether"));
-		yWysp = Main.ust.wczytajLubDomyślna("Skyblock.y wysp", 100);
-		czasCooldownuLiczeniaWartości = Main.ust.wczytajLubDomyślna("Skyblock.cooldown.liczenie punktów", 60*30);
+		// Ulepszenia
+		for (Field field : Ulepszenia.class.getDeclaredFields())
+			try {
+				List<String> linie = Main.ust.wczytajListe("Skyblock.ulepszenia." + field.getName());
+				Ulepszenia.Ulepszenie[] tab = new Ulepszenia.Ulepszenie[linie.size()];
+				
+				for (int i=0; i < tab.length; i++) {
+					List<String> połówki = Func.tnij(linie.get(i), " ");
+					tab[i] = new Ulepszenia.Ulepszenie(Func.Int(połówki.get(0)), Func.Double(połówki.get(1)));
+				}
+				
+				field.set(null, tab);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (Throwable e) {
+				Main.warn("Nieprawidłowe ustawienia.yml \"Skyblock.ulepszenia." + field.getName() + "\"");
+			}
 	}
 	@Override
 	public Krotka<String, Object> raport() {

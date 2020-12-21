@@ -164,9 +164,10 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 			w -= e.getPotionEffect(PotionEffectType.UNLUCK).getAmplifier() + 1;
 		
 		if (item != null) {
-			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS);
-			w += item.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
-			w += item.getEnchantmentLevel(Enchantment.LUCK);
+			ItemStack _item = new ItemStack(item.getType());
+			for (Enchantment ench : new Enchantment[] {Enchantment.LOOT_BONUS_BLOCKS, Enchantment.LOOT_BONUS_MOBS, Enchantment.LUCK})
+				if (ench.canEnchantItem(_item))
+					w += item.getEnchantmentLevel(ench);
 		}
 		
 		return w;
