@@ -352,6 +352,10 @@ public abstract class Func {
 		}
 	}
 	
+	public static ItemStack typ(ItemStack item, Material mat) {
+		item.setType(mat);
+		return item;
+	}
 	public static ItemStack ilość(ItemStack item, int ilość) {
 		item.setAmount(ilość);
 		return item;
