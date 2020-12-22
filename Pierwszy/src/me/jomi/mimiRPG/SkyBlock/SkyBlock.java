@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
@@ -18,6 +19,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -41,6 +45,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.generator.BlockPopulator;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -220,7 +226,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			wyspa.członkowie.put(p.getName(), "właściciel"); // TODO permisja domyślna właściciel, (bez możliwości usunięcia, tak jak członek i odwiedzający)
 			
 			Krotka<Integer, Integer> xz = następnaPozycja();
-			wyspa.locŚrodek = new Location(światWysp, xz.a * odstęp, yWysp, xz.b * odstęp);
+			wyspa.locŚrodek = new Location(Światy.overworld, xz.a * odstęp, yWysp, xz.b * odstęp);
 			
 			wyspa.locHome = wyspa.locŚrodek.clone();
 			
@@ -252,11 +258,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		public static Wyspa wczytaj(Location loc) {
 			String locWorldName = loc.getWorld().getName();
-			if (!(locWorldName.equals(światWysp.getName()) || (światNether != null && locWorldName.equals(światNether.getName()))))
+			if (!(locWorldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && locWorldName.equals(Światy.nazwaNether))))
 				return null;
 			
 			Wyspa wyspa = wczytaj(configData.wczytajLubDomyślna("wyspy loc." + dolnyRóg(loc), -1));
-			return wyspa.zawiera(loc) ? wyspa : null;
+			return wyspa == null ? null : wyspa.zawieraIgnorujŚwiat(loc) ? wyspa : null;
 		}
 		public static Wyspa wczytaj(Player p) {
 			return wczytaj(Gracz.wczytaj(p));
@@ -310,11 +316,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		public boolean zawiera(Location loc) {
 			String locWorldName = loc.getWorld().getName();
-			if (!(locWorldName.equals(światWysp.getName()) || (światNether != null && locWorldName.equals(światNether.getName()))))
+			if (!(locWorldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && locWorldName.equals(Światy.nazwaNether))))
 				return false;
+			return zawieraIgnorujŚwiat(loc);
+		}
+		public boolean zawieraIgnorujŚwiat(Location loc) {
 			Krotka<Location, Location> rogi = rogi();
 			return Func.zawiera(loc, rogi.a, rogi.b);
 		}
+		
 		
  		
  		
@@ -1477,8 +1487,76 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		inst = this;
 	}
 	
+	
+	// Generowanie pustych Światów
+	
+	private static final GeneratorChunków generatorChunków = new GeneratorChunków();
+	public static GeneratorChunków worldGenerator(String worldName) {
+		return worldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && worldName.equals(Światy.nazwaNether)) ? generatorChunków : null;
+	}
+	public static class GeneratorChunków extends ChunkGenerator {
+	    @Override
+	    public List<BlockPopulator> getDefaultPopulators(World world) {
+	        return Lists.newArrayList();
+	    }
+	    @Override
+	    public boolean canSpawn(World world, int x, int z) {
+	        return true;
+	    }
+	    
+	    @Override
+	    public ChunkData generateChunkData(World world, Random random, int cx, int cz, BiomeGrid biomeGrid) {
+	        ChunkData chunkData = createChunkData(world);
+	        
+	        Biome biom;
+	        if (world.getName().equals(Światy.nazwaOverworld))
+	            biom = Biome.PLAINS;
+	        else if (Światy.dozwolonyNeter && world.getName().equals(Światy.nazwaNether))
+	            biom = Biome.NETHER_WASTES;
+	        else
+	            return chunkData;
+	        
+	        for (int x = 0; x < 16; x++)
+				for (int z = 0; z < 16; z++)
+					for (int y = 0; y < world.getMaxHeight(); y++)
+	            		biomeGrid.setBiome(x, y, z, biom);
 
-	private static final Set<String> zBypassem = Sets.newConcurrentHashSet();;
+	        return chunkData;
+	    }
+	    
+	    public byte[][] blockSections;
+	    public byte[][] generateBlockSections(World world, Random random, int x, int z, BiomeGrid biomes) {
+	        if (blockSections == null)
+				blockSections = new byte[world.getMaxHeight() / 16][];
+	        return blockSections;
+	    }
+	}
+	private World stwórzŚwiat(Environment env, String nazwa) {
+		WorldCreator wc = new WorldCreator(nazwa);
+		wc.generator(Main.plugin.getName() + ":skyblock");
+		wc.generator(generatorChunków);
+		wc.generateStructures(false);
+		wc.type(WorldType.FLAT);
+		wc.environment(env);
+		World w = wc.createWorld();
+		
+		if (Bukkit.getPluginManager().getPlugin("Multiverse-Core") != null) {
+	        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mv import " + nazwa + " " + env + " -g " + Main.plugin.getName() + ":skyblock");
+	        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mv modify set generator " + Main.plugin.getName() + ":skyblock " + nazwa);
+		}
+		
+		return w;
+	}
+	private void stwórzŚwiaty() {
+		Światy.overworld = stwórzŚwiat(Environment.NORMAL, Światy.nazwaOverworld);
+		if (Światy.dozwolonyNeter)
+			Światy.nether = stwórzŚwiat(Environment.NETHER, Światy.nazwaNether);
+	}
+	
+	
+	// bypass
+	
+	private static final Set<String> zBypassem = Sets.newConcurrentHashSet();
 	public static boolean maBypass(Player p) {
 		return zBypassem.contains(p.getName());
 	}
@@ -1626,8 +1704,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	static int rzędyTopki = 3;
 	static List<Integer> slotyTopki;
 	static List<TopInfo> topInfo;// TODO przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
-	static World światWysp;
-	static World światNether;
+	static class Światy {
+		static World overworld;
+		static World nether;
+		static String nazwaOverworld;
+		static String nazwaNether;
+		static boolean dozwolonyNeter;
+	}
 	static int yWysp;
 	static int czasCooldownuLiczeniaWartości;
 	static int odstęp;
@@ -1684,10 +1767,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		rzędyTopki 						= Math.max(1, Math.min(6, Main.ust.wczytajInt		("Skyblock.topka.rzędy")));
 		slotyTopki 						= Func.nieNullList((List<Integer>) Main.ust.wczytaj	("Skyblock.topka.sloty"));
 		topInfo 						= Func.nieNullList((List<TopInfo>) Main.ust.wczytaj	("Skyblock.topka.gracze"));
-		światWysp 						= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.zwykły", "SkyblockNormalny"));
-		światNether 					= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.nether", "SkyblockNether"));
+		//światWysp 						= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.zwykły", "SkyblockNormalny"));
+		//światNether 					= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.nether", "SkyblockNether"));
 		yWysp 							= Main.ust.wczytajLubDomyślna						("Skyblock.y wysp", 100);
 		czasCooldownuLiczeniaWartości 	= Main.ust.wczytajLubDomyślna						("Skyblock.cooldown.liczenie punktów", 60*30);
+		
+		Światy.dozwolonyNeter = Main.ust.wczytajLubDomyślna("Skyblock.nether", true);
+		Światy.nazwaOverworld = Main.ust.wczytajLubDomyślna("Skyblock.świat.zwykły", "mimiSkyblock");
+		Światy.nazwaNether	  = Main.ust.wczytajLubDomyślna("Skyblock.świat.nether", "mimiSkyblockNether");
+		Func.opóznij(1, this::stwórzŚwiaty);
 		
 		// Ulepszenia
 		for (Field field : Ulepszenia.class.getDeclaredFields())

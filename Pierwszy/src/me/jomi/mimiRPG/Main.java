@@ -1,14 +1,16 @@
 package me.jomi.mimiRPG;
 
-import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.permission.Permission;
-
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,13 +20,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -47,10 +44,15 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
+
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 
 public class Main extends JavaPlugin implements Listener {
 	// Api Vaults
@@ -190,6 +192,28 @@ public class Main extends JavaPlugin implements Listener {
 		Func.onDisable();
 	}
 
+
+    @Override
+    public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(".");
+    	Main.warn(worldName, id);
+    	Main.warn(".");
+    	
+    	ChunkGenerator generator;
+    	if (id.equals("skyblock") && (generator = SkyBlock.worldGenerator(worldName)) != null)
+			return generator;
+    	Main.warn("default");
+    	Main.warn(".");
+    	return super.getDefaultWorldGenerator(worldName, id);
+    }
+	
+	
 	static boolean pluginEnabled = false;
 	static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
 	static void zarejestruj(Object obj) {
