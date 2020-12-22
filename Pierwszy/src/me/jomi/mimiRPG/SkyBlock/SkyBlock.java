@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.SkyBlock;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.minecraft.server.v1_16_R2.PacketPlayOutWorldBorder;
 import net.minecraft.server.v1_16_R2.WorldBorder;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -216,24 +218,35 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			 */
 		}
 		
-		public static Wyspa nowa(Player p, String typ) {
+		public static Wyspa nowa(Player p, TypWyspy typ) {
 			Main.log(prefix + p.getName() + "utworzył wyspę typu " + typ);
 			
 			Wyspa wyspa = Func.utwórz(Wyspa.class);
 			
 			wyspa.id = configData.wczytajInt("id następnej wyspy");
 			
+			wyspa.nazwa = p.getName();
+
 			wyspa.członkowie.put(p.getName(), "właściciel"); // TODO permisja domyślna właściciel, (bez możliwości usunięcia, tak jak członek i odwiedzający)
 			
 			Krotka<Integer, Integer> xz = następnaPozycja();
 			wyspa.locŚrodek = new Location(Światy.overworld, xz.a * odstęp, yWysp, xz.b * odstęp);
 			
-			wyspa.locHome = wyspa.locŚrodek.clone();
+			typ.wklejSchematy(wyspa.locŚrodek.getBlockX(), wyspa.locŚrodek.getBlockY(), wyspa.locŚrodek.getBlockZ());
 			
-			wyspa.nazwa = p.getName();
+			wyspa.locHome = wyspa.locŚrodek.clone().add(typ.dx, typ.dy, typ.dz);
+			
+			for (Entry<String, TypWyspy> en : TypWyspy.mapa.entrySet())
+				if (en.getValue().equals(typ)) {
+					wyspa.typ = en.getKey();
+					break;
+				}
 			
 			wyspa.zapisz();
 
+			wyspa.zmieńBiom(Światy.overworld, typ.biomOverworld);
+			if (Światy.dozwolonyNether)
+				wyspa.zmieńBiom(Światy.nether, typ.biomNether);
 			
 			configData.ustaw("wyspy loc." + dolnyRóg(wyspa.locŚrodek), wyspa.id);
 			
@@ -257,8 +270,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return x + "_" + z;
 		}
 		public static Wyspa wczytaj(Location loc) {
-			String locWorldName = loc.getWorld().getName();
-			if (!(locWorldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && locWorldName.equals(Światy.nazwaNether))))
+			if (!Światy.należy(loc.getWorld()))
 				return null;
 			
 			Wyspa wyspa = wczytaj(configData.wczytajLubDomyślna("wyspy loc." + dolnyRóg(loc), -1));
@@ -287,7 +299,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane HashMap<String, String> członkowie = new HashMap<>(); // nick: nazwaGrupyPermisji
 		@Mapowane Poziomy poziomy = Func.utwórz(Poziomy.class);
 		@Mapowane Location locŚrodek;
-		@Mapowane String typ; // TODO wczytywać schematic
+		@Mapowane String typ;
 		@Mapowane int id;
 
 
@@ -315,8 +327,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		public boolean zawiera(Location loc) {
-			String locWorldName = loc.getWorld().getName();
-			if (!(locWorldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && locWorldName.equals(Światy.nazwaNether))))
+			if (!Światy.należy(loc.getWorld()))
 				return false;
 			return zawieraIgnorujŚwiat(loc);
 		}
@@ -1194,18 +1205,22 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public boolean zmieńBiom(Player p, String biom) {
 			if (!permisje(p).zmiana_biomu)
 				return Func.powiadom(p, prefix + "Nie masz uprawnień do zmiany biomu");
-			Krotka<Location, Location> rogi = rogi();
-			World świat = locŚrodek.getWorld();
 			// TODO obsługa komendy
 			// TODO panel
 			// TODO dostępne biomy
-			Biome biome = Biome.valueOf(biom.toUpperCase()); // TODO obsługa błedu
+			if (zawiera(p.getLocation()))
+				zmieńBiom(p.getWorld(), Biome.valueOf(biom.toUpperCase())); // TODO obsługa błędu, a bardziej panel
+			else
+				return Func.powiadom(p, prefix + "Musisz być na wyspie aby tego użyć");
+			return false;
+		}
+		void zmieńBiom(World świat, Biome biom) {
+			Krotka<Location, Location> rogi = rogi();
 			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> 
-				Func.wykonajNaBlokach(rogi.a, rogi.b, (x, y, z) -> {
-						świat.setBiome(x, y, z, biome);
+					Func.wykonajNaBlokach(rogi.a, rogi.b, (x, y, z) -> {
+						świat.setBiome(x, y, z, biom);
 						return true;
 			}));
-			return false;
 		}
 		
 		
@@ -1470,7 +1485,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		ULEPSZENIA		((wyspa, p, typ, ev) -> wyspa.klikanyInvUlepszenia(p, ev.getRawSlot())),
 		DEL_WARP		((wyspa, p, typ, ev) -> wyspa.klikanieInvDelWarp(p, ev.getRawSlot(), ev.getCurrentItem().getType())),
 		PERMISJE		((wyspa, p, typ, ev) -> wyspa.klikanyPermisjeEdytujInv(p, ev.getRawSlot(), ev.getView().getTitle(), ev.getCurrentItem())),
-		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot()));
+		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot())),
+		TWORZENIE_WYSPY ((wyspa, p, typ, ev) -> klikanyPanelTworzeniaWyspy(p, ev.getCurrentItem()));
 		private static interface TypInvConsumer {
 			void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
 		}
@@ -1492,7 +1508,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	
 	private static final GeneratorChunków generatorChunków = new GeneratorChunków();
 	public static GeneratorChunków worldGenerator(String worldName) {
-		return worldName.equals(Światy.nazwaOverworld) || (Światy.dozwolonyNeter && worldName.equals(Światy.nazwaNether)) ? generatorChunków : null;
+		return Światy.należy(worldName) ? generatorChunków : null;
 	}
 	public static class GeneratorChunków extends ChunkGenerator {
 	    @Override
@@ -1511,7 +1527,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	        Biome biom;
 	        if (world.getName().equals(Światy.nazwaOverworld))
 	            biom = Biome.PLAINS;
-	        else if (Światy.dozwolonyNeter && world.getName().equals(Światy.nazwaNether))
+	        else if (Światy.dozwolonyNether && world.getName().equals(Światy.nazwaNether))
 	            biom = Biome.NETHER_WASTES;
 	        else
 	            return chunkData;
@@ -1549,7 +1565,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	private void stwórzŚwiaty() {
 		Światy.overworld = stwórzŚwiat(Environment.NORMAL, Światy.nazwaOverworld);
-		if (Światy.dozwolonyNeter)
+		if (Światy.dozwolonyNether)
 			Światy.nether = stwórzŚwiat(Environment.NETHER, Światy.nazwaNether);
 	}
 	
@@ -1564,7 +1580,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Consumer<String> cons = (stan ? zBypassem::add : zBypassem::remove);
 		cons.accept(p.getName());
 	}
-	
 	
 	
 	// Event Handler
@@ -1694,6 +1709,54 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
+	// /is create
+	
+	public boolean podejmijDecyzjeTworzeniaWyspy(Player p) {
+		Gracz g = Gracz.wczytaj(p);
+		if (g.wyspa != -1)
+			return Func.powiadom(p, prefix + "Masz już wyspę");
+		
+		Func.wykonajDlaNieNull(dajPanelTworzeniaWyspy(p), inv -> {
+			p.openInventory(inv);
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		});
+		return false;
+	}
+	Inventory dajPanelTworzeniaWyspy(Player p) {
+		List<Entry<String, TypWyspy>> lista = Lists.newArrayList();
+		for (Entry<String, TypWyspy> en : TypWyspy.mapa.entrySet())
+			if (en.getValue().istniejąSchematy())
+				lista.add(en);
+		if (lista.isEmpty()) {
+			TypWyspy.wrzućDomyślneSchematicki();
+			lista = Lists.newArrayList(TypWyspy.mapa.entrySet());
+		}
+		if (lista.size() == 1) {
+			utwórzWyspę(p, lista.get(0).getValue());
+			return null;
+		}
+		
+		int potrzebne = Func.potrzebneRzędy(lista.size());
+		Inventory inv = new Holder(null, TypInv.TWORZENIE_WYSPY, potrzebne <= 4 ? potrzebne + 2 : potrzebne).getInventory();
+		
+		for (int i : Func.sloty(TypWyspy.mapa.size(), potrzebne)) {
+			Entry<String, TypWyspy> en = lista.remove(0);
+			inv.setItem(i, Func.stwórzItem(en.getValue().ikona, "&9&l" + en.getKey(), en.getValue().opis));
+		}
+		
+		return inv;
+	}
+	static void klikanyPanelTworzeniaWyspy(Player p, ItemStack item) {
+		if (item.isSimilar(Baza.pustySlot))
+			return;
+		utwórzWyspę(p, TypWyspy.zNazwy(item.getItemMeta().getDisplayName().substring(4)));
+	}
+	
+	static void utwórzWyspę(Player p, TypWyspy typ) {
+		p.closeInventory();
+		Wyspa.nowa(p, typ);
+	}
+	
 	
 	// I/O
 	
@@ -1701,20 +1764,105 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	
 	static final HashMap<Material, Integer> punktacja = new HashMap<>(); // TODO wczytywać
 	
-	static int rzędyTopki = 3;
-	static List<Integer> slotyTopki;
-	static List<TopInfo> topInfo;// TODO przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
 	static class Światy {
 		static World overworld;
 		static World nether;
 		static String nazwaOverworld;
 		static String nazwaNether;
-		static boolean dozwolonyNeter;
+		static boolean dozwolonyNether;
+		
+		static boolean należy(World świat) {
+			return należy(świat.getName());
+		}
+		static boolean należy(String nazwaŚwiata) {
+			return nazwaŚwiata.equals(nazwaOverworld) || (dozwolonyNether && nazwaŚwiata.equals(nazwaNether));
+		}
 	}
+	static List<TopInfo> topInfo;// TODO przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
+	static int rzędyTopki = 3;
+	static List<Integer> slotyTopki;
 	static int yWysp;
 	static int czasCooldownuLiczeniaWartości;
 	static int odstęp;
-	
+	// typ: TypWyspy
+	static class TypWyspy {
+		private static final HashMap<String, TypWyspy> mapa = new HashMap<>();
+		public final String schematOverworld;
+		public final String schematNether;
+		public final Biome biomOverworld;
+		public final Biome biomNether;
+		public final Material ikona;
+		public final List<String> opis;
+		public final double dx; // przesunięcie wyspa.locHome od wyspa.locŚrodek
+		public final double dy;
+		public final double dz;
+		private static int _id = 0;
+		private final int id;
+		public TypWyspy(String schematOverworld, String schematNether, double dx, double dy, double dz, Biome biomOverworld, Biome biomNether, Material ikona, List<String> opis) {
+			this.schematOverworld = schematOverworld;
+			this.schematNether = schematNether;
+			this.biomOverworld = biomOverworld;
+			this.biomNether = biomNether;
+			this.ikona = ikona;
+			this.opis = opis;
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+			this.id = _id++;
+		}
+		public void wklejSchematy(int x, int y, int z) {
+			try {
+				wklejSchemat(TypWyspy.class.getDeclaredField("schematOverworld"), "zwyczajna", new Location(Światy.overworld, x, y, z));
+				wklejSchemat(TypWyspy.class.getDeclaredField("schematNether"),	  "netherowa", new Location(Światy.nether,	  x, y, z));
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		private void wklejSchemat(Field schemat, String nazwaPodstawowa, Location loc) throws Throwable {
+			if (Main.we != null) {
+				if (Func.wklejSchemat((String) schemat.get(this), loc))
+					return;
+				for (TypWyspy typ : mapa.values())
+					if (Func.wklejSchemat((String) schemat.get(typ), loc))
+						return;
+				wrzućDomyślneSchematicki();
+				if (Func.wklejSchemat((String) schemat.get(mapa.get(nazwaPodstawowa)), loc))
+					return;
+			}
+			Func.wykonajNaBlokach(loc.clone().add(3, -1, 3), loc.clone().add(-3, -1, -3), blok -> {
+				blok.setType(Material.GRASS_BLOCK, false);
+				return true;
+			});
+		}
+		static void wrzućDomyślneSchematicki() {
+			Func.wyjmijPlik("Configi/wyspaZwyczajna.schem",	Main.path + "wyspaZwyczajna.schem");
+			Func.wyjmijPlik("Configi/wyspaNether.schem",	Main.path + "wyspaNether.schem");
+			mapa.put("zwyczajna", new TypWyspy(Main.path + "wyspaZwyczajna.schem", Main.path + "wyspaNether.schem",
+					-2, 0, 0, Biome.PLAINS, Biome.NETHER_WASTES, Material.GRASS_BLOCK, Func.koloruj(Lists.newArrayList(new String[]{"&8Zwyczajna wyspa"}))));
+		}
+		public static TypWyspy zNazwy(String nazwa) {
+			TypWyspy typ = mapa.get(nazwa);
+			if (typ == null || !typ.istniejąSchematy()) typ = mapa.get("zwyczajna");
+			if (typ == null || !typ.istniejąSchematy())
+				for (TypWyspy _typ : mapa.values())
+					if (_typ.istniejąSchematy())
+						return _typ;
+			wrzućDomyślneSchematicki();
+			return mapa.get("zwyczajna");
+		}
+		public boolean istniejąSchematy() {
+			return new File(schematOverworld).exists() && new File(schematNether).exists();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null)
+				return false;
+			if (!(obj instanceof TypWyspy))
+				return false;
+			return id == ((TypWyspy) obj).id;
+		}
+	}
 	
 	// Następna pozycja wyspy
 	
@@ -1767,15 +1915,42 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		rzędyTopki 						= Math.max(1, Math.min(6, Main.ust.wczytajInt		("Skyblock.topka.rzędy")));
 		slotyTopki 						= Func.nieNullList((List<Integer>) Main.ust.wczytaj	("Skyblock.topka.sloty"));
 		topInfo 						= Func.nieNullList((List<TopInfo>) Main.ust.wczytaj	("Skyblock.topka.gracze"));
-		//światWysp 						= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.zwykły", "SkyblockNormalny"));
-		//światNether 					= Bukkit.getWorld(Main.ust.wczytajLubDomyślna		("Skyblock.świat.nether", "SkyblockNether"));
 		yWysp 							= Main.ust.wczytajLubDomyślna						("Skyblock.y wysp", 100);
 		czasCooldownuLiczeniaWartości 	= Main.ust.wczytajLubDomyślna						("Skyblock.cooldown.liczenie punktów", 60*30);
 		
-		Światy.dozwolonyNeter = Main.ust.wczytajLubDomyślna("Skyblock.nether", true);
+		
+		// Typy wysp
+		TypWyspy.mapa.clear();
+		// <nazwa typu>: scieżkaDoSchematickaOverworld scieżkaDoSchematickaNether dx dy dz biomOverworld biomNether ikona opis
+		Func.wykonajDlaNieNull(Main.ust.sekcja("Skyblock.typy wysp"), sekcja -> sekcja.getValues(false).forEach((typ, obj) -> {
+			List<String> części = Func.tnij((String) obj, " ");
+			Biome biomOverworld = Biome.PLAINS;
+			Biome biomNether = Biome.NETHER_WASTES;
+			Material ikona = Material.GRASS_BLOCK;
+			List<String> opis = Lists.newArrayList(new String[]{"&8Zwyczajna wyspa"});
+			double x = 0, y = 0, z = 0;
+			switch (części.size()) {
+			default: opis = Func.tnij(Func.listToString(części, 8), "\\n");
+			case 8: ikona = Material.valueOf(części.get(7).toUpperCase());
+			case 7: biomNether	  = Biome.valueOf(części.get(6).toUpperCase());
+			case 6: biomOverworld = Biome.valueOf(części.get(5).toUpperCase());
+			case 5: z = Func.Double(części.get(4));
+			case 4: y = Func.Double(części.get(3));
+			case 3: x = Func.Double(części.get(2));
+			case 2:
+			}
+			TypWyspy.mapa.put(typ, new TypWyspy(części.get(0), części.get(1), x, y, z, biomOverworld, biomNether, ikona, Func.koloruj(opis)));
+		}));
+		if (TypWyspy.mapa.isEmpty())
+			TypWyspy.wrzućDomyślneSchematicki();
+
+		
+		// Światy
+		Światy.dozwolonyNether= Main.ust.wczytajLubDomyślna("Skyblock.nether", true);
 		Światy.nazwaOverworld = Main.ust.wczytajLubDomyślna("Skyblock.świat.zwykły", "mimiSkyblock");
 		Światy.nazwaNether	  = Main.ust.wczytajLubDomyślna("Skyblock.świat.nether", "mimiSkyblockNether");
 		Func.opóznij(1, this::stwórzŚwiaty);
+		
 		
 		// Ulepszenia
 		for (Field field : Ulepszenia.class.getDeclaredFields())

@@ -36,19 +36,21 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -59,6 +61,9 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
@@ -73,12 +78,6 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
-
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
 
 @Moduł
 public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
@@ -775,7 +774,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (config.klucze(false).contains("bazy"))
 			for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 				Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
-				if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
+				if (Func.porównaj(Config.item(mapa.get("item")), item)) {
 					ev.setCancelled(true);
 					
 					Runnable zabierzItem = () -> {
@@ -819,12 +818,15 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					boolean zabierz = Baza.wczytaj(ev.getPlayer(), x, y, z, świat, item, ev,
 							((ConfigurationSection) mapa.get("baza")).getValues(false)) != null;
 					
+					boolean warn = false;
 					if (mapa.containsKey("schemat") && !blokuj && 
 							Bazy.regiony.get(BukkitAdapter.adapt(świat))
 								.getApplicableRegions(BlockVector3.at(x, y, z))
 								.testState(Main.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
-							Func.wklejSchemat((String) mapa.get("schemat"), świat, x, y, z))
+							(warn = Func.wklejSchemat(Main.path + mapa.get("schemat"), świat, x, y, z)))
 								zabierz = true;
+					if (warn)
+						Main.warn("Nie odnaleziono pliku " + Main.path + mapa.get("schemat") + " schemat z Bazy.yml nie został wybudowany.");
 					
 					if (zabierz) 
 						zabierzItem.run();
@@ -938,7 +940,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (config.klucze(false).contains("bazy"))
 				for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 					Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
-					if (Func.porównaj((ItemStack) Config.item(mapa.get("item")), item)) {
+					if (Func.porównaj(Config.item(mapa.get("item")), item)) {
 						if (!blok.getType().isInteractable() && !blok.getType().toString().contains("LEAVES"))
 							ev.setCancelled(false);
 						break;

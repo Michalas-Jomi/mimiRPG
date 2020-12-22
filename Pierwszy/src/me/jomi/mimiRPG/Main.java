@@ -195,21 +195,9 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(".");
-    	Main.warn(worldName, id);
-    	Main.warn(".");
-    	
     	ChunkGenerator generator;
     	if (id.equals("skyblock") && (generator = SkyBlock.worldGenerator(worldName)) != null)
 			return generator;
-    	Main.warn("default");
-    	Main.warn(".");
     	return super.getDefaultWorldGenerator(worldName, id);
     }
 	

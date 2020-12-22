@@ -629,6 +629,52 @@ public abstract class Func {
 		while ((slot = inv.firstEmpty()) != -1)
 			inv.setItem(slot, Baza.pustySlot);
 	}
+	public static Inventory CloneInv(Inventory inv, String nazwa) {
+		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
+		for (int i=0; i<inv.getSize(); i++)
+			_inv.setItem(i, inv.getItem(i).clone());
+		return _inv;
+	}
+	public static int potrzebneRzędy(int sloty) {
+		return (sloty - 1) / 9 + 1;
+	}
+	public static int[] sloty(int potrzebneSloty, int rzędy) {
+		if (rzędy == 1)
+			switch (potrzebneSloty) {
+			case 0: return new int[] {};
+			case 1: return new int[] {4};
+			case 2: return new int[] {3, 5};
+			case 3: return new int[] {2, 4, 6};
+			case 4: return new int[] {1, 3, 5, 7};
+			case 5: return new int[] {2, 3, 4, 5, 6};
+			case 6: return new int[] {1, 2, 3, 5, 6, 7};
+			case 7: return new int[] {1, 2, 3, 4, 5, 6, 7};
+			case 8: return new int[] {0, 1, 2, 3, 5, 6, 7, 8};
+			case 9: return new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8};
+			default:return null;
+			}
+		
+		
+		int[] sloty = new int[potrzebneSloty];
+		
+		int ubytek = potrzebneSloty / rzędy;
+		int reszta = potrzebneSloty % rzędy;
+		
+		int index = 0;
+		
+		int mn = 0;
+		
+		while (potrzebneSloty > 0) {
+			int dodatek = reszta-- > 0 ? 1 : 0;
+			potrzebneSloty -= ubytek + dodatek;
+			for (int i : sloty(ubytek + dodatek, 1))
+				sloty[index++] = mn*9 + i;
+			mn++;
+		}
+		
+		
+		return sloty;
+	}
 	
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
@@ -759,22 +805,19 @@ public abstract class Func {
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
 		String nazwaPluginu = Main.plugin.getName();
-		File f2 = new File(gdzie);
 		try {
-			JarFile jar = new JarFile("plugins/"+nazwaPluginu+".jar");
-			JarEntry plik = jar.getJarEntry("me/jomi/"+nazwaPluginu+"/" + co);
+			JarFile jar = new JarFile("plugins/" + nazwaPluginu + ".jar");
+			JarEntry plik = jar.getJarEntry("me/jomi/" + nazwaPluginu + "/" + co);
 			if (plik == null)
 				return false;
 			InputStream inputStream = jar.getInputStream(plik);
 			
 			int read;
             byte[] bytes = new byte[1024];
-            FileOutputStream outputStream = new FileOutputStream(f2);
-            
-            while ((read = inputStream.read(bytes)) != -1)
-            	outputStream.write(bytes, 0, read);
-
-            outputStream.close();
+            try (FileOutputStream outputStream = new FileOutputStream(new File(gdzie))) {
+            	while ((read = inputStream.read(bytes)) != -1)
+            		outputStream.write(bytes, 0, read);
+            }
             return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -918,16 +961,6 @@ public abstract class Func {
 		return powiadom(sender, prefix + Func.msg(msg, uzupełnienia));
 	}
 
-	public static Inventory CloneInv(Inventory inv, String nazwa) {
-		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
-		for (int i=0; i<inv.getSize(); i++)
-			_inv.setItem(i, inv.getItem(i).clone());
-		return _inv;
-	}
-	public static int potrzebneRzędy(int sloty) {
-		return (sloty - 1) / 9 + 1;
-	}
-	
 	public static class Task {
 		static final List<Task> wszystkie = Lists.newArrayList();
 		Runnable lambda;
@@ -1107,10 +1140,23 @@ public abstract class Func {
 		if (obj != null)
 			func.accept(obj);
 	}
+	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func, Runnable dlaObjNull) {
+		if (obj != null)
+			func.accept(obj);
+		else
+			dlaObjNull.run();
+	}
 	@SuppressWarnings("unchecked")
 	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func) {
 		if (obj != null && clazz.isInstance(obj))
 			func.accept((T) obj);
+	}
+	@SuppressWarnings("unchecked")
+	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func, Runnable dlaObjNull) {
+		if (obj != null && clazz.isInstance(obj))
+			func.accept((T) obj);
+		else
+			dlaObjNull.run();
 	}
 	public static <T> void wykonajDlaNieNull(T obj, Predicate<T> warunek, Consumer<T> func) {
 		if (obj != null && warunek.test(obj))
@@ -1324,8 +1370,7 @@ public abstract class Func {
 		return wklejSchemat(schematScieżka, świat, BlockVector3.at(x, y, z));
 	}
 	public static boolean wklejSchemat(String schematScieżka, World świat, BlockVector3 vec3) {
-		String scieżka = Main.path + schematScieżka;
-		File file = new File(scieżka);
+		File file = new File(schematScieżka);
 		try (ClipboardReader reader = ClipboardFormats.findByFile(file).getReader(new FileInputStream(file));
 				EditSession editSession = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(świat))) {
 			Operations.complete(
@@ -1335,11 +1380,11 @@ public abstract class Func {
 		            .ignoreAirBlocks(true)
 		            .build()
 		            );
-		} catch (IOException  e) {
-			Main.warn("Nie odnaleziono pliku " + scieżka + " schemat z Bazy.yml nie został wybudowany.");
+		} catch (IOException e) {
 			return false;
 		} catch (WorldEditException e) {
 			e.printStackTrace();
+			return false;
 		}
 		return true;
 	}
