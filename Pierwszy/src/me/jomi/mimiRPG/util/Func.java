@@ -1050,7 +1050,7 @@ public abstract class Func {
 		try {
 			for (Field field : głębokiSkanKlasy(clazz)) {
 				field.setAccessible(true);
-				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null) { 
+				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null) {
 					if (List.class.isAssignableFrom(field.getType()))
 						field.set(obj, Lists.newArrayList());
 					else if (field.getType().isEnum()) {
@@ -1261,6 +1261,16 @@ public abstract class Func {
 		List<T2> _lista = Lists.newArrayList();
 		for (T1 el : lista)
 			_lista.add(func.apply(el));
+		return _lista;
+	}
+	public static <T> List<T> przefiltruj(T[] lista, Predicate<T> warunek) {
+		return przefiltruj(Lists.newArrayList(lista), warunek);
+	}
+	public static <T> List<T> przefiltruj(Iterable<T> lista, Predicate<T> warunek) {
+		List<T> _lista = Lists.newArrayList();
+		for (T el : lista)
+			if (warunek.test(el))
+				_lista.add(el);
 		return _lista;
 	}
 
