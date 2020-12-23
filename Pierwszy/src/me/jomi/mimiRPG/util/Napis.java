@@ -14,7 +14,6 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -24,8 +23,8 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.ItemTag;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import net.md_5.bungee.api.chat.hover.content.Item;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 
 public class Napis implements ConfigurationSerializable {
@@ -72,6 +71,19 @@ public class Napis implements ConfigurationSerializable {
 		return this;
 	}
 
+	public Napis dodajK(String co) {
+		return dodaj(Func.koloruj(co));
+	}
+	public Napis dodajEndK(String... co) {
+		for (String str : co)
+			dodaj(Func.koloruj(str)).dodaj("\n");
+		return this;
+	}
+	public Napis dodajEnd(String... co) {
+		for (String str : co)
+			dodaj(str).dodaj("\n");
+		return this;
+	}
 	public Napis dodajEnd(Napis... co) {
 		for (Napis _co : co)
 			dodaj(_co).dodaj("\n");
@@ -146,14 +158,17 @@ public class Napis implements ConfigurationSerializable {
 		return n;
 	}
 	
+	@Override
 	public String toString() {
 		return txt.toLegacyText() + "§r";
 	}
+	@Override
 	public Napis clone() {
 		Napis n = new Napis();
 		n.txt = txt.duplicate();
 		return n;
 	}
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof Napis)
 			return txt.equals(((Napis) obj).txt);

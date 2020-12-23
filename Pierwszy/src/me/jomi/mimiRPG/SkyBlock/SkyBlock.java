@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -38,6 +39,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -78,15 +81,11 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is
 //TODO /is booster
-//TODO /is coop
-// TODO zamykać panele graczom przy zabieraniu im permisji do nich
+//TODO /is drop // generator // BlockFromToEvent
 //TODO tabcompleter do wyboru angielski/polski
 //TODO przycisk back w menu wyspy
-//TODO limity bloków
-//TODO ulepszanie limitów bloków
-//TODO tepać na home spadających w przepaść
 //TODO limity warpów i grup permisji, aby nie przekroczyły 6*9
-//TODO zablokować przepychanie bloków pistonami przez barriery
+//TODO zablokować przepychanie bloków pistonami przez barriery // BlockPistonExtendEvent
 
 @Moduł
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
@@ -160,8 +159,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			boolean liczenie_wartości_wyspy; // v
 			
-			boolean coop;
-			
 			boolean kupowianie_ulepszeń; // v
 			
 			boolean ustawienie_home_wyspy; // v
@@ -184,6 +181,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			boolean edytowanie_permisji; // v
 			boolean awansowanie_i_degradowanie_członków; // v
 			
+			// TODO zamykać panel przy zabieraniu permisji
 			boolean zmiana_dropu; // TODO możliwość wyłączenia poszczzególnego dropu z cobla, w tym cobla
 			
 			boolean zmiana_nazwy_wyspy; // v
@@ -201,12 +199,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			@Mapowane Location loc;
 		}
 		public static class Poziomy extends Mapowany {
-			// TODO ulepszanie
-			@Mapowane int limityBloków; // limityBloków = limit hoperów | limityBloków / 2 = limit spawnerów
+			// TODO syntax w configu przy ulepszaniu
+			@Mapowane int limityBloków; // v // limityBloków = limit hoperów | limityBloków / 2 = limit spawnerów
 			@Mapowane int członkowie; // v // wartość - maksymalna ilość osób na wyspe  // Przy dodawaniu nowego pamiętać aby dodać też w klasie Ulepszenia
-			@Mapowane int generator;
-			@Mapowane int wielkość; // wartość - długość boku wyspy
-			@Mapowane int magazyn; // \ // wartość - ilość rządków magazynu
+			@Mapowane int generator; // TODO generator // TODO dodać lvl generatora pod /is info
+			@Mapowane int wielkość; // v // wartość - długość boku wyspy
+			@Mapowane int magazyn; // v // wartość - ilość rządków magazynu
 			@Mapowane int warpy; // v // wartość - maksymalna ilość warpów
 			/*
 			 * # Ulepszenia
@@ -305,7 +303,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane String typ;
 		@Mapowane int id;
 
-
+		
 		private void usuń() {
 			configData.ustaw("wyspy loc." + dolnyRóg(locŚrodek), null);
 			
@@ -336,11 +334,38 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		public boolean zawieraIgnorujŚwiat(Location loc) {
 			Krotka<Location, Location> rogi = rogi();
-			return Func.zawiera(loc, rogi.a, rogi.b);
+			return Func.zawiera(true, false, true, loc, rogi.a, rogi.b);
 		}
 		
 		
- 		
+		// Limity Bloków
+
+		@Mapowane int hopery;
+		@Mapowane int spawnery;
+		public boolean postawiony(Player p, Material blok) {
+			if (blok == Material.HOPPER) {
+				if (hopery + 1 > Ulepszenia.limityBloków[poziomy.limityBloków].wartość)
+					return Func.powiadom(p, prefix + "Nie możesz postawić więcej leji");
+				hopery++;
+			} else if (blok == Material.SPAWNER) {
+				if (spawnery + 1 > Ulepszenia.limityBloków[poziomy.limityBloków].wartość / 2)
+					return Func.powiadom(p, prefix + "Nie możesz postawić więcej spawnerów");
+				spawnery++;
+			} else
+				return false;
+			zapisz();
+			return false;
+		}
+		public void zniszczony(Material blok) {
+			if (blok == Material.HOPPER)
+				hopery = Math.max(--hopery, 0);
+			else if (blok == Material.SPAWNER)
+				spawnery = Math.max(--spawnery, 0);
+			else
+				return;
+			zapisz();
+		}
+		
  		
  		// Permisje
  		
@@ -392,11 +417,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					permsKody.set(i, strB.toString());
 					break;
 				}
+			
+			zapisz();
  		}
  		void odświeżKodyWszystkichPermisji() {
  			Lists.newArrayList(perms.values()).forEach(this::odświeżKodPermisji);
  		}
- 		
  		
 		Permisje permisje(Player p) {
 			if (maBypass(p))
@@ -408,7 +434,62 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		
-
+		// /is transfer
+		
+		public boolean transfer(Player p, String komu) {
+			if (!członkowie.containsKey(p.getName()))
+				return Func.powiadom(p, prefix + "Tylko prawowity właściciel wyspy może przekazać włąściciela");
+			if (!członkowie.get(p.getName()).equals("właściciel"))
+				return Func.powiadom(p, prefix + "Tylko właściciel wyspy może przekazać swoją range");
+			if (!członkowie.containsKey(komu))
+				return Func.powiadom(p, prefix + Func.msg("%s nie należy do twojej wyspy", komu));
+			Main.panelTakNie(p, "&4Oddać range właściciela dla &c" + komu + "&4?", "&aTak, nie chce jej dłużej nosić", "&cNiee! ona jest moja!",
+					() -> przekażWłaściciela(p, komu), null);
+			return false;
+		}
+		private boolean przekażWłaściciela(Player p, String komu) {
+			if (!członkowie.containsKey(komu))
+				return Func.powiadom(p, prefix + Func.msg("%s nie należy do twojej wyspy", komu));
+			członkowie.remove(p.getName());
+			członkowie.put(p.getName(), członkowie.remove(komu));
+			członkowie.put(komu, "właściciel");
+			zapisz();
+			
+			powiadomCzłonków("%s przekazał range właściciela wyspy dla %s", p.getName(), komu);
+			
+			return false;
+		}
+		
+		
+		// /is info
+		
+		public void info(CommandSender p) {
+			Napis n = new Napis("\n\n");
+			
+			n.dodajK("&aWyspa &4" + nazwa);
+			n.dodaj("\n");
+			
+			n.dodajK("&aCzłonkowie: ");
+			Iterator<Entry<String, String>> it = członkowie.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, String> en = it.next();
+				n.dodaj(new Napis(Func.koloruj("&e" + en.getValue()), Func.koloruj("&4" + en.getKey())));
+				if (it.hasNext())
+					n.dodajK("&f, ");
+			}
+			
+			n.dodajEndK(
+					"&aData stwrzenia: &e" + Func.data(dataUtworzenia),
+					"&aPunkty: &e" + pkt,
+					"&aTyp: &e" + typ
+					);
+			
+			n.dodaj("\n\n");
+			
+			n.wyświetl(p);
+		}
+		
+		
 		// /is permissions
 		
 		public void permisjeInv(Player p) {
@@ -495,19 +576,45 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Permisje perm = perms.get(invName.substring("&4Edytuj Uprawnienia &9".length()));
 			try {
 				Field[] pola = Permisje.class.getDeclaredFields();
-				if (slot < pola.length - 2)
-					Permisje.class.getDeclaredField(item.getItemMeta().getDisplayName().substring(2).replace(" ", "_")).set(perm, red);
-				else {
+				if (slot < pola.length - 2) {
+					String permisja = item.getItemMeta().getDisplayName().substring(2).replace(" ", "_");
+					Permisje.class.getDeclaredField(permisja).set(perm, red);
+					if (!red)
+						Func.wykonajDlaNieNull(zamknijPanele(permisja), typ -> zamknijPanele(typ, permisja));
+				} else {
 					perm.warpy.set(slot - pola.length + 2, red);
 					odświeżInvWarpy();
 				}
-				item.setType(red ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE);
 				odświeżKodPermisji(perm);
+				odświeżEdytoryPermisji();
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		
+		private TypInv zamknijPanele (String permisja) {
+			switch (permisja) {
+			case "awansowanie_i_degradowanie_członków": return TypInv.CZŁONKOWIE;
+			case "kupowianie_ulepszeń":		return TypInv.ULEPSZENIA;
+			case "dostęp_do_magazynu":		return TypInv.MAGAZYN;
+			case "zmiana_koloru_bordera":	return TypInv.BORDER;
+			case "zmiana_biomu":			return TypInv.BIOM;
+			case "edytowanie_permisji":
+				zamknijPanele(TypInv.PERMISJE_MAIN, permisja);
+				return TypInv.PERMISJE;
+			}
+			return null;
+		}
+		private void zamknijPanele(TypInv typ, String permisja) {
+			Bukkit.getOnlinePlayers().forEach(p -> Func.wykonajDlaNieNull(p.getOpenInventory().getTopInventory().getHolder(), Holder.class, holder -> {
+				try {
+					if (holder.typ == typ && holder.wyspa.equals(this) && !Permisje.class.getDeclaredField(permisja).getBoolean(permisje(p)))
+						p.closeInventory();
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}));
+		}
+
 		void odświeżEdytoryPermisji() {
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				Inventory inv = p.getOpenInventory().getTopInventory();
@@ -740,7 +847,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			return inv;
 		}
-		void klikanieInvDelWarp(Player p, int slot, Material mat) {
+		void klikaniyInvDelWarp(Player p, int slot, Material mat) {
 			if (mat == Material.RED_STAINED_GLASS_PANE)
 				p.sendMessage(prefix + "Nie masz dostępu do tego warpu");
 			else if (mat == Material.LIME_STAINED_GLASS_PANE)
@@ -774,9 +881,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			p.openInventory(getInvBank());
 			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
 		}
-		static int slotBankKasa = 11; 	   // TODO wczytywać
-		static int slotBankExp = 13; 	  // ^
-		static int slotBankMagazyn = 15; // ^
+		static int slotBankKasa = 11;
+		static int slotBankExp = 13;
+		static int slotBankMagazyn = 15;
 		private Inventory invBank = null;
 		private Inventory getInvBank() {
 			if (invBank == null) {
@@ -887,6 +994,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 		
+		
 		// /is sethome
 
 		@Mapowane Location locHome;
@@ -899,7 +1007,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				p.sendMessage(prefix + "Ustawiono nowy home wyspy");
 			}
 		}
-		
 		
 		// /is home
 		
@@ -1205,19 +1312,37 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is biome
 		
-		public boolean zmieńBiom(Player p, String biom) {
+		public boolean otwórzInvBiom(Player p) {
+			// TODO jakiś cooldown na gracza
 			if (!permisje(p).zmiana_biomu)
 				return Func.powiadom(p, prefix + "Nie masz uprawnień do zmiany biomu");
-			// TODO obsługa komendy
-			// TODO panel
-			// TODO dostępne biomy
-			if (zawiera(p.getLocation()))
-				zmieńBiom(p.getWorld(), Biome.valueOf(biom.toUpperCase())); // TODO obsługa błędu, a bardziej panel
-			else
+			if (!zawiera(p.getLocation()))
 				return Func.powiadom(p, prefix + "Musisz być na wyspie aby tego użyć");
+			p.openInventory(dajInvBiom(p));
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
 			return false;
 		}
-		void zmieńBiom(World świat, Biome biom) {
+		private Inventory dajInvBiom(Player p) {
+			List<Biom> dostępne = Func.przefiltruj(biomy, biom -> biom.permisja == null || p.hasPermission(biom.permisja));
+			Inventory inv = new Holder(this, TypInv.BIOM, Func.potrzebneRzędy(dostępne.size())).getInventory();
+			
+			int i=-1;
+			for (Biom biom : dostępne)
+				inv.setItem(++i, Func.customModelData(biom.ikona.clone(), i));
+			
+			return inv;
+		}
+		void klikanyInvBiom(Player p, ItemStack item) {
+			if (item.isSimilar(Baza.pustySlot))
+				return;
+			try {
+				Biom biom = biomy.get(item.getItemMeta().getCustomModelData());
+				if ((biom.permisja == null || p.hasPermission(biom.permisja)) && Światy.należy(p.getWorld()))
+					zmieńBiom(p.getWorld(), biom.biom);
+			} catch (IndexOutOfBoundsException e) {}
+		}
+		
+		public void zmieńBiom(World świat, Biome biom) {
 			Krotka<Location, Location> rogi = rogi();
 			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> 
 					Func.wykonajNaBlokach(rogi.a, rogi.b, (x, y, z) -> {
@@ -1251,7 +1376,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		Inventory dajInvUlepszenia() {
 			Inventory inv = new Holder(this, TypInv.ULEPSZENIA, 4).getInventory();
-			// TODO info o cenie i parametrach
 			
 			inv.setItem(12, dajItemekInvUlepszenia(
 					"członkowie",
@@ -1271,10 +1395,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					w -> "&aNastępny poziom: &3" + w + "m"
 					));
 			
-			
 			// TODO ulepszanie generatora
-			inv.setItem(14, Func.stwórzItem(Material.DIAMOND_ORE, "&9&lGenerator", "", "&aUlepsza drop z generatorów"));
-			
+			inv.setItem(14, dajItemekInvUlepszenia(
+					"generator",
+					Material.DIAMOND_ORE,
+					"Generator",
+					"&aZwiększa drop z cobla i stone",
+					rzędy -> "&aAktualny poziom: &3",
+					rzędy -> "&aNastępny poziom: &3"));
 			
 			inv.setItem(21, dajItemekInvUlepszenia(
 					"magazyn",
@@ -1305,6 +1433,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			return inv;
 		}
+		
 		private ItemStack dajItemekInvUlepszenia(String nazwaPola, Material mat, String nazwa, String krótkiOpis, Function<Integer, String> akt, Function<Integer, String> następny) {
 			int poziom;
 			try {
@@ -1343,7 +1472,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					Ulepszenia.Ulepszenie[] ulepszenia = (Ulepszenie[]) Ulepszenia.class.getDeclaredField(nazwaPola).get(null);
 					Field pole = Poziomy.class.getDeclaredField(nazwaPola);
 					
-					// TODO obsługa wujątku z indexowaniem gdy poziom jest maksymalny
+					if (pole.getInt(poziomy) >= ulepszenia.length)
+						return;
 					double cena = ulepszenia[pole.getInt(poziomy) + 1].cena;
 					
 					double fundusz = Math.max(0, kasa);
@@ -1367,7 +1497,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					pole.setInt(poziomy, pole.getInt(poziomy) + 1);
 					
 					zapisz();
-
+					
 					if 		(slot == 13) odświeżBorder();
 					else if (slot == 22) odświeżMagazyn();
 					
@@ -1449,6 +1579,90 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 		
+
+		// /is top
+		
+		public static void otwórzTopke(Player p) {
+			p.openInventory(dajInvTop());
+			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+		}
+		private static Inventory invTop;
+		private static Inventory dajInvTop() {
+			if (invTop == null) {
+				invTop = new Holder(null, TypInv.TOP, rzędyTopki).getInventory();
+				odświeżInvTop();
+			}
+			return invTop;
+		}
+		private static BukkitTask taskInvTop;
+		static void odświeżInvTop() {
+			if (taskInvTop != null) {
+				taskInvTop.cancel();
+				taskInvTop = null;
+			}
+			for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
+				TopInfo top = topInfo.get(i);
+				invTop.setItem(slotyTopki.get(i), Func.stwórzItem(Material.PLAYER_HEAD, "&1&l" + top.nick, top.opis));
+			}
+			// TODO zapis topki
+			taskInvTop = Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+				for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
+					TopInfo top = topInfo.get(i);
+					int slot = slotyTopki.get(i);
+					invTop.setItem(slot, Func.ustawGłowe(Func.graczOffline(top.nick), invTop.getItem(slot)));
+				}
+				taskInvTop = null;
+			});
+		}
+		
+		
+		// /is create
+		
+		public static boolean podejmijDecyzjeTworzeniaWyspy(Player p) {
+			Gracz g = Gracz.wczytaj(p);
+			if (g.wyspa != -1)
+				return Func.powiadom(p, prefix + "Masz już wyspę");
+			
+			Func.wykonajDlaNieNull(dajPanelTworzeniaWyspy(p), inv -> {
+				p.openInventory(inv);
+				p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
+			});
+			return false;
+		}
+		static Inventory dajPanelTworzeniaWyspy(Player p) {
+			List<Entry<String, TypWyspy>> lista = Lists.newArrayList();
+			for (Entry<String, TypWyspy> en : TypWyspy.mapa.entrySet())
+				if (en.getValue().istniejąSchematy())
+					lista.add(en);
+			if (lista.isEmpty()) {
+				TypWyspy.wrzućDomyślneSchematicki();
+				lista = Lists.newArrayList(TypWyspy.mapa.entrySet());
+			}
+			if (lista.size() == 1) {
+				utwórzWyspę(p, lista.get(0).getValue());
+				return null;
+			}
+			
+			int potrzebne = Func.potrzebneRzędy(lista.size());
+			Inventory inv = new Holder(null, TypInv.TWORZENIE_WYSPY, potrzebne <= 4 ? potrzebne + 2 : potrzebne).getInventory();
+			
+			for (int i : Func.sloty(TypWyspy.mapa.size(), potrzebne)) {
+				Entry<String, TypWyspy> en = lista.remove(0);
+				inv.setItem((potrzebne <= 4 ? 9 : 0) + i, Func.stwórzItem(en.getValue().ikona, "&9&l" + en.getKey(), en.getValue().opis));
+			}
+			
+			return inv;
+		}
+		static void klikanyPanelTworzeniaWyspy(Player p, ItemStack item) {
+			if (item.isSimilar(Baza.pustySlot))
+				return;
+			utwórzWyspę(p, TypWyspy.zNazwy(item.getItemMeta().getDisplayName().substring(4)));
+		}
+		
+		static void utwórzWyspę(Player p, TypWyspy typ) {
+			p.closeInventory();
+			new Wyspa(p, typ);
+		}
 		
 		
 		// zapis
@@ -1530,11 +1744,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		PERMISJE_MAIN	((wyspa, p, typ, ev) -> wyspa.klikanyInvPermisje(p, ev.getRawSlot())),
 		BORDER			((wyspa, p, typ, ev) -> wyspa.klikanyInvBorder(p, ev.getCurrentItem())),
 		ULEPSZENIA		((wyspa, p, typ, ev) -> wyspa.klikanyInvUlepszenia(p, ev.getRawSlot())),
-		TWORZENIE_WYSPY ((wyspa, p, typ, ev) -> klikanyPanelTworzeniaWyspy(p, ev.getCurrentItem())),
+		TWORZENIE_WYSPY ((wyspa, p, typ, ev) -> Wyspa.klikanyPanelTworzeniaWyspy(p, ev.getCurrentItem())),
 		BANK			((wyspa, p, typ, ev) -> wyspa.klikanyBank(p, ev.getRawSlot(), ev.getClick())),
 		WARPY			((wyspa, p, typ, ev) -> wyspa.klikanyInvWarp(p, ev.getRawSlot(), ev.getCurrentItem())),
 		CZŁONKOWIE		((wyspa, p, typ, ev) -> wyspa.klikanyInvMembers(p, ev.getCurrentItem(), ev.getClick())),
-		DEL_WARP		((wyspa, p, typ, ev) -> wyspa.klikanieInvDelWarp(p, ev.getRawSlot(), ev.getCurrentItem().getType())),
+		DEL_WARP		((wyspa, p, typ, ev) -> wyspa.klikaniyInvDelWarp(p, ev.getRawSlot(), ev.getCurrentItem().getType())),
+		BIOM			((wyspa, p, typ, ev) -> wyspa.klikanyInvBiom(p, ev.getCurrentItem())),
 		PERMISJE		((wyspa, p, typ, ev) -> wyspa.klikanyPermisjeEdytujInv(p, ev.getRawSlot(), ev.getView().getTitle(), ev.getCurrentItem()));
 		private static interface TypInvConsumer {
 			void wykonaj(Wyspa wyspa, Player p, TypInv typ, InventoryClickEvent ev);
@@ -1546,10 +1761,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	static final String permBypass = "skyblock.admin";
 	static SkyBlock inst;
 	public SkyBlock() {
 		super("is");
 		inst = this;
+		Main.dodajPermisje(permBypass);
 	}
 	
 	
@@ -1677,20 +1894,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		);
 	}
 	@EventHandler
-	public void stawianieBloków(BlockPlaceEvent ev) {
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
-			if (!wyspa.permisje(ev.getPlayer()).stawianie)
-				ev.setCancelled(true);
-		});
-	}
-	@EventHandler
-	public void niszczenieBloków(BlockBreakEvent ev) {
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
-			if (!wyspa.permisje(ev.getPlayer()).niszczenie)
-				ev.setCancelled(true);
-		});
-	}
-	@EventHandler
 	public void bicieMobów(EntityDamageByEntityEvent ev) {
 		boolean dp = ev.getDamager() instanceof Player;
 		boolean ep = ev.getEntity() instanceof Player;
@@ -1699,6 +1902,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				if (!wyspa.permisje((Player) (dp ? ev.getDamager() : ev.getEntity())).bicie_mobów)
 					ev.setCancelled(true);
 			});
+	}
+	/// limityBloków / permisje
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void stawianieBloków(BlockPlaceEvent ev) {
+		if (ev.isCancelled()) return;
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+			if (!wyspa.permisje(ev.getPlayer()).stawianie || wyspa.postawiony(ev.getPlayer(), ev.getBlock().getType()))
+				ev.setCancelled(true);
+		});
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void niszczenieBloków(BlockBreakEvent ev) {
+		if (ev.isCancelled()) return;
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+			if (!wyspa.permisje(ev.getPlayer()).niszczenie)
+				ev.setCancelled(true);
+			else
+				wyspa.zniszczony(ev.getBlock().getType());
+		});
 	}
 	
 	/// border
@@ -1722,88 +1944,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
-	// /is top
-	
-	public void otwórzTopke(Player p) {
-		p.openInventory(dajInvTop());
-		p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-	}
-	private Inventory invTop;
-	private Inventory dajInvTop() {
-		if (invTop == null) {
-			invTop = new Holder(null, TypInv.TOP, rzędyTopki).getInventory();
-			odświeżInvTop();
+	@EventHandler
+	public void spadanieDoVoida(EntityDamageEvent ev) {
+		if (ev.getEntity() instanceof Player && ev.getCause() == DamageCause.VOID && Światy.należy(ev.getEntity().getWorld())) {
+			Player p = (Player) ev.getEntity();
+			ev.setCancelled(true);
+			
+			Wyspa wyspa = Wyspa.wczytaj(p.getLocation());
+			if (wyspa == null)
+				wyspa = Wyspa.wczytaj(p);
+			
+			if (wyspa == null)
+				Func.tpSpawn(p);
+			else if (wyspa.członkowie.containsKey(p.getName()))
+				wyspa.tpHome(p);
+			else if (wyspa.prywatna)
+				Func.tpSpawn(p);
+			else
+				wyspa.odwiedz(p);
 		}
-		return invTop;
-	}
-	private BukkitTask taskInvTop;
-	void odświeżInvTop() {
-		if (taskInvTop != null) {
-			taskInvTop.cancel();
-			taskInvTop = null;
-		}
-		for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
-			TopInfo top = topInfo.get(i);
-			invTop.setItem(slotyTopki.get(i), Func.stwórzItem(Material.PLAYER_HEAD, "&1&l" + top.nick, top.opis));
-		}
-		// TODO zapis topki
-		taskInvTop = Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
-			for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
-				TopInfo top = topInfo.get(i);
-				int slot = slotyTopki.get(i);
-				invTop.setItem(slot, Func.ustawGłowe(Func.graczOffline(top.nick), invTop.getItem(slot)));
-			}
-			taskInvTop = null;
-		});
-	}
-	
-	
-	// /is create
-	
-	public boolean podejmijDecyzjeTworzeniaWyspy(Player p) {
-		Gracz g = Gracz.wczytaj(p);
-		if (g.wyspa != -1)
-			return Func.powiadom(p, prefix + "Masz już wyspę");
-		
-		Func.wykonajDlaNieNull(dajPanelTworzeniaWyspy(p), inv -> {
-			p.openInventory(inv);
-			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
-		});
-		return false;
-	}
-	Inventory dajPanelTworzeniaWyspy(Player p) {
-		List<Entry<String, TypWyspy>> lista = Lists.newArrayList();
-		for (Entry<String, TypWyspy> en : TypWyspy.mapa.entrySet())
-			if (en.getValue().istniejąSchematy())
-				lista.add(en);
-		if (lista.isEmpty()) {
-			TypWyspy.wrzućDomyślneSchematicki();
-			lista = Lists.newArrayList(TypWyspy.mapa.entrySet());
-		}
-		if (lista.size() == 1) {
-			utwórzWyspę(p, lista.get(0).getValue());
-			return null;
-		}
-		
-		int potrzebne = Func.potrzebneRzędy(lista.size());
-		Inventory inv = new Holder(null, TypInv.TWORZENIE_WYSPY, potrzebne <= 4 ? potrzebne + 2 : potrzebne).getInventory();
-		
-		for (int i : Func.sloty(TypWyspy.mapa.size(), potrzebne)) {
-			Entry<String, TypWyspy> en = lista.remove(0);
-			inv.setItem((potrzebne <= 4 ? 9 : 0) + i, Func.stwórzItem(en.getValue().ikona, "&9&l" + en.getKey(), en.getValue().opis));
-		}
-		
-		return inv;
-	}
-	static void klikanyPanelTworzeniaWyspy(Player p, ItemStack item) {
-		if (item.isSimilar(Baza.pustySlot))
-			return;
-		utwórzWyspę(p, TypWyspy.zNazwy(item.getItemMeta().getDisplayName().substring(4)));
-	}
-	
-	static void utwórzWyspę(Player p, TypWyspy typ) {
-		p.closeInventory();
-		new Wyspa(p, typ);
 	}
 	
 	
@@ -1913,6 +2072,26 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	static final List<Biom> biomy = Lists.newArrayList();
+	static class Biom {
+		final Biome biom;
+		final String permisja;
+		final ItemStack ikona;
+		private static int _id = 0;
+		private final int id;
+		public Biom(Biome biom, Material ikona, String permisja, List<String> opis) {
+			this.ikona = Func.stwórzItem(ikona, (permisja == null ? "&9" : "&6") + Func.enumToString(biom), opis);
+			this.permisja = permisja;
+			this.biom = biom;
+			this.id = _id++;
+		}
+	
+		@Override
+		public boolean equals(Object obj) {
+			return obj != null && obj instanceof Biom && ((Biom) obj).id == id;
+		}
+	}
+	
 	// Następna pozycja wyspy
 	
 	public static class NastępnaPozycja extends Mapowany {
@@ -1960,6 +2139,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
+		// Dla bezpieczeństwa zamykanie wszystkich inv wysp, poza magazaynem
+		Bukkit.getOnlinePlayers().forEach(p -> Func.wykonajDlaNieNull(p.getOpenInventory().getTopInventory().getHolder(), Holder.class, holder -> {
+			if (holder.typ != TypInv.MAGAZYN)
+				p.closeInventory();
+		}));
+		
 		odstęp 							= Main.ust.wczytajLubDomyślna						("Skyblock.odstęp między wyspami", 150);
 		rzędyTopki 						= Math.max(1, Math.min(6, Main.ust.wczytajInt		("Skyblock.topka.rzędy")));
 		slotyTopki 						= Func.nieNullList((List<Integer>) Main.ust.wczytaj	("Skyblock.topka.sloty"));
@@ -1968,27 +2153,51 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		czasCooldownuLiczeniaWartości 	= Main.ust.wczytajLubDomyślna						("Skyblock.cooldown.liczenie punktów", 60*30);
 		
 		
+		// Biomy
+		biomy.clear();
+		// Biome: ikona permisja opis
+		Func.wykonajDlaNieNull(Main.ust.sekcja("Skyblock.biom"), sekcja -> sekcja.getValues(false).forEach((nazwaBiomu, obj) -> {
+			Biome biom = Func.StringToEnum(Biome.class, nazwaBiomu);
+			Material ikona = Material.GRASS_BLOCK;
+			List<String> opis = null;
+			String perm = ".";
+			
+			String[] części = ((String) obj).split(" ");
+			
+			switch (części.length) {
+			default:opis = Func.tnij(Func.listToString(części, 2), "\\n");
+			case 2: perm  = części[1];
+			case 1: ikona = Func.StringToEnum(Material.class, części[0]);
+			case 0:
+			}
+			perm = perm.equals(".") ? null : Func.permisja(perm);
+			Func.wykonajDlaNieNull(perm, Main::dodajPermisje);
+			
+			biomy.add(new Biom(biom, ikona, perm, Func.koloruj(opis)));
+		}));
+		
+		
 		// Typy wysp
 		TypWyspy.mapa.clear();
 		// <nazwa typu>: scieżkaDoSchematickaOverworld scieżkaDoSchematickaNether dx dy dz biomOverworld biomNether ikona opis
 		Func.wykonajDlaNieNull(Main.ust.sekcja("Skyblock.typy wysp"), sekcja -> sekcja.getValues(false).forEach((typ, obj) -> {
-			List<String> części = Func.tnij((String) obj, " ");
+			String części[] = ((String) obj).split(" ");
 			Biome biomOverworld = Biome.PLAINS;
 			Biome biomNether = Biome.NETHER_WASTES;
 			Material ikona = Material.GRASS_BLOCK;
 			List<String> opis = Lists.newArrayList(new String[]{"&8Zwyczajna wyspa"});
 			double x = 0, y = 0, z = 0;
-			switch (części.size()) {
-			default: opis = Func.tnij(Func.listToString(części, 8), "\\n");
-			case 8: ikona = Material.valueOf(części.get(7).toUpperCase());
-			case 7: biomNether	  = Biome.valueOf(części.get(6).toUpperCase());
-			case 6: biomOverworld = Biome.valueOf(części.get(5).toUpperCase());
-			case 5: z = Func.Double(części.get(4));
-			case 4: y = Func.Double(części.get(3));
-			case 3: x = Func.Double(części.get(2));
+			switch (części.length) {
+			default: opis 		  = Func.tnij(Func.listToString(części, 8), "\\n");
+			case 8: ikona 		  = Material.valueOf(części[7].toUpperCase());
+			case 7: biomNether	  = Biome.valueOf(części[6].toUpperCase());
+			case 6: biomOverworld = Biome.valueOf(części[5].toUpperCase());
+			case 5: z = Func.Double(części[4]);
+			case 4: y = Func.Double(części[3]);
+			case 3: x = Func.Double(części[2]);
 			case 2:
 			}
-			TypWyspy.mapa.put(typ, new TypWyspy(części.get(0), części.get(1), x, y, z, biomOverworld, biomNether, ikona, Func.koloruj(opis)));
+			TypWyspy.mapa.put(typ, new TypWyspy(części[0], części[1], x, y, z, biomOverworld, biomNether, ikona, Func.koloruj(opis)));
 		}));
 		if (TypWyspy.mapa.isEmpty())
 			TypWyspy.wrzućDomyślneSchematicki();
@@ -1999,6 +2208,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Światy.nazwaOverworld = Main.ust.wczytajLubDomyślna("Skyblock.świat.zwykły", "mimiSkyblock");
 		Światy.nazwaNether	  = Main.ust.wczytajLubDomyślna("Skyblock.świat.nether", "mimiSkyblockNether");
 		Func.opóznij(1, this::stwórzŚwiaty);
+		
 		
 		// Border
 		for (Wyspa.Border kolor : Wyspa.Border.values())
@@ -2031,8 +2241,57 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		if (args.length > 1)
+			return null;
+		if (!(sender instanceof Player))
+			return utab(args, "info");
+
+		List<String> lista = Lists.newArrayList();
+		
+		BiConsumer<Boolean, String> bic = (warunek, komenda) -> {
+			if (warunek)
+				lista.add(komenda);
+		};
+		
+		Player p = (Player) sender;
+		Wyspa wyspa = Wyspa.wczytaj(p);
+		
+		boolean pl = true; // TODO dać do wyboru wersje
+		
+		lista.add("info");
+		lista.add(pl ? "odwiedz" : "visit");
+		if (p.hasPermission(permBypass))
+			lista.add("bypass");
+		
+		if (wyspa == null)
+			lista.add(pl ? "stwórz" : "create");
+		else {
+			lista.add(pl ? "dom" : "home");
+			lista.add(pl ? "opuść" : "leave");
+			lista.add(pl ? "warpy" : "warps");
+			Wyspa.Permisje perm = wyspa.permisje(p);
+			bic.accept(perm.dostęp_do_expa_banku || perm.dostęp_do_kasy_banku || perm.dostęp_do_magazynu, "bank");
+			bic.accept(perm.wyrzucaniec_członków || perm.wyrzucanie_odwiedzających, pl ? "wyrzuć" : "kick");
+			bic.accept(perm.edytowanie_permisji,					pl ? "uprawnienia"	 : "permissions");
+			bic.accept(perm.edytowanie_hierarhi_grup_permisji,		pl ? "edytujpermisje": "permsedit");
+			bic.accept(perm.dostęp_do_magazynu,						pl ? "magazyn"		 : "storage");
+			bic.accept(perm.ustawienie_home_wyspy,					pl ? "ustawdom"		 : "sethome");
+			bic.accept(perm.dodawanie_i_usuwanie_warpów,			pl ? "dodajwarp"	 : "addwarp");
+			bic.accept(perm.dodawanie_i_usuwanie_warpów,			pl ? "usuńwarp"		 : "delwarp");
+			bic.accept(perm.zmiana_prywatności,						pl ? "prywatna"		 : "private");
+			bic.accept(perm.awansowanie_i_degradowanie_członków,	pl ? "członkowie"	 : "members");
+			bic.accept(perm.zmiana_prywatności,						pl ? "publiczna"	 : "public");
+			bic.accept(perm.zapraszanie_członków,					pl ? "zaproś"		 : "invite");
+			bic.accept(perm.liczenie_wartości_wyspy,				pl ? "wartość"		 : "value");
+			bic.accept(perm.zmiana_biomu,							pl ? "biom"			 : "biome");
+			bic.accept(perm.zmiana_nazwy_wyspy,						pl ? "nazwa"		 : "name");
+			if (perm.grupa.equals("właściciel")) {
+				lista.add(pl ? "przekaż" : "transfer");
+				lista.add(pl ? "usuń" : "delete");
+			}
+		}
+		
+		return utab(args, lista);
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -2059,8 +2318,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Wyspa.wczytaj(g2).odwiedz(p);
 			return true;
 		case "bypass":
+			if (!sender.hasPermission(permBypass))
+				return Func.powiadom(sender, prefix + "Nie masz uprawnień do tego");
 			ustawBypass(p, !maBypass(p));
 			return Func.powiadom(sender, prefix + (maBypass(p) ? "w" : "wy") + "łączono bypass");
+		case "info":
+		case "informacje":
+			if (args.length >= 1)
+				p = Bukkit.getPlayer(args[0]);
+			if (p == null)
+				return Func.powiadom(sender, prefix + "/is info <nick>");
+			Wyspa wyspa = Wyspa.wczytaj(p);
+			if (wyspa == null)
+				return Func.powiadom(sender, prefix + Func.msg("%s nie ma wyspy", p.getDisplayName()));
+			wyspa.info(sender);
+			return true;
+		case "create":
+		case "stwórz":
+			Wyspa.podejmijDecyzjeTworzeniaWyspy(p);
+			break;
 		}
 		
 		
@@ -2147,9 +2423,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			break;
 		case "biom":
 		case "biome":
-			if (args.length < 2)
-				return Func.powiadom(sender, prefix + "/is biome biom");
-			wyspa.zmieńBiom(p, args[1]);
+			wyspa.otwórzInvBiom(p);
 			break;
 		case "addwarp":
 		case "dodajwarp":
@@ -2170,9 +2444,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return Func.powiadom(sender, prefix + "/is nazwa <nazwa>");
 			wyspa.zmieńNazwe(p, args[1]);
 			break;
-		case "create":
-		case "stwórz":
-			podejmijDecyzjeTworzeniaWyspy(p);
+		case "transfer":
+		case "przekaż":
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is przekaż <nick>");
+			wyspa.transfer(p, args[1]);
 			break;
 		}
 		return true;

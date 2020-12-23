@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -128,6 +130,35 @@ public abstract class Func {
 	
 	public static long czasSekundy() {
 		return System.currentTimeMillis() / 1000;
+	}
+	public static String data(String format) {
+		return data(System.currentTimeMillis(), format);
+	}
+	public static String data() {
+		return data(System.currentTimeMillis());
+	}
+	public static String data(long miliSekundy) {
+		return data(miliSekundy, "MMM dd,yyyy HH:mm");
+	}
+	public static String data(long miliSekundy, String format) {
+		return new SimpleDateFormat(format).format(new Date(miliSekundy));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <E> E StringToEnum(Class<E> clazz, String str) {
+		try {
+			Method met = clazz.getMethod("valueOf", String.class);
+			str = str.replace(' ', '_');
+			try {
+				return (E) met.invoke(null, str);
+			} catch (Throwable e) {}
+			return (E) met.invoke(null, str.toUpperCase());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} catch (Error e) {
+			throw e;
+		}
 	}
 	
 	public static String enumToString(Enum<?> en) {
@@ -902,6 +933,9 @@ public abstract class Func {
 	}
 	
 	public static boolean zawiera(Location loc, Location róg1, Location róg2) {
+		return zawiera(true, true, true, loc, róg1, róg2);
+	}
+	public static boolean zawiera(boolean x, boolean y, boolean z, Location loc, Location róg1, Location róg2) {
 		Predicate<Function<Location, Double>> mieściSię = func -> {
 			double co = func.apply(loc);
 			double x1 = func.apply(róg1);
@@ -909,10 +943,9 @@ public abstract class Func {
 			return  (co >= x1 && co <= x2) || 
 					(co <= x1 && co >= x2);
 		};
-		return  mieściSię.test(Location::getX) &&
-				mieściSię.test(Location::getY) &&
-				mieściSię.test(Location::getZ);
-		
+		return  (!x || mieściSię.test(Location::getX)) &&
+				(!y || mieściSię.test(Location::getY)) &&
+				(!z || mieściSię.test(Location::getZ));
 	}
 	
 	public static String czas(int sekundy) {
