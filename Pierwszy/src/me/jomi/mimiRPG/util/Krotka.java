@@ -1,5 +1,9 @@
 package me.jomi.mimiRPG.util;
 
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.function.Consumer;
+
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 
@@ -14,13 +18,47 @@ public class Krotka<T1, T2> extends Mapowany {
 		this.b = b;
 	}
 
-	public String toString() {
-		return "§r(" + a.toString() + "§r, " + b.toString() + "§r)";
+	@Override
+	public final String toString() {
+		StringBuilder strB = new StringBuilder("§r(");
+		Consumer<Object> str = obj -> strB.append(obj == null ? "null" : obj.toString());
+		Object[] wartości = dajWartości();
+		
+		for (int i=0; i < wartości.length - 1; i++) {
+			str.accept(wartości[i]);
+			strB.append("§r, ");
+		}
+		str.accept(wartości[wartości.length - 1]);
+		return strB.append("§r)").toString();
 	}
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Krotka))
+	@Override
+	@SuppressWarnings("rawtypes")
+	public final boolean equals(Object obj) {
+		if (obj == null)
 			return false;
-		Krotka<?, ?> k2 = (Krotka<?, ?>) obj;
-		return a.equals(k2.a) && b.equals(k2.b);
+		if (!(obj.getClass().getName().equals(this.getClass().getName())))
+			return false;
+		
+		Object[] w1 = dajWartości();
+		Object[] w2 = ((Krotka) obj).dajWartości();
+		
+		for (int i=0; i < w1.length; i++)
+			if (!(w1[i].equals(w2[i])))
+				return false;
+		return true;
+	}
+	
+	protected final Object[] dajWartości() {
+		List<Field> pola = Func.głębokiSkanKlasy(this.getClass());
+		Object[] wartości = new Object[pola.size()];
+		
+		try {
+			for (int i=0; i < wartości.length; i++)
+				wartości[i] = pola.get(i).get(this);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		
+		return wartości;
 	}
 }

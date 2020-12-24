@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
@@ -37,6 +38,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -45,12 +47,14 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -73,18 +77,18 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.Ulepszenia.Ulepszenie;
+import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is
 //TODO /is booster
 //TODO /is drop // generator // BlockFromToEvent
-//TODO tabcompleter do wyboru angielski/polski
 //TODO przycisk back w menu wyspy
-//TODO limity warpów i grup permisji, aby nie przekroczyły 6*9
 //TODO zablokować przepychanie bloków pistonami przez barriery // BlockPistonExtendEvent
 
 @Moduł
@@ -133,6 +137,33 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public static Ulepszenie[] wielkość;
 		public static Ulepszenie[] magazyn;
 		public static Ulepszenie[] warpy;
+		
+		private static void sprawdzSyntax(String nazwaPola, int max, int min, String prefixInfo) throws Throwable {
+			Ulepszenie[] upgrs = (Ulepszenie[]) Ulepszenia.class.getDeclaredField(nazwaPola).get(null);
+			for (int i=0; i < upgrs.length; i++) {
+				Ulepszenie upgr = upgrs[i];
+				if (upgr.wartość > max) {
+					Main.warn(prefixInfo + " nie może przekroczyć " + max + ", w ustawienia.yml w ulepszeniach skyblock.ulepszenia." + nazwaPola + " zostało podane " + upgr.wartość);
+					upgrs[i] = new Ulepszenie(max, upgr.cena);
+				} else if (upgr.wartość < min) {
+					Main.warn(prefixInfo + "nie może być mniejsza niż " + min + ", w ustawienia.yml w ulepszeniach skyblock.ulepszenia." + nazwaPola + " zostało podane " + upgr.wartość);
+					upgrs[i] = new Ulepszenie(min, upgr.cena);
+				}
+			}
+		}
+		static void sprawdzSyntax() {
+			try {
+				int mxWarpy = 6*9 - (Wyspa.Permisje.class.getDeclaredFields().length - 2);
+				int gen = SkyBlock.generator.size();
+				sprawdzSyntax("wielkość",	odstęp,	1, "Wielkość wsypy");
+				sprawdzSyntax("warpy",		mxWarpy,0, "Ilość warpów wyspy");
+				sprawdzSyntax("magazyn",	6,		1, "Wielkość magazynu wsypy");
+				sprawdzSyntax("generator",	gen,	1, "Poziom generatora wyspy");
+				sprawdzSyntax("członkowie",	6*9,	1, "Liczba członków na wsypie");
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	public static class Wyspa extends Mapowany {
 		public Wyspa() {}// Konstruktor dla mapowanego
@@ -181,7 +212,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			boolean edytowanie_permisji; // v
 			boolean awansowanie_i_degradowanie_członków; // v
 			
-			// TODO zamykać panel przy zabieraniu permisji
 			boolean zmiana_dropu; // TODO możliwość wyłączenia poszczzególnego dropu z cobla, w tym cobla
 			
 			boolean zmiana_nazwy_wyspy; // v
@@ -199,10 +229,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			@Mapowane Location loc;
 		}
 		public static class Poziomy extends Mapowany {
-			// TODO syntax w configu przy ulepszaniu
 			@Mapowane int limityBloków; // v // limityBloków = limit hoperów | limityBloków / 2 = limit spawnerów
 			@Mapowane int członkowie; // v // wartość - maksymalna ilość osób na wyspe  // Przy dodawaniu nowego pamiętać aby dodać też w klasie Ulepszenia
-			@Mapowane int generator; // TODO generator // TODO dodać lvl generatora pod /is info
+			@Mapowane int generator; // // - SkyBlock.generator.get(this.generator - 1) // TODO dodać lvl generatora pod /is info
 			@Mapowane int wielkość; // v // wartość - długość boku wyspy
 			@Mapowane int magazyn; // v // wartość - ilość rządków magazynu
 			@Mapowane int warpy; // v // wartość - maksymalna ilość warpów
@@ -294,15 +323,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
  		static Config getConfig(int id) {
 			return new Config("configi/Wyspy/" + id);
 		}
-
-
+ 		
+ 		
 		@Mapowane HashMap<String, String> członkowie = new HashMap<>(); // nick: nazwaGrupyPermisji
 		@Mapowane Poziomy poziomy = Func.utwórz(Poziomy.class);
 		@Mapowane long dataUtworzenia;
 		@Mapowane Location locŚrodek;
 		@Mapowane String typ;
 		@Mapowane int id;
-
+		
 		
 		private void usuń() {
 			configData.ustaw("wyspy loc." + dolnyRóg(locŚrodek), null);
@@ -336,6 +365,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Krotka<Location, Location> rogi = rogi();
 			return Func.zawiera(true, false, true, loc, rogi.a, rogi.b);
 		}
+		
+		
+		// Generator
+		public void generujRude(BlockFormEvent ev, boolean cobl) {
+			MonoKrotka<MonoKrotka<Ciąg<Material>>> _krotka = SkyBlock.generator.get(Ulepszenia.generator[poziomy.generator].wartość - 1);
+			MonoKrotka<Ciąg<Material>> krotka = ev.getBlock().getWorld().getName().equals(Światy.nazwaOverworld) ? _krotka.a : _krotka.b;
+			Ciąg<Material> gen = cobl ? krotka.a : krotka.b;
+			
+			ev.getNewState().setType(gen.losuj());
+		}	
 		
 		
 		// Limity Bloków
@@ -1044,8 +1083,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		
 		// /is value
-
-		@Mapowane int pkt;
+		
+		@Mapowane double pkt;
 		int ostatnieLiczenie = 0;
 		public boolean wartość(Player p) {
 			if (!permisje(p).liczenie_wartości_wyspy)
@@ -1070,8 +1109,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 			
 		}
-		public int policzWartość() {
-			int ile = 0;
+		public double policzWartość() {
+			double ile = 0;
 			Set<Material> omijane = Sets.newConcurrentHashSet();
 			
 			Krotka<Location, Location> rogi = rogi();
@@ -1080,7 +1119,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				Material mat = blok.getType();
 				if (omijane.contains(mat))
 					continue;
-				int pkt = punktacja.get(mat);
+				double pkt = punktacja.get(mat);
 				if (pkt == 0)
 					omijane.add(mat);
 				else
@@ -1736,7 +1775,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return false;
 			
 			return obj instanceof Wyspa && ((Wyspa) obj).id == this.id;
-		}		
+		}	
 	}
 	static enum TypInv {
 		TOP				((wyspa, p, typ, ev) -> {}),
@@ -1761,6 +1800,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	
 	static final String permBypass = "skyblock.admin";
 	static SkyBlock inst;
 	public SkyBlock() {
@@ -1768,6 +1808,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		inst = this;
 		Main.dodajPermisje(permBypass);
 	}
+	
 	
 	
 	// Generowanie pustych Światów
@@ -1836,6 +1877,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
+	
 	// bypass
 	
 	private static final Set<String> zBypassem = Sets.newConcurrentHashSet();
@@ -1846,6 +1888,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Consumer<String> cons = (stan ? zBypassem::add : zBypassem::remove);
 		cons.accept(p.getName());
 	}
+	
 	
 	
 	// Event Handler
@@ -1943,7 +1986,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getRespawnLocation()), wyspa -> wyspa.ustawBorder(ev.getPlayer()));
 	}
 	
-	
+	/// spadanie do
 	@EventHandler
 	public void spadanieDoVoida(EntityDamageEvent ev) {
 		if (ev.getEntity() instanceof Player && ev.getCause() == DamageCause.VOID && Światy.należy(ev.getEntity().getWorld())) {
@@ -1965,12 +2008,51 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	/// generator
+	@EventHandler(priority = EventPriority.HIGH)
+	public void generatorCoblaIStone(BlockFormEvent ev) {
+		if (generator.isEmpty())
+			return;
+		Boolean cobl = ev.getBlock().getType() == Material.LAVA  && ev.getNewState().getType() == Material.COBBLESTONE ? true :
+					   ev.getBlock().getType() == Material.WATER && ev.getNewState().getType() == Material.STONE ? false : null;
+		if (cobl != null)
+			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> wyspa.generujRude(ev, cobl));
+	}
+	
+	/// woda w netherze
+	@EventHandler(priority = EventPriority.HIGH)
+	public void stwianieWody(PlayerBucketEmptyEvent ev) {
+		if (Światy.dozwolonyNether && ev.getBlock().getWorld().getName().equals(Światy.nazwaNether)) {
+			Block blok = ev.getBlock();
+			Material mat = blok.getType();
+			
+			Consumer<Block> wykonaj = b -> b.setType(Material.WATER);
+			Consumer<Block> undo = b -> b.setType(mat);
+			
+			if (!ev.getPlayer().isSneaking() && blok.getBlockData().getAsString().contains("waterlogged")) {
+				String data = blok.getBlockData().getAsString();
+				wykonaj = b -> b.setBlockData(Bukkit.createBlockData(data.replace("waterlogged=false", "waterlogged=true")));
+				undo	= b -> b.setBlockData(Bukkit.createBlockData(data));
+			} else if (blok.getType().isSolid())
+				blok = blok.getRelative(ev.getBlockFace());
+			
+			wykonaj.accept(blok);
+			ItemStack item = ev.getItemStack();
+			ItemStack itemWRęce = ev.getPlayer().getInventory().getItemInMainHand();
+			BlockPlaceEvent nowyEvent = new BlockPlaceEvent(blok, blok.getState(), blok.getRelative(ev.getBlockFace().getOppositeFace()), item,
+					ev.getPlayer(), false, itemWRęce.equals(item) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+			Bukkit.getPluginManager().callEvent(nowyEvent);
+			if (nowyEvent.isCancelled())
+				undo.accept(blok);
+		}
+	}
+	
 	
 	// I/O
 	
 	static final Config configData = new Config("configi/SkyBlock Data");
 	
-	static final HashMap<Material, Integer> punktacja = new HashMap<>(); // TODO wczytywać
+	static final HashMap<Material, Double> punktacja = new HashMap<>(); // TODO wczytywać
 	
 	static class Światy {
 		static World overworld;
@@ -1986,12 +2068,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return nazwaŚwiata.equals(nazwaOverworld) || (dozwolonyNether && nazwaŚwiata.equals(nazwaNether));
 		}
 	}
+	// [ ((overworld cobl, overworld stone), (nether cobl, nether stone)),  ][lvl - 1]
+	static final List<MonoKrotka<MonoKrotka<Ciąg<Material>>>> generator = Lists.newArrayList();
+	static int czasCooldownuLiczeniaWartości;
+	static List<Integer> slotyTopki;
 	static List<TopInfo> topInfo;// TODO przechowuje troche więcej niż potrzeba powiedzmy 1.5 raza
 	static int rzędyTopki = 3;
-	static List<Integer> slotyTopki;
-	static int yWysp;
-	static int czasCooldownuLiczeniaWartości;
 	static int odstęp;
+	static int yWysp;
 	// typ: TypWyspy
 	static class TypWyspy {
 		private static final HashMap<String, TypWyspy> mapa = new HashMap<>();
@@ -2092,6 +2176,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	
+	
 	// Następna pozycja wyspy
 	
 	public static class NastępnaPozycja extends Mapowany {
@@ -2134,6 +2220,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
+	
 	// Override
 	
 	@Override
@@ -2152,6 +2239,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		yWysp 							= Main.ust.wczytajLubDomyślna						("Skyblock.y wysp", 100);
 		czasCooldownuLiczeniaWartości 	= Main.ust.wczytajLubDomyślna						("Skyblock.cooldown.liczenie punktów", 60*30);
 		
+		// Generator
+		generator.clear();
+		Func.wykonajDlaNieNull((List<Map<String, Map<String, Integer>>>) Main.ust.wczytaj("Skyblock.generator"), lista -> lista.forEach(głównaMapa -> {
+			Function<String, Ciąg<Material>> cons = klucz -> {
+				Map<String, Integer> mapa = głównaMapa.get(klucz);
+				
+				Ciąg<Material> ciąg = new Ciąg<>();
+				if (mapa != null);
+					mapa.forEach((typ, szansa) -> ciąg.dodaj(Func.StringToEnum(Material.class, typ), szansa));
+				
+				return ciąg;
+			};
+			
+			
+			generator.add(new MonoKrotka<>(
+					new MonoKrotka<>(cons.apply("overworld cobl"),	cons.apply("overworld stone")),
+					new MonoKrotka<>(cons.apply("nether cobl"),		cons.apply("nether stone"))
+					));
+		}));
 		
 		// Biomy
 		biomy.clear();
@@ -2232,6 +2338,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowe ustawienia.yml \"Skyblock.ulepszenia." + field.getName() + "\"");
 			}
+		Ulepszenia.sprawdzSyntax();
 	}
 	@Override
 	public Krotka<String, Object> raport() {
@@ -2324,8 +2431,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return Func.powiadom(sender, prefix + (maBypass(p) ? "w" : "wy") + "łączono bypass");
 		case "info":
 		case "informacje":
-			if (args.length >= 1)
-				p = Bukkit.getPlayer(args[0]);
+			if (args.length >= 2)
+				p = Bukkit.getPlayer(args[1]);
 			if (p == null)
 				return Func.powiadom(sender, prefix + "/is info <nick>");
 			Wyspa wyspa = Wyspa.wczytaj(p);
@@ -2389,9 +2496,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			break;
 		case "invite":
 		case "zaproś":
-			p2 = Bukkit.getPlayer(args[0]);
+			if (args.length < 2)
+				return Func.powiadom(sender, prefix + "/is zaproś <nick>");
+			p2 = Bukkit.getPlayer(args[1]);
 			if (p2 == null)
-				return Func.powiadom(sender, prefix + Func.msg("%s nie jest online", args[0]));
+				return Func.powiadom(sender, prefix + Func.msg("%s nie jest online", args[1]));
 			wyspa.zaproś(p, p2);
 			break;
 		case "leave":

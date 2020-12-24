@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1307,6 +1308,29 @@ public abstract class Func {
 		return _lista;
 	}
 
+	
+	public static <T1, T2> List<Krotka<T1, T2>> zip(Collection<T1> c1, Collection<T2> c2) {
+		Iterator<T1> it1 = c1.iterator();
+		Iterator<T2> it2 = c2.iterator();
+		
+		List<Krotka<T1, T2>> lista = Lists.newArrayList();
+		
+		while (it1.hasNext() && it2.hasNext())
+			lista.add(new Krotka<>(it1.next(), it2.next()));
+		
+		return lista;
+	}
+	public static <T1, T2> void zip(Collection<T1> c1, Collection<T2> c2, BiConsumer<T1, T2> func) {
+		zip(c1, c2).forEach(k -> func.accept(k.a, k.b));
+	}
+	public static List<?> zip(Collection<?>... c) {
+		List<?> lista = zip(c[0], c[1]);
+		for (int i = 2; i < c.length; i++)
+			lista = zip(c[i], lista);
+		return lista;
+	}
+	
+	
 	static class IterableBloków implements Iterable<Block> {
 		Iterator<Block> iterator;
 		IterableBloków(Iterator<Block> iterator) {
