@@ -77,7 +77,7 @@ public class EdytujItem extends Komenda {
 		static void lore(Player p, ItemMeta meta, String akt) {
 			Napis n = new Napis("\n\n\n\n\n\n\n\n§5§lLore\n");
 		
-			List<String> lore = Func.nieNullList(meta.getLore());
+			List<String> lore = Func.nieNull(meta.getLore());
 			if (!lore.isEmpty()) {
 				for (int i=0; i<lore.size(); i++)
 					n.dodaj(new Napis(
@@ -215,7 +215,7 @@ public class EdytujItem extends Komenda {
 				return;
 			case "lore":
 				if (args.length != 1) {
-					List<String> lore = Func.nieNullList(meta.getLore());
+					List<String> lore = Func.nieNull(meta.getLore());
 					switch(args[1]) {
 					case "dodaj":
 						lore.add(Func.koloruj(Func.listToString(args, 3)));

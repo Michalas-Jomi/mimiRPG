@@ -37,6 +37,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -470,7 +471,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		
 		void oznacz(Player p) {
-			List<Serce> lista = Func.nieNullList(arena.oznaczeni.get(p.getName()));
+			List<Serce> lista = Func.nieNull(arena.oznaczeni.get(p.getName()));
 			lista.add(this);
 			arena.oznaczeni.put(p.getName(), lista);
 		}

@@ -25,6 +25,20 @@ public class Cooldown {
 		if (w) mapa.remove(czemu);
 		return w;
 	}
+	
+	public boolean minąłToUstaw(String czemu) {
+		return minąłMiliSekToUstaw(czemu, domyślny);
+	}
+	public boolean minąłToUstaw(String czemu, int sekundy) {
+		return minąłMiliSekToUstaw(czemu, sekundy*1000);
+	}
+	public boolean minąłMiliSekToUstaw(String czemu, int miliSekundy) {
+		boolean w = ileJeszczeMiliSek(czemu) <= 0;
+		if (w) ustaw(czemu);
+		return w;
+	}
+	
+	
 
 	
 	public int ileJeszcze(String czemu) {
@@ -57,6 +71,7 @@ public class Cooldown {
 	public String czas(String czemu) {
 		return Func.czas(ileJeszcze(czemu));
 	}
+	@Override
 	public String toString() {
 		return "Cooldown(" + (domyślny / 1000) + ")";
 	}

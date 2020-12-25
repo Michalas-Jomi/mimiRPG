@@ -893,13 +893,10 @@ public abstract class Func {
 		return lista;
 	}
 
-	public static String nieNullStr(String str) {
+	public static String nieNull(String str) {
 		return str == null ? "" : str;
 	}
-	public static Object nieNullList(Object lista) {
-		return lista != null ? lista : Lists.newArrayList();
-	}
-	public static <T> List<T> nieNullList(List<T> lista) {
+	public static <T> List<T> nieNull(List<T> lista) {
 		return lista != null ? lista : Lists.newArrayList();
 	}
 	
@@ -1173,40 +1170,34 @@ public abstract class Func {
 	}
 
 	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func) {
-		if (obj != null)
-			func.accept(obj);
-	}
-	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func, Runnable dlaObjNull) {
-		if (obj != null)
-			func.accept(obj);
-		else
-			dlaObjNull.run();
+		wykonajDlaNieNull(obj, o -> true, func);
 	}
 	@SuppressWarnings("unchecked")
 	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func) {
-		if (obj != null && clazz.isInstance(obj))
-			func.accept((T) obj);
-	}
-	@SuppressWarnings("unchecked")
-	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func, Runnable dlaObjNull) {
-		if (obj != null && clazz.isInstance(obj))
-			func.accept((T) obj);
-		else
-			dlaObjNull.run();
+		if (clazz.isInstance(obj))
+			wykonajDlaNieNull((T) obj, func);
 	}
 	public static <T> void wykonajDlaNieNull(T obj, Predicate<T> warunek, Consumer<T> func) {
-		if (obj != null && warunek.test(obj))
-			func.accept(obj);
+		wykonajDlaNieNull(obj, warunek, func, null);
 	}
 	@SuppressWarnings("unchecked")
 	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Predicate<T> warunek, Consumer<T> func) {
-		if (obj != null && clazz.isInstance(obj) && warunek.test((T) obj))
-			func.accept((T) obj);
+		if (clazz.isInstance(obj))
+			wykonajDlaNieNull((T) obj, warunek, func);
 	}
-	public static <T, V> V zwrotDlaNieNull(T obj, Function<T, V> func) {
-		if (obj != null)
-			return func.apply(obj);
-		return null;
+	@SuppressWarnings("unchecked")
+	public static <T> void wykonajDlaNieNull(Object obj, Class<T> clazz, Consumer<T> func, Runnable dlaObjNull) {
+		if (clazz.isInstance(obj))
+			wykonajDlaNieNull((T) obj, func, dlaObjNull);
+	}
+	public static <T> void wykonajDlaNieNull(T obj, Consumer<T> func, Runnable dlaObjNull) {
+		wykonajDlaNieNull(obj, o -> true, func, dlaObjNull);
+	}
+	public static <T> void wykonajDlaNieNull(T obj, Predicate<T> warunek, Consumer<T> func, Runnable dlaObjNull) {
+		if (obj != null && warunek.test(obj))
+			func.accept(obj);
+		else if (dlaObjNull != null)
+			dlaObjNull.run();
 	}
 	
 	public static void multiTry(Class<? extends Throwable> error, Runnable... funkcje) {
@@ -1299,6 +1290,10 @@ public abstract class Func {
 			_lista.add(func.apply(el));
 		return _lista;
 	}
+	public static <T1, T2> List<T2> wykonajWszystkim(T1[] lista, Function<T1, T2> func) {
+		return wykonajWszystkim(Lists.newArrayList(lista), func);
+	}
+	
 	public static <T> List<T> przefiltruj(T[] lista, Predicate<T> warunek) {
 		return przefiltruj(Lists.newArrayList(lista), warunek);
 	}

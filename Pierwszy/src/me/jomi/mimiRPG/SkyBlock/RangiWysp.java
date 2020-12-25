@@ -85,7 +85,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	
 	@Override
 	public void przeładuj() {
-		String prefix = Func.nieNullStr(Main.ust.wczytajStr("RangiWysp.prefix"));
+		String prefix = Func.nieNull(Main.ust.wczytajStr("RangiWysp.prefix"));
 		rangi.clear();
 		Double ost = null;
 		boolean info = true;

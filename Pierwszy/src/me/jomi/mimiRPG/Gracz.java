@@ -19,7 +19,14 @@ import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 
 public class Gracz extends Mapowany {
+	public static enum Język {
+		POLSKI,
+		ANGIELSKI;
+	}
 	@Mapowane public String nick;
+	
+	@Mapowane public Język język = Język.ANGIELSKI;
+	
 	@Mapowane public int dropPoŚmierci;
 	@Mapowane public String kolorPisania = "";
 	@Mapowane public List<String> przyjaciele = Lists.newArrayList();

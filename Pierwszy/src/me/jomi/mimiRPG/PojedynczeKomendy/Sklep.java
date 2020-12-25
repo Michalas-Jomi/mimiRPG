@@ -107,7 +107,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 					};
 					
 					ItemMeta meta = item.getItemMeta();
-					List<String> lore = (List<String>) Func.nieNullList(meta.getLore());
+					List<String> lore = (List<String>) Func.nieNull(meta.getLore());
 					lore.add(0, cena.apply("sprzedarzy", "LPM"));
 					lore.add(0, cena.apply("kupna", "PPM"));
 					meta.setLore(lore);

@@ -33,7 +33,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.projectiles.ProjectileSource;
+
 import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
@@ -240,6 +242,7 @@ public class Paintball extends MinigraDrużynowa {
 				p.getEquipment().setChestplate(item);
 			}
 			
+			@Override
 			public String toString() {
 				return kolor.kolorChat() + nazwa;
 			}
@@ -301,6 +304,7 @@ public class Paintball extends MinigraDrużynowa {
 			
 		}
 		
+		@Override
 		void sprawdzTopke(Player p) {
 			int pkt = policzPunkty();
 			
@@ -429,6 +433,7 @@ public class Paintball extends MinigraDrużynowa {
 		if (arena != null)
 			ev.setRespawnLocation(arena.respawn(p));
 	}
+	@Override
 	@EventHandler
 	public void opuszczenieGry(PlayerQuitEvent ev) {
 		Player p = ev.getPlayer();
@@ -463,9 +468,10 @@ public class Paintball extends MinigraDrużynowa {
 		if (rangi == null)
 			rangi = Func.utwórz(Statystyki.Rangi.class);
 		
-		topka = (List<Krotka<String, Integer>>) Func.nieNullList(configDane.wczytaj("Topka.Paintball"));
+		topka = (List<Krotka<String, Integer>>) Func.nieNull((List<?>) configDane.wczytaj("Topka.Paintball"));
 	}
 	
+	@Override
 	public boolean onCommand(CommandSender sender, String[] args) {
 		if (args.length < 2) return staty(sender, args);
 		

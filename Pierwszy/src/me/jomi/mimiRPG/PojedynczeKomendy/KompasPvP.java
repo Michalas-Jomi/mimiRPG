@@ -79,7 +79,7 @@ public class KompasPvP implements Zegar, Listener {
 			return;
 		Func.wykonajDlaNieNull(ev.getItem(), item -> {
 			if (item.getType().equals(Material.COMPASS) && getOdświeżanie() != -1) {
-				Matcher matcher = Pattern.compile("§6Kompas §aużyć:§e (\\d+)").matcher(Func.nieNullStr(item.getItemMeta().getDisplayName()));
+				Matcher matcher = Pattern.compile("§6Kompas §aużyć:§e (\\d+)").matcher(Func.nieNull(item.getItemMeta().getDisplayName()));
 				int ile = matcher.find() ? Func.Int(matcher.group(1)) : getOdświeżanie();
 				if (ile <= 0)
 					ev.getPlayer().sendMessage(prefix + "Nie możesz już użyć tego kompasu");

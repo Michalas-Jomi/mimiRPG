@@ -48,7 +48,7 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 	@SuppressWarnings("unchecked")
 	List<Location> dajRespy() {
 		try {
-			return Func.nieNullList((List<Location>) Baza.config.wczytaj(scieżka));
+			return Func.nieNull((List<Location>) Baza.config.wczytaj(scieżka));
 		} catch (Exception e) {
 			return Lists.newArrayList();
 		}

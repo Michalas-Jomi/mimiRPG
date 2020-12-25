@@ -143,7 +143,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 		if (sekcja == null || event != null) return;
 		
 		event = new Event(
-				Config.itemy(Func.nieNullList(sekcja.getList("itemy"))),
+				Config.itemy(Func.nieNull(sekcja.getList("itemy"))),
 				RodzajEventu.valueOf(sekcja.getString("rodzaj")),
 				sekcja.getLocation("róg mety 1"),
 				sekcja.getLocation("róg mety 2"),
@@ -407,7 +407,7 @@ class EventEdytor {
 			loc_meta1 = sekcja.getLocation("róg mety 1");
 			loc_meta2 = sekcja.getLocation("róg mety 2");
 			rodzaj = RodzajEventu.valueOf(sekcja.getString("rodzaj"));
-			itemy = Config.itemy(Func.nieNullList(sekcja.getList("itemy")));
+			itemy = Config.itemy(Func.nieNull(sekcja.getList("itemy")));
 			gamemode  = GameMode.valueOf(sekcja.getString("gamemode").toUpperCase());
 			
 		}

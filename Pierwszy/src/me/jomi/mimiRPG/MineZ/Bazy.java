@@ -1119,7 +1119,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Napis n = new Napis();
 		
 		Gracz g = Gracz.wczytaj(p.getName());
-		if (Func.nieNullStr(g.gildia).isEmpty()) {
+		if (Func.nieNull(g.gildia).isEmpty()) {
 			n.dodaj(Gildia.prefix);
 			n.dodaj(new Napis("§a[stwórz gildie]\n", "§bWymagana nazwa gildi", "/gildia stwórz ", Action.SUGGEST_COMMAND));
 		} else {
