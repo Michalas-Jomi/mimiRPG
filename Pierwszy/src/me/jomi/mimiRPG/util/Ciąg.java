@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.util;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -23,7 +24,7 @@ public class Ciąg<T> extends Mapowany {
 			przetwórz();
 	}
 	
-	void przetwórz() {
+	private void przetwórz() {
 		List<Krotka<Integer, T>> nowa = Lists.newArrayList(lista.iterator());
 		this.lista = Lists.newArrayList();
 		for (Krotka<Integer, T> krotka : nowa)
@@ -38,6 +39,21 @@ public class Ciąg<T> extends Mapowany {
 		return lista.size();
 	}
 	
+	public List<T> klucze() {
+		List<T> lista = Lists.newArrayList();
+		
+		this.lista.forEach(k -> lista.add(k.b));
+		
+		return lista;
+	}
+	
+	public HashMap<T, Double> szanse() {
+		HashMap<T, Double> mapa = new HashMap<>();
+		
+		lista.forEach(k -> mapa.put(k.b, mapa.getOrDefault(k.b, 0.0) + (k.a / ((double) suma))));
+		
+		return mapa;
+	}
 	
 	public void dodaj(T co, int szansa) {
 		lista.add(new Krotka<>(szansa + suma, co));
@@ -45,7 +61,7 @@ public class Ciąg<T> extends Mapowany {
 	}
 
 	public T znajdz(int numer) {
-		return Func.wyszukajBinarnieP(numer, lista, k -> (double)(int)k.a).b;
+		return Func.wyszukajBinarnieP(numer, lista, k -> (double)k.a).b;
 	}
 	public T losuj() {
 		return znajdz(random.nextInt(suma) + 1);

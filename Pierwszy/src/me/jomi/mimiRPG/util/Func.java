@@ -1087,6 +1087,8 @@ public abstract class Func {
 				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null) {
 					if (List.class.isAssignableFrom(field.getType()))
 						field.set(obj, Lists.newArrayList());
+					else if (HashMap.class.isAssignableFrom(field.getType()))
+						field.set(obj, new HashMap<>());
 					else if (field.getType().isEnum()) {
 						Enum<?>[] enumy = (Enum<?>[]) field.getType().getMethod("values").invoke(null);
 						if (enumy.length > 0)
