@@ -31,34 +31,29 @@ public class Napis implements ConfigurationSerializable {
 	private TextComponent txt;
 	
 
-	public Napis(String tekst, String hover, String treść, ClickEvent.Action akcja) {
-		txt = new TextComponent(tekst);
-		this.clickEvent(akcja, treść);
-		this.hover(hover);
-	}
-	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treść) {
-		txt = new TextComponent(tekst);
-		this.clickEvent(akcja, treść);
-		this.hover(hover);
-	}
-	public Napis(String tekst, ClickEvent.Action akcja, String treść) {
-		txt = new TextComponent(tekst);
-		this.clickEvent(akcja, treść);
-	}
-	public Napis(String tekst, String hover, String executowanaKomenda) {
-		txt = new TextComponent(tekst);
-		this.clickEvent(executowanaKomenda.endsWith(">> ") ? Action.SUGGEST_COMMAND : Action.RUN_COMMAND, executowanaKomenda);
-		this.hover(hover);
-	}
-	public Napis(String tekst, String hover) {
-		txt = new TextComponent(tekst);
-		this.hover(hover);
-	}
 	public Napis(String tekst) {
 		txt = new TextComponent(tekst);
 	}
+	public Napis(String tekst, String hover) {
+		this(tekst);
+		this.hover(hover);
+	}
+	public Napis(String tekst, ClickEvent.Action akcja, String treść) {
+		this(tekst);
+		this.clickEvent(akcja, treść);
+	}
+	public Napis(String tekst, String hover, ClickEvent.Action akcja, String treść) {
+		this(tekst, hover);
+		this.clickEvent(akcja, treść);
+	}
+	public Napis(String tekst, String hover, String treść, ClickEvent.Action akcja) {
+		this(tekst, hover, akcja, treść);
+	}
+	public Napis(String tekst, String hover, String executowanaKomenda) {
+		this(tekst, hover, executowanaKomenda.endsWith(">> ") ? Action.SUGGEST_COMMAND : Action.RUN_COMMAND, executowanaKomenda);
+	}
 	public Napis() {
-		txt = new TextComponent("");
+		this("");
 	}
 	
 	public Napis hover(String tekst) {

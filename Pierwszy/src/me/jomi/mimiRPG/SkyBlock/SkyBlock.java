@@ -95,9 +95,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Skyblock");
 	public static class TopInfo extends Mapowany {
-		@Mapowane int pkt;// TODO pamiętać o zmianach
-		@Mapowane List<String> opis; // TODO pamiętać o zmianach
-		@Mapowane String nick;// TODO pamiętać o zmianach
+		@Mapowane double pkt;
+		@Mapowane List<String> opis;
+		@Mapowane String nick;
+		@Mapowane String nazwa;
 		@Mapowane int idWyspy;
 	}
 	public static class Holder implements InventoryHolder {
@@ -606,8 +607,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is transfer
 		
-		// /is transfer
-		
 		public boolean transfer(Player p, String komu) {
 			if (!członkowie.containsKey(p.getName()))
 				return Func.powiadom(p, prefix + "Tylko prawowity właściciel wyspy może przekazać włąściciela");
@@ -626,6 +625,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			członkowie.put(p.getName(), członkowie.remove(komu));
 			członkowie.put(komu, "właściciel");
 			zapisz();
+
+			odświeżTopJeśliZawiera();
 			
 			powiadomCzłonków("%s przekazał range właściciela wyspy dla %s", p.getName(), komu);
 			
@@ -641,14 +642,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			n.dodajK("&aWyspa &4" + nazwa);
 			n.dodaj("\n");
 			
-			n.dodajK("&aCzłonkowie: ");
-			Iterator<Entry<String, String>> it = członkowie.entrySet().iterator();
-			while (it.hasNext()) {
-				Entry<String, String> en = it.next();
-				n.dodaj(new Napis(Func.koloruj("&e" + en.getValue()), Func.koloruj("&4" + en.getKey())));
-				if (it.hasNext())
-					n.dodajK("&f, ");
-			}
+			n.dodaj(infoCzłonkowie());
 			
 			n.dodajEndK(
 					"&aData stwrzenia: &e" + Func.data(dataUtworzenia),
@@ -660,6 +654,21 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			n.dodaj("\n\n");
 			
 			n.wyświetl(p);
+		}
+		Napis infoCzłonkowie() {
+			Napis n = new Napis();
+			
+			n.dodajK("&aCzłonkowie: ");
+			
+			Iterator<Entry<String, String>> it = członkowie.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, String> en = it.next();
+				n.dodaj(new Napis(Func.koloruj("&e" + en.getValue()), Func.koloruj("&4" + en.getKey())));
+				if (it.hasNext())
+					n.dodajK("&f, ");
+			}
+			
+			return n;
 		}
 		
 		
@@ -1266,6 +1275,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			if (ile != pkt) {
 				pkt = ile;
+				odświeżTopJeśliZawiera();
 				zapisz();
 			}
 			return ile;
@@ -1420,6 +1430,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return Func.powiadom(p, prefix + "Nie masz uprawnień do zmiany nazwy wyspy");
 			this.nazwa = Func.koloruj(nazwa);
 			p.sendMessage(prefix + Func.msg("Zmieniono nazwę wyspy na %s", this.nazwa));
+			odświeżTopJeśliZawiera();
 			zapisz();
 			return false;
 		}
@@ -1490,6 +1501,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		void odświeżInvMembers() {
+			odświeżTopJeśliZawiera();
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				Inventory inv = p.getOpenInventory().getTopInventory();
 				Func.wykonajDlaNieNull(inv.getHolder(), Holder.class, holder -> {
@@ -1780,9 +1792,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 			for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
 				TopInfo top = topInfo.get(i);
-				invTop.setItem(slotyTopki.get(i), Func.stwórzItem(Material.PLAYER_HEAD, "&1&l" + top.nick, top.opis));
+				invTop.setItem(slotyTopki.get(i), Func.stwórzItem(Material.PLAYER_HEAD, "&1&l" + top.nazwa, top.opis));
 			}
-			// TODO zapis topki
+			configData.ustaw_zapisz("Skyblock.topka.gracze", topInfo);
 			taskInvTop = Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
 				for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++) {
 					TopInfo top = topInfo.get(i);
@@ -1792,6 +1804,51 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				taskInvTop = null;
 			});
 		}
+		
+		TopInfo stwórzTopInfo() {
+			TopInfo top = Func.utwórz(TopInfo.class);
+			
+			top.pkt = pkt;
+			top.nazwa = nazwa;
+			for (Entry<String, String> en : członkowie.entrySet())
+				if (en.getValue().equals("właściciel")) {
+					top.nick = en.getKey();
+					break;
+				}
+			top.idWyspy = id;
+			top.opis = Func.koloruj(Arrays.asList(
+					"&aPunkty: &e" + Func.DoubleToString(pkt) + "pkt",
+					"",
+					infoCzłonkowie().toString()
+					));
+			return top;
+		}
+		
+		void odświeżTopJeśliZawiera() {
+			for (int i=0; i < slotyTopki.size() && i < topInfo.size(); i++)
+				if (topInfo.get(i).idWyspy == id) {
+					odświeżInvTop();
+					break;
+				}
+		}
+		void sprawdzTop() {
+			int i = -1;
+			boolean dodawać = true;
+			while (++i < topInfo.size()) {
+				TopInfo top = topInfo.get(i);
+				if (dodawać && top.pkt < pkt) {
+					topInfo.add(i++, stwórzTopInfo());
+					dodawać = false;
+				}
+				if (top.idWyspy == id)
+					topInfo.remove(i--);
+			}
+			while (topInfo.size() > slotyTopki.size() * 1.5)
+				topInfo.remove(topInfo.size() - 1);
+			if (!dodawać)
+				odświeżTopJeśliZawiera();
+		}
+		
 		
 		
 		// /is create
@@ -2384,6 +2441,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (holder.typ != TypInv.MAGAZYN)
 				p.closeInventory();
 		}));
+		Wyspa.invTop = null;
 		
 		odstęp 							= Main.ust.wczytajLubDomyślna						("Skyblock.odstęp między wyspami", 150);
 		rzędyTopki 						= Math.max(1, Math.min(6, Main.ust.wczytajInt		("Skyblock.topka.rzędy")));
