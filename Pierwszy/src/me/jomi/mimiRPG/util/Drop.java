@@ -50,6 +50,7 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	//
 	// modifiers: xrolle +szansa(%) +xrolle
 	
+	public Drop() {}
 	public static Drop wczytaj(String nazwa) {
 		String[] części = nazwa.split(" ");
 
@@ -211,12 +212,32 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 					}
 		return itemy;
 	}
-	
+
 	private boolean dropnij(int poziom, Consumer<ItemStack> cons) {
 		List<ItemStack> itemy = dropnij(poziom);
 		itemy.forEach(cons);
 		return !itemy.isEmpty();
 	}
+	
+	public boolean dropnijNaRandSloty(Inventory inv) { return dropnijNaRandSloty(inv, 0); }
+	public boolean dropnijNaRandSloty(Inventory inv, int poziom) {
+		List<ItemStack> itemy;
+		if (inv.firstEmpty() == -1 || (itemy = dropnij(poziom)).isEmpty())
+			return false;
+		
+		while (!itemy.isEmpty() && inv.firstEmpty() != -1) {
+			
+			int slot;
+			do
+				slot = Func.losujWZasięgu(inv.getSize());
+			while (inv.getItem(slot) != null);
+			
+			inv.setItem(slot, itemy.remove(Func.losujWZasięgu(itemy.size())));
+		}
+		return true;
+	}
+	
+	
 	
 	@Override
 	public Drop clone() {
@@ -236,7 +257,7 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	@Override
 	public String toString() {
 		if (item != null)
-			return String.format("%s %s %s-%s x%s +%s +x%s", item, szansa, min_ilość, max_ilość, rolle, szansaPerPoziom, rollePerPoziom);
+			return String.format("%s %s% %s-%s x%s +%s% +x%s", item, szansa / 100, min_ilość, max_ilość, rolle, szansaPerPoziom / 100, rollePerPoziom);
 		else {
 			StringBuilder strB = new StringBuilder("Drop(tylkoJeden=").append(tylkoJeden).append(", [\n");
 			for (Drop drop : drop)

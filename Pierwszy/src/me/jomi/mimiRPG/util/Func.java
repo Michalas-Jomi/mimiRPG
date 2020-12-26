@@ -972,7 +972,55 @@ public abstract class Func {
 		if (sekundy != 0) 	w.append(sekundy) .append(" sekund").append(odmiana.apply(sekundy)).append(' ');
 		return w.length() == 0 ? "0 sekund" : w.substring(0, w.length()-1);
 	}
-
+	public static int czas(String str) {
+		str = str.replace("", "");
+		
+		int w = 0;
+		int mn = 0;
+		StringBuilder liczba = new StringBuilder();
+		while (!str.isEmpty()) {
+			char c = str.charAt(0);
+			str = str.substring(1);
+			switch (c) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				liczba.append(c);
+				break;
+			case '-':
+				if (liczba.isEmpty())
+					liczba.append(c);
+				else
+					throw new NumberFormatException();
+				break;
+			case 'd': mn = 8640;break;
+			case 'g': mn = 360;	break;
+			case 'm': mn = 60;	break;
+			case 's': mn = 1; 	break;
+			default:
+				throw new NumberFormatException();
+			}
+			if (mn != 0) {
+				w += Func.Int(liczba.toString()) * mn;
+				mn = 0;
+				liczba = new StringBuilder();
+			}
+		}
+		
+		if (!liczba.isEmpty())
+			w += Func.Int(liczba.toString());
+		
+		return w;
+		
+	}
+	
 	public static String permisja(String permisja) {
 		permisja = permisja.toLowerCase();
 		String plugin = Main.plugin.getName().toLowerCase();
