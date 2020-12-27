@@ -257,7 +257,7 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	@Override
 	public String toString() {
 		if (item != null)
-			return String.format("%s %s% %s-%s x%s +%s% +x%s", item, szansa / 100, min_ilość, max_ilość, rolle, szansaPerPoziom / 100, rollePerPoziom);
+			return String.format("%s %s %s-%s x%s +%s +x%s", item, (szansa * 100) + "%", min_ilość, max_ilość, rolle, (szansaPerPoziom * 100) + "%", rollePerPoziom);
 		else {
 			StringBuilder strB = new StringBuilder("Drop(tylkoJeden=").append(tylkoJeden).append(", [\n");
 			for (Drop drop : drop)

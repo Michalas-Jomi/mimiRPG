@@ -5,16 +5,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 
 import com.google.common.collect.Lists;
@@ -23,6 +28,7 @@ import com.google.common.collect.Sets;
 import net.md_5.bungee.api.chat.ClickEvent;
 
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
@@ -33,9 +39,12 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
+// TODO przetestować te skrzynie
+
 @Moduł
 public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Skrzynie Skarbów");
+	
 	public SkrzynieSkarbów() {
 		super("edytujskarby");
 	}
@@ -52,7 +61,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 			loc.getBlock().setBlockData(data);
 			Container blok = (Container) loc.getBlock().getState();
 			blok.setCustomName(nazwa);
-			drop.dropnijNaRandSloty(blok.getSnapshotInventory());
+			drop.dropnijNaRandSloty(blok.getInventory());
 		}
 	}
 	public static class Edytor {
@@ -60,6 +69,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		final CommandSender p;
 		final Skrzynia skrzynia = Func.utwórz(Skrzynia.class);
 		Edytor(CommandSender p) {
+			skrzynia.drop = new Drop();
 			skrzynia.drop.drop = Lists.newArrayList();
 			skrzynia.drop.min_ilość = 10;
 			skrzynia.drop.max_ilość = 20;
@@ -83,8 +93,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 							"/edytujskarby respawn >> "
 							),
 					new Napis(
-							Func.koloruj("&6Ilość Itemów: " + skrzynia.drop.min_ilość + "-" + skrzynia.drop.max_ilość),
-							Func.koloruj("&bKliknij aby zmienić&3format: &amin ilość&7-&amax ilość\n\n&8Oznacza ilość itemów w skrzyni"),
+							Func.koloruj("&6Ilość Itemów: &e" + skrzynia.drop.min_ilość + "-" + skrzynia.drop.max_ilość),
+							Func.koloruj("&bKliknij aby zmienić\n&3format: &amin ilość&7-&amax ilość\n\n&8Oznacza ilość itemów w skrzyni"),
 							"/edytujskarby ilośćItemów >> "
 							)
 					);
@@ -98,7 +108,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				n.dodaj(item);
 				n.dodaj(" ");
 				n.dodaj(new Napis(
-						Func.koloruj("&e" + (drop.szansa / 100) + "%"),
+						Func.koloruj("&e" + (drop.szansa * 100) + "%"),
 						Func.koloruj("&bKliknij aby zmienić\n&3format: &a0.szansa\n&3format: &aszansa%\n\n&8Oznacza szanse na wypadnięcie itemu\\n&8dozwolone wartości z zakresu 0.0 < x <= 1.0\n&8dozwolone wartości z zakresu 0% < x <= 100%"),
 						"/edytujskarby itemy " + i + " szansa >> "
 						));
@@ -145,33 +155,42 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	static final HashMap<String, Krotka<Skrzynia, BlockData>> mapa = new HashMap<>();
 	
 	
-	// TODO wczytywać
-	int tickiUsuwaniaSkrzyń = 30*20;
+	int tickiUsuwaniaSkrzyń;
 	
 	
-	static String locToString(Location loc) {
+	String locToString(Location loc) {
 		return locToString(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
-	static String locToString(World świat, int x, int y, int z) {
+	String locToString(World świat, int x, int y, int z) {
 		return String.join(",", świat.getName(), String.valueOf(x), String.valueOf(y), String.valueOf(z));
 	}
-	static Location stringToLoc(String str) {
+	Location stringToLoc(String str) {
 		String[] strs = str.split(",");
 		return new Location(Bukkit.getWorld(strs[0]), Func.Int(strs[1]), Func.Int(strs[2]), Func.Int(strs[3]));
 	}
-
 	
-	// TODO pzy włączaniu modułu zrespić wszystkie skrzynki
+	
+	private boolean zrespioneWszystkie = false;
+	void zrespWszystkieSkrzynie() {
+		zrespioneWszystkie = true;
+		mapa.forEach((strLoc, krotka) -> {
+			Location loc = stringToLoc(strLoc);
+			if (loc.getBlock().getType().isAir())
+				krotka.a.zresp(loc, krotka.b);
+		});
+	}
+	
+	
 	/*
 	 * skrzynie:
 	 *   nazwa: Skrzynia
 	 * 
-	 * lokacje:// TODO syntax nazwy skrzyni bez ^
+	 * lokacje:
 	 *   locToString: nazwaSkrzyni^BlockData
 	 * 
 	 */
 	
-	final Set<String> usuwane = Sets.newConcurrentHashSet();
+	private final Set<String> usuwane = Sets.newConcurrentHashSet();
 	@EventHandler
 	public void otwieranieEq(InventoryOpenEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Container.class, holder -> {
@@ -182,17 +201,42 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 					Func.opóznij(tickiUsuwaniaSkrzyń, () -> {
 						holder.getLocation().getBlock().setType(Material.AIR);
 						Func.opóznij(krotka.a.czasOdrespiania * 20, () -> {
-							krotka.a.zresp(holder.getLocation(), krotka.b);
+							if (mapa.containsKey(klucz)) 
+								krotka.a.zresp(holder.getLocation(), krotka.b);
 							usuwane.remove(klucz);
 						});
 					});
 				});
 		});
 	}
+	@EventHandler(priority = EventPriority.HIGH)
+	public void niszczenie(BlockBreakEvent ev) {
+		if (mapa.containsKey(locToString(ev.getBlock().getLocation())))
+			ev.setCancelled(true);
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void stawianie(BlockPlaceEvent ev) {
+		if (ev.getItemInHand().hasItemMeta() && ev.getItemInHand().getItemMeta().getCustomModelData() == 7345)
+			Func.wykonajDlaNieNull(ev.getBlock().getState(),  Container.class, container -> {
+				String nazwa = ev.getItemInHand().getItemMeta().getDisplayName();
+				String klucz = locToString(container.getLocation());
+				if (mapaSkrzyń.containsKey(nazwa) && !mapa.containsKey(klucz)) {
+					BlockData data = ev.getBlock().getBlockData();
+					config.ustaw_zapisz("lokacje." + klucz , nazwa + "^" + data.getAsString());
+					mapa.put(klucz, new Krotka<>(mapaSkrzyń.get(nazwa), data));
+					ev.getPlayer().sendMessage(prefix + Func.msg("Postawiono %s", nazwa));
+				}
+			});
+	}
+	
+	
+	
 	
 	@Override
 	public void przeładuj() {
 		config.przeładuj();
+		
+		tickiUsuwaniaSkrzyń = Main.ust.wczytajLubDomyślna("SkrzynieSkarbów.czasUsuwaniaSkrzyń", 30)*20;
 		
 		mapaSkrzyń.clear();
 		Func.wykonajDlaNieNull(config.sekcja("skrzynie"), sekcja ->
@@ -202,9 +246,13 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		mapa.clear();
 		Func.wykonajDlaNieNull(config.sekcja("lokacje"), sekcja -> 
 				sekcja.getValues(false).forEach((str, obj) -> {
-					String[] strs = ((String) obj).split("^");
-					mapa.put(str, new Krotka<>(mapaSkrzyń.get(strs[0]), Bukkit.createBlockData(strs[1])));
+					List<String> strs = Func.tnij((String) obj, "^");
+					if (mapaSkrzyń.containsKey(strs.get(0)))
+						mapa.put(str, new Krotka<>(mapaSkrzyń.get(strs.get(0)), Bukkit.createBlockData(strs.get(1))));
 				}));
+		
+		if (!zrespioneWszystkie)
+			zrespWszystkieSkrzynie();
 	}
 	@Override
 	public Krotka<String, Object> raport() {
@@ -212,65 +260,91 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Auto-generated method stub
+		if (args.length <= 1)
+			return utab(args, "daj", "usuń", "nowa");
+		if (args.length >= 2 && args[0].equalsIgnoreCase("daj"))
+			return utab(args, Func.wykonajWszystkim(mapaSkrzyń.keySet(), Func::odkoloruj));
 		return null;
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		Player p = sender instanceof Player ? (Player) sender : null;
 		Edytor edytor = Edytor.mapa.get(sender.getName());
-		Player p = (Player) sender;
 		String[] minmax;
-		switch(args[0]) {
-		case "-t":
-			edytor = new Edytor(p);
-			break;
-		case "nazwa":
-			edytor.skrzynia.nazwa = Func.koloruj(Func.listToString(args, 2));
-			break;
-		case "respawn":
-			edytor.skrzynia.czasOdrespiania = Func.czas(Func.listToString(args, 2));
-			break;
-		case "ilośćItemów":
-			minmax = args[2].split("-");
-			edytor.skrzynia.drop.min_ilość = Func.Int(minmax[0]);
-			edytor.skrzynia.drop.max_ilość = Func.Int(minmax[1]);
-			break;
-		case "dodajItem":
-			edytor.skrzynia.drop.drop.add(new Drop(p.getInventory().getItemInMainHand()));
-			break;
-		case "zatwierdz":
-			mapaSkrzyń.put(edytor.skrzynia.nazwa, edytor.skrzynia);
-			if (mapaSkrzyń.containsKey(edytor.skrzynia.nazwa))
-				return Func.powiadom(sender, prefix + "Ta nazwa jest już zajęta");
-			config.ustaw_zapisz("skrzynie." + edytor.skrzynia.nazwa, edytor.skrzynia);
-			Edytor.mapa.remove(sender.getName());
-			return Func.powiadom(sender, prefix + "Zapisano");
-		case "itemy":
-			int i = Func.Int(args[1]);
-			Drop drop = edytor.skrzynia.drop.drop.get(i);
-			switch (args[2]) {
-			case "ustaw":
-				drop.item = p.getInventory().getItemInMainHand();
-				break;
-			case "szansa":
-				drop.szansa = Func.Double(args[3]);
-				break;
-			case "ilość":
-				minmax = args[3].split("-");
-				drop.min_ilość = Func.Int(minmax[0]);
-				drop.max_ilość = Func.Int(minmax[1]);
-				break;
-			case "rolle":
-				if (args[3].startsWith("x"))
-					args[3] = args[3].substring(1);
-				drop.rolle = Func.Int(args[3]);
-				break;
+		try {
+			switch(args[0].toLowerCase()) {
+			case "daj":
+				Func.wykonajDlaNieNull(mapaSkrzyń.get(Func.koloruj(Func.listToString(args, 1))),
+						skrzynia -> Func.dajItem(p, Func.customModelData(Func.stwórzItem(Material.CHEST, skrzynia.nazwa, "&bPostaw ją gdziekolwiek", "&bAby stała się skrzynią skarbów"), 7345)),
+						() -> sender.sendMessage(prefix + "Skrzynia o tej nazwie nie istnieje")
+						);
+				return true;
 			case "usuń":
-				edytor.skrzynia.drop.drop.remove(i);
+				Block skrzynia = p.getTargetBlockExact(5, FluidCollisionMode.NEVER);
+				String klucz = locToString(skrzynia.getLocation());
+				Func.wykonajDlaNieNull(mapa.get(klucz), krotka -> {
+					mapa.remove(klucz);
+					config.ustaw_zapisz("lokacje." + klucz, null);
+					sender.sendMessage(prefix + "Usunięto skrzynie skarbów");
+				}, () -> sender.sendMessage(prefix + "Musisz patrzeć się na skrzynie skarbów aby ją usunąć"));
+				return true;
+			case "nowa":
+				edytor = new Edytor(p);
 				break;
+			// edytor
+			case "nazwa":
+				String nazwa = Func.koloruj(Func.listToString(args, 2));
+				if (nazwa.contains("^"))
+					return Func.powiadom(sender, prefix + "Nazwa nie może zawierać symbolu ^");
+				edytor.skrzynia.nazwa = nazwa;
+				break;
+			case "respawn":
+				edytor.skrzynia.czasOdrespiania = Func.czas(Func.listToString(args, 2));
+				break;
+			case "ilośćitemów":
+				minmax = args[2].split("-");
+				edytor.skrzynia.drop.min_ilość = Func.Int(minmax[0]);
+				edytor.skrzynia.drop.max_ilość = Func.Int(minmax[1]);
+				break;
+			case "dodajitem":
+				edytor.skrzynia.drop.drop.add(new Drop(p.getInventory().getItemInMainHand()));
+				break;
+			case "zatwierdz":
+				if (mapaSkrzyń.containsKey(edytor.skrzynia.nazwa))
+					return Func.powiadom(sender, prefix + "Ta nazwa jest już zajęta");
+				mapaSkrzyń.put(edytor.skrzynia.nazwa, edytor.skrzynia);
+				config.ustaw_zapisz("skrzynie." + edytor.skrzynia.nazwa, edytor.skrzynia);
+				Edytor.mapa.remove(sender.getName());
+				return Func.powiadom(sender, prefix + "Zapisano");
+			case "itemy":
+				int i = Func.Int(args[1]);
+				Drop drop = edytor.skrzynia.drop.drop.get(i);
+				switch (args[2]) {
+				case "ustaw":
+					drop.item = p.getInventory().getItemInMainHand();
+					break;
+				case "szansa":
+					drop.szansa = Func.Double(args[4]);
+					break;
+				case "ilość":
+					minmax = args[4].split("-");
+					drop.min_ilość = Func.Int(minmax[0]);
+					drop.max_ilość = Func.Int(minmax[1]);
+					break;
+				case "rolle":
+					if (args[4].startsWith("x"))
+						args[4] = args[4].substring(1);
+					drop.rolle = Func.Int(args[4]);
+					break;
+				case "usuń":
+					edytor.skrzynia.drop.drop.remove(i);
+					break;
+				}
 			}
+			edytor.wyświetl();
+		} catch (Throwable e) {
+			sender.sendMessage(prefix + "Niepoprawne argumenty");
 		}
-		edytor.wyświetl();
 		return true;
 	}
 }
