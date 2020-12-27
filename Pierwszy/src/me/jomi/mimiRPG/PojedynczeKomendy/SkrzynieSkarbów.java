@@ -149,11 +149,9 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		}
 	}
 	
-	
 	static final Config config = new Config("configi/SkrzynieSkarbów");
 	static final HashMap<String, Skrzynia> mapaSkrzyń = new HashMap<>();
 	static final HashMap<String, Krotka<Skrzynia, BlockData>> mapa = new HashMap<>();
-	
 	
 	int tickiUsuwaniaSkrzyń;
 	
@@ -189,7 +187,6 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	 *   locToString: nazwaSkrzyni^BlockData
 	 * 
 	 */
-	
 	private final Set<String> usuwane = Sets.newConcurrentHashSet();
 	@EventHandler
 	public void otwieranieEq(InventoryOpenEvent ev) {
@@ -228,8 +225,6 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				}
 			});
 	}
-	
-	
 	
 	
 	@Override
@@ -348,11 +343,4 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		return true;
 	}
 }
-
-
-
-
-
-
-
 

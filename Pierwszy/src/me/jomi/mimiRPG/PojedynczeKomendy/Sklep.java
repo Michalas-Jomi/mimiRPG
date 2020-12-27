@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -22,12 +23,12 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
-
 import com.iridium.iridiumskyblock.User;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -107,7 +108,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 					};
 					
 					ItemMeta meta = item.getItemMeta();
-					List<String> lore = (List<String>) Func.nieNull(meta.getLore());
+					List<String> lore = Func.nieNull(meta.getLore());
 					lore.add(0, cena.apply("sprzedarzy", "LPM"));
 					lore.add(0, cena.apply("kupna", "PPM"));
 					meta.setLore(lore);
@@ -126,9 +127,12 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			else {
 				Inventory _inv = Func.CloneInv(inv, nazwaInv);
 				double pkt = 0;
-				try {
-					pkt = User.getUser(p).getIsland().getValue();
-				} catch (Throwable e) {}
+				if (Main.włączonyModół(SkyBlock.class))
+					SkyBlock.Wyspa.wczytaj(p).getPkt();
+				else
+					try {
+						pkt = User.getUser(p).getIsland().getValue();
+					} catch (Throwable e) {}
 				for (SklepItem item : specjalneItemy)
 					if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))
 						_inv.setItem(item.slot, item.item);

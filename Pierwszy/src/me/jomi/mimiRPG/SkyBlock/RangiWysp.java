@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -13,13 +14,16 @@ import org.bukkit.event.Listener;
 
 import com.google.common.collect.Lists;
 import com.iridium.iridiumskyblock.Island;
-import com.iridium.iridiumskyblock.api.IslandWorthCalculatedEvent;
 import com.iridium.iridiumskyblock.api.IslandDeleteEvent;
-
+import com.iridium.iridiumskyblock.api.IslandWorthCalculatedEvent;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa.DołączanieDoWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa.OpuszczanieWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa.PrzeliczaniePunktówWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa.UsuwanieWyspyEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
@@ -30,13 +34,14 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		super("rangiWysp");
 	}
 	public static boolean warunekModułu() {
-		return Main.iridiumSkyblock && Main.chat != null;
+		return (Main.włączonyModół(SkyBlock.class) || Main.iridiumSkyblock) && Main.chat != null;
 	}
 
 	private final List<Krotka<String, Double>> rangi = Lists.newArrayList();
 
 	// EventHandler
-
+	
+	/// api iridium
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void liczeniePkt(IslandWorthCalculatedEvent ev) {
 		new Thread(() -> {
@@ -70,6 +75,42 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 				ustawRange.accept(member);
 		}).start();
 	}
+	
+	/// api Modułu SkyBlock
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void liczeniePkt(PrzeliczaniePunktówWyspyEvent ev) {
+		new Thread(() -> {
+			String jedenZCzłonków = ev.wyspa.członkowie.get(Func.losuj(ev.wyspa.członkowie.keySet()));
+			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOfflineUUID(jedenZCzłonków));
+			
+			String suff = ranga(ev.pktPo);
+			if (suff.equals(aktsuff))
+				return;
+			
+			for (String członek : ev.wyspa.członkowie.keySet())
+				Main.chat.setPlayerSuffix(null, Func.graczOfflineUUID(członek), suff);
+		}).start();
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void usuwanieWyspy(UsuwanieWyspyEvent ev) {
+		new Thread(() -> {
+			for (String członek : ev.wyspa.członkowie.keySet())
+				Main.chat.setPlayerSuffix(null, Func.graczOffline(członek), "");
+		}).start();
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void opuszczanieWyspy(OpuszczanieWyspyEvent ev) {
+		new Thread(() -> Main.chat.setPlayerSuffix(null, Func.graczOffline(ev.nick), "")).start();
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void dołączanieDoWyspy(DołączanieDoWyspyEvent ev) {
+		new Thread(() -> {
+			OfflinePlayer randCzłonek = Func.graczOffline(Func.losuj(ev.wyspa.członkowie.keySet()));
+			String suff = Main.chat.getPlayerSuffix(null, randCzłonek);
+			Main.chat.setPlayerSuffix(null, ev.p, suff);
+		}).start();
+	}
+	
 	
 	String ranga(double pkt) {
 		String ost = rangi.isEmpty() ? "" : rangi.get(0).a;
