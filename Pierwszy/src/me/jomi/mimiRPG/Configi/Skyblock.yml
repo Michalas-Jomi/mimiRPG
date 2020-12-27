@@ -1,0 +1,147 @@
+# Ogólne ustawienia
+cooldown.liczenie punktów: 1800
+odstęp między wyspami: 150
+y wysp: 100
+
+
+topka:
+  # rzędy panelu topki
+  rzędy: 4
+  # sloty w inv
+  sloty: [4, 12, 14, 20, 22, 24, 28, 30, 32, 34]
+  
+  
+# punktacja bloków
+punktacja:
+  # <Blok>: <Punkty>
+  Stone: 1
+  cobblestone: .2
+
+
+# generator cobla / stone
+generator:
+  - overworld cobl:
+      # <Blok>: <pkt>
+      # szansa na blok = suma pkt / pkt bloku
+      Stone: 10
+      Diamond ore: 1
+    overworld stone:
+      Stone: 10
+      Diamond ore: 1
+    nether cobl:
+      Stone: 10
+      Diamond ore: 1
+    nether stone:
+      Stone: 10
+      Diamond ore: 1
+  - overworld cobl:
+      # <Blok>: <pkt>
+      # szansa na blok = suma pkt / pkt bloku
+      Stone: 10
+      Diamond ore: 1
+    overworld stone:
+      Stone: 10
+      Diamond ore: 1
+    nether cobl:
+      Stone: 10
+      Diamond ore: 1
+    nether stone:
+      Stone: 10
+      Diamond ore: 1
+  - overworld cobl:
+      # <Blok>: <pkt>
+      # szansa na blok = suma pkt / pkt bloku
+      Stone: 10
+      Diamond ore: 1
+    overworld stone:
+      Stone: 10
+      Diamond ore: 1
+    nether cobl:
+      Stone: 10
+      Diamond ore: 1
+    nether stone:
+      Stone: 10
+      Diamond ore: 1
+
+
+# dozwolone biomy
+biom:
+  # <Biom>: <typ itemu ikony> (permisja | . dla braku permisji) (opis)
+  Plains: water_bucket . Zwyczajny biom\ntaki pospolity
+  Desert: 'sand . Pustynia\ni co tu więcej mówić'
+
+typy wysp:
+  # <nazwa typu>: scieżkaDoSchematickaOverworld scieżkaDoSchematickaNether dx dy dz biomOverworld biomNether ikona opis
+  # dx dy dz oznacza przesunięcie home od środka wyspy
+  zwyczajna: 'wyspaZwyczajna.schem wyspaNether.schem -2 0 0 Plains Nether_wastes Grass_block &8Zwyczajna wyspa'
+
+# Konfiguracja światów
+świat:
+  dozwolony nether: true
+  zwykły: mimiSkyblock
+  nether: mimiSkyblockNether
+
+
+# dozwolone kolory bordera
+border:
+  niebieski: true
+  czerwony: true
+  zielony: true
+  brak: false
+
+
+ulepszenia:
+  # limit hoperów = limityBloków
+  # limit spawnerów = limityBloków / 2
+  limityBloków:
+  - 30 0
+  - 40 100
+  - 50 1000
+  - 60 10000
+  - 70 100000
+  - 80 1000000
+  - 90 10000000
+  - 100 100000000
+  # maksymalna ilość osób na wyspe
+  członkowie:
+  - 3 0
+  - 5 1000
+  - 8 10000
+  - 10 100000
+  - 15 2500000
+  # poziom generatora, numerowane od 1 w góre
+  generator:
+  - 1 0
+  - 2 1000
+  - 3 500000
+  # długość boku wyspy
+  wielkość:
+  - 30 0
+  - 50 1000
+  - 70 10000
+  - 90 25000
+  - 100 100000
+  - 110 250000
+  - 120 500000
+  - 130 1500000
+  - 140 2500000
+  - 150 10000000
+  # ilość rządków magazynu
+  magazyn:
+  - 1 0
+  - 2 1000
+  - 3 30000
+  - 4 500000
+  - 5 2000000
+  - 6 20000000
+  # maksymalna ilość warpów wyspy
+  warpy:
+  - 2 0
+  - 3 100
+  - 4 1000
+  - 6 10000
+  - 8 100000
+  - 10 1000000
+  - 13 10000000
+  - 16 100000000
+  - 24 999999999

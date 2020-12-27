@@ -37,20 +37,22 @@ import com.google.common.collect.Lists;
 import com.iridium.iridiumskyblock.User;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import net.minecraft.server.v1_16_R2.BlockPosition;
+import net.minecraft.server.v1_16_R2.MojangsonParser;
+import net.minecraft.server.v1_16_R2.NBTTagCompound;
+import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa;
 import me.jomi.mimiRPG.SkyBlock.Spawnery.Ulepszenie.Ulepszenia;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.minecraft.server.v1_16_R2.BlockPosition;
-import net.minecraft.server.v1_16_R2.MojangsonParser;
-import net.minecraft.server.v1_16_R2.NBTTagCompound;
-import net.minecraft.server.v1_16_R2.TileEntityMobSpawner;
 
 @Moduł
 public class Spawnery extends Komenda implements Przeładowalny, Listener {
@@ -117,7 +119,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 			spawner.setSpawnCount(1);
 		}
 		int minSpawnDelay(int maxSpawnDeley) {
-			return (int) Math.min((double) maxSpawnDeley / ulepszenia.SzybkoscDzielnik, 1);
+			return (int) Math.min(maxSpawnDeley / ulepszenia.SzybkoscDzielnik, 1);
 		}
 		
 		private Inventory inv;
@@ -197,9 +199,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 
 	final HashMap<String, CreatureSpawner> panele = new HashMap<>();
 	
-	
 	static Dane dane;
-	
 	
 	public Spawnery() {
 		super("spawner", "/spawner <mob> (gracz)");
@@ -322,7 +322,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	
 	// EventHandler
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void stawianie(BlockPlaceEvent ev) {
 		if (!(ev.getBlock().getState() instanceof CreatureSpawner)) return;
 		CraftCreatureSpawner spawner = (CraftCreatureSpawner) ev.getBlock().getState();
@@ -332,7 +332,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		TileEntityMobSpawner _spawner = (TileEntityMobSpawner) ((CraftWorld) spawner.getWorld()).getHandle().getTileEntity(blockPos);
 		_spawner.load(_spawner.getBlock(), tag);
 	}
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenie(BlockBreakEvent ev) {
 		if (ev.isCancelled()) return;
 		if (!ev.getBlock().getType().equals(Material.SPAWNER)) return;
@@ -382,6 +382,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		Player p = ev.getPlayer();
 		
 		if (p.hasPermission("mimirpg.spawnery.bypass") || 
+				(Main.włączonyModół(SkyBlock.class) && Wyspa.wczytaj(ev.getClickedBlock().getLocation()).permisje(ev.getPlayer()).dostęp_do_spawnerów) ||
 				(Main.iridiumSkyblock && User.getUser(p).getIsland().isInIsland(spawner.getLocation()))) {
 			edytuj(p, spawner);
 			ev.setCancelled(true);
@@ -389,7 +390,6 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	@EventHandler
-
 	public void klikanieEq(InventoryClickEvent ev) {
 		Player p = (Player) ev.getWhoClicked();
 		CreatureSpawner spawner = panele.get(p.getName());

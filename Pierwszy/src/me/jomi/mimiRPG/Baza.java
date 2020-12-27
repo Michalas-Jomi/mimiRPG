@@ -14,7 +14,8 @@ import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
 
 public class Baza implements Listener {
-	public static final ItemStack pustySlot = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
+	public static final ItemStack pustySlot		  = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
+	public static final ItemStack pustySlotCzarny = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&1&l ");
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static final HashMap<String, Drop> dropy = new HashMap<>();
@@ -44,13 +45,13 @@ public class Baza implements Listener {
 		itemy.clear();
 		Config config = new Config("Customowe Itemy");
 		for (String klucz : config.klucze(false))
-			itemy.put(klucz, (ItemStack) config.wczytajItem(klucz));
+			itemy.put(klucz, config.wczytajItem(klucz));
 	}
 	private static void wczytajDropy() {
 		dropy.clear();
 		Config config = new Config("Dropy");
 		for (String klucz : config.klucze(false))
-			dropy.put(klucz, (Drop) config.wczytajDrop(klucz));
+			dropy.put(klucz, config.wczytajDrop(klucz));
 	}
 	private static void wczytajGrupy() {
 		grupy = config.sekcja("grupy");

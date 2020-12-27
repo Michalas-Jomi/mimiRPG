@@ -50,7 +50,15 @@ public class Ciąg<T> extends Mapowany {
 	public HashMap<T, Double> szanse() {
 		HashMap<T, Double> mapa = new HashMap<>();
 		
-		lista.forEach(k -> mapa.put(k.b, mapa.getOrDefault(k.b, 0.0) + (k.a / ((double) suma))));
+		int ost = 0;
+		int akt = 0;
+		
+		for (Krotka<Integer, T> k : lista) {
+			akt = k.a - ost;
+			ost = k.a;
+			mapa.put(k.b, mapa.getOrDefault(k.b, 0.0) + (akt / ((double) suma)));
+		}
+		
 		
 		return mapa;
 	}

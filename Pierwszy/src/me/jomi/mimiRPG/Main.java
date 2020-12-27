@@ -188,6 +188,8 @@ public class Main extends JavaPlugin implements Listener {
 			AutoEventy.wyłącz();
 		if (włączonyModół(Paintball.class))
 			Paintball.wyłącz();
+		if (włączonyModół(SkyBlock.class))
+			SkyBlock.onDisable();
 		
 		Func.onDisable();
 	}
@@ -279,15 +281,19 @@ public class Main extends JavaPlugin implements Listener {
 		Runnable nie;
 		public PanelTakNieHolder(String nazwa, Runnable tak, Runnable nie) {
 			super(3, nazwa);
-			this.tak = tak;
+			this.tak = () -> {
+				tak.run();
+				this.nie = null;
+			};
 			this.nie = nie;
+			Func.ustawPuste(getInventory());
 		}
 	}
 	public static void panelTakNie(Player p, String tytuł, String Tak, String Nie, Runnable tak, Runnable nie) {
 		Inventory inv = new PanelTakNieHolder(tytuł, tak, nie).getInventory();
 		
-		inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS, Tak));
-		inv.setItem(14, Func.stwórzItem(Material.LIME_STAINED_GLASS, Nie));
+		inv.setItem(12, Func.stwórzItem(Material.LIME_STAINED_GLASS_PANE, Tak));
+		inv.setItem(14, Func.stwórzItem(Material.RED_STAINED_GLASS_PANE, Nie));
 		
 		p.openInventory(inv);
 		p.addScoreboardTag(tagBlokWyciąganiaZEq);
