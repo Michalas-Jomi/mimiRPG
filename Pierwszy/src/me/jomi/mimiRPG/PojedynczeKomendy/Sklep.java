@@ -121,20 +121,18 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		void otwórz(Player p) {
-			if (bezpośrednia || /*!Main.iridiumSkyblock || XXX */ !Main.włączonyModół(Sklep.class))
+			if (bezpośrednia || !Main.włączonyModół(Sklep.class))
 				p.openInventory(inv);
 			else {
 				Inventory _inv = Func.CloneInv(inv, nazwaInv);
 				double pkt = 0;
 				if (Main.włączonyModół(SkyBlock.class))
-					SkyBlock.Wyspa.wczytaj(p).getPkt();
-				/*else
-					try {XXX
-						pkt = User.getUser(p).getIsland().getValue();
-					} catch (Throwable e) {}*/
+					pkt = SkyBlock.Wyspa.wczytaj(p).getPkt();
+				
 				for (SklepItem item : specjalneItemy)
 					if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))
 						_inv.setItem(item.slot, item.item);
+				
 				p.openInventory(_inv);
 			}
 			Sklep.inst.otwarte.put(p.getName(), this);

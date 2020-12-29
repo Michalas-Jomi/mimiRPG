@@ -11,6 +11,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -112,13 +113,7 @@ public class Main extends JavaPlugin implements Listener {
         if (!ekonomia)
 			brakPluginu("Vault");
 	}
-	/*private void włączIridiumSkyblock() {
-		try {XXX
-        	iridiumSkyblock = IridiumSkyblock.getInstance() != null;
-        } catch (NoClassDefFoundError e) {
-			brakPluginu("IridiumSkyblock");
-        }
-	}*/
+
 	
 	@Override
 	@SuppressWarnings("unchecked")
@@ -140,7 +135,6 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		włączVault();
-		//włączIridiumSkyblock(); // XXX
             
 		zarejestruj(this);
 		zarejestruj(new Baza());
@@ -316,6 +310,12 @@ public class Main extends JavaPlugin implements Listener {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), PanelTakNieHolder.class, holder -> Func.wykonajDlaNieNull(holder.nie, Runnable::run));
 	}
 	
+	
+	public static void chwilowyGodMode(Entity p, int sekundy) {
+		if (p.isInvulnerable()) return;
+		p.setInvulnerable(true);
+		Func.opóznij(20 * sekundy, () -> p.setInvulnerable(false));
+	}
 	
 	
 	// Nie pozwala wymować nic z aktualnie, bądz dopiero będącego otwartym eq, aż do jego zamknięcia

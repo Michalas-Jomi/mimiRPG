@@ -67,14 +67,18 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	public static class Edytor {
 		static final HashMap<String, Edytor> mapa = new HashMap<>();
 		final CommandSender p;
-		final Skrzynia skrzynia = Func.utwórz(Skrzynia.class);
+		final Skrzynia skrzynia;
 		Edytor(CommandSender p) {
+			this(p, Func.utwórz(Skrzynia.class));
 			skrzynia.drop = new Drop();
 			skrzynia.drop.drop = Lists.newArrayList();
 			skrzynia.drop.min_ilość = 10;
 			skrzynia.drop.max_ilość = 20;
-			
+		}
+		Edytor(CommandSender p, Skrzynia skrzynia) {
+			this.skrzynia = skrzynia;
 			this.p = p;
+			
 			mapa.put(p.getName(), this);
 		}
 		
@@ -104,7 +108,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				// item, szansa, min_ilość, max_ilość, rolle
 				Drop drop = skrzynia.drop.drop.get(i);
 				Napis item = Napis.item(drop.item);
-				item.clickEvent(ClickEvent.Action.RUN_COMMAND, "/edytujskarby itemy " + i + "ustaw");
+				item.clickEvent(ClickEvent.Action.RUN_COMMAND, "/edytujskarby itemy " + i + " ustaw");
 				n.dodaj(item);
 				n.dodaj(" ");
 				n.dodaj(new Napis(
@@ -213,7 +217,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void stawianie(BlockPlaceEvent ev) {
-		if (ev.getItemInHand().hasItemMeta() && ev.getItemInHand().getItemMeta().getCustomModelData() == 7345)
+		if (ev.getItemInHand().hasItemMeta() && ev.getItemInHand().getItemMeta().hasCustomModelData() && ev.getItemInHand().getItemMeta().getCustomModelData() == 7345)
 			Func.wykonajDlaNieNull(ev.getBlock().getState(),  Container.class, container -> {
 				String nazwa = ev.getItemInHand().getItemMeta().getDisplayName();
 				String klucz = locToString(container.getLocation());
@@ -257,7 +261,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
 			return utab(args, "daj", "usuń", "nowa");
-		if (args.length >= 2 && args[0].equalsIgnoreCase("daj"))
+		if (args.length >= 2 && Func.multiEquals(args[0].toLowerCase(), "daj", "modyfikuj"))
 			return utab(args, Func.wykonajWszystkim(mapaSkrzyń.keySet(), Func::odkoloruj));
 		return null;
 	}
@@ -285,6 +289,13 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				return true;
 			case "nowa":
 				edytor = new Edytor(p);
+				break;
+			case "modyfikuj":
+				Skrzynia skrzynka = mapaSkrzyń.get(Func.koloruj(Func.listToString(args, 1)));
+				if (skrzynka == null)
+					return Func.powiadom(sender, prefix + "Niepoprawna nazwa skrzyni skarbów");
+				else
+					edytor = new Edytor(p, skrzynka);
 				break;
 			// edytor
 			case "nazwa":

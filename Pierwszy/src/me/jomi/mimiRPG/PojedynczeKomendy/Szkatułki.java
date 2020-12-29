@@ -9,12 +9,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.FireworkEffect;
+import org.bukkit.FireworkEffect.Type;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
@@ -42,6 +42,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -51,10 +52,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	public static class Skrzynka extends Mapowany {
 		@Mapowane List<ItemStack> itemy;
+		@Mapowane String nazwa;
 		@Mapowane int minItemy = 1;
 		@Mapowane int maxItemy = 1;
 		@Mapowane ItemStack klucz;
-		@Mapowane String nazwa;
 		@Mapowane boolean broadcast = true;
 		@Mapowane Material blok = Material.LIGHT_BLUE_SHULKER_BOX;
 		
@@ -165,6 +166,11 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	public Szkatułki() {
 		super("Szkatułka", "/Szkatułka <czynność> <skrzynka> (gracz)");
 		Main.dodajPermisje(permEdycja);
+
+		edytor.zarejestrójWyjątek("/szkatułka edytor itemy", (zadanie, ścieżka) -> null);
+		edytor.zarejestrójWyjątek("/szkatułka edytor nazwa", (zadanie, ścieżka) -> null);
+		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.nazwa = ścieżka);
+		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> przeładuj());
 	}
 	
 	
@@ -283,12 +289,13 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		return Func.r("Skrzynki", config.klucze(false).size());
 	}
 
+	final EdytorOgólny<Skrzynka> edytor = new EdytorOgólny<>("szkatułka", Skrzynka.class);
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		switch (args.length) {
 		case 0:
 		case 1:
-			return utab(args, "edytuj", "klucz", "skrzynka"); // TODO rozbudować
+			return utab(args, "edytuj", "klucz", "skrzynka", "edytor"); // TODO rozbudować
 		case 2:
 			return utab(args, config.klucze(false));
 		}
@@ -304,10 +311,20 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		try {
 			p = Bukkit.getPlayer(args[2]);
 		} catch (Throwable e) {}
+		
+		if (Func.multiEquals(args[0].toLowerCase(), "nowa", "edytor")) {
+			if (args.length <= 2 && !edytor.maEdytor(sender))
+				return Func.powiadom(sender, prefix + "/szkatułka edytor -t <nazwa szkatułki>");
+			else if (args.length >= 2 && args[1].equals("-t"))
+				args[2] = "configi/Bonusowe Skrzynki|" + args[2];
+			return edytor.onCommand(sender, label, args);
+		}
+		
 		Box box = (Box) config.wczytaj(args[1]);
 		if (box == null)
 			return Func.powiadom(sender, prefix + "Niepoprawna nazwa Szkatułki");
-		switch (args[0]) {
+		
+		switch (args[0].toLowerCase()) {
 		case "e":
 		case "edytuj":
 			box.skrzynka.edytuj((Player) sender);

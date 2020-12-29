@@ -16,10 +16,10 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.SkyBlock.SkyBlock.DołączanieDoWyspyEvent;
-import me.jomi.mimiRPG.SkyBlock.SkyBlock.OpuszczanieWyspyEvent;
-import me.jomi.mimiRPG.SkyBlock.SkyBlock.PrzeliczaniePunktówWyspyEvent;
-import me.jomi.mimiRPG.SkyBlock.SkyBlock.UsuwanieWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.DołączanieDoWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.OpuszczanieWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.UsuwanieWyspyEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
@@ -37,46 +37,11 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 
 	// EventHandler
 	
-	/*/// api iridium XXX
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void liczeniePkt(IslandWorthCalculatedEvent ev) {
-		new Thread(() -> {
-			Island is = ev.getIsland();
-			String owner = is.getOwner();
-			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOfflineUUID(owner));
-			
-			String suff = ranga(ev.getIslandWorth());
-			if (suff.equals(aktsuff))
-				return;
-			
-			Consumer<String> ustawRange = uuid ->
-					Main.chat.setPlayerSuffix(null, Func.graczOfflineUUID(uuid), suff);
-			
-			ustawRange.accept(owner);
-			for (String member : is.getMembers())
-				ustawRange.accept(member);
-		}).start();
-	}
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void usuwanieWyspy(IslandDeleteEvent ev) {
-		new Thread(() -> {
-			Island is = ev.getIsland();
-			String owner = is.getOwner();
-			
-			Consumer<String> ustawRange = nick ->
-					Main.chat.setPlayerSuffix(null, Func.graczOffline(nick), "");
-			
-			ustawRange.accept(owner);
-			for (String member : is.getMembers())
-				ustawRange.accept(member);
-		}).start();
-	}*/
-	
 	/// api Modułu SkyBlock
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void liczeniePkt(PrzeliczaniePunktówWyspyEvent ev) {
 		new Thread(() -> {
-			String jedenZCzłonków = ev.wyspa.członkowie.get(Func.losuj(ev.wyspa.członkowie.keySet()));
+			String jedenZCzłonków = Func.losuj(ev.wyspa.członkowie.keySet());
 			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOfflineUUID(jedenZCzłonków));
 			
 			String suff = ranga(ev.pktPo);

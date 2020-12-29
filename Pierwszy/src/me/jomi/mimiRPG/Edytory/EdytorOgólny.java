@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -18,12 +19,13 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 
 public class EdytorOgólny<T> {

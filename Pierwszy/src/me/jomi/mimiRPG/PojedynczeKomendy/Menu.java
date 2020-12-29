@@ -212,7 +212,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	public void otwarcieMenu(PlayerInteractEvent ev) {
 		if (ev.getAction().toString().startsWith("LEFT")) return;
 		ItemStack item = ev.getItem();
-		if (item == null) return;
+		if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
 		if (item.getItemMeta().getDisplayName().equalsIgnoreCase("§2Menu")) {
 			ev.getPlayer().chat("/menu");
 			ev.setCancelled(true);
