@@ -23,7 +23,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
-import com.iridium.iridiumskyblock.User;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -122,17 +121,17 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		void otwórz(Player p) {
-			if (bezpośrednia || !Main.iridiumSkyblock)
+			if (bezpośrednia || /*!Main.iridiumSkyblock || XXX */ !Main.włączonyModół(Sklep.class))
 				p.openInventory(inv);
 			else {
 				Inventory _inv = Func.CloneInv(inv, nazwaInv);
 				double pkt = 0;
 				if (Main.włączonyModół(SkyBlock.class))
 					SkyBlock.Wyspa.wczytaj(p).getPkt();
-				else
-					try {
+				/*else
+					try {XXX
 						pkt = User.getUser(p).getIsland().getValue();
-					} catch (Throwable e) {}
+					} catch (Throwable e) {}*/
 				for (SklepItem item : specjalneItemy)
 					if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))
 						_inv.setItem(item.slot, item.item);

@@ -1,11 +1,13 @@
 package me.jomi.mimiRPG.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -53,6 +55,8 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.Metadatable;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.spawn.EssentialsSpawn;
@@ -154,11 +158,8 @@ public abstract class Func {
 				return (E) met.invoke(null, str);
 			} catch (Throwable e) {}
 			return (E) met.invoke(null, str.toUpperCase());
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Throwable e) {
 			return null;
-		} catch (Error e) {
-			throw e;
 		}
 	}
 	
@@ -653,8 +654,11 @@ public abstract class Func {
 		return Bukkit.createInventory(holder, rzędy * 9, koloruj(nazwa));
 	}
 	public static void ustawPuste(Inventory inv) {
+		ustawPuste(inv, Baza.pustySlot);
+	}
+	public static void ustawPuste(Inventory inv, ItemStack pustySlot) {
 		for (int i=0; i<inv.getSize(); i++)
-			inv.setItem(i, Baza.pustySlot);
+			inv.setItem(i, pustySlot);
 	}
 	public static void wypełnij(Inventory inv) {
 		int slot;
@@ -928,6 +932,21 @@ public abstract class Func {
 	public static <T> void dodajWszystkie(Set<T> set, T... elementy) {
 		for (T el : elementy)
 			set.add(el);
+	}
+
+	public static Object wczytajJSON(String ścieżka) {
+		return wczytajJSON(ścieżka, "UTF-8");
+	}
+	public static Object wczytajJSON(String ścieżka, String kodowanie) {
+		if (!ścieżka.endsWith(".json"))
+			ścieżka += ".json";
+		try {
+			JSONParser parser = new JSONParser();
+			InputStreamReader in = new InputStreamReader(new FileInputStream(ścieżka), kodowanie);
+			return parser.parse(new BufferedReader(in));
+		} catch (IOException | ParseException e) {
+			return null;
+		}
 	}
 	
 	public static boolean zawiera(Location loc, Location róg1, Location róg2) {

@@ -2,7 +2,7 @@ package me.jomi.mimiRPG;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
+
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.google.common.collect.Lists;
@@ -35,6 +35,7 @@ public class Moduły implements Przeładowalny {
 			włączony = false;
 		}
 		
+		@Override
 		public String toString() {
 			return "Moduły.Klasa(" + klasa.getSimpleName() + ")~" + (włączony ? "Włączona" : "Wyłączona");
 		}
@@ -44,11 +45,18 @@ public class Moduły implements Przeładowalny {
 	
 	static final List<Class<?>> klasy = Lists.newArrayList();
 	static final HashMap<String, Klasa> mapa = new HashMap<>();
-	 
+	
 	public Moduły() {
+		List<List<Class<?>>> klasy = Lists.newArrayList();
+		for (int i=0; i < 5; i++)
+			klasy.add(Lists.newArrayList());
+		
 		for (Class<?> clazz : Func.wszystkieKlasy())
 			if (clazz.isAnnotationPresent(Moduł.class))
-				klasy.add(clazz);
+				klasy.get(clazz.getDeclaredAnnotation(Moduł.class).priorytet().poziom).add(clazz);
+		
+		for (List<Class<?>> subKlasy : klasy)
+			subKlasy.forEach(Moduły.klasy::add);
 	}
 	
 	@Override
@@ -60,28 +68,31 @@ public class Moduły implements Przeładowalny {
 		return Func.r("Włączone Moduły", włączone + "/" + klasy.size());
 	}
 	
+	void włączModuł(Class<?> klasa) {
+		String nazwa = klasa.getSimpleName();
+		if (!mapa.containsKey(nazwa))
+			mapa.put(nazwa, new Klasa(klasa));
+		boolean warunek;
+		try {
+			warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
+		} catch (NoSuchMethodException e) {
+			warunek = true;
+		} catch (Throwable e) {
+			warunek = false;
+		}
+		
+		if (warunek) {
+			try {
+				mapa.get(klasa.getSimpleName()).włącz();
+				włączone++;
+			} catch (Throwable e) {
+				Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
+				e.printStackTrace();
+			}
+		}
+	}
 	public void włącz(ConfigurationSection sekcja) {
 		włączone = 0;
-		Consumer<Class<?>> włączModuł = klasa -> {
-			boolean warunek;
-			try {
-				warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
-			} catch (NoSuchMethodException e) {
-				warunek = true;
-			} catch (Throwable e) {
-				warunek = false;
-			}
-			
-			if (warunek) {
-				try {
-					mapa.get(klasa.getSimpleName()).włącz();
-					włączone++;
-				} catch (Throwable e) {
-					Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
-					e.printStackTrace();
-				}
-			}
-		};
 		boolean przeładować = false;
 		for (Class<?> klasa : klasy) {
 			String nazwa = klasa.getSimpleName();
@@ -90,7 +101,7 @@ public class Moduły implements Przeładowalny {
 			Klasa _klasa = mapa.get(nazwa);
 			boolean w = _klasa.włączony;
 			if (sekcja.getBoolean(nazwa)) {
-				włączModuł.accept(klasa);
+				włączModuł(klasa);
 				if (!w && _klasa.włączony && _klasa.inst instanceof Komenda)
 					przeładować = true;
 				if (!w && _klasa.włączony && Main.pluginEnabled)

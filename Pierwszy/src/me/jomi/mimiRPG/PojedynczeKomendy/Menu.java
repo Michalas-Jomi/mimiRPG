@@ -189,6 +189,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	}
 
 	boolean poprawne = false;
+	@Override
 	public void przeładuj() {
 		JSONParser parser = new JSONParser();
 		mapa.clear();
@@ -202,6 +203,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 			poprawne = false;
 		}
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("menu.json", poprawne ? "§aPoprawny" : "§cNie poprawny");
 	}

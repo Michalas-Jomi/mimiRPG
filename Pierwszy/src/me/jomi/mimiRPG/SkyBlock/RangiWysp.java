@@ -2,7 +2,6 @@ package me.jomi.mimiRPG.SkyBlock;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -13,9 +12,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import com.google.common.collect.Lists;
-import com.iridium.iridiumskyblock.Island;
-import com.iridium.iridiumskyblock.api.IslandDeleteEvent;
-import com.iridium.iridiumskyblock.api.IslandWorthCalculatedEvent;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -34,14 +30,14 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		super("rangiWysp");
 	}
 	public static boolean warunekModułu() {
-		return (Main.włączonyModół(SkyBlock.class) || Main.iridiumSkyblock) && Main.chat != null;
+		return (Main.włączonyModół(SkyBlock.class) /*|| Main.iridiumSkyblock XXX */) && Main.chat != null;
 	}
 
 	private final List<Krotka<String, Double>> rangi = Lists.newArrayList();
 
 	// EventHandler
 	
-	/// api iridium
+	/*/// api iridium XXX
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void liczeniePkt(IslandWorthCalculatedEvent ev) {
 		new Thread(() -> {
@@ -74,7 +70,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			for (String member : is.getMembers())
 				ustawRange.accept(member);
 		}).start();
-	}
+	}*/
 	
 	/// api Modułu SkyBlock
 	@EventHandler(priority = EventPriority.MONITOR)

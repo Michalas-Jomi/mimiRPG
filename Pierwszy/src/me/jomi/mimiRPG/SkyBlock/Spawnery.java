@@ -34,7 +34,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
-import com.iridium.iridiumskyblock.User;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.server.v1_16_R2.BlockPosition;
@@ -381,9 +380,12 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		CreatureSpawner spawner = (CreatureSpawner) blok.getState();
 		Player p = ev.getPlayer();
 		
+		Wyspa wyspa;
 		if (p.hasPermission("mimirpg.spawnery.bypass") || 
-				(Main.włączonyModół(SkyBlock.class) && Wyspa.wczytaj(ev.getClickedBlock().getLocation()).permisje(ev.getPlayer()).dostęp_do_spawnerów) ||
-				(Main.iridiumSkyblock && User.getUser(p).getIsland().isInIsland(spawner.getLocation()))) {
+				(Main.włączonyModół(SkyBlock.class) && 
+						(wyspa = Wyspa.wczytaj(ev.getClickedBlock().getLocation())) != null &&
+						 wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów) /*|| XXX
+				(Main.iridiumSkyblock && User.getUser(p).getIsland().isInIsland(spawner.getLocation()))*/) {
 			edytuj(p, spawner);
 			ev.setCancelled(true);
 		}

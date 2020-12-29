@@ -254,8 +254,8 @@ public class Config {
 		if (!Func.wyjmijPlik(sciezkaJarDomyślny, sciezka)) {
 			try {
 				f.createNewFile();
-				String path = f.getAbsolutePath();
-				if (!path.contains("\\configi\\"))
+				String path = f.getAbsolutePath().replace("\\", "/");
+				if (!path.contains("/configi/"))
 					Main.log("Utworzono pusty plik konfiguracyjny " + path);
 			} catch (IOException e) {
 				e.printStackTrace();

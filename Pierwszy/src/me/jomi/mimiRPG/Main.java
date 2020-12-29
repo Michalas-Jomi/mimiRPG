@@ -26,7 +26,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.iridium.iridiumskyblock.IridiumSkyblock;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -61,7 +60,7 @@ public class Main extends JavaPlugin implements Listener {
     public static Economy econ;
     public static Chat chat;
 	// Api Iridium Skyblock
-    public static boolean iridiumSkyblock = false;
+    //public static boolean iridiumSkyblock = false; XXX
 	// Api WorldGuard
 	public static WorldGuardPlugin rg;
     public static StringFlag flagaCustomoweMoby;
@@ -113,13 +112,13 @@ public class Main extends JavaPlugin implements Listener {
         if (!ekonomia)
 			brakPluginu("Vault");
 	}
-	private void włączIridiumSkyblock() {
-		try {
+	/*private void włączIridiumSkyblock() {
+		try {XXX
         	iridiumSkyblock = IridiumSkyblock.getInstance() != null;
         } catch (NoClassDefFoundError e) {
 			brakPluginu("IridiumSkyblock");
         }
-	}
+	}*/
 	
 	@Override
 	@SuppressWarnings("unchecked")
@@ -141,7 +140,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		włączVault();
-		włączIridiumSkyblock();
+		//włączIridiumSkyblock(); // XXX
             
 		zarejestruj(this);
 		zarejestruj(new Baza());
@@ -260,7 +259,9 @@ public class Main extends JavaPlugin implements Listener {
 		PluginManager pluginManager = plugin.getServer().getPluginManager();
 		for (String permisja : permisje) {
 			permisja = Func.permisja(permisja);
+			try {
 			pluginManager.addPermission(new org.bukkit.permissions.Permission(permisja));
+			} catch (IllegalArgumentException e) {}
 		}
 	}
 	
@@ -314,7 +315,6 @@ public class Main extends JavaPlugin implements Listener {
 	public void zamykanieEqtaknie(InventoryCloseEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), PanelTakNieHolder.class, holder -> Func.wykonajDlaNieNull(holder.nie, Runnable::run));
 	}
-	
 	
 	
 	

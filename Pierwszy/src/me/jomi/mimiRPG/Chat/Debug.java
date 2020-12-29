@@ -9,10 +9,11 @@ import org.bukkit.command.CommandSender;
 
 import com.google.common.collect.Lists;
 
-import joptsimple.ValueConversionException;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
+
+import joptsimple.ValueConversionException;
 
 @Moduł
 public class Debug extends Komenda {
@@ -36,7 +37,14 @@ public class Debug extends Komenda {
 			for (String arg : _args)
 				obj = wez(obj, arg);
 			
-			sender.sendMessage(obj.toString());
+			// TODO napisać rekurencyjnie
+			if (obj.getClass().isArray()) {
+				sender.sendMessage("[");
+				for (Object o : ((Object[]) obj))
+					sender.sendMessage(o.toString());
+				sender.sendMessage("]");
+			} else
+				sender.sendMessage(obj.toString());
 		} catch (Throwable e) {
 			sender.sendMessage("§cNiepowodzenie " + e.getClass().getSimpleName() + " " + e.getMessage());
 			e.printStackTrace();
