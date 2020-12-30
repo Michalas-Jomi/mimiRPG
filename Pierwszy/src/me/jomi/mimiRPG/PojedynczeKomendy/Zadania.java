@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -22,6 +23,8 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -32,9 +35,10 @@ import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Krotki.Box;
+import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class Zadania extends Komenda implements Przeładowalny, Listener {
@@ -42,7 +46,20 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	public static enum Rodzaj {
 		ZABIJ,
 		WYKOP,
-		DOSTARCZ;
+		DOSTARCZ,
+		ZDOBĄDZ;
+	}
+	public static enum Status {
+		DO_ODEBRANIA(Material.LIME_STAINED_GLASS_PANE),
+		DO_PRZYJĘCIA(Material.YELLOW_STAINED_GLASS_PANE),
+		UKOŃCZONE(Material.GREEN_STAINED_GLASS_PANE),
+		W_TRAKCIE(Material.PINK_STAINED_GLASS_PANE),
+		NIE_DOSTĘPNE(Material.RED_STAINED_GLASS_PANE);
+		
+		Material ikona;
+		Status(Material ikona) {
+			this.ikona = ikona;
+		}
 	}
 	public static class Kryterium extends Mapowany {
 		@Mapowane Rodzaj rodzaj = Rodzaj.DOSTARCZ;
@@ -51,6 +68,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		public void Init() {
 			switch (rodzaj) {
+			case ZDOBĄDZ:
 			case DOSTARCZ:
 				czego = Config.item(czego);
 				break;
@@ -66,7 +84,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	public static class Zadanie extends Mapowany {
-		@Mapowane String nazwa;
+		@Mapowane String id;
+		@Mapowane String nazwaWyświetlana;
 		@Mapowane List<String> opis;
 		@Mapowane List<String> wymagane;
 		@Mapowane List<ItemStack> nagroda;
@@ -77,23 +96,55 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		public void Init() {
 			opis = Func.koloruj(opis);
+			nazwaWyświetlana = Func.koloruj(nazwaWyświetlana);
+		}
+		
+		// nie zapisuje g.zapisz()
+		int debugUkończ(Gracz g, Player p) {
+			if (g.zadania.ukończone.contains(id))
+				return 0;
+			Box<Integer> box = new Box<>(1);
+			
+			wymagane.forEach(str -> Func.wykonajDlaNieNull(wczytaj(str), zadanie -> box.a += zadanie.debugUkończ(g, p)));
+			
+			for (AktywneZadanie zadanie : g.zadania.aktywne)
+				if (zadanie.zadanie.equals(id)) {
+					zadanie.odbierzNagrode(p);
+					return box.a;
+				}
+			
+			przyjmij(p).odbierzNagrode(p);
+			return box.a;
+		}
+		// nie zapisuje g.zapisz()
+		int debugZapomnij(Gracz g) {
+			if (!g.zadania.ukończone.remove(id))
+				return 0;
+			Box<Integer> box = new Box<>(1);
+			
+			mapaZadań.values().forEach(zadanie -> {
+				if (zadanie.wymagane.contains(id))
+					box.a += zadanie.debugZapomnij(g);
+			});
+			
+			return box.a;
 		}
 		
 		
 		boolean możePrzyjąć(Player p) {
 			Gracz g = Gracz.wczytaj(p);
 			
-			if (g.zadania.ukończone.contains(nazwa))
+			if (g.zadania.ukończone.contains(id))
 				return false;
 			
 			for (AktywneZadanie zadanie : g.zadania.aktywne)
-				if (zadanie.zadanie.equals(nazwa))
+				if (zadanie.zadanie.equals(id))
 					return false;
 			
 			return g.zadania.ukończone.containsAll(wymagane);
 		}
 		
-		void przyjmij(Player p) {
+		AktywneZadanie przyjmij(Player p) {
 			cmdsStart.forEach(cmd -> 
 			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
 						cmd.replace("%nick%", p.getName()).replace("%displayname%", p.getDisplayName())));
@@ -101,17 +152,19 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			Gracz g = Gracz.wczytaj(p);
 			
 			AktywneZadanie zadanie = Func.utwórz(AktywneZadanie.class);
-			zadanie.zadanie = nazwa;
+			zadanie.zadanie = id;
 			g.zadania.aktywne.add(zadanie);
 			
 			g.zapisz();
 			
-			p.sendMessage(prefix + Func.msg("Przyjołeś nowe zadanie: %s", nazwa));
+			p.sendMessage(prefix + Func.msg("Przyjołeś nowe zadanie: %s", nazwaWyświetlana));
+			
+			return zadanie;
 		}
 	}
 	public static class AktywneZadanie extends Mapowany {
 		@Mapowane String zadanie;
-		@Mapowane List<Integer> postępKryteriow; // TODO naprawić - wysypie sie przy usunięciu kryterium
+		@Mapowane List<Integer> postępKryteriow;
 		private boolean ukończone = false;
 		
 		int getPostęp(int i) {
@@ -166,6 +219,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 					p.getInventory().setItemInMainHand(item.getAmount() <= 0 ? null : item);
 					return ile;
 				});
+				sprawdzZadanie(p, g, Rodzaj.ZDOBĄDZ, item, item::isSimilar, this, k -> Math.min(item.getAmount(), k.ile));
 			});
 			return krotka.a;
 		}
@@ -174,11 +228,15 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			return ukończone ? ukończone : (ukończone = spełnione());
 		}
 		private boolean spełnione() {
-			Zadanie zadanie = wczytaj(this.zadanie);
-			for (int i=0; i < zadanie.kryteria.size(); i++)
-				if (getPostęp(i) < zadanie.kryteria.get(i).ile)
-					return false;
-			return true;
+			Box<Boolean> box = new Box<>(true);
+			Func.wykonajDlaNieNull(wczytaj(this.zadanie), zadanie -> {
+				for (int i=0; i < zadanie.kryteria.size(); i++)
+					if (getPostęp(i) < zadanie.kryteria.get(i).ile) {
+						box.a = false;
+						return;
+					}
+			});
+			return box.a;
 		}
 	}
 	public static class ZadaniaGracza extends Mapowany {
@@ -188,35 +246,50 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	
 	public static class InvHolder extends Func.abstractHolder {
 		//	(zadanie, args1 ? przyjmować : odbierać)
-		List<Krotka<Zadanie, Boolean>> zadania;
-		public InvHolder(int rzędy, List<Krotka<Zadanie, Boolean>> zadania) {
-			super(rzędy, "&4&lZadania");
+		List<Krotka<Zadanie, Status>> zadania;
+		public InvHolder(List<Krotka<Zadanie, Status>> zadania, List<String> ukończone) {
+			super(Func.potrzebneRzędy(zadania.size()), "&4&lZadania");
 			this.zadania = zadania;
 			Func.ustawPuste(inv);
 			Krotka<Integer, ?> i = new Krotka<>(0, null);
-			zadania.forEach(krotka -> 
-					inv.setItem(i.a++,
-							Func.stwórzItem(krotka.b ? Material.YELLOW_STAINED_GLASS_PANE : Material.LIME_STAINED_GLASS_PANE,
-									"&c" + krotka.a.nazwa,
-									krotka.a.opis)
-							));
+			zadania.forEach(krotka ->  {
+				ItemStack item = Func.stwórzItem(krotka.b.ikona,
+						"&c" + krotka.a.nazwaWyświetlana,
+						krotka.a.opis);
+				switch (krotka.b) {
+				case DO_ODEBRANIA:	Func.dodajLore(item, "&aDo odebrania");	break;
+				case DO_PRZYJĘCIA:	Func.dodajLore(item, "&aDo przyjęcia");	break;
+				case UKOŃCZONE:		Func.dodajLore(item, "&aUkończone");	break;
+				case W_TRAKCIE:		Func.dodajLore(item, "&dW trakcie");	break;
+				case NIE_DOSTĘPNE:
+					if (!krotka.a.wymagane.isEmpty()) {
+						Func.dodajLore(item, "&6Wymagane zadania:");
+						krotka.a.wymagane.forEach(str -> Func.dodajLore(item, "&" + (ukończone.contains(str) ? "a" : "c") + "- " +
+								Func.domyślnaTry(() -> wczytaj(str).nazwaWyświetlana, str)));
+					} else {
+						Func.dodajLore(item, "&cNiedostępne");
+					}
+					break;
+				}
+				inv.setItem(i.a++, item);
+				});
 		}
 	}
 	
-	static final Config config = new Config("configi/Zadania");	
 	
 	static Zadanie wczytaj(String nazwa) {
-		return (Zadanie) config.wczytaj(nazwa);
+		return mapaZadań.get(nazwa);
 	}
 	
 	public Zadania() {
 		super("zadania");
 		ustawKomende("zadaniaadmin", null, null);
-		
+
 		edytor.zarejestrójWyjątek("/zadaniaadmin edytor kryteria <int> czego", (zadanie, ścieżka) -> {
 			int index = Func.Int(Func.tnij(ścieżka, " ").get(3));
 			Kryterium k = zadanie.kryteria.get(index);
 			switch (k.rodzaj) {
+			case ZDOBĄDZ:
 			case DOSTARCZ:
 				return new Napis("§6item§8: ")
 						.dodaj((k.czego instanceof ItemStack ? Napis.item((ItemStack) k.czego) : new Napis("§enull"))
@@ -237,8 +310,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			return null;
 		});
 		
-		edytor.zarejestrójWyjątek("/zadaniaadmin edytor nazwa", (zadanie, ścieżka) -> null);
-		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.nazwa = ścieżka);
+		edytor.zarejestrójWyjątek("/zadaniaadmin edytor id", (zadanie, ścieżka) -> null);
+		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.id = ścieżka);
 		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> przeładuj());
 	}
 	
@@ -264,7 +337,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
 				Kryterium k;
 				for (int i=0; i < zadanie.kryteria.size(); i++)
-					if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && pred.test(czego)) {
+					if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && k.ile > aktywneZadanie.getPostęp(i) && pred.test(czego)) {
 						aktywneZadanie.zwiększ(p, i, ile.apply(k));
 						g.zapisz();
 						if (zadanie.autoObieranie && aktywneZadanie.spełnione())
@@ -280,16 +353,15 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 				int slot = ev.getRawSlot();
 				Player p = (Player) ev.getWhoClicked();
 				if (slot < holder.zadania.size() && slot >= 0) {
-					Krotka<Zadanie, Boolean> krotka = holder.zadania.get(slot);
-					if (krotka.b)
+					Krotka<Zadanie, Status> krotka = holder.zadania.get(slot);
+					if (krotka.b == Status.DO_PRZYJĘCIA)
 						krotka.a.przyjmij(p);
-					else {
+					else if (krotka.b == Status.DO_ODEBRANIA)
 						for (AktywneZadanie aktywneZadanie : Gracz.wczytaj(p).zadania.aktywne)
-							if (aktywneZadanie.zadanie.equals(krotka.a.nazwa)) {
+							if (aktywneZadanie.zadanie.equals(krotka.a.id)) {
 								aktywneZadanie.odbierzNagrode(p);
 								break;
 							}
-					}
 					p.closeInventory();
 				}
 			});
@@ -324,20 +396,29 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			break;
 		case "zadaniaadmin":
 			if (args.length >= 1 && args[0].equals("edytor"))
-				return null;
+				return utab(args, mapaZadań.keySet());
 			if (args.length <= 1) {
 				lista.add("edytor");
+				lista.add("zapomnij");
+				lista.add("ukończ");
 				Bukkit.getOnlinePlayers().forEach(p -> lista.add(p.getName()));
-				return lista;
+				return utab(args, lista);
 			}
-			lista.addAll(config.klucze(false));
-			if (!lista.isEmpty()) {
-				lista.add("-!przyjmij");
-				lista.add("-!odbierz");
-				lista.add("-!dostarcz");
+			lista.addAll(mapaZadań.keySet());
+			switch(args[0]) {
+			case "ukończ":
+			case "zapomnij":
+				if (args.length == 2)
+					return null;
+			default:
+				if (!lista.isEmpty()) {
+					lista.add("-!przyjmij");
+					lista.add("-!odbierz");
+					lista.add("-!dostarcz");
+				}
 			}
 		}
-		return lista;
+		return utab(args, lista);
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -376,12 +457,12 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
 				Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
 					n.dodaj(new Napis(
-							"\n§e- §b" + zadanie.nazwa,
+							"\n§e- §b" + zadanie.nazwaWyświetlana + "\n",
 							String.join("\n", zadanie.opis)
 							));
 					int i=0;
 					for (Kryterium kryterium : zadanie.kryteria)
-						n.dodaj("§6" + Func.enumToString(kryterium.rodzaj) + " ")
+						n.dodaj("\n§6" + Func.enumToString(kryterium.rodzaj) + " ")
 						 .dodaj(kryterium.czego instanceof ItemStack ?
 								 Napis.item((ItemStack) kryterium.czego) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.czego)))
 						 .dodaj(String.format(" §e%s§6/§e%s\n", aktywneZadanie.postępKryteriow.get(i++), kryterium.ile));
@@ -395,13 +476,13 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			if (zadanie == null)
 				return Func.powiadom(prefix, sender, "Niepoprawne zadanie %s", args[0]);
 			
-			if (g.zadania.ukończone.contains(zadanie.nazwa))
-				sender.sendMessage(String.format("\n\n§dZadanie §b%s §a(ukończone)\n", zadanie.nazwa) + Func.koloruj(String.join("\n", zadanie.opis)));
+			if (g.zadania.ukończone.contains(zadanie.id))
+				sender.sendMessage(String.format("\n\n§dZadanie §b%s §a(ukończone)\n", zadanie.nazwaWyświetlana) + Func.koloruj(String.join("\n", zadanie.opis)));
 			else {
 				for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
-					if (aktywneZadanie.zadanie.equals(zadanie.nazwa)) {
+					if (aktywneZadanie.zadanie.equals(zadanie.id)) {
 						Napis n = new Napis(
-								"\n§b" + zadanie.nazwa,
+								"\n§b" + zadanie.nazwaWyświetlana,
 								String.join("\n", zadanie.opis)
 								);
 						int i=0;
@@ -423,12 +504,34 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		if (args.length <= 0)
 			return Func.powiadom(sender, prefix + "/zadaniaadmin [nick / edytor]");
 		
-		if (args[0].equals("edytor")) {
+		switch (args[0].toLowerCase()) {
+		case "edytor":
 			if (args.length <= 2 && !edytor.maEdytor(sender))
 				return Func.powiadom(sender, prefix + "/zadaniaadmin edytor -t <nazwa zadania>");
 			else if (args.length >= 2 && args[1].equals("-t"))
 				args[2] = "configi/Zadania|" + args[2];
 			return edytor.onCommand(sender, "zadaniaadmin", args);
+		case "ukończ":
+			Func.wykonajDlaNieNull(Func.gracz(sender, args[1]), p -> {
+				Func.wykonajDlaNieNull(wczytaj(Func.listToString(args, 2)), zadanie -> {
+					Gracz g = Gracz.wczytaj(p);
+					sender.sendMessage(prefix + Func.msg("%s ukończył %s zadań", p.getDisplayName(), zadanie.debugUkończ(g, p)));
+					g.zapisz();
+				},
+						() -> sender.sendMessage(prefix + "To zadanie nie istnieje"));
+			});
+			return true;
+		case "zapomnij":
+			Func.wykonajDlaNieNull(Func.gracz(sender, args[1]), p -> {
+				Func.wykonajDlaNieNull(wczytaj(Func.listToString(args, 2)), zadanie -> {
+					Gracz g = Gracz.wczytaj(p);
+					sender.sendMessage(prefix + Func.msg("%s zapomniał %s zadań", p.getDisplayName(), zadanie.debugZapomnij(g)));
+					g.zapisz();
+				},
+						() -> sender.sendMessage(prefix + "To zadanie nie istnieje"));
+			});
+			return true;
+			
 		}
 		
 		// /zadaniaadmin <nick> [(opcje per zadanie)... <nazwy zadań>...] - otwiera panel z dostępnymi zadaniami z listy <nazwy zadań>
@@ -443,8 +546,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 				return Func.powiadom(sender, "Ten gracz nie jest aktualnie online!");
 		}
 		//	(zadanie, args1 ? przyjmować : odbierać)
-		List<Krotka<Zadanie, Boolean>> zadania = Lists.newArrayList();
-		boolean dostarczone = false;
+		List<Krotka<Zadanie, Status>> zadania = Lists.newArrayList();
+		MonoKrotka<Boolean> dostarczone = new MonoKrotka<>(false, null);
 		
 		boolean przyjmij = true;
 		boolean odbierz = true;
@@ -470,46 +573,72 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 				Zadanie zadanie = wczytaj(args[i]);
 				if (zadanie == null)
 					sender.sendMessage(prefix + "Nieprawidłowe zadanie: " + args[i]);
-				else {
-					if (dostarcz)
-						for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
-							if (aktywneZadanie.zadanie.equals(zadanie.nazwa))
-								dostarczone = aktywneZadanie.dostarcz(p, g) || dostarczone;
-					
-					if (odbierz && !dostarczone)
-						for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
-							if (aktywneZadanie.zadanie.equals(zadanie.nazwa)) {
-								if (aktywneZadanie.doOdebrania())
-									zadania.add(new Krotka<>(zadanie, false));
-								break;
-							}
-					
-					if (przyjmij && !dostarczone && zadanie.możePrzyjąć(p))
-						zadania.add(new Krotka<>(zadanie, true));
-				
-				}
+				else
+					if (!dodajItem(zadania, zadanie, przyjmij, odbierz, dostarcz, dostarczone, g, p))
+						Main.error("error: " + Lists.newArrayList(args));
 				przyjmij = true;
 				odbierz = true;
 				dostarcz = true;
 				break;
 			}
 		
-		if (dostarczone)
+		if (dostarczone.a)
 			return Func.powiadom(p, prefix + "Dostarczyłeś troche itemków");
 		
 		if (!zadania.isEmpty()) {
-			p.openInventory(new InvHolder((zadania.size() - 1) / 9 + 1, zadania).getInventory());
+			p.openInventory(new InvHolder(zadania, g.zadania.ukończone).getInventory());
 			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
 		}
 		return true;
 	}
+	private boolean dodajItem(List<Krotka<Zadanie, Status>> zadania, Zadanie zadanie, boolean przyjmij, boolean odbierz, boolean dostarcz, MonoKrotka<Boolean> dostarczone, Gracz g, Player p) {
+		if (!dostarczone.a && g.zadania.ukończone.contains(zadanie.id))
+			return zadania.add(new Krotka<>(zadanie, Status.UKOŃCZONE));
 
+		if (odbierz && !dostarczone.a)
+			for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
+				if (aktywneZadanie.zadanie.equals(zadanie.id)) {
+					if (aktywneZadanie.doOdebrania())
+						return zadania.add(new Krotka<>(zadanie, Status.DO_ODEBRANIA));
+					break;
+				}
+		if (dostarcz)
+			for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
+				if (aktywneZadanie.zadanie.equals(zadanie.id)) {
+					dostarczone.a = aktywneZadanie.dostarcz(p, g) || dostarczone.a;
+					return zadania.add(new Krotka<>(zadanie, Status.W_TRAKCIE));
+				}
+
+		
+		if (przyjmij && !dostarczone.a)
+			return zadania.add(new Krotka<>(zadanie, zadanie.możePrzyjąć(p) ? Status.DO_PRZYJĘCIA : Status.NIE_DOSTĘPNE));
+		
+		if (!przyjmij && !odbierz && !dostarcz)
+			return true;
+		
+		Main.error("Nieprzewidziana sytuacja w zadaniach error id:3");
+		return false;
+	}
+	
+	
+	static final HashMap<String, Zadanie> mapaZadań = new HashMap<>();
+	
 	@Override
 	public void przeładuj() {
+		Config config = new Config("configi/Zadania");	
 		config.przeładuj();
+		mapaZadań.clear();
+		
+		for (String klucz : config.klucze(false)) {
+			Object obj = config.wczytaj(klucz);
+			if (obj instanceof Zadanie)
+				mapaZadań.put(klucz, (Zadanie) obj);
+			else
+				Main.warn("Niepoprawne zadanie w configi/Zadania.yml: " + klucz);
+		}
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Wczytane zadania", config.klucze(false).size());
+		return Func.r("Wczytane zadania", mapaZadań.size());
 	}
 }
