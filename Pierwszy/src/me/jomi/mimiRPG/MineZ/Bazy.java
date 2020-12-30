@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
@@ -96,23 +97,22 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (nazwa == null) return null;
 			return (Gildia) config.wczytaj(nazwa);
 		}
-		static Gildia stwórz(String nazwa, String przywódca) {
+		static Gildia stwórz(String nazwa, String tag, Player p) {
+			String przywódca = p.getName();
 			Gracz g = Gracz.wczytaj(przywódca);
 			
 			if (g.gildia != null) {
-				Player p = Bukkit.getPlayer(przywódca);
 				p.sendMessage(prefix + "Nie możesz utworzyć nowej gildi puki nie opuścisz aktualnej");
 				return null;
 			}
 			if (nazwa.contains(".")) {
-				Player p = Bukkit.getPlayer(przywódca);
 				p.sendMessage(prefix + "Nie możesz utworzyć gildi o tej nazwie");
 				return null;
 			}
 			Gildia gildia = new Gildia();
 			gildia.przywódca = przywódca;
 			gildia.nazwa = nazwa;
-			gildia.zapisz();
+			gildia.ustawTag(p, tag);
 			
 			g.gildia = nazwa;
 			g.zapisz();
@@ -139,18 +139,19 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return false;
 		}
 		
-		void ustawTag(Player p, String tag) {
+		boolean ustawTag(Player p, String tag) {
 			if (istniejeTag(tag)) {
 				p.sendMessage(prefix + "Ten tag już jest zajęty");
-				return;
+				return false;
 			}
 			
 			this.tag = tag;
 			zapisz();
 			
-			new Thread(this::odświeżTag).start();
+			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, this::odświeżTag);
 			
 			wyświetlCzłonkom(prefix + Func.msg("%s ustawił tag gildi %s na %s", p.getName(), nazwa, tag()));
+			return true;
 		}
 		
 		String tag() {
@@ -514,7 +515,12 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					g.zapisz();
 				}
 			}
-
+			
+			Matcher mat = Pattern.compile("baza(-?\\d+)x(-?\\d+)y(-?\\d+)z").matcher(region.getId());
+			UnaryOperator<Integer> func = i -> Func.Int(mat.group(i));
+			Bukkit.getWorld(nazwaŚwiata).getBlockAt(func.apply(1), func.apply(2), func.apply(3)).setType(Material.AIR);;
+				
+				
 			ProtectedCuboidRegion nowy = new ProtectedCuboidRegion(
 					"zniszczona" + nazwa,
 					region.getMinimumPoint(),
@@ -1045,8 +1051,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		case "s":
 		case "stwórz":
 		case "stworz":
-			if (args.length < 2)
-				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa>");
+			if (args.length < 3)
+				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa> <tag>");
 			
 			if (args[1].length() > Main.ust.wczytajLubDomyślna("Gildia.nazwa.maksymalna długość", 30))
 				return Func.powiadom(sender, Gildia.prefix + "Za długa nazwa gildi");
@@ -1054,7 +1060,10 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (Gildia.istnieje(args[1]))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("gildia %s już istnieje", args[1]));
 			
-			Gildia.stwórz(args[1], sender.getName());
+			if (Gildia.istniejeTag(args[2]))
+				return Func.powiadom(prefix, sender, "Tag %s jest już zajęty", args[2]);
+			
+			Gildia.stwórz(args[1], args[2], sender);
 			sender.sendMessage(Gildia.prefix + Func.msg("Gildia %s została utworzona", args[1]));
 			break;
 		case "n":

@@ -15,6 +15,10 @@ public class ItemCreator {
 		ItemStack item;
 		ItemMeta meta;
 		
+		public Creator typ(Material mat) {
+			item.setType(mat);
+			return this;
+		}
 		public Creator nazwa(String nazwa) {
 			meta.setDisplayName(Func.koloruj(nazwa));
 			return this;

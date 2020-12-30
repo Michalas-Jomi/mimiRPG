@@ -3,6 +3,13 @@ package me.jomi.mimiRPG.util;
 import me.jomi.mimiRPG.Mapowane;
 
 public class Krotki {
+	public static class Box<T> {
+		public T a;
+		
+		public Box(T a) {
+			this.a = a;
+		}
+	}
 	public static class TriKrotka<T1, T2, T3> extends Krotka<T1, Krotka<T2, T3>> {
 		@Mapowane public T2 b;
 		@Mapowane public T3 c;

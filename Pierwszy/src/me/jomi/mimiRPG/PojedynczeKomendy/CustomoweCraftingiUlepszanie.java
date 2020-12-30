@@ -22,7 +22,7 @@ import me.jomi.mimiRPG.util.Krotka;
  * 
  * Rozszerzenie do Modułu CustomoweCraftingi
  * 
- * @author Michal
+ * @author Michalas-Jomi
  * 
  */
 @Moduł
@@ -39,7 +39,6 @@ public class CustomoweCraftingiUlepszanie implements Listener {
 		mapa.put(r.getResult(), new Krotka<>(r, Objects.requireNonNull(Material.valueOf(config.wczytaj(klucz + ".U").toString().toUpperCase()))));
 		return r;
 	}
-
 	
 	@EventHandler
 	public void prepare(PrepareItemCraftEvent ev) {

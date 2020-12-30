@@ -75,7 +75,6 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 	
 	// Odbieranie
 	
-	
 	Set<String> odbierający = Sets.newConcurrentHashSet();
 	void odbierz(Player p) {
 		Inventory inv = Bukkit.createInventory(null, ((itemy.size() - 1) / 9 + 1) * 9, Func.koloruj("&4&lKalendarz Adwentowy"));

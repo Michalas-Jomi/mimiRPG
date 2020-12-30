@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
@@ -60,13 +61,13 @@ public class Main extends JavaPlugin implements Listener {
 	public static Permission perms;
     public static Economy econ;
     public static Chat chat;
-	// Api Iridium Skyblock
-    //public static boolean iridiumSkyblock = false; XXX
 	// Api WorldGuard
 	public static WorldGuardPlugin rg;
     public static StringFlag flagaCustomoweMoby;
 	public static StateFlag flagaStawianieBaz;
 	public static StateFlag flagaC4;
+	public static StateFlag flagaUżywanieWiadra;
+	public static StateFlag flagaRadiacja;
 	// Api WorldEdit
 	public static WorldEdit we;
 
@@ -84,7 +85,9 @@ public class Main extends JavaPlugin implements Listener {
 			rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
 			
 			for (Flag<?> flaga : new Flag<?>[]{
+				flagaUżywanieWiadra = new StateFlag("NapelnianieWiadra", true),
 				flagaStawianieBaz = new StateFlag("StawianieBaz", true),
+				flagaRadiacja = new StateFlag("Radiacja", false),
 				flagaC4 = new StateFlag("C4", false),
 				flagaCustomoweMoby = new StringFlag("CustomoweMoby")
 			})
@@ -135,7 +138,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		włączVault();
-            
+        
 		zarejestruj(this);
 		zarejestruj(new Baza());
 		new Mimi();
@@ -315,6 +318,13 @@ public class Main extends JavaPlugin implements Listener {
 		if (p.isInvulnerable()) return;
 		p.setInvulnerable(true);
 		Func.opóznij(20 * sekundy, () -> p.setInvulnerable(false));
+	}
+	
+	@EventHandler
+	public void pobieranieWody(PlayerBucketFillEvent ev) {
+		if (Main.rg != null && !Func.regiony(ev.getBlock().getWorld()).getApplicableRegions(Func.locToVec3(ev.getBlock().getLocation()))
+				.testState(Main.rg.wrapPlayer(ev.getPlayer()), Main.flagaUżywanieWiadra))
+			ev.setCancelled(true);
 	}
 	
 	

@@ -2,11 +2,13 @@ package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,10 +19,15 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.ItemCreator;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -32,10 +39,73 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 			Func.ustawPuste(inv);
 		}
 	}
-	
-	// typ itemku: ilość skinów
-	static final HashMap<Material, Integer> mapaIlościSkinów = new HashMap<>();
 
+	public static class Grupa {
+		// kod itemka: Grupa
+		static final HashMap<String, Grupa> mapaGrup = new HashMap<>(); 
+		
+		final Set<String> kody = Sets.newConcurrentHashSet();
+		final String podstawowy;
+		
+		public Grupa(String kodPodstawowy) {
+			this.podstawowy = kodPodstawowy;
+		}
+		
+		List<ItemStack> skiny(Player p, ItemStack item) {
+			List<ItemStack> itemy = Lists.newArrayList();
+			
+			Consumer<String> dodaj = kod -> itemy.add(przetwórz(item.clone(), kod));
+			
+			dodaj.accept(podstawowy);
+			
+			kody.forEach(kod -> {
+				if (p.hasPermission(kodToPerm(kod)))
+					dodaj.accept(kod);
+			});
+			
+			return itemy;
+		}
+	}
+	static ItemStack przetwórz(ItemStack item, String kod) {
+		Krotka<Material, Integer> krotka = odkoduj(kod);
+		return ItemCreator.nowy(
+				item)
+				.typ(krotka.a)
+				.customModelData(krotka.b)
+				.stwórz();
+		
+	}
+	static String kodToPerm(String kod) {
+		return Func.permisja("mimirpg.skinyItemów." + kod);
+	}
+	static Krotka<Material, Integer> odkoduj(String kod) {
+		List<String> części = Func.tnij(kod, "-");
+		return new Krotka<>(Func.StringToEnum(Material.class, części.get(0)), Func.Int(części.get(1)));
+	}
+	static String kod(ItemStack item) {
+		if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData())
+			return null;
+		return item.getType().toString().toLowerCase() + "-" + item.getItemMeta().getCustomModelData();
+	}
+	static Grupa wczytaj(String kod) {
+		return Grupa.mapaGrup.get(kod);
+	}
+	static Grupa wczytaj(ItemStack item) {
+		return wczytaj(kod(item));
+	}
+	static boolean podstawowy(ItemStack item) {
+		String kod = kod(item);
+		Grupa grp = wczytaj(kod);
+		
+		return grp.podstawowy.equals(kod);
+	}
+	static void sprawdz(Player p, ItemStack item, Consumer<ItemStack> cons) {
+		String kod = kod(item);
+		Func.wykonajDlaNieNull(wczytaj(kod), grp -> {
+			if (!grp.podstawowy.equals(kod) && !p.hasPermission(kodToPerm(kod)))
+				cons.accept(przetwórz(item.clone(), grp.podstawowy));
+		});
+	}
 	
 	public SkinyItemków() {
 		super("skinyitemków", null, "skiny");
@@ -50,63 +120,46 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 			ev.setCancelled(true);
 			
 			int slot = ev.getRawSlot();
-			if (slot < 0)
+			if (ev.getCurrentItem().isSimilar(Baza.pustySlot) || (slot > 0 && slot < ev.getInventory().getSize()))
 				return;
 			
-			ItemStack item = ev.getWhoClicked().getInventory().getItemInMainHand();
-			
-			int ile = mapaIlościSkinów.getOrDefault(item, 0);
-
-			
-			if (slot < ile || posiada((Player) ev.getWhoClicked(), item.getType(), slot))
-				ev.getWhoClicked().getInventory().setItemInMainHand(zmień(item, slot));
+			ev.getWhoClicked().getInventory().setItemInMainHand(ev.getCurrentItem());
+			ev.getWhoClicked().closeInventory();
 		});
 	}
 	
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void wyrzucanie(PlayerDropItemEvent ev) {
-		if (mapaIlościSkinów.containsKey(ev.getItemDrop().getItemStack().getType()))
-			ev.getItemDrop().setItemStack(Func.customModelData(ev.getItemDrop().getItemStack(), 0));
+		ItemStack item = ev.getItemDrop().getItemStack();
+		Func.wykonajDlaNieNull(wczytaj(item), grp -> ev.getItemDrop().setItemStack(przetwórz(item, grp.podstawowy)));
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void śmierć(PlayerDeathEvent ev) {
-		ev.getDrops().forEach(item -> {
-			if (mapaIlościSkinów.containsKey(item.getType()))
-				Func.customModelData(item, 0);
-		});
+		ev.getDrops().forEach(item -> Func.wykonajDlaNieNull(wczytaj(item), grp -> przetwórz(item, grp.podstawowy)));
 	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void klikanie2(InventoryClickEvent ev) {
 		if (!ev.isCancelled())
 			Func.wykonajDlaNieNull(ev.getCurrentItem(), item -> {
-				if (item.getItemMeta().hasCustomModelData() &&
-						mapaIlościSkinów.containsKey(item.getType()) &&
-						!posiada((Player) ev.getWhoClicked(), item.getType(), item.getItemMeta().getCustomModelData()))
-					ev.setCurrentItem(Func.customModelData(item, 0));
+				sprawdz((Player) ev.getWhoClicked(), item, ev::setCurrentItem);
 			});
 	}
 	
 	
 	// util
 	
-	boolean posiada(Player p, Material mat, int id) {
-		return id == 0 || p.hasPermission(String.format("mimirpg.skinyitemków.%s.%s", mat.toString().toLowerCase(), id));
-	}
-	ItemStack zmień(ItemStack item, int id) {
-		return Func.customModelData(item, id);
-	}
-	
 	void otwórzPanel(Player p) {
 		p.openInventory(dajPanel(p));
-		p.addScoreboardTag(Main.tagBlokWyciąganiaZEq); // TODO blokować własnoręcznie
 	}
 	Inventory dajPanel(Player p) {
 		ItemStack item = p.getInventory().getItemInMainHand();
-		int ile = mapaIlościSkinów.get(item.getType());
-		Inventory inv = new Holder(Func.potrzebneRzędy(ile)).getInventory();
-		for (int i = 0; i < ile; i++)
-			inv.setItem(i, posiada(p, item.getType(), i) ? Func.customModelData(item.clone(), i) : Func.stwórzItem(Material.BARRIER, "&4&lSkin Nieodblokowany"));
+		Grupa grp = wczytaj(item);
+		List<ItemStack> itemy = grp.skiny(p, item);
+		Inventory inv = new Holder(Func.potrzebneRzędy(itemy.size())).getInventory();
+		int i=0;
+		while (!itemy.isEmpty())
+			inv.setItem(i++, itemy.remove(0));
 		return inv;
 	}
 	
@@ -126,25 +179,27 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 	}
 
 
-	
 	@Override
+	@SuppressWarnings("unchecked")
 	public void przeładuj() {
-		ConfigurationSection sekcja = Main.ust.sekcja("Skiny itemków");
-		sekcja.getValues(false).entrySet().forEach(entry -> {
+		Grupa.mapaGrup.clear();
+		Main.ust.wczytajListeMap("Skiny itemków").forEach(mapa -> {
 			try {
-				int ile = (int) entry.getValue();
-				Material mat = Material.valueOf(entry.getKey().toUpperCase().replace(" ", "_"));
-				mapaIlościSkinów.put(mat, ile);
+				Grupa grp = new Grupa(mapa.get("podstawowy").toString().toLowerCase());
+				((Map<String, List<Integer>>) mapa.get("skiny")).forEach((str, lista) -> {
+					String _str = Func.StringToEnum(Material.class, str).toString().toLowerCase() + "-";
+					lista.forEach(i -> {
+						grp.kody.add(_str + i);
+						Grupa.mapaGrup.put(_str, grp);
+					});
+				});
 			} catch (Throwable e) {
-				Main.warn("Nieprawidłowość w ustawienia.yml Skiny itemków." + entry.getKey() + ": " + entry.getValue() + ", powinno być \"<Typ itemku>: <ilość>\" (np. diamond sword: 3)");
+				Main.warn("Nieprawidłowa sekcja ustawienia.yml skinów itemków");
 			}
 		});
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		int ile = 0;
-		for (int skiny :mapaIlościSkinów.values())
-			ile += skiny - 1;
-		return Func.r("Skiny premium", ile);
+		return Func.r("Wczytane Skiny", Grupa.mapaGrup.size());
 	}
 }

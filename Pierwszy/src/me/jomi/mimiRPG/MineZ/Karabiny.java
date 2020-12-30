@@ -33,6 +33,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
@@ -41,8 +44,6 @@ import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 // TODO szablonowy config
 
@@ -111,7 +112,7 @@ public class Karabiny implements Listener, Przeładowalny {
 			
 			if (!Func.porównaj(p.getInventory().getItemInMainHand(), item)) return;
 			
-			int zielone = (int) (((double) ticki / (attackCooldown*20)) * 100) / 4;
+			int zielone = (int) ((ticki / (attackCooldown*20)) * 100) / 4;
 			
 			StringBuilder s = new StringBuilder();
 			
@@ -238,7 +239,6 @@ public class Karabiny implements Listener, Przeładowalny {
 	public Krotka<String, Object> raport() {
 		return Func.r("Wczytane karabiny", karabiny.size());
 	}
-
 	
 	public static Set<String> getKarabiny() {
 		return karabiny.keySet();

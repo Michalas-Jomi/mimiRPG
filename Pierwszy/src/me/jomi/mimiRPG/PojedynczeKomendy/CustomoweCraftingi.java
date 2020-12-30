@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice.MaterialChoice;
 import org.bukkit.inventory.ShapedRecipe;
 
 import com.google.common.collect.Lists;
@@ -24,13 +25,17 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
-	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, Material> mapa) {
+	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, String> mapa) {
 		ShapedRecipe rec = new ShapedRecipe(nms, item);
 		
 		rec.shape(linie);
 		
-		for (char klucz : mapa.keySet())
-			rec.setIngredient(klucz, mapa.get(klucz));
+		for (char klucz : mapa.keySet()) {
+			String str = mapa.get(klucz);
+			Func.wykonajDlaNieNull(mapaTagów.get(str),
+					choice -> rec.setIngredient(klucz, choice),
+					() -> rec.setIngredient(klucz, Func.StringToEnum(Material.class, str)));
+		}
 		
 		return rec;
 	}
@@ -43,8 +48,8 @@ public class CustomoweCraftingi implements Przeładowalny {
 		for (int i=0; i < linia.length(); i++)
 			set.add(linia.charAt(i));
 		
-		HashMap<Character, Material> mapa = new HashMap<>();
-		set.forEach(znak -> mapa.put(znak, Material.valueOf(config.wczytajStr(klucz + "." + znak).toUpperCase())));
+		HashMap<Character, String> mapa = new HashMap<>();
+		set.forEach(znak -> mapa.put(znak, config.wczytajStr(klucz + "." + znak)));
 		
 		String[] arr = new String[lista.size()];
 		for (int i=0; i<arr.length; i++)
@@ -81,6 +86,8 @@ public class CustomoweCraftingi implements Przeładowalny {
 		Main.plugin.getServer().addRecipe(rec);
 	}
 	
+	static final HashMap<String, MaterialChoice> mapaTagów = new HashMap<>();
+	
 	@Override
 	public void przeładuj() {
 		config.przeładuj();
@@ -92,10 +99,24 @@ public class CustomoweCraftingi implements Przeładowalny {
 			for (Object przepis :  Main.ust.wczytajLubDomyślna("ZablokowaneCraftingi", Lists.newArrayList()))
 				Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
 			
+			mapaTagów.clear();
 			CustomoweCraftingiUlepszanie.reset();
+			
+			Func.wykonajDlaNieNull(config.sekcja("Tagi"), sekcja -> {
+				for (String klucz : sekcja.getKeys(false))
+					try {
+						List<Material> lista = Func.wykonajWszystkim(sekcja.getStringList(klucz), str -> Material.valueOf(str));
+						mapaTagów.put(klucz, new MaterialChoice(lista));
+					} catch (Throwable e) {
+						Main.warn("Niepoprawny tag CutomowychCraftingów " + klucz);
+					}
+				
+			});
 			
 			for (String klucz : config.klucze(false))
 				try {
+					if (klucz.equalsIgnoreCase("Tagi"))
+						continue;
 					wczytaj(klucz);	
 				} catch (Throwable e) {
 					Main.warn("Problem przy Customowym Craftingu \"" + klucz + "\"");

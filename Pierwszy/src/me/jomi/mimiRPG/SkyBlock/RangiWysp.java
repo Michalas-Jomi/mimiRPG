@@ -30,7 +30,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		super("rangiWysp");
 	}
 	public static boolean warunekModułu() {
-		return (Main.włączonyModół(SkyBlock.class) /*|| Main.iridiumSkyblock XXX */) && Main.chat != null;
+		return Main.włączonyModół(SkyBlock.class) && Main.chat != null;
 	}
 
 	private final List<Krotka<String, Double>> rangi = Lists.newArrayList();

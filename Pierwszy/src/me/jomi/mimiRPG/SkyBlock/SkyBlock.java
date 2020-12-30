@@ -48,8 +48,10 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFormEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -1560,15 +1562,27 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			Krotka<Location, Location> rogi = rogi();
 
-			for (Block blok : Func.bloki(rogi.a, rogi.b)) {
-				Material mat = blok.getType();
-				if (omijane.contains(mat))
-					continue;
-				double pkt = punktacja.getOrDefault(mat, 0d);
-				if (pkt == 0)
-					omijane.add(mat);
-				else
-					ile += pkt;
+			Supplier<Integer> policz = () -> {
+				int punkty = 0;
+				for (Block blok : Func.bloki(rogi.a, rogi.b)) {
+					Material mat = blok.getType();
+					if (omijane.contains(mat))
+						continue;
+					double pkt = punktacja.getOrDefault(mat, 0d);
+					if (pkt == 0)
+						omijane.add(mat);
+					else
+						punkty += pkt;
+				}
+				return punkty;
+			};
+			
+			ile += policz.get();
+			
+			if (Światy.dozwolonyNether) {
+				rogi.a.setWorld(Światy.nether);
+				rogi.b.setWorld(Światy.nether);
+				ile += policz.get();
 			}
 
 			double _ile = ile;
@@ -2676,27 +2690,40 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				ev.setCancelled(true);
 		});
 	}
-
+	@EventHandler(priority = EventPriority.HIGH)
+	public void deptanieUpraw(EntityChangeBlockEvent ev) {
+		if (ev.getEntity() instanceof Player) {
+			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+				if (!wyspa.permisje((Player) ev.getEntity()).niszczenie)
+					ev.setCancelled(true);
+			});
+		}
+	}
+	
 	/// limityBloków / permisje
 	@EventHandler(priority = EventPriority.HIGH)
 	public void stawianieBloków(BlockPlaceEvent ev) {
 		if (ev.isCancelled())
 			return;
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
-			if (!wyspa.permisje(ev.getPlayer()).stawianie || wyspa.postawiony(ev.getPlayer(), ev.getBlock().getType()))
-				ev.setCancelled(true);
-		});
+		if (Światy.należy(ev.getBlock().getWorld()))
+			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+				if (!wyspa.permisje(ev.getPlayer()).stawianie || wyspa.postawiony(ev.getPlayer(), ev.getBlock().getType()))
+					ev.setCancelled(true);
+			},
+					() -> ev.setCancelled(!maBypass(ev.getPlayer())));
 	}
 	@EventHandler(priority = EventPriority.HIGH)
 	public void niszczenieBloków(BlockBreakEvent ev) {
 		if (ev.isCancelled())
 			return;
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
-			if (!wyspa.permisje(ev.getPlayer()).niszczenie)
-				ev.setCancelled(true);
-			else
-				wyspa.zniszczony(ev);
-		});
+		if (Światy.należy(ev.getBlock().getWorld()))
+			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+				if (!wyspa.permisje(ev.getPlayer()).niszczenie)
+					ev.setCancelled(true);
+				else
+					wyspa.zniszczony(ev);
+			},
+					() -> ev.setCancelled(!maBypass(ev.getPlayer())));
 	}
 
 	/// border
@@ -2718,7 +2745,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	public void respawn(PlayerRespawnEvent ev) {
 		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getRespawnLocation()), wyspa -> wyspa.ustawBorder(ev.getPlayer()));
 	}
-
+	@EventHandler
+	public void wodaZaBorderem(BlockFromToEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> 
+				ev.setCancelled(!wyspa.zawieraIgnorujŚwiat(ev.getToBlock().getLocation())));
+	}
+	
 	/// spadanie do voida
 	@EventHandler
 	public void spadanieDoVoida(EntityDamageEvent ev) {
@@ -2859,6 +2891,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		});
 	}
 
+	
 	
 	
 	// onDisable

@@ -41,6 +41,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
@@ -1112,7 +1113,18 @@ public abstract class Func {
 				return gracz;
 		return null;
 	}
-
+	public static Player gracz(CommandSender sender, String selektor) {
+		Player p = Bukkit.getPlayer(selektor);
+		if (p == null) {
+			for (Entity e : Bukkit.selectEntities(sender, selektor))
+				if (e instanceof Player)
+					return (Player) e;
+			if (p == null)
+				Func.powiadom("", sender, "Gracz %s nie jest aktualnie online!", selektor);
+		}
+		return p;
+	}
+	
 	public static boolean porównaj(ItemStack item1, ItemStack item2) {
 		if (item1 == null || item2 == null) return item1 == item2;
 		return item1.isSimilar(item2);
@@ -1264,6 +1276,22 @@ public abstract class Func {
 			func.accept(obj);
 		else if (dlaObjNull != null)
 			dlaObjNull.run();
+	}
+
+	public static <T> T domyślna(T obj, T domyślna) {
+		return obj != null ? obj : domyślna;
+	}
+	public static <T> T domyślna(T obj, Supplier<T> domyślna) {
+		return obj != null ? obj : domyślna.get();
+	}
+	public static <T> T domyślnaTry(Supplier<T> obj, T domyślna) {
+		T w;
+		try {
+			w = obj.get();
+		} catch (Throwable e) {
+			w = domyślna;
+		}
+		return w;
 	}
 	
 	public static void multiTry(Class<? extends Throwable> error, Runnable... funkcje) {

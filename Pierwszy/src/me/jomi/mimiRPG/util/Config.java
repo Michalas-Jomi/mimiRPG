@@ -121,6 +121,12 @@ public class Config {
 		if (lista == null) lista = Lists.newArrayList();
 		return lista;
 	}
+	@SuppressWarnings("unchecked")
+	public List<Map<String, Object>> wczytajListeMap(Object... sciezka){
+		List<Map<String, Object>> lista = (List<Map<String, Object>>) plik.getList(sc(sciezka));
+		if (lista == null) lista = Lists.newArrayList();
+		return lista;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public List<ItemStack> wczytajItemy(Object... sciezka) {
