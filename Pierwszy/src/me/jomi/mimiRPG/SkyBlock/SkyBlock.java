@@ -5,6 +5,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -558,14 +558,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return g.wyspa == -1 ? null : wczytaj(g.wyspa);
 		}
 		// id: wyspa
-		static final WeakHashMap<Integer, Wyspa> mapaWysp = new WeakHashMap<>();
+		//static final WeakHashMap<Integer, Wyspa> mapaWysp = new WeakHashMap<>();
+		static final HashMap<Integer, WeakReference<Wyspa>> mapaWysp = new HashMap<>();
 		public static Wyspa wczytaj(int id) {
 			if (id == -1)
 				return null;
-			Wyspa wyspa = mapaWysp.get(id);
-			if (wyspa == null)
-				mapaWysp.put(id, wyspa = (Wyspa) getConfig(id).wczytaj("wyspa"));
-			return wyspa;
+			WeakReference<Wyspa> wyspa = mapaWysp.get(id);
+			if (wyspa == null || wyspa.get() == null)
+				mapaWysp.put(id, wyspa = new WeakReference<>((Wyspa) getConfig(id).wczytaj("wyspa")));
+			return wyspa.get();
 		}
 		static Config getConfig(int id) {
 			return new Config("configi/Wyspy/" + id);
@@ -590,6 +591,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				g.zapisz();
 			});
 
+			doZapisania = false;
 			usuńZTop();
 			getConfig(id).usuń();
 
@@ -700,7 +702,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				for (int i = 0; i < warpy.size(); i++)
 					perm.warpy.add(kod.charAt(fields.length + i - 2) == '1');
 			} catch (Throwable e) {
-				Main.warn("coś nie tak z kodem \"" + nazwaKod + "\"(" + kod.length() + " znaków kodu) warpy: " + perm.warpy.size() + "/" + warpy.size() + " permisje: " + (fields.length - 2));
+				Main.warn("coś nie tak z kodem na wyspie o id:" + id + " \"" + nazwaKod + "\"(" + kod.length() + " znaków kodu) warpy: " + perm.warpy.size() + "/" + warpy.size() + " permisje: " + (fields.length - 2));
+				odświeżKodPermisji(perm);
 				e.printStackTrace();
 			}
 			return perm;
@@ -1050,7 +1053,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			for (Warp warp : warpy)
 				invWarpy.setItem(++i,
 						Func.stwórzItem(
-								perms.warpy.get(i) ? Material.LIME_STAINED_GLASS : Material.RED_STAINED_GLASS_PANE,
+								perms.warpy.get(i) ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE,
 								"&9&l" + warp.nazwa));
 
 			return invWarpy;
@@ -1104,7 +1107,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			odświeżEdytoryPermisji();
 
 			zapisz();
-			return false;
+			return Func.powiadom(p, prefix + "Dodano nowy warp", false);
 		}
 
 		// /is delwarp
@@ -1328,15 +1331,24 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		Napis infoCzłonkowie() {
 			Napis n = new Napis();
-
+			
+			
 			n.dodajK("&aCzłonkowie: ");
+			
+			int dł = "Członkowie: ".length();
 
 			Iterator<Entry<String, String>> it = członkowie.entrySet().iterator();
 			while (it.hasNext()) {
 				Entry<String, String> en = it.next();
 				n.dodaj(new Napis(Func.koloruj("&e" + en.getKey()), Func.koloruj("&b" + en.getValue())));
-				if (it.hasNext())
+				if (it.hasNext()) {
+					dł += en.getKey().length();
+					if (dł <= Main.ust.wczytajLubDomyślna("opt.lore.znaki na linie", 25)) {
+						n.dodaj("\n");
+						dł = 0;
+					}
 					n.dodajK("&f, ");
+				}
 			}
 
 			return n;
@@ -2153,8 +2165,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					break;
 				}
 			top.idWyspy = id;
-			top.opis = Func.koloruj(Arrays.asList("&aPunkty: &e" + Func.IntToString((int) pkt) + "pkt", "",
-					infoCzłonkowie().toString()));
+			top.opis = Func.koloruj(Arrays.asList("&aPunkty: &e" + Func.IntToString((int) pkt) + "pkt", "", infoCzłonkowie().toString()));
 			return top;
 		}
 		void odświeżTopJeśliZawiera() {
@@ -2489,8 +2500,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			double a1 = Ulepszenia.wielkość[poziomy.wielkość].wartość / 2.0;
 			// double a2 = odstęp % 2 != 0 ? a1 - 1 : a1;
 			double a2 = a1;
-			return new Krotka<>(locŚrodek.clone().add(-a1, -locŚrodek.getY(), -a1),
-					locŚrodek.clone().add(a2, 256 - locŚrodek.getY(), a2));
+			return new Krotka<>(locŚrodek.clone().add(-a1, -locŚrodek.getY(),	  -a1),
+								locŚrodek.clone().add(a2,  256 - locŚrodek.getY(), a2));
 		}
 
 		
@@ -2882,12 +2893,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	public void pistony(BlockPistonExtendEvent ev) {
 		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
 			Krotka<Location, Location> rogi = wyspa.rogi();
-			for (Block blok : ev.getBlocks())
-				if (rogi.a.getBlockX() == blok.getX() || rogi.b.getBlockX() == blok.getX()
-						|| rogi.a.getBlockZ() == blok.getZ() || rogi.b.getBlockZ() == blok.getZ()) {
+			int mx = rogi.a.getBlockX() + 2;
+			int mz = rogi.a.getBlockZ() + 2;
+			int xx = rogi.b.getBlockX() - 2;
+			int xz = rogi.b.getBlockZ() - 2;
+			for (Block blok : ev.getBlocks()) {
+				int x = blok.getX();
+				int z = blok.getZ();
+				
+				if (x <= mx || x >= xx || z <= mz || z >= xz) {
 					ev.setCancelled(true);
 					return;
 				}
+			}
 		});
 	}
 
@@ -2897,7 +2915,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	// onDisable
 
 	public static void onDisable() {
-		Wyspa.mapaWysp.values().forEach(w -> Func.wykonajDlaNieNull(w, wyspa -> {
+		Wyspa.mapaWysp.values().forEach(w -> Func.wykonajDlaNieNull(w.get(), wyspa -> {
 			if (wyspa.doZapisania)
 				wyspa.zapiszNatychmiast();
 		}));

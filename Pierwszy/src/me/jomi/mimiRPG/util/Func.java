@@ -923,6 +923,7 @@ public abstract class Func {
 		}
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	public static <T> void dodajWszystkie(List<T> lista, T... elementy) {
 		for (T el : elementy)

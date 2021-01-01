@@ -138,7 +138,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		włączVault();
-        
+		
 		zarejestruj(this);
 		zarejestruj(new Baza());
 		new Mimi();

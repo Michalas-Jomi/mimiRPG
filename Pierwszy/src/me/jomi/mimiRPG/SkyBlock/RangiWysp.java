@@ -42,14 +42,14 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public void liczeniePkt(PrzeliczaniePunktówWyspyEvent ev) {
 		new Thread(() -> {
 			String jedenZCzłonków = Func.losuj(ev.wyspa.członkowie.keySet());
-			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOfflineUUID(jedenZCzłonków));
+			String aktsuff = Main.chat.getPlayerSuffix(null, Func.graczOffline(jedenZCzłonków));
 			
 			String suff = ranga(ev.pktPo);
 			if (suff.equals(aktsuff))
 				return;
 			
 			for (String członek : ev.wyspa.członkowie.keySet())
-				Main.chat.setPlayerSuffix(null, Func.graczOfflineUUID(członek), suff);
+				Main.chat.setPlayerSuffix(null, Func.graczOffline(członek), suff);
 		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)

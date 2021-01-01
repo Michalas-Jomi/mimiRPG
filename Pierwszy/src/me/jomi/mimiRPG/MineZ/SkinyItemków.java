@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.Inventory;
@@ -49,6 +50,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		
 		public Grupa(String kodPodstawowy) {
 			this.podstawowy = kodPodstawowy;
+			Grupa.mapaGrup.put(kodPodstawowy, this);
 		}
 		
 		List<ItemStack> skiny(Player p, ItemStack item) {
@@ -64,6 +66,11 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 			});
 			
 			return itemy;
+		}
+		
+		@Override
+		public String toString() {
+			return String.format(" ||%s%s|| ", podstawowy, kody);
 		}
 	}
 	static ItemStack przetwórz(ItemStack item, String kod) {
@@ -119,8 +126,11 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {
 			ev.setCancelled(true);
 			
+			if (!Func.multiEquals(ev.getClick(), ClickType.LEFT, ClickType.RIGHT))
+				return;
+			
 			int slot = ev.getRawSlot();
-			if (ev.getCurrentItem().isSimilar(Baza.pustySlot) || (slot > 0 && slot < ev.getInventory().getSize()))
+			if (ev.getCurrentItem().isSimilar(Baza.pustySlot) || slot < 0 || slot >= ev.getInventory().getSize())
 				return;
 			
 			ev.getWhoClicked().getInventory().setItemInMainHand(ev.getCurrentItem());
@@ -149,18 +159,20 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 	
 	// util
 	
-	void otwórzPanel(Player p) {
-		p.openInventory(dajPanel(p));
-	}
-	Inventory dajPanel(Player p) {
+	boolean otwórzPanel(Player p) {
 		ItemStack item = p.getInventory().getItemInMainHand();
+		if (item == null)
+			return Func.powiadom(p, "Musisz trzymać coś w ręce");
 		Grupa grp = wczytaj(item);
+		if (grp == null)
+			return Func.powiadom(p, "Ten item nie ma dodatkowych skinów");
 		List<ItemStack> itemy = grp.skiny(p, item);
 		Inventory inv = new Holder(Func.potrzebneRzędy(itemy.size())).getInventory();
 		int i=0;
 		while (!itemy.isEmpty())
 			inv.setItem(i++, itemy.remove(0));
-		return inv;
+		p.openInventory(inv);
+		return false;
 	}
 	
 	
@@ -190,7 +202,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 					String _str = Func.StringToEnum(Material.class, str).toString().toLowerCase() + "-";
 					lista.forEach(i -> {
 						grp.kody.add(_str + i);
-						Grupa.mapaGrup.put(_str, grp);
+						Grupa.mapaGrup.put(_str + i, grp);
 					});
 				});
 			} catch (Throwable e) {
