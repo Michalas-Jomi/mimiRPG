@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -41,6 +43,14 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	void nałóżEfekt(Player p) {
 		if (wypiliPłyn.contains(p.getName()) || bypassZwykła.contains(p.getName()))
 			return;
+		PlayerInventory inv = p.getInventory();
+		BiPredicate<ItemStack, Material> bip = (item, mat) -> item != null && item.getType() == mat;
+		
+		if (bip.test(inv.getHelmet(), Material.GOLDEN_HELMET) && bip.test(inv.getChestplate(), Material.GOLDEN_CHESTPLATE) &&
+				bip.test(inv.getLeggings(), Material.GOLDEN_LEGGINGS) && bip.test(inv.getBoots(), Material.GOLDEN_BOOTS))
+			return;
+		
+		
 		p.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20*20, 0, false, false, false));
 		zwykła.add(p.getName());
 		Func.opóznij(20*20-1, () -> zwykła.remove(p.getName()));
@@ -67,7 +77,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 			ev.getPlayer().removePotionEffect(PotionEffectType.WITHER);
 			ev.getPlayer().sendMessage(prefix + Func.msg("Wypiłeś płyn lugola, przez następne %s jesteś odporny na radziacje wyspy", Func.czas(czasPłynu)));
 			Func.opóznij(20 * czasPłynu, () -> {
-				ev.getPlayer().sendMessage(prefix + Func.msg("Wypiłeś płyn lugola przestaje działać!"));
+				ev.getPlayer().sendMessage(prefix + Func.msg("Wypity płyn lugola przestaje działać!"));
 				wypiliPłyn.remove(ev.getPlayer().getName());
 			});
 		}

@@ -131,8 +131,8 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 		szansa = Func.DoubleObj(mapa.getOrDefault("szansa", 1));
 		rolle = (int) mapa.getOrDefault("rolle", 1);
 		
-		szansaPerPoziom = Func.DoubleObj(mapa.getOrDefault("szansaPerPoziom", 1));
-		rollePerPoziom = (int) mapa.getOrDefault("rollePerPoziom", 1);
+		szansaPerPoziom = Func.DoubleObj(mapa.getOrDefault("szansaPerPoziom", 0));
+		rollePerPoziom = (int) mapa.getOrDefault("rollePerPoziom", 0);
 		
 		if ((item = Config.item(mapa.get("item"))) == null)
 			Func.wykonajDlaNieNull((List<Object>) mapa.get("drop"), dropy -> {
@@ -188,12 +188,16 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	public List<ItemStack> dropnij(int poziom) {
 		List<ItemStack> itemy = Lists.newArrayList();
 		
-		int licz = 500;
-		while (licz-- > 0 && (itemy.size() < (min_ilość <= -1 ? 1 : min_ilość)))
+		if (item == null) {
+			int licz = 500;
+			int ile = Func.losuj(min_ilość, max_ilość);
+			while (licz-- > 0 && (itemy.size() < (min_ilość <= -1 ? 1 : ile)))
+				itemy.addAll(subDropnij(poziom));
+			while (itemy.size() > (max_ilość <= -1 ? 1 : ile))
+				itemy.remove(Func.losujWZasięgu(itemy.size()));
+		} else
 			itemy.addAll(subDropnij(poziom));
 		
-		while (itemy.size() > (max_ilość <= -1 ? 1 : max_ilość))
-			itemy.remove(Func.losujWZasięgu(itemy.size()));
 		
 		return itemy;
 	}

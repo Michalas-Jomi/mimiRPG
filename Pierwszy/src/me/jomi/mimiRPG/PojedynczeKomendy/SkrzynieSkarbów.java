@@ -82,7 +82,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 			mapa.put(p.getName(), this);
 		}
 		
-		void wyświetl() {
+		
+		void wyświetl(int start) {
 			Napis n = new Napis("\n\n\n");
 			n.dodajK("&a~~ &2Edytor Skarbów &a~~\n\n");
 			n.dodajEnd(
@@ -103,53 +104,75 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 							)
 					);
 			n.dodajK("&6Dropy:\n");
-			for (int i=0; i < skrzynia.drop.drop.size(); i++) {
-				n.dodajK("&b&l- ");
-				// item, szansa, min_ilość, max_ilość, rolle
-				Drop drop = skrzynia.drop.drop.get(i);
-				Napis item = Napis.item(drop.item);
-				item.clickEvent(ClickEvent.Action.RUN_COMMAND, "/edytujskarby itemy " + i + " ustaw");
-				n.dodaj(item);
-				n.dodaj(" ");
+			int i = Math.max(0, start);
+			while (i < skrzynia.drop.drop.size() && i < start + mxLinie)
+				dodajItem(n, i++);
+			if (i >= skrzynia.drop.drop.size())
 				n.dodaj(new Napis(
-						Func.koloruj("&e" + (drop.szansa * 100) + "%"),
-						Func.koloruj("&bKliknij aby zmienić\n&3format: &a0.szansa\n&3format: &aszansa%\n\n&8Oznacza szanse na wypadnięcie itemu\\n&8dozwolone wartości z zakresu 0.0 < x <= 1.0\n&8dozwolone wartości z zakresu 0% < x <= 100%"),
-						"/edytujskarby itemy " + i + " szansa >> "
+						Func.koloruj("&a[dodaj]"),
+						Func.koloruj("&bKliknij aby dodać itemek z ręki"),
+						"/edytujskarby dodajItem " + start
 						));
-				n.dodaj(" ");
-				n.dodaj(new Napis(
-						Func.koloruj("&e" + drop.min_ilość + "-" + drop.max_ilość),
-						Func.koloruj("&bKliknij aby zmienić\n&3format: &amin ilość&b-&amax ilość\n\n&8Oznacza ilość itemu w slocie\n&8dozwolone wartości z zakresu 1-64"),
-						"/edytujskarby itemy " + i + " ilość >> "
-						));
-				n.dodaj(" ");
-				n.dodaj(new Napis(
-						Func.koloruj("&ex" + drop.rolle),
-						Func.koloruj("&bKliknij aby zmienić\n&3format: &arolle\n&3format: &axrolle\n\n&8Oznacza ilość losowań itemka\n&8dozwolone wartości z zakresu 0 < x"),
-						"/edytujskarby itemy " + i + " rolle >> "
-						));
-				n.dodaj("  ");
-				n.dodaj(new Napis(
-						Func.koloruj("&c{x}"),
-						Func.koloruj("&cKliknij aby &4Usunąć &citemek z listy"),
-						"/edytujskarby itemy " + i + " usuń >> potwierdzam usunięcie itemka z listy",
-						ClickEvent.Action.SUGGEST_COMMAND
-						));
-				n.dodaj("\n");
-			}
+			
+			n.dodajK("\n&8-----");
 			n.dodaj(new Napis(
-					Func.koloruj("&a[dodaj]"),
-					Func.koloruj("&bKliknij aby dodać itemek z ręki"),
-					"/edytujskarby dodajItem "
+					Func.koloruj("&6<<<"),
+					Func.koloruj("&bPrzejdz na poprzednią stronę"),
+					"/edytujskarby itemy " + Math.max(0, start - mxLinie) + " nic"
 					));
-			n.dodajK("\n\n&5-----");
+			n.dodajK("&8---");
+			n.dodaj(new Napis(
+					Func.koloruj("&6>>>"),
+					Func.koloruj("&bPrzejdz na następną stronę"),
+					"/edytujskarby itemy " + Math.min((skrzynia.drop.drop.size() - 1) / mxLinie * mxLinie, start + mxLinie) + " nic"
+					));
+			n.dodajK("&8-----\n");
+			
+			
+			n.dodajK("\n&5-----");
 			n.dodaj(new Napis(
 					Func.koloruj("&a[zatwierdz]"),
 					Func.koloruj("&bKliknij aby zatwierdzić"),
 					"/edytujskarby zatwierdz"
 					));
-			n.dodajK("&5-----\n\n");
+			n.dodajK("&5-----");
+			
+			
 			n.wyświetl(p);
+		}
+		void dodajItem(Napis n, int i) {
+			n.dodajK("&b&l- ");
+			// item, szansa, min_ilość, max_ilość, rolle
+			Drop drop = skrzynia.drop.drop.get(i);
+			Napis item = Napis.item(drop.item);
+			item.clickEvent(ClickEvent.Action.RUN_COMMAND, "/edytujskarby itemy " + i + " ustaw");
+			n.dodaj(item);
+			n.dodaj(" ");
+			n.dodaj(new Napis(
+					Func.koloruj("&e" + (drop.szansa * 100) + "%"),
+					Func.koloruj("&bKliknij aby zmienić\n&3format: &a0.szansa\n&3format: &aszansa%\n\n&8Oznacza szanse na wypadnięcie itemu\n&8dozwolone wartości z zakresu 0.0 < x <= 1.0\n&8dozwolone wartości z zakresu 0% < x <= 100%"),
+					"/edytujskarby itemy " + i + " szansa >> "
+					));
+			n.dodaj(" ");
+			n.dodaj(new Napis(
+					Func.koloruj("&e" + drop.min_ilość + "-" + drop.max_ilość),
+					Func.koloruj("&bKliknij aby zmienić\n&3format: &amin ilość&b-&amax ilość\n\n&8Oznacza ilość itemu w slocie\n&8dozwolone wartości z zakresu 1-64"),
+					"/edytujskarby itemy " + i + " ilość >> "
+					));
+			n.dodaj(" ");
+			n.dodaj(new Napis(
+					Func.koloruj("&ex" + drop.rolle),
+					Func.koloruj("&bKliknij aby zmienić\n&3format: &arolle\n&3format: &axrolle\n\n&8Oznacza ilość losowań itemka\n&8dozwolone wartości z zakresu 0 < x"),
+					"/edytujskarby itemy " + i + " rolle >> "
+					));
+			n.dodaj("  ");
+			n.dodaj(new Napis(
+					Func.koloruj("&c{x}"),
+					Func.koloruj("&cKliknij aby &4Usunąć &citemek z listy"),
+					"/edytujskarby itemy " + i + " usuń >> potwierdzam usunięcie itemka z listy",
+					ClickEvent.Action.SUGGEST_COMMAND
+					));
+			n.dodaj("\n");
 		}
 	}
 	
@@ -157,6 +180,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	static final HashMap<String, Skrzynia> mapaSkrzyń = new HashMap<>();
 	static final HashMap<String, Krotka<Skrzynia, BlockData>> mapa = new HashMap<>();
 	
+	static int mxLinie;
 	int tickiUsuwaniaSkrzyń;
 	
 	
@@ -200,6 +224,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				Func.wykonajDlaNieNull(mapa.get(klucz), krotka -> {
 					usuwane.add(klucz);
 					Func.opóznij(tickiUsuwaniaSkrzyń, () -> {
+						holder.getInventory().clear();
 						holder.getLocation().getBlock().setType(Material.AIR);
 						Func.opóznij(krotka.a.czasOdrespiania * 20, () -> {
 							if (mapa.containsKey(klucz)) 
@@ -234,7 +259,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	@Override
 	public void przeładuj() {
 		config.przeładuj();
-		
+
+		mxLinie = Main.ust.wczytajLubDomyślna("SkrzynieSkarbów.mxLinie", 10);
 		tickiUsuwaniaSkrzyń = Main.ust.wczytajLubDomyślna("SkrzynieSkarbów.czasUsuwaniaSkrzyń", 30)*20;
 		
 		mapaSkrzyń.clear();
@@ -260,7 +286,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1)
-			return utab(args, "daj", "usuń", "nowa");
+			return utab(args, "daj", "usuń", "nowa", "modyfikuj");
 		if (args.length >= 2 && Func.multiEquals(args[0].toLowerCase(), "daj", "modyfikuj"))
 			return utab(args, Func.wykonajWszystkim(mapaSkrzyń.keySet(), Func::odkoloruj));
 		return null;
@@ -305,6 +331,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				edytor.skrzynia.nazwa = nazwa;
 				break;
 			case "respawn":
+				//TODO sprawdzić bo nie działa
 				edytor.skrzynia.czasOdrespiania = Func.czas(Func.listToString(args, 2));
 				break;
 			case "ilośćitemów":
@@ -314,10 +341,9 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				break;
 			case "dodajitem":
 				edytor.skrzynia.drop.drop.add(new Drop(p.getInventory().getItemInMainHand()));
-				break;
+				edytor.wyświetl(Func.Int(args[1], 0));
+				return true;
 			case "zatwierdz":
-				if (mapaSkrzyń.containsKey(edytor.skrzynia.nazwa))
-					return Func.powiadom(sender, prefix + "Ta nazwa jest już zajęta");
 				mapaSkrzyń.put(edytor.skrzynia.nazwa, edytor.skrzynia);
 				config.ustaw_zapisz("skrzynie." + edytor.skrzynia.nazwa, edytor.skrzynia);
 				Edytor.mapa.remove(sender.getName());
@@ -346,8 +372,10 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 					edytor.skrzynia.drop.drop.remove(i);
 					break;
 				}
+				edytor.wyświetl(i / mxLinie * mxLinie);
+				return true;
 			}
-			edytor.wyświetl();
+			edytor.wyświetl(0);
 		} catch (Throwable e) {
 			sender.sendMessage(prefix + "Niepoprawne argumenty");
 		}

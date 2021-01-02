@@ -2888,7 +2888,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}, () -> ev.setCancelled(true));
 	}
 
-	/// blokada pistonów za barierami TODO zablokować już 2 kratki przed borderem
 	@EventHandler
 	public void pistony(BlockPistonExtendEvent ev) {
 		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {

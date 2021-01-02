@@ -40,6 +40,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.MineZ.SkinyItemków.Grupa;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -191,6 +192,11 @@ public class Karabiny implements Listener, Przeładowalny {
 	
 	
 	private Karabin karabin(ItemStack item) {
+		if (Main.włączonyModół(SkinyItemków.class)) {
+			Grupa grp = SkinyItemków.wczytaj(item);
+			if (grp != null)
+				item = SkinyItemków.przetwórz(item.clone(), grp.podstawowy);
+		}
 		for (Karabin karabin : karabiny.values())
 			if (Func.porównaj(karabin.item, item))
 				return karabin;
