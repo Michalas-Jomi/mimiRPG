@@ -257,7 +257,7 @@ public class Config {
 		
 		f = new File(sciezka);
 		if (f.exists()) return;
-		if (!Func.wyjmijPlik(sciezkaJarDomyślny, sciezka)) {
+		if (sciezkaJarDomyślny != null && !Func.wyjmijPlik(sciezkaJarDomyślny, sciezka)) {
 			try {
 				f.createNewFile();
 				String path = f.getAbsolutePath().replace("\\", "/");

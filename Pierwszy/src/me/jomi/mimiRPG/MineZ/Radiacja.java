@@ -129,7 +129,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 		czasPłynu = Main.ust.wczytajLubDomyślna("Radiacja.czas działania płynu", 60*20);
 		płyn = Main.ust.wczytajItem("Radiacja.płyn");
 		if (płyn == null)
-			płyn = Func.stwórzItem(Material.HONEY_BOTTLE, "&6Płyn Lugola", "&aPowstrzymuje większość radiacji");
+			płyn = Func.stwórzItem(Material.HONEY_BOTTLE, "&6Płyn Lugola", "&aPowstrzymuje większość radiacji", "&a na " + Func.czas(czasPłynu));
 	}
 	@Override
 	public Krotka<String, Object> raport() {

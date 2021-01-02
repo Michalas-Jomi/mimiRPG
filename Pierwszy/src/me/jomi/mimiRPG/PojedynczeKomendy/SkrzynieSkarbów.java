@@ -39,8 +39,6 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
-// TODO przetestować te skrzynie
-
 @Moduł
 public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix("Skrzynie Skarbów");
@@ -240,7 +238,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		if (mapa.containsKey(locToString(ev.getBlock().getLocation())))
 			ev.setCancelled(true);
 	}
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void stawianie(BlockPlaceEvent ev) {
 		if (ev.getItemInHand().hasItemMeta() && ev.getItemInHand().getItemMeta().hasCustomModelData() && ev.getItemInHand().getItemMeta().getCustomModelData() == 7345)
 			Func.wykonajDlaNieNull(ev.getBlock().getState(),  Container.class, container -> {
@@ -249,7 +247,10 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				if (mapaSkrzyń.containsKey(nazwa) && !mapa.containsKey(klucz)) {
 					BlockData data = ev.getBlock().getBlockData();
 					config.ustaw_zapisz("lokacje." + klucz , nazwa + "^" + data.getAsString());
-					mapa.put(klucz, new Krotka<>(mapaSkrzyń.get(nazwa), data));
+					Skrzynia skrzynia = mapaSkrzyń.get(nazwa);
+					mapa.put(klucz, new Krotka<>(skrzynia, data));
+					ev.setCancelled(true);
+					Func.opóznij(1, () -> skrzynia.zresp(ev.getBlock().getLocation(), data));
 					ev.getPlayer().sendMessage(prefix + Func.msg("Postawiono %s", nazwa));
 				}
 			});
@@ -310,6 +311,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 				Func.wykonajDlaNieNull(mapa.get(klucz), krotka -> {
 					mapa.remove(klucz);
 					config.ustaw_zapisz("lokacje." + klucz, null);
+					Func.wykonajDlaNieNull(skrzynia.getState(), Container.class, c -> c.getInventory().clear());
+					skrzynia.setType(Material.AIR);
 					sender.sendMessage(prefix + "Usunięto skrzynie skarbów");
 				}, () -> sender.sendMessage(prefix + "Musisz patrzeć się na skrzynie skarbów aby ją usunąć"));
 				return true;

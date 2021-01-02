@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.MineZ;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,10 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.ItemCreator;
+import me.jomi.mimiRPG.util.ItemCreator.Creator;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -56,7 +59,9 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		List<ItemStack> skiny(Player p, ItemStack item) {
 			List<ItemStack> itemy = Lists.newArrayList();
 			
-			Consumer<String> dodaj = kod -> itemy.add(przetwórz(item.clone(), kod));
+			Consumer<String> dodaj = kod ->
+					Func.insort(przetwórz(item.clone(), kod), itemy, __ -> (double) (int) mapaNazw.getOrDefault(kod, new Krotka<>(null, 0)).b);
+			
 			
 			dodaj.accept(podstawowy);
 			
@@ -75,11 +80,12 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 	}
 	static ItemStack przetwórz(ItemStack item, String kod) {
 		Krotka<Material, Integer> krotka = odkoduj(kod);
-		return ItemCreator.nowy(
+		Creator ic = ItemCreator.nowy(
 				item)
 				.typ(krotka.a)
-				.customModelData(krotka.b)
-				.stwórz();
+				.customModelData(krotka.b);
+		Func.wykonajDlaNieNull(mapaNazw.get(kod), k -> ic.nazwa(k.a));
+		return ic.stwórz();
 		
 	}
 	static String kodToPerm(String kod) {
@@ -189,12 +195,34 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		otwórzPanel((Player) sender);
 		return true;
 	}
-
-
+	
+	
+	// kod: (nazwa, priorytet)
+	static final HashMap<String, Krotka<String, Integer>> mapaNazw = new HashMap<>();
+	
+	
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
 		Grupa.mapaGrup.clear();
+		mapaNazw.clear();
+		
+		File f = new File(Main.ust.wczytajLubDomyślna("Skiny itemków ustawienia.config z losowaniem", "plugins/JbwmMiscellaneous/csgoCase.yml"));
+		if (f.exists()) {
+			Config configNazw = new Config(f);
+			Func.wykonajDlaNieNull(configNazw.sekcja("skiny"), sekcja -> 
+				sekcja.getKeys(false).forEach(klucz -> {
+					try {
+						ItemStack item = sekcja.getItemStack(klucz + ".item");
+						mapaNazw.put(kod(item), new Krotka<>(item.getItemMeta().getDisplayName(), Func.Int(klucz)));
+					} catch(Throwable e) {
+						Main.warn("Nieprawidłowość z " + f.getAbsolutePath() + " skiny." + klucz);
+					}
+				}));
+		}
+		
+		
 		Main.ust.wczytajListeMap("Skiny itemków").forEach(mapa -> {
 			try {
 				Grupa grp = new Grupa(mapa.get("podstawowy").toString().toLowerCase());

@@ -368,6 +368,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
+	
 	// Override
 	
 	final EdytorOgólny<Zadanie> edytor = new EdytorOgólny<>("zadaniaadmin", Zadanie.class);

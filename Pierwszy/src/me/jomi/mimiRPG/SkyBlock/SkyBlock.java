@@ -704,7 +704,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			} catch (Throwable e) {
 				Main.warn("coś nie tak z kodem na wyspie o id:" + id + " \"" + nazwaKod + "\"(" + kod.length() + " znaków kodu) warpy: " + perm.warpy.size() + "/" + warpy.size() + " permisje: " + (fields.length - 2));
 				odświeżKodPermisji(perm);
-				e.printStackTrace();
+				wczytajPermisjeZKodów();
 			}
 			return perm;
 		}
@@ -719,8 +719,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
 				}
-			for (Boolean warp : perm.warpy)
-				strB.append(warp ? '1' : '0');
+			for (int i=0; i < warpy.size(); i++)
+				strB.append((perm.warpy.size() >= i || perm.warpy.get(i)) ? '1' : '0');
 
 			odświeżKodPermisji(perm, strB.toString());
 
