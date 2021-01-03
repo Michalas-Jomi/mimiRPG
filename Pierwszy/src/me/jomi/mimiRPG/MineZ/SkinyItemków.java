@@ -60,7 +60,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 			List<ItemStack> itemy = Lists.newArrayList();
 			
 			Consumer<String> dodaj = kod ->
-					Func.insort(przetwórz(item.clone(), kod), itemy, __ -> (double) (int) mapaNazw.getOrDefault(kod, new Krotka<>(null, 0)).b);
+					Func.insort(przetwórz(item.clone(), kod), itemy, _item -> (double) mapaNazw.getOrDefault(kod(_item), new Krotka<>(null, 0)).b);
 			
 			
 			dodaj.accept(podstawowy);

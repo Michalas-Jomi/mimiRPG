@@ -61,6 +61,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -2499,7 +2500,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public Krotka<Location, Location> rogi() {
 			double a1 = Ulepszenia.wielkość[poziomy.wielkość].wartość / 2.0;
 			// double a2 = odstęp % 2 != 0 ? a1 - 1 : a1;
-			double a2 = a1;
+			double a2 = a1 + (15d / 16d);
 			return new Krotka<>(locŚrodek.clone().add(-a1, -locŚrodek.getY(),	  -a1),
 								locŚrodek.clone().add(a2,  256 - locŚrodek.getY(), a2));
 		}
@@ -2710,6 +2711,21 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 	}
+	@EventHandler
+	public void napełnianieWiadra(PlayerBucketFillEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+			if (!wyspa.permisje(ev.getPlayer()).niszczenie)
+				ev.setCancelled(true);
+		});
+	}
+	@EventHandler
+	public void opróżnianieWiadra(PlayerBucketEmptyEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+			if (!wyspa.permisje(ev.getPlayer()).stawianie)
+				ev.setCancelled(true);
+		});
+	}
+	
 	
 	/// limityBloków / permisje
 	@EventHandler(priority = EventPriority.HIGH)
@@ -2761,6 +2777,32 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> 
 				ev.setCancelled(!wyspa.zawieraIgnorujŚwiat(ev.getToBlock().getLocation())));
 	}
+	@EventHandler
+	public void pistony(BlockPistonExtendEvent ev) {
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
+			Krotka<Location, Location> rogi = wyspa.rogi();
+			int mx = rogi.a.getBlockX() + 2;
+			int mz = rogi.a.getBlockZ() + 2;
+			int xx = rogi.b.getBlockX() - 2;
+			int xz = rogi.b.getBlockZ() - 2;
+			
+			BiPredicate<Integer, Integer> bip = (x, z) -> x <= mx || x >= xx || z <= mz || z >= xz;
+
+			Block tłok = ev.getBlock().getRelative(ev.getDirection());
+			if (bip.test(tłok.getX(), tłok.getZ())) {
+				ev.setCancelled(true);
+				return;
+			}
+			
+			for (Block blok : ev.getBlocks()) {
+				if (bip.test(blok.getX(), blok.getZ())) {
+					ev.setCancelled(true);
+					return;
+				}
+			}
+		});
+	}
+
 	
 	/// spadanie do voida
 	@EventHandler
@@ -2833,7 +2875,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 
 	/// woda w netherze
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler
 	public void stwianieWody(PlayerBucketEmptyEvent ev) {
 		if (Światy.dozwolonyNether && ev.getBlock().getWorld().getName().equals(Światy.nazwaNether)) {
 			Block blok = ev.getBlock();
@@ -2886,26 +2928,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				ev.setTo(loc);
 				ev.setCancelled(false);
 			}, () -> ev.setCancelled(true));
-	}
-
-	@EventHandler
-	public void pistony(BlockPistonExtendEvent ev) {
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getBlock().getLocation()), wyspa -> {
-			Krotka<Location, Location> rogi = wyspa.rogi();
-			int mx = rogi.a.getBlockX() + 2;
-			int mz = rogi.a.getBlockZ() + 2;
-			int xx = rogi.b.getBlockX() - 2;
-			int xz = rogi.b.getBlockZ() - 2;
-			for (Block blok : ev.getBlocks()) {
-				int x = blok.getX();
-				int z = blok.getZ();
-				
-				if (x <= mx || x >= xx || z <= mz || z >= xz) {
-					ev.setCancelled(true);
-					return;
-				}
-			}
-		});
 	}
 
 	

@@ -319,6 +319,18 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 			case "nowa":
 				edytor = new Edytor(p);
 				break;
+			case "zrespwszystkie":
+				try {
+					mapa.forEach((locstr, krotka) -> {
+						Location loc = stringToLoc(locstr);
+						Func.wykonajDlaNieNull(loc.getBlock().getState(), Container.class, c -> c.getInventory().clear());
+						loc.getBlock().setType(Material.AIR);
+						krotka.a.zresp(loc, krotka.b);
+					});
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+				break;
 			case "modyfikuj":
 				Skrzynia skrzynka = mapaSkrzyń.get(Func.koloruj(Func.listToString(args, 1)));
 				if (skrzynka == null)

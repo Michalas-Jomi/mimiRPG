@@ -210,17 +210,16 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		boolean dostarcz(Player p, Gracz g) {
 			Krotka<Boolean, ?> krotka = new Krotka<>(false, null);
-			Func.wykonajDlaNieNull(p.getInventory().getItemInMainHand(), item -> {
-				sprawdzZadanie(p, g, Rodzaj.DOSTARCZ, item, item::isSimilar, this, k -> {
-					krotka.a = true;
-					
-					int ile = Math.min(item.getAmount(), k.ile);
-					item.setAmount(item.getAmount() - ile);
-					p.getInventory().setItemInMainHand(item.getAmount() <= 0 ? null : item);
-					return ile;
-				});
-				sprawdzZadanie(p, g, Rodzaj.ZDOBĄDZ, item, item::isSimilar, this, k -> Math.min(item.getAmount(), k.ile));
+			ItemStack item = p.getInventory().getItemInMainHand();
+			sprawdzZadanie(p, g, Rodzaj.DOSTARCZ, item, item::isSimilar, this, k -> {
+				krotka.a = true;
+				
+				int ile = Math.min(item.getAmount(), k.ile);
+				item.setAmount(item.getAmount() - ile);
+				p.getInventory().setItemInMainHand(item.getAmount() <= 0 ? null : item);
+				return ile;
 			});
+			sprawdzZadanie(p, g, Rodzaj.ZDOBĄDZ, item, item::isSimilar, this, k -> Math.min(item.getAmount(), k.ile));
 			return krotka.a;
 		}
 		
@@ -532,7 +531,6 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 						() -> sender.sendMessage(prefix + "To zadanie nie istnieje"));
 			});
 			return true;
-			
 		}
 		
 		// /zadaniaadmin <nick> [(opcje per zadanie)... <nazwy zadań>...] - otwiera panel z dostępnymi zadaniami z listy <nazwy zadań>
@@ -617,7 +615,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		if (!przyjmij && !odbierz && !dostarcz)
 			return true;
 		
-		Main.error("Nieprzewidziana sytuacja w zadaniach error id:3");
+		Main.error("Nieprzewidziana sytuacja w zadaniach error id:3", p.getName(), przyjmij, odbierz, dostarcz, zadania);
 		return false;
 	}
 	

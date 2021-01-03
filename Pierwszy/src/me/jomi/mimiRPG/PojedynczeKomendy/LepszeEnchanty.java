@@ -36,6 +36,7 @@ public class LepszeEnchanty implements Listener, Przeładowalny {
 	public void klikanieEq(InventoryClickEvent ev) {
 		if (!ev.getClick().equals(ClickType.RIGHT)) return;
 		if (ev.getCurrentItem() == null) return;
+		if (!ev.getCurrentItem().hasItemMeta()) return;
 		if (!jestLepszymEnchantem(ev.getCursor())) return;
 		EnchantmentStorageMeta ksiazka = (EnchantmentStorageMeta) ev.getCursor().getItemMeta();
 		ItemMeta meta = ev.getCurrentItem().getItemMeta();
