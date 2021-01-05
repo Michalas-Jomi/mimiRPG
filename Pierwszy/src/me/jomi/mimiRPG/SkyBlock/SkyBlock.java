@@ -108,7 +108,7 @@ import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is booster /is fly 
-//TODO /is ban /is unban /is tempban
+//TODO /is tempban
 //TODO /is coop /is uncoop
 //TODO przycisk back w menu wyspy
 
@@ -418,10 +418,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			@ObejmujeOdwiedzających
 			boolean używanie_armorstandów_itemframów; // v
 
-			boolean wyrzucanie_członków; // v
-			boolean zapraszanie_członków; // v
+			boolean wyrzucanie_członków_i_uncoop; // v
+			boolean zapraszanie_członków_i_coop; // v
 
-			boolean wyrzucanie_odwiedzających; // v
+			boolean wyrzucanie_banowanie_odwiedzających; // v
 
 			boolean zmiana_prywatności; // v
 
@@ -747,7 +747,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Permisje permisje(String nick) {
 			return perms.get(członkowie.getOrDefault(nick, "odwiedzający"));
 		}
-
+		
+		
 		// /is permissions
 
 		public void permisjeInv(Player p) {
@@ -1152,7 +1153,84 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			zapisz();
 		}
+		
+		
+		// /is coop /is uncoop
+		
+		static Set<String> coopZaproszenia = Sets.newConcurrentHashSet();
+		
+		@Mapowane List<Integer> coop;
+		public boolean coop(Player p, String zKim) {
+			if (!permisje(p).zapraszanie_członków_i_coop)
+				return Func.powiadom(p, prefix + "Nie masz permisji do zakładania coopów");
+			
+			Player kogoP = Bukkit.getPlayer(zKim);
+			if (kogoP == null)
+				return Func.powiadom(p, prefix + Func.msg("%s nie jest online", zKim));
+			
+			Wyspa wyspa = Wyspa.wczytaj(kogoP);
+			if (wyspa == null)
+				return Func.powiadom(p, prefix + Func.msg("%s nie ma Wyspy", kogoP.getDisplayName()));
+			
+			if (coop.contains(wyspa.id))
+				return Func.powiadom(p, prefix + "Kooperacja z tą wyspą jest już nawiązana");
 
+			String kodJaTy = kodcoop(this, wyspa);
+			String kodTyJa = kodcoop(wyspa, this);
+			
+			if (coopZaproszenia.contains(kodJaTy))
+				return Func.powiadom(p, prefix + "Zaproszenie do coopu do tej wyspy zostało już wysłane");
+			else if (coopZaproszenia.remove(kodTyJa)) {
+				// Przyjmowanie coopu
+				BiConsumer<Wyspa, Wyspa> przyjmij = (w1, w2) -> {
+					w1.coop.add(w2.id);
+					w1.zapisz();
+					w1.powiadomCzłonków("Nawiązano kooperacja z wyspą graczy " + w2.infoCzłonkowie());
+				};
+				przyjmij.accept(this, wyspa);
+				przyjmij.accept(wyspa, this);
+			} else {
+				// zapraszanie do coopu
+				coopZaproszenia.add(kodJaTy);
+				powiadomCzłonków("%s wysłał zaproszenie do cooperacji z wyspą graczy %s, które wygaśnie za 5 minut", p.getDisplayName(), wyspa.infoCzłonkowie());
+				powiadomCzłonków("Otrzymano zaproszenie do cooperacji z wyspą graczy %s od %s, które wygaśnie za 5 minut", this.infoCzłonkowie(), p.getDisplayName());
+				Func.opóznij(5*60*20, () -> {
+					if (coopZaproszenia.remove(kodJaTy)) {
+						wyspa.powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", this .infoCzłonkowie(), p.getDisplayName());
+						this .powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", wyspa.infoCzłonkowie(), p.getDisplayName());
+					}
+				});
+			}
+			
+			return false;
+		}
+		public boolean uncoop(Player p, String zKim) {
+			if (!permisje(p).wyrzucanie_członków_i_uncoop)
+				return Func.powiadom(p, prefix + "Nie masz permisji do zakładania coopów");
+			
+			Player kogoP = Bukkit.getPlayer(zKim);
+			if (kogoP == null)
+				return Func.powiadom(p, prefix + Func.msg("%s nie jest online", zKim));
+			
+			Wyspa wyspa = Wyspa.wczytaj(kogoP);
+			if (wyspa == null)
+				return Func.powiadom(p, prefix + Func.msg("%s nie ma Wyspy", kogoP.getDisplayName()));
+			
+			if (coop.remove((Integer) wyspa.id)) {
+				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", this .infoCzłonkowie());
+				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", wyspa.infoCzłonkowie());
+				return false;
+			} else
+				return Func.powiadom(p, prefix + Func.msg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", kogoP.getDisplayName()));
+		}
+		private static String kodcoop(Wyspa wyspa1, Wyspa wyspa2) {
+			return wyspa1.id + "-" + wyspa2.id;
+		}
+		
+		
+		
+		
+		
 		// /is drop
 
 		@Mapowane List<String> wyłączoneDropyOverworld;
@@ -1284,6 +1362,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				ev.setDropItems(false);
 		}
 
+		
 		// /is transfer
 
 		public boolean transfer(Player p, String komu) {
@@ -1312,6 +1391,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 		}
 
+		
 		// /is info
 
 		public void info(CommandSender p) {
@@ -1355,6 +1435,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return n;
 		}
 
+		
 		// /is bank
 
 		@Mapowane int exp;
@@ -1462,6 +1543,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 		}
 
+		
 		// /is storage
 
 		@Mapowane List<ItemStack> magazynItemów;
@@ -1494,6 +1576,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 
+		
 		// /is sethome
 
 		@Mapowane Location locHome;
@@ -1516,6 +1599,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
 		}
 
+		
 		// /is public /is private
 
 		@Mapowane boolean prywatna = true;
@@ -1542,6 +1626,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 		}
 
+		
 		// /is value
 
 		@Mapowane double pkt;
@@ -1613,6 +1698,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return pkt;
 		}
 
+		
 		// /is invite /is join
 
 		static final Cooldown cooldownZaproszeń = new Cooldown(45);
@@ -1621,7 +1707,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
 				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit członków");
 
-			if (!permisje(p).zapraszanie_członków)
+			if (!permisje(p).zapraszanie_członków_i_coop)
 				return Func.powiadom(p, prefix + "Nie masz uprawnień na zapraszanie ludzi na wyspe");
 			if (!cooldownZaproszeń.minął(p.getName() + kogo.getName()))
 				return Func.powiadom(prefix, p, "Musisz poczekać jeszcze %s zanim ponownie go zaprosisz",
@@ -1670,6 +1756,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			p.removeMetadata(metaZaproszenie, Main.plugin);
 		}
 
+		
 		// /is leave
 
 		public void opuść(Player p) {
@@ -1695,9 +1782,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Func.tpSpawn(p);
 		}
 
+		
 		// /is visit
 
 		public void odwiedz(Player p) {
+			if (zbanowani.contains(p.getName()) && !maBypass(p)) {
+				p.sendMessage(prefix + "Nie możesz odwiedzać tej wyspy");
+				return;
+			}
 			if (członkowie.containsKey(p.getName()))
 				tpHome(p);
 			else if (maBypass(p))
@@ -1711,6 +1803,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 		}
 
+		
 		// /is delete
 
 		public void usuń(Player p) {
@@ -1721,6 +1814,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				p.sendMessage(prefix + "Tylko właściciel może usunąć wyspe");
 		}
 
+		
 		// /is kick
 
 		public boolean wyrzuć(Player p, String kogo) {
@@ -1733,7 +1827,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						break;
 					}
 				if (!członkowie.containsKey(kogo)) {
-					if (!permisje(p).wyrzucanie_odwiedzających)
+					if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
 						return Func.powiadom(p, prefix + "Nie masz uprawnień aby wyrzucać odwiedzających z wyspy");
 					Player kogoP = Bukkit.getPlayer(kogo);
 					if (kogoP == null)
@@ -1748,7 +1842,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					return true;
 				}
 			}
-			if (!permisje(p).wyrzucanie_członków)
+			if (!permisje(p).wyrzucanie_członków_i_uncoop)
 				return Func.powiadom(p, prefix + "Nie masz uprawnień aby wyrzucać członków z wyspy");
 
 			if (new OpuszczanieWyspyEvent(this, kogo).isCancelled())
@@ -1770,6 +1864,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 		}
 
+		
 		// /is name
 
 		@Mapowane String nazwa;
@@ -1782,7 +1877,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			zapisz();
 			return false;
 		}
-
+		
+		
 		// /is members
 
 		public void otwórzMembers(Player p) {
@@ -1865,6 +1961,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 		}
 
+		
 		// /is biome
 
 		public boolean otwórzInvBiom(Player p) {
@@ -1909,6 +2006,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					}));
 		}
 
+		
 		// /is upgrade
 
 		public void otwórzUlepszenia(Player p) {
@@ -2035,6 +2133,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 		}
 
+		
 		// /is border
 
 		@Mapowane Border border = Border.NIEBIESKI;
@@ -2112,6 +2211,54 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 
+		
+		// /is ban /is unban
+		
+		@Mapowane List<String> zbanowani;
+		public boolean zbanuj(Player p, String kogo) {
+			if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
+				return Func.powiadom(p, prefix + "Nie masz permisji na banowanie graczy");
+			if (członkowie.containsKey(kogo))
+				return Func.powiadom(p, prefix + "Nie możesz zbanować członka wyspy");
+			if (zbanowani.contains(kogo))
+				return Func.powiadom(p, prefix + "Ten gracz jest już zbanowany");
+			Player kogoP = Bukkit.getPlayer(kogo);
+			if (kogoP == null)
+				return Func.powiadom(p, prefix + "Ten gracz nie jest online");
+			
+			zbanowani.add(kogoP.getName());
+			
+			if (!maBypass(kogoP) && zawiera(kogoP.getLocation()))
+				Func.tpSpawn(kogoP);
+			
+			kogoP.sendMessage(prefix + Func.msg("%s zbanował cię na swojej wyspie", p.getDisplayName()));
+			powiadomCzłonków("%s zbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
+			
+			zapisz();
+		
+			return false;
+		}
+		public boolean odbanuj(Player p, String kogo) {
+			if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
+				return Func.powiadom(p, prefix + "Nie masz permisji na banowanie graczy");
+			if (!zbanowani.contains(kogo))
+				return Func.powiadom(p, prefix + "Ten gracz jest nie jest zbanowany");
+			Player kogoP = Bukkit.getPlayer(kogo);
+			if (kogoP == null)
+				return Func.powiadom(p, prefix + "Ten gracz nie jest online");
+			
+			zbanowani.remove(kogoP.getName());
+			
+			kogoP.sendMessage(prefix + Func.msg("%s odbanował cię na swojej wyspie", p.getDisplayName()));
+			powiadomCzłonków("%s odbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
+			
+			zapisz();
+			
+			return false;
+		}
+		
+		
+		
 		// /is top
 
 		public static void otwórzTopke(Player p) {
@@ -2207,6 +2354,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		}
 
+		
 		// /is create
 
 		private static final Cooldown cooldownTworzenia = new Cooldown(60 * 60);
@@ -2484,7 +2632,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		String kodToStrPerm(String kod) {
 			return kod.substring(0, kod.indexOf(' '));
 		}
-
 		
 		// im niższy index tym ważniejsza ranga
 		int indexPerm(Permisje perm) {
@@ -3186,7 +3333,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			lista.add(pl ? "warpy" : "warps");
 			Wyspa.Permisje perm = wyspa.permisje(p);
 			bic.accept(perm.dostęp_do_expa_banku || perm.dostęp_do_kasy_banku || perm.dostęp_do_magazynu, "bank");
-			bic.accept(perm.wyrzucanie_członków || perm.wyrzucanie_odwiedzających, pl ? "wyrzuć" : "kick");
+			bic.accept(perm.wyrzucanie_członków_i_uncoop || perm.wyrzucanie_banowanie_odwiedzających, pl ? "wyrzuć"  : "kick");
+			bic.accept(perm.wyrzucanie_banowanie_odwiedzających, pl ? "zbanuj"  : "ban");
+			bic.accept(perm.wyrzucanie_banowanie_odwiedzających, pl ? "odbanuj" : "unban");
 			bic.accept(perm.edytowanie_permisji, pl ? "uprawnienia" : "permissions");
 			bic.accept(perm.edytowanie_hierarchii_grup_permisji, pl ? "edytujpermisje" : "permsedit");
 			bic.accept(perm.awansowanie_i_degradowanie_członków, pl ? "członkowie" : "members");
@@ -3197,11 +3346,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			bic.accept(perm.dostęp_do_magazynu, pl ? "magazyn" : "storage");
 			bic.accept(perm.zmiana_prywatności, pl ? "prywatna" : "private");
 			bic.accept(perm.zmiana_prywatności, pl ? "publiczna" : "public");
-			bic.accept(perm.zapraszanie_członków, pl ? "zaproś" : "invite");
+			bic.accept(perm.zapraszanie_członków_i_coop, pl ? "zaproś" : "invite");
 			bic.accept(perm.liczenie_wartości_wyspy, pl ? "wartość" : "value");
 			bic.accept(perm.zmiana_biomu, pl ? "biom" : "biome");
 			bic.accept(perm.zmiana_nazwy_wyspy, pl ? "nazwa" : "name");
 			bic.accept(perm.zmiana_koloru_bordera, "border");
+			bic.accept(perm.zapraszanie_członków_i_coop, "coop");
+			bic.accept(perm.wyrzucanie_członków_i_uncoop, "uncoop");
 			bic.accept(perm.zmiana_dropu, "drop");
 			if (perm.grupa.equals("właściciel")) {
 				lista.add(pl ? "przekaż" : "transfer");
@@ -3405,6 +3556,28 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			case "upgrade":
 			case "ulepsz":
 				wyspa.otwórzUlepszenia(p);
+				break;
+			case "zbanuj":
+			case "ban":
+				if (args.length < 2)
+					return Func.powiadom(sender, prefix + "/is ban <nick>");
+				wyspa.zbanuj(p, args[1]);
+				break;
+			case "odbanuj":
+			case "unban":
+				if (args.length < 2)
+					return Func.powiadom(sender, prefix + "/is unban <nick>");
+				wyspa.odbanuj(p, args[1]);
+				break;
+			case "coop":
+				if (args.length < 2)
+					return Func.powiadom(sender, prefix + "/is coop <nick>");
+				wyspa.coop(p, args[1]);
+				break;
+			case "uncoop":
+				if (args.length < 2)
+					return Func.powiadom(sender, prefix + "/is uncoop <nick>");
+				wyspa.uncoop(p, args[1]);
 				break;
 			default:
 				sender.sendMessage(prefix + "Niepoprawny argument " + args[0]);
