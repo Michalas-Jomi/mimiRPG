@@ -109,10 +109,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				p.sendMessage(prefix + "Nie możesz utworzyć gildi o tej nazwie");
 				return null;
 			}
-			Gildia gildia = new Gildia();
+			Gildia gildia = Func.utwórz(Gildia.class);
 			gildia.przywódca = przywódca;
 			gildia.nazwa = nazwa;
 			gildia.ustawTag(p, tag);
+			gildia.zapisz();
 			
 			g.gildia = nazwa;
 			g.zapisz();
@@ -1003,6 +1004,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!przywódca.getAsBoolean()) break;
 			if (mapaZaproszeń.containsKey(sender.getName()))
 				return Func.powiadom(sender, Gildia.prefix + "Poczekaj aż minie poprzednie zaproszenie zanim wyślesz kolejne");
+			if (gildia.gracze.size() >= config.wczytajLubDomyślna("max osób w gildi", 4))
+				return Func.powiadom(sender, Gildia.prefix + "Osiągnięto już limit członków gildi");
 			
 			Player p = Bukkit.getPlayer(args[1]);
 			if (p == null) return Func.powiadom(sender, Gildia.prefix + "Gracz nie jeste online");
@@ -1062,6 +1065,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			if (Gildia.istniejeTag(args[2]))
 				return Func.powiadom(prefix, sender, "Tag %s jest już zajęty", args[2]);
+			
+			if (args[2].length() > Main.ust.wczytajLubDomyślna("Gildia.tag.maksymalna długość", 4))
+				return Func.powiadom(sender, Gildia.prefix + "Ten tag jest za długi");
 			
 			Gildia.stwórz(args[1], args[2], sender);
 			sender.sendMessage(Gildia.prefix + Func.msg("Gildia %s została utworzona", args[1]));

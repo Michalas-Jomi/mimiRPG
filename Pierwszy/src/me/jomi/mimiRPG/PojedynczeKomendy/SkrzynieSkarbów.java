@@ -393,6 +393,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 			edytor.wyświetl(0);
 		} catch (Throwable e) {
 			sender.sendMessage(prefix + "Niepoprawne argumenty");
+			e.printStackTrace();
 		}
 		return true;
 	}

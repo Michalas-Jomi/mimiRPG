@@ -331,18 +331,23 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
 			sprawdzZadanie(p, g, rodzaj, czego, pred, aktywneZadanie, k -> 1);
 	}
+	@SuppressWarnings("unchecked")
 	private static <E> void sprawdzZadanie(Player p, Gracz g, Rodzaj rodzaj, E czego, Predicate<E> pred, AktywneZadanie aktywneZadanie, Function<Kryterium, Integer> ile) {
-		if (!aktywneZadanie.ukończone())
-			Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
-				Kryterium k;
-				for (int i=0; i < zadanie.kryteria.size(); i++)
-					if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && k.ile > aktywneZadanie.getPostęp(i) && pred.test(czego)) {
-						aktywneZadanie.zwiększ(p, i, ile.apply(k));
-						g.zapisz();
-						if (zadanie.autoObieranie && aktywneZadanie.spełnione())
-							aktywneZadanie.odbierzNagrode(p);
-					}
-			});
+		try {
+			if (!aktywneZadanie.ukończone())
+				Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
+					Kryterium k;
+					for (int i=0; i < zadanie.kryteria.size(); i++)
+						if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && k.ile > aktywneZadanie.getPostęp(i) && pred.test((E) k.czego)) {
+							aktywneZadanie.zwiększ(p, i, ile.apply(k));
+							g.zapisz();
+							if (zadanie.autoObieranie && aktywneZadanie.spełnione())
+								aktywneZadanie.odbierzNagrode(p);
+						}
+				});
+		} catch(Throwable e) {
+			e.printStackTrace();
+		}
 	}
 
 	@EventHandler

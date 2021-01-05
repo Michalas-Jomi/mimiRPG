@@ -207,13 +207,15 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 			if (Func.losuj(szansa + poziom * szansaPerPoziom))
 				if (item != null)
 					itemy.add(Func.ilość(item.clone(), Func.losuj(min_ilość == -1 ? item.getAmount() : min_ilość, max_ilość == -1 ? item.getAmount() : max_ilość)));
-				else
+				else if (this.drop != null)
 					for (Drop drop : this.drop) {
 						List<ItemStack> subItemy = drop.dropnij(poziom);
 						itemy.addAll(subItemy);
 						if (!subItemy.isEmpty() && tylkoJeden)
 							break;
 					}
+				else 
+					Main.warn("Niepoprawny drop " + this);
 		return itemy;
 	}
 
@@ -262,12 +264,13 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 	public String toString() {
 		if (item != null)
 			return String.format("%s %s %s-%s x%s +%s +x%s", item, (szansa * 100) + "%", min_ilość, max_ilość, rolle, (szansaPerPoziom * 100) + "%", rollePerPoziom);
-		else {
+		else if (drop != null) {
 			StringBuilder strB = new StringBuilder("Drop(tylkoJeden=").append(tylkoJeden).append(", [\n");
 			for (Drop drop : drop)
 				strB.append(drop).append(",\n");
 			return strB.append("])").toString();
-		}
+		} else
+			return String.format("PustyDrop %s %s-%s x%s +%s +x%s", (szansa * 100) + "%", min_ilość, max_ilość, rolle, (szansaPerPoziom * 100) + "%", rollePerPoziom);
 	}
 	
 	/*

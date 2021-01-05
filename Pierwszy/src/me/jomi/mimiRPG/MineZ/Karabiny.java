@@ -90,10 +90,6 @@ public class Karabiny implements Listener, Przeładowalny {
 			Supplier<Double> los = () -> Func.losuj(-rozrzucenie, rozrzucenie);
 			wzrok.add(new Vector(los.get(), los.get(), los.get()));
 			
-			if (!(	Func.porównaj(item, p.getInventory().getItemInMainHand()) ||
-					Func.porównaj(item, p.getInventory().getItemInOffHand())))
-				return;
-			
 			Projectile pocisk = (Projectile) p.getWorld().spawnEntity(p.getEyeLocation(), typPocisku);
 			Func.ustawMetadate(pocisk, "mimiPocisk", nazwa);
 			pocisk.setVelocity(wzrok.multiply(siłaStrzału));

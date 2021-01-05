@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.Chat;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 
 import com.google.common.collect.Lists;
 
@@ -15,7 +16,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
-public class AutoWiadomosci implements Przeładowalny, Zegar {
+public class AutoWiadomosci implements Przeładowalny, Zegar, Listener {
 	private List<Napis> wiadomości = Lists.newArrayList();
 	private List<Napis> doWysłania = Lists.newArrayList();
 	private int timer = 0;

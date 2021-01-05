@@ -25,7 +25,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
-	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, String> mapa) {
+	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, String> mapa, String grupa) {
 		ShapedRecipe rec = new ShapedRecipe(nms, item);
 		
 		rec.shape(linie);
@@ -36,6 +36,8 @@ public class CustomoweCraftingi implements Przeładowalny {
 					choice -> rec.setIngredient(klucz, choice),
 					() -> rec.setIngredient(klucz, Func.StringToEnum(Material.class, str)));
 		}
+		
+		Func.wykonajDlaNieNull(grupa, grp -> rec.setGroup(grp));
 		
 		return rec;
 	}
@@ -55,7 +57,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 		for (int i=0; i<arr.length; i++)
 			arr[i] = lista.get(i);
 		
-		return shaped(nms, item, arr, mapa);
+		return shaped(nms, item, arr, mapa, config.wczytajStr(klucz + ".grupa"));
 	}
 	private static void wczytaj(String klucz) {
 		String typ = config.wczytajLubDomyślna(klucz + ".typ", "shaped");
@@ -77,7 +79,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 		default:
 			return;
 		}
-
+		
 		zarejestruj(nms, rec);
 	}
 	
@@ -105,7 +107,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 			Func.wykonajDlaNieNull(config.sekcja("Tagi"), sekcja -> {
 				for (String klucz : sekcja.getKeys(false))
 					try {
-						List<Material> lista = Func.wykonajWszystkim(sekcja.getStringList(klucz), str -> Material.valueOf(str));
+						List<Material> lista = Func.wykonajWszystkim(sekcja.getStringList(klucz), str -> Func.StringToEnum(Material.class, str));
 						mapaTagów.put(klucz, new MaterialChoice(lista));
 					} catch (Throwable e) {
 						Main.warn("Niepoprawny tag CutomowychCraftingów " + klucz);

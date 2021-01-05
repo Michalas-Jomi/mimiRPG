@@ -33,29 +33,27 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
-
 import com.sk89q.worldguard.WorldGuard;
 
-import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.MineZ.Bazy;
-import me.jomi.mimiRPG.util.Config;
-import me.jomi.mimiRPG.util.Func;
-import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.Ciąg;
-import me.jomi.mimiRPG.util.Przeładowalny;
-import me.jomi.mimiRPG.util.Zegar;
 import net.minecraft.server.v1_16_R2.EntityInsentient;
 import net.minecraft.server.v1_16_R2.EntityPlayer;
 import net.minecraft.server.v1_16_R2.MojangsonParser;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
+
+import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.MineZ.Bazy;
+import me.jomi.mimiRPG.util.Ciąg;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
 public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
@@ -325,7 +323,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		Mob m = (Mob) mob.getMetadata("mimiCustomowyMob").get(0).value();
 		if (m.drop == null) return;
 		for (Krotka<Double, ItemStack> krotka : m.drop)
-			if (Func.losuj(krotka.a))
+			if (krotka.b != null && Func.losuj(krotka.a))
 				mob.getWorld().dropItem(mob.getLocation(), krotka.b);
 		ev.getDrops().clear();
 		if (m.exp != null)

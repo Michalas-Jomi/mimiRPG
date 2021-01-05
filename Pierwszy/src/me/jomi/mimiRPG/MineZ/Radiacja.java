@@ -75,7 +75,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 		if (ev.getItem().isSimilar(płyn)) {
 			wypiliPłyn.add(ev.getPlayer().getName());
 			ev.getPlayer().removePotionEffect(PotionEffectType.WITHER);
-			ev.getPlayer().sendMessage(prefix + Func.msg("Wypiłeś płyn lugola, przez następne %s jesteś odporny na radziacje wyspy", Func.czas(czasPłynu)));
+			ev.getPlayer().sendMessage(prefix + Func.msg("Wypiłeś płyn lugola, przez następne %s jesteś odporny na radiacje wyspy", Func.czas(czasPłynu)));
 			Func.opóznij(20 * czasPłynu, () -> {
 				ev.getPlayer().sendMessage(prefix + Func.msg("Wypity płyn lugola przestaje działać!"));
 				wypiliPłyn.remove(ev.getPlayer().getName());
