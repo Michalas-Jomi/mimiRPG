@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -20,9 +21,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomowyDropŁowienie implements Listener, Przeładowalny {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void łowienie(PlayerFishEvent ev) {
+		Main.log(ev.getState(), ev.getCaught(), ev.getHook());
 		if (ev.isCancelled())
 			return;
-		if (drop != null)
+		if (drop != null && ev.getState() == State.CAUGHT_FISH)
 			Func.wykonajDlaNieNull(ev.getCaught(), Item.class, item -> {
 				List<ItemStack> itemki = drop.dropnij(Drop.poziom(ev.getPlayer(), ev.getPlayer().getInventory().getItemInMainHand()));
 				if (!itemki.isEmpty()) {

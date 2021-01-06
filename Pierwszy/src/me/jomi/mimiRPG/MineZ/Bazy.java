@@ -518,6 +518,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			}
 			
 			Matcher mat = Pattern.compile("baza(-?\\d+)x(-?\\d+)y(-?\\d+)z").matcher(region.getId());
+			if (!mat.find())
+				Main.warn("Nieprawidłowe id regionu Bazy: " + region.getId());
 			UnaryOperator<Integer> func = i -> Func.Int(mat.group(i));
 			Bukkit.getWorld(nazwaŚwiata).getBlockAt(func.apply(1), func.apply(2), func.apply(3)).setType(Material.AIR);;
 				

@@ -1286,13 +1286,11 @@ public abstract class Func {
 		return obj != null ? obj : domyślna.get();
 	}
 	public static <T> T domyślnaTry(Supplier<T> obj, T domyślna) {
-		T w;
 		try {
-			w = obj.get();
+			return obj.get();
 		} catch (Throwable e) {
-			w = domyślna;
+			return domyślna;
 		}
-		return w;
 	}
 	
 	public static void multiTry(Class<? extends Throwable> error, Runnable... funkcje) {

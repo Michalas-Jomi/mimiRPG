@@ -89,7 +89,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		
 	}
 	static String kodToPerm(String kod) {
-		return Func.permisja("mimirpg.skinyItemów." + kod);
+		return "mimirpg.skinyItemów." + kod;
 	}
 	static Krotka<Material, Integer> odkoduj(String kod) {
 		List<String> części = Func.tnij(kod, "-");

@@ -596,25 +596,24 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		return true;
 	}
 	private boolean dodajItem(List<Krotka<Zadanie, Status>> zadania, Zadanie zadanie, boolean przyjmij, boolean odbierz, boolean dostarcz, MonoKrotka<Boolean> dostarczone, Gracz g, Player p) {
-		if (!dostarczone.a && g.zadania.ukończone.contains(zadanie.id))
+		if (dostarczone.a)
+			return true;
+		
+		if (g.zadania.ukończone.contains(zadanie.id))
 			return zadania.add(new Krotka<>(zadanie, Status.UKOŃCZONE));
 
-		if (odbierz && !dostarczone.a)
-			for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
-				if (aktywneZadanie.zadanie.equals(zadanie.id)) {
-					if (aktywneZadanie.doOdebrania())
-						return zadania.add(new Krotka<>(zadanie, Status.DO_ODEBRANIA));
-					break;
-				}
-		if (dostarcz)
-			for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
-				if (aktywneZadanie.zadanie.equals(zadanie.id)) {
-					dostarczone.a = aktywneZadanie.dostarcz(p, g) || dostarczone.a;
-					return zadania.add(new Krotka<>(zadanie, Status.W_TRAKCIE));
-				}
+		for (AktywneZadanie aktywneZadanie : g.zadania.aktywne)
+			if (aktywneZadanie.zadanie.equals(zadanie.id)) {
+				if (dostarcz && (dostarczone.a = aktywneZadanie.dostarcz(p, g) || dostarczone.a))
+					return true;
+				
+				if (odbierz && aktywneZadanie.doOdebrania())
+					return zadania.add(new Krotka<>(zadanie, Status.DO_ODEBRANIA));
+				return zadania.add(new Krotka<>(zadanie, Status.W_TRAKCIE));
+			}
 
 		
-		if (przyjmij && !dostarczone.a)
+		if (przyjmij)
 			return zadania.add(new Krotka<>(zadanie, zadanie.możePrzyjąć(p) ? Status.DO_PRZYJĘCIA : Status.NIE_DOSTĘPNE));
 		
 		if (!przyjmij && !odbierz && !dostarcz)

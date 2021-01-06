@@ -2,6 +2,7 @@ package me.jomi.mimiRPG;
 
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -164,6 +165,7 @@ public class Main extends JavaPlugin implements Listener {
 		
 		pluginEnabled = true;        
 	}
+	static Matcher mat;
 	@Override
 	public void onDisable() {
 		for (Player p : Bukkit.getOnlinePlayers())

@@ -745,7 +745,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return permisje(p.getName());
 		}
 		Permisje permisje(String nick) {
-			return perms.get(członkowie.getOrDefault(nick, "odwiedzający"));
+			return perms.get(Func.domyślna(członkowie.get(nick), () -> 
+				Func.domyślnaTry(() -> coop.contains(Wyspa.wczytaj(Gracz.wczytaj(nick)).id), false) ? "członek" : "odwiedzający"));
 		}
 		
 		
@@ -3302,8 +3303,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length > 1)
+		if (args.length > 1) {
+			if (args.length == 2)
+				switch (args[0]) {
+				case "uncoop":
+					return Func.domyślnaTry(() -> {
+						Wyspa wyspa = Wyspa.wczytaj((Player) sender);
+						return utab(args, Func.wykonajWszystkim(wyspa.coop, x -> x.toString()));
+					}, null);
+				}
 			return null;
+		}
 		if (!(sender instanceof Player))
 			return utab(args, "info");
 
