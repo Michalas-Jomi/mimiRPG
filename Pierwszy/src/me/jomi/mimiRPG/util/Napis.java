@@ -18,6 +18,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -25,14 +29,17 @@ import net.md_5.bungee.api.chat.ItemTag;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Item;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import net.md_5.bungee.chat.TextComponentSerializer;
 
 
 public class Napis implements ConfigurationSerializable {
-	private TextComponent txt;
+	TextComponent txt;
 	
-
+	public Napis(TextComponent tekst) {
+		txt = tekst;
+	}
 	public Napis(String tekst) {
-		txt = new TextComponent(tekst);
+		this(new TextComponent(tekst));
 	}
 	public Napis(String tekst, String hover) {
 		this(tekst);
@@ -171,6 +178,14 @@ public class Napis implements ConfigurationSerializable {
 		if (obj instanceof Napis)
 			return txt.equals(((Napis) obj).txt);
 		return false;
+	}
+
+	static final Gson gson = new GsonBuilder().registerTypeAdapter(TextComponent.class, new TextComponentSerializer()).create();
+	public static Napis zRawJson(String rawJson) {
+		return new Napis(gson.fromJson(rawJson, TextComponent.class));
+	}
+	public JsonElement wJson() {
+		return gson.toJsonTree(txt);
 	}
 	
 	public static Napis wczytaj(String napis) {

@@ -15,14 +15,15 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.google.common.collect.Lists;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class ChatGrupowy extends Komenda implements Listener {
@@ -79,10 +80,6 @@ public class ChatGrupowy extends Komenda implements Listener {
 		String msg = ev.getMessage();
 		CommandSender p = ev.getPlayer();
 		if (mapa.containsKey(p.getName())) {
-			if (msg.startsWith("||") && msg.length() > 2) {
-				ev.setMessage(msg.substring(2));
-				return;
-			}
 			ev.setCancelled(true);
 			mapa.get(p.getName()).napisz(p, msg);
 		}
@@ -175,8 +172,11 @@ public class ChatGrupowy extends Komenda implements Listener {
 				return powiadom(p, "Nie należysz do czatu żadnego grupowego");
 			if (args.length < 2) 
 				return powiadom(p, "Nie podano żadnej wiadomości");
-			if (p instanceof Player)
-				((Player) p).chat("||" + Func.listToString(args, 1));
+			if (p instanceof Player) {
+				ChatGrupowyInst inst = mapa.get(p.getName());
+				((Player) p).chat(Func.listToString(args, 1));
+				mapa.put(p.getName(), inst);
+			}
 			else
 				p.sendMessage(prefix + "zamiaste tego użyj /say /me /mi");
 			return true;

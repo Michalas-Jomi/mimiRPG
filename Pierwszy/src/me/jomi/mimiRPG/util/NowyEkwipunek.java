@@ -18,8 +18,8 @@ public class NowyEkwipunek {
 	// nick <stara Lokacja, <exp, itemy>>
 	static final HashMap<String, Krotka<Location, Krotka<Integer, Krotka<GameMode, List<ItemStack>>>>> mapa = new HashMap<>();
 	
-	public static void dajNowy(Player p) { dajNowy(p, null, null); }
-	public static void dajNowy(Player p, Location gdzieTepnąć) { dajNowy(p, gdzieTepnąć, null); }
+	public static void dajNowy(Player p)						{ dajNowy(p, null, null); }
+	public static void dajNowy(Player p, Location gdzieTepnąć)	{ dajNowy(p, gdzieTepnąć, null); }
 	public static void dajNowy(Player p, Location gdzieTepnąć, GameMode gm) {
 		Inventory inv = p.getInventory();
 		String nick = p.getName();

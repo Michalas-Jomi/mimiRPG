@@ -522,13 +522,9 @@ public abstract class Func {
 		
 		item = new ItemStack(Material.PLAYER_HEAD);
 		meta = (SkullMeta) item.getItemMeta();
-		if (nazwa != null)
-			meta.setDisplayName(koloruj(nazwa));
-		if (lore != null) {
-			for (int i=0; i<lore.size(); i++) 
-				lore.set(i, koloruj(lore.get(i)));
-			meta.setLore(lore);
-		}
+		
+		if (nazwa != null)	meta.setDisplayName(koloruj(nazwa));
+		if (lore != null)	meta.setLore(koloruj(lore));
 		
 		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", url));

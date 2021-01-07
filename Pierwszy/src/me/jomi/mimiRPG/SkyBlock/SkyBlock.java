@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,9 +38,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -2827,8 +2830,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	@EventHandler
 	public void bicieMobów(EntityDamageByEntityEvent ev) {
-		boolean dp = ev.getDamager() instanceof Player;
-		boolean ep = ev.getEntity() instanceof Player;
+		Predicate<Entity> gracz = e -> e instanceof Player ||
+				(e instanceof Projectile && ((Projectile) e).getShooter() != null && ((Projectile) e).getShooter() instanceof Player);
+		
+		boolean dp = gracz.test(ev.getDamager());
+		boolean ep = gracz.test(ev.getEntity());
+		
+		
 		if ((dp || ep) && !(dp && ep))
 			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getDamager().getLocation()), wyspa -> {
 				if (!wyspa.permisje((Player) (dp ? ev.getDamager() : ev.getEntity())).bicie_mobów)
@@ -2873,8 +2881,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				ev.setCancelled(true);
 		});
 	}
-	
-	
 	/// limityBloków / permisje
 	@EventHandler(priority = EventPriority.HIGH)
 	public void stawianieBloków(BlockPlaceEvent ev) {
