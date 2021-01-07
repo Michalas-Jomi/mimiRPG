@@ -21,7 +21,6 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomowyDropŁowienie implements Listener, Przeładowalny {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void łowienie(PlayerFishEvent ev) {
-		Main.log(ev.getState(), ev.getCaught(), ev.getHook());
 		if (ev.isCancelled())
 			return;
 		if (drop != null && ev.getState() == State.CAUGHT_FISH)

@@ -833,6 +833,19 @@ public abstract class Func {
 		}
 		return r;
 	}
+	public static boolean xWZakresie(String zakres, int x) {
+		Integer min = null, max = null;
+		List<String> min_max = Func.tnij(zakres, "..");
+		if (min_max.size() == 1)
+			min = max = Func.Int(min_max.get(0));
+		else {
+			Function<String, Integer> Int = str -> str.isEmpty() ? null : Func.Int(str);
+			min = Int.apply(min_max.get(0));
+			max = Int.apply(min_max.get(1));
+		}
+		
+		return (min == null || min <= x) && (max == null || x <=max);
+	}
 	
 	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
@@ -918,7 +931,6 @@ public abstract class Func {
 			napis = napis.substring(i + regex.length());
 		}
 	}
-	
 	
 	@SuppressWarnings("unchecked")
 	public static <T> void dodajWszystkie(List<T> lista, T... elementy) {
