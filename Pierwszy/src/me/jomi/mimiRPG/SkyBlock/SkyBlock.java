@@ -3338,8 +3338,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		lista.add("info");
 		lista.add("top");
 		lista.add(pl ? "odwiedz" : "visit");
-		if (p.hasPermission(permBypass))
+		if (p.hasPermission(permBypass)) {
 			lista.add("bypass");
+			lista.add("admin");
+			lista.add("-p");
+		}
 
 		if (wyspa == null)
 			lista.add(pl ? "stwórz" : "create");
@@ -3384,12 +3387,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Gracz g2;
 
 		Wyspa wyspa;
-		Gracz g = null;
-		Player p = null;
-		if (sender instanceof Player) {
-			p = (Player) sender;
-			g = Gracz.wczytaj(p);
-		}
+		Player p = sender instanceof Player ? (Player) sender : null;
 
 		// gracz nie musi mieć wyspy
 		try {
@@ -3439,6 +3437,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					return true;
 				}
 
+			Gracz g = null;
+			if (sender.hasPermission(permBypass) && args.length >= 2 && args[0].equalsIgnoreCase("-p")) {
+				g = Gracz.wczytaj(args[1]);
+				String[] _args = new String[args.length - 2];
+				for (int i=2; i < args.length; i++)
+					_args[i-2] = args[i];
+				args = _args;
+			} else if (p != null)
+				g = Gracz.wczytaj(p.getName());
 			wyspa = g == null ? null : Wyspa.wczytaj(g.wyspa);
 			
 			if (g != null && g.wyspa == -1) {

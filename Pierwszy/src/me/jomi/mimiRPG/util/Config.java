@@ -33,7 +33,7 @@ public class Config {
 		przeładuj();
 	}
 	public Config(File plik) {
-		this.sciezka = plik.getPath();
+		this.sciezka = plik.getPath().replace('\\', '/');
 		przeładuj();
 	}
 	

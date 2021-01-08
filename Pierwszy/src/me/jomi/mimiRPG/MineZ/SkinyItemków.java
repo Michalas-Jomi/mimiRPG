@@ -18,6 +18,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -161,11 +163,20 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 				sprawdz((Player) ev.getWhoClicked(), item, ev::setCurrentItem);
 			});
 	}
-	
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void zmianaItemka(PlayerItemHeldEvent ev) {
+		if (!ev.isCancelled())
+			sprawdz(ev.getPlayer(), ev.getPlayer().getInventory().getItemInMainHand(), ev.getPlayer().getInventory()::setItemInMainHand);
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void zmianaRęgi(PlayerSwapHandItemsEvent ev) {
+		if (!ev.isCancelled())
+			sprawdz(ev.getPlayer(), ev.getOffHandItem(), ev::setOffHandItem);
+	}
 	
 	// util
 	
-	boolean otwórzPanel(Player p) {
+ 	boolean otwórzPanel(Player p) {
 		ItemStack item = p.getInventory().getItemInMainHand();
 		if (item == null)
 			return Func.powiadom(p, "Musisz trzymać coś w ręce");

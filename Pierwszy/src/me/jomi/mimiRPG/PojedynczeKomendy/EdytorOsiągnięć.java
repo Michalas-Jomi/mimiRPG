@@ -9,14 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_16_R2.advancement.CraftAdvancement;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
+
+import net.minecraft.server.v1_16_R2.Advancement;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -29,7 +34,7 @@ import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class EdytorOsiągnięć implements Przeładowalny {
+public class EdytorOsiągnięć implements Przeładowalny, Listener {
 	static class DataPack {
 		static class Drzewko {
 			// nazwa: drzewko
@@ -56,13 +61,15 @@ public class EdytorOsiągnięć implements Przeładowalny {
 			Napis nazwa;
 			ItemStack ikona;
 			
+			Advancement adv;
+			
 			Ramka ramka;
 			boolean hidden;
 			boolean show_toast;
 			boolean announce_to_chat;
 			
 			@SuppressWarnings("unchecked")
-			private Osiągnięcie(Drzewko drzewko, File plik) {
+			private Osiągnięcie(Drzewko drzewko, File plik, Advancement adv) {
 				drzewko.mapa.put(plik.getName().substring(0, plik.getName().length() - 5), this);
 				this.drzewko = drzewko;
 				this.plik = plik;
@@ -89,26 +96,30 @@ public class EdytorOsiągnięć implements Przeładowalny {
 				
 				List<String> części = Func.tnij(scieżka, "/");
 				
+				@SuppressWarnings("deprecation")
+				Advancement adv = ((CraftAdvancement) Bukkit.getAdvancement(new NamespacedKey(Main.plugin.getName().toLowerCase(), scieżka))).getHandle();
+				
 				Drzewko drzewko = Drzewko.wczytaj(części.get(0));
-				return Func.domyślna(drzewko.mapa.get(części.get(1)), () -> new Osiągnięcie(drzewko, new File(sc + fscieżka)));
+				return Func.domyślna(drzewko.mapa.get(części.get(1)), () -> new Osiągnięcie(drzewko, new File(sc + fscieżka), adv));
 			}
 			
 			@SuppressWarnings("unchecked")
 			public void zapisz() {
-				JSONObject jsonDisplay = new JSONObject();
+				//JSONObject jsonDisplay = new JSONObject();
 				
-				jsonDisplay.put("frame", ramka.name().toLowerCase());
-				jsonDisplay.put("hidden", hidden);
-				jsonDisplay.put("show_toast", show_toast);
-				jsonDisplay.put("announce_to_chat", announce_to_chat);
+				//jsonDisplay.put("frame", ramka.name().toLowerCase());
+				//jsonDisplay.put("hidden", hidden);
+				//jsonDisplay.put("show_toast", show_toast);
+				//jsonDisplay.put("announce_to_chat", announce_to_chat);
 				
-				jsonDisplay.put("title", nazwa.wJson());
-				jsonDisplay.put("description", opis.wJson());
-				jsonDisplay.put("icon", new Gson().toJsonTree(ikona));
+				//jsonDisplay.put("title", nazwa.wJson());
+				//jsonDisplay.put("description", opis.wJson());
+				//jsonDisplay.put("icon", new Gson().toJsonTree(ikona));
 
 				
 				JSONObject json = new JSONObject();
-				json.put("display", jsonDisplay);
+				//json.put("display", jsonDisplay);
+				json.put("display", adv.c().k());
 				json.put("parent", Main.plugin.getName().toLowerCase() + ":" + drzewko.nazwa + "/" + nazwa);
 			
 				try (FileWriter writer = new FileWriter(plik, StandardCharsets.UTF_8)) {
@@ -213,6 +224,38 @@ public class EdytorOsiągnięć implements Przeładowalny {
 	
 	static String sc;
 	
+	/*@EventHandler
+	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
+		Advancement adv = ((CraftAdvancement) ev.getAdvancement()).getHandle();
+		
+		IChatMutableComponent d1 = ChatSerializer.a("{\"text\":\"D1\"}");
+		IChatMutableComponent d2 = ChatSerializer.a("{\"text\":\"D2\"}");
+		AdvancementDisplay display = new AdvancementDisplay(
+				CraftItemStack.asNMSCopy(new ItemStack(Material.STONE_SWORD)),
+				d1,
+				d2,
+				new MinecraftKey("testowanie", "display"),
+				AdvancementFrameType.TASK,
+				false,
+				false,
+				false);
+		AdvancementRewards reward = new AdvancementRewards(20, new MinecraftKey[0], new MinecraftKey[0], null);
+		
+		CraftServer server = (CraftServer) Bukkit.getServer();
+		
+		
+		CraftWorld świat = (CraftWorld) ev.getPlayer().getWorld();
+		
+		server.getHandle();
+		
+		//CraftMagicNumbers a;
+		//CraftMagicNumbers.INSTANCE.loadAdvancement(new NamespacedKey(Main.plugin, ""), "");
+		
+		
+		Advancement adv2 = new Advancement(new MinecraftKey("testowanie", "adv1"), null, display, reward, new HashMap<>(), new String[0][0]);
+
+		//Main.log(adv, "\n", adv2);
+	}*/
 
 	@Override
 	public void przeładuj() {
@@ -247,7 +290,6 @@ public class EdytorOsiągnięć implements Przeładowalny {
 		
 		Main.reloadBukkitData();
 	}
-
 	@Override
 	public Krotka<String, Object> raport() {
 		int licz = 0;
