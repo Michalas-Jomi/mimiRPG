@@ -49,6 +49,8 @@ public class ZamienEq extends Komenda{
 			}
 		return true;
 	}
+	
+
 	private void zamień(CommandSender sender, String nick1, String nick2) {
 		if (nick1.equals(nick2)) {
 			sender.sendMessage(prefix + "Nie możesz zamiń eq gracza z nim samym");
@@ -100,5 +102,21 @@ public class ZamienEq extends Komenda{
 		p.sendMessage("Gracz " + nick + " nigdy nie był online!");
 		return false;
 	}
+	
 
+	/*
+	NBTTagCompound tag(String uuid) {
+		return ((CraftServer) Bukkit.getServer()).getHandle()..playerFileData.getPlayerData(uuid);
+	}
+	Map<Integer, ItemStack> wczytajEc (NBTTagCompound tag) { return wczytajItemy(tag, "EnderItems"); }
+	Map<Integer, ItemStack> wczytajInv(NBTTagCompound tag) { return wczytajItemy(tag, "Inventory"); }
+	private Map<Integer, ItemStack> wczytajItemy(NBTTagCompound tag, String klucz) {
+		HashMap<Integer, ItemStack> mapa = new HashMap<>();
+		
+		for (NBTBase nbt : (NBTTagList) tag.get(klucz))
+			mapa.put(((NBTTagCompound) nbt).getInt("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R2.ItemStack.a((NBTTagCompound) nbt)));
+		
+		return mapa;
+	}
+	*/
 }

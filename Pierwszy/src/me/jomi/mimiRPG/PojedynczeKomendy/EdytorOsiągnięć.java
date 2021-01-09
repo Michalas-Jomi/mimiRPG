@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_16_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_16_R2.advancement.CraftAdvancement;
+import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +24,14 @@ import org.json.simple.JSONObject;
 import com.google.gson.Gson;
 
 import net.minecraft.server.v1_16_R2.Advancement;
+import net.minecraft.server.v1_16_R2.AdvancementDisplay;
+import net.minecraft.server.v1_16_R2.AdvancementFrameType;
+import net.minecraft.server.v1_16_R2.AdvancementRewards;
+import net.minecraft.server.v1_16_R2.Criterion;
+import net.minecraft.server.v1_16_R2.CriterionTriggerImpossible;
+import net.minecraft.server.v1_16_R2.CustomFunction;
+import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
+import net.minecraft.server.v1_16_R2.MinecraftKey;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -224,38 +234,39 @@ public class EdytorOsiągnięć implements Przeładowalny, Listener {
 	
 	static String sc;
 	
-	/*@EventHandler
-	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
-		Advancement adv = ((CraftAdvancement) ev.getAdvancement()).getHandle();
-		
-		IChatMutableComponent d1 = ChatSerializer.a("{\"text\":\"D1\"}");
-		IChatMutableComponent d2 = ChatSerializer.a("{\"text\":\"D2\"}");
+	static final AdvancementRewards reward;
+	static final String[][] strs = new String[1][1];
+	static final HashMap<String, Criterion> mapa = new HashMap<>();
+	static {
+		CustomFunction func = new CustomFunction(new MinecraftKey(Main.plugin.getName().toLowerCase(), "c"), new CustomFunction.c[0]);
+		// new AdvancementRewards(exp, loot, recipes, function)
+		reward = new AdvancementRewards(0, new MinecraftKey[0], new MinecraftKey[0], new CustomFunction.a(func));
+		mapa.put("i", new Criterion(new CriterionTriggerImpossible.a()));
+		strs[0][0] = "i";
+	}
+	void stwórzNowe(org.bukkit.inventory.ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka,
+			boolean show_toast, boolean announce_to_chat, boolean hidden) {
+		stwórzNowe(ikona, nazwa, opis, ramka, null, null, show_toast, announce_to_chat, hidden);
+	}
+	@SuppressWarnings("resource")
+	void stwórzNowe(org.bukkit.inventory.ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka, Advancement parent, String tło,
+			boolean show_toast, boolean announce_to_chat, boolean hidden) {
 		AdvancementDisplay display = new AdvancementDisplay(
-				CraftItemStack.asNMSCopy(new ItemStack(Material.STONE_SWORD)),
-				d1,
-				d2,
-				new MinecraftKey("testowanie", "display"),
-				AdvancementFrameType.TASK,
-				false,
-				false,
-				false);
-		AdvancementRewards reward = new AdvancementRewards(20, new MinecraftKey[0], new MinecraftKey[0], null);
+				CraftItemStack.asNMSCopy(ikona),
+				ChatSerializer.a("{\"text\":\""+nazwa+"\"}"),
+				ChatSerializer.a("{\"text\":\""+opis+"\"}"),
+				new MinecraftKey("minecraft", tło == null ? "textures/block/light_blue_concrete.png" : tło),
+				ramka,
+				show_toast,
+				announce_to_chat,
+				hidden);
 		
-		CraftServer server = (CraftServer) Bukkit.getServer();
+		MinecraftKey key = new MinecraftKey(Main.plugin.getName().toLowerCase(), parent == null ? "root" : nazwa);
 		
+		Advancement adv2 = new Advancement(key, parent, display, reward, mapa, strs);
 		
-		CraftWorld świat = (CraftWorld) ev.getPlayer().getWorld();
-		
-		server.getHandle();
-		
-		//CraftMagicNumbers a;
-		//CraftMagicNumbers.INSTANCE.loadAdvancement(new NamespacedKey(Main.plugin, ""), "");
-		
-		
-		Advancement adv2 = new Advancement(new MinecraftKey("testowanie", "adv1"), null, display, reward, new HashMap<>(), new String[0][0]);
-
-		//Main.log(adv, "\n", adv2);
-	}*/
+		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements.put(key, adv2);
+	}
 
 	@Override
 	public void przeładuj() {
