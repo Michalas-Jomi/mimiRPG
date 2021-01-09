@@ -20,11 +20,13 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class EdytujItem extends Komenda {
@@ -49,6 +51,7 @@ public class EdytujItem extends Komenda {
 			opcjaGłówna(n, "enchant", 		"edytować", false, null);
 			opcjaGłówna(n, "lore", 			"edytować", false, null);
 			opcjaGłówna(n, "modifire", 		"edytować", false, null);
+			opcjaGłówna(n, "typ", 			"zmienić", true, null);
 			opcjaGłówna(n, "unbreakable", 	"zmienić",  false, () -> meta.isUnbreakable() ? "§a" : "§c");
 			
 			n.dodaj("\n");
@@ -190,6 +193,14 @@ public class EdytujItem extends Komenda {
 					meta.removeItemFlags(flaga);
 				else
 					meta.addItemFlags(flaga);
+				break;
+			case "typ":
+				try {
+					item.setType(Func.StringToEnum(Material.class, Func.listToString(args, 2)));
+				} catch (Throwable e) {
+					Func.powiadom(p, Func.msg(prefix + "Nie poprawny typ %s", Func.listToString(args, 2)));
+					return;
+				}
 				break;
 			case "nazwa":
 				meta.setDisplayName(Func.koloruj(Func.listToString(args, 2)));
