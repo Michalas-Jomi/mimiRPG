@@ -609,7 +609,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			if (str != null) {
 				final String data = dajDate(blok);
-				blok.setBlockData(Bukkit.createBlockData(Material.valueOf(str), data), false);
+				try {
+					blok.setBlockData(Bukkit.createBlockData(Func.StringToEnum(Material.class, str), data), false);
+				} catch (IllegalArgumentException e) {
+					blok.setType(Func.StringToEnum(Material.class, str));
+				}
 				
 				if (mat.endsWith("_DOOR"))
 					kolejka.add(new Krotka<>(

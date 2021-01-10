@@ -707,7 +707,7 @@ public abstract class Func {
 		
 		return sloty;
 	}
-	
+
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
 		return 0 < rand && rand <= szansa;
@@ -723,15 +723,26 @@ public abstract class Func {
 	public static int losuj(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
-	public static <T> T losuj(Iterable<T> zCzego) {
-		List<T> lista = Lists.newArrayList(zCzego);
-		if (lista.isEmpty())
-			return null;
-		return lista.get(losujWZasięgu(lista.size()));
+	public static <T> T losuj(T[] zCzego) {
+		return zCzego.length == 0 ? null : zCzego[losujWZasięgu(zCzego.length)];
 	}
-
-	public static <T> T losuj(T[] t) {
-		return t.length == 0 ? null : t[losujWZasięgu(t.length)];
+	public static <T> T losuj(Iterable<T> zCzego) {
+		return losuj(Lists.newArrayList(zCzego));
+	}
+	public static <T> T losuj(List<T> zCzego) {
+		if (zCzego.isEmpty())
+			return null;
+		return zCzego.get(losujWZasięgu(zCzego.size()));
+	}
+	public static String losujZnaki(int min, int max, String alfabet) {
+		StringBuilder str = new StringBuilder();
+		
+		char[] znaki = alfabet.toCharArray();
+		int ile = Func.losuj(min, max);
+		for (int i=0; i < ile; i++)
+			str.append(znaki[losujWZasięgu(znaki.length)]);
+		
+		return str.toString();
 	}
 	public static int losujWZasięgu(int max) {
 		return Func.losuj(0, max-1);

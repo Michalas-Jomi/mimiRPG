@@ -167,9 +167,10 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		super("Szkatułka", "/Szkatułka <czynność> <skrzynka> (gracz)");
 		Main.dodajPermisje(permEdycja);
 
-		edytor.zarejestrójWyjątek("/szkatułka edytor itemy", (zadanie, ścieżka) -> null);
-		edytor.zarejestrójWyjątek("/szkatułka edytor nazwa", (zadanie, ścieżka) -> null);
-		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.nazwa = ścieżka);
+		edytor.zarejestrójWyjątek("/szkatułka edytor lokacje", (zadanie, ścieżka) -> null);
+		edytor.zarejestrójWyjątek("/szkatułka edytor skrzynka itemy", (zadanie, ścieżka) -> null);
+		edytor.zarejestrójWyjątek("/szkatułka edytor skrzynka nazwa", (zadanie, ścieżka) -> null);
+		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.skrzynka.nazwa = ścieżka);
 		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> przeładuj());
 	}
 	
@@ -289,7 +290,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		return Func.r("Skrzynki", config.klucze(false).size());
 	}
 
-	final EdytorOgólny<Skrzynka> edytor = new EdytorOgólny<>("szkatułka", Skrzynka.class);
+	final EdytorOgólny<Box> edytor = new EdytorOgólny<>("szkatułka", Box.class);
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		switch (args.length) {

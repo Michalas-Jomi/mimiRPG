@@ -88,7 +88,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			return CraftItemStack.asBukkitCopy(item);
 		}
 	}
-	// {plecak: {nazwa: String, itemy:[{itemy}], mxSlot: int}}
+	// {plecak: {nazwa: id, itemy:[{itemy}], mxSlot: int}}
 	
 	
 	@EventHandler
@@ -139,20 +139,19 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 		});
 	}
 
-	
 	@EventHandler
 	public void użycie(PlayerInteractEvent ev) {
 		if(ev.getPlayer().hasPermission(premOtwieranie) && Func.multiEquals(ev.getAction(), Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK)) {
-			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(ev.getPlayer().getInventory().getItemInMainHand());
+			ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
+			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			NBTTagCompound tag = nmsItem.getOrCreateTag().getCompound("plecak");
 			if (tag == null || tag.isEmpty())
 				return;
-			ev.getPlayer().openInventory(new Holder(tag).getInventory());
 			ev.setCancelled(true);
+			if (item.getAmount() == 1)
+				ev.getPlayer().openInventory(new Holder(tag).getInventory());
 		}
 	}
-	
-	
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
@@ -164,10 +163,10 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			return false;
 		if (!Plecak.mapa.containsKey(args[0]))
 			return Func.powiadom(sender, prefix + Func.msg("Niepoprawna nazwa plecaka %s", args[0]));
-		Func.dajItem((Player) sender, Plecak.wczytaj(args[0]).item());
+		ItemStack item = Plecak.wczytaj(args[0]).item();
+		Func.dajItem((Player) sender, item);
 		return true;
 	}
-	
 	
 	@Override
 	public void przeładuj() {

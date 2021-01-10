@@ -42,6 +42,7 @@ import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.Budownik;
 import me.jomi.mimiRPG.PojedynczeKomendy.CustomoweCraftingi;
+import me.jomi.mimiRPG.PojedynczeKomendy.EdytorOsiągnięć;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
@@ -271,11 +272,14 @@ public class Main extends JavaPlugin implements Listener {
 
 	public static void reloadBukkitData() {
 		Bukkit.getServer().reloadData();
-		for (Class<?> clazz : new Class<?>[] {CustomoweCraftingi.class})
+		for (Class<?> clazz : new Class<?>[] {CustomoweCraftingi.class, EdytorOsiągnięć.class})
 			if (Main.włączonyModół(clazz))
 				Przeładuj.przeładuj(Bukkit.getConsoleSender(), clazz.getSimpleName());
 	}
-
+	
+	
+	
+	
 	
 	private static class PanelTakNieHolder extends Func.abstractHolder {
 		Runnable tak;
