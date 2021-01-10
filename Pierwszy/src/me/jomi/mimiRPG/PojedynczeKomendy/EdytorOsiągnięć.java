@@ -1,27 +1,27 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Statistic;
 import org.bukkit.craftbukkit.v1_16_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_16_R2.advancement.CraftAdvancement;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.craftbukkit.v1_16_R2.util.CraftNamespacedKey;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.json.simple.JSONObject;
 
-import com.google.gson.Gson;
+import com.google.common.collect.Lists;
 
 import net.minecraft.server.v1_16_R2.Advancement;
 import net.minecraft.server.v1_16_R2.AdvancementDisplay;
@@ -33,223 +33,124 @@ import net.minecraft.server.v1_16_R2.CustomFunction;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.MinecraftKey;
 
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.LepszaMapa;
-import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.SelektorItemów;
 
 @Moduł
-public class EdytorOsiągnięć implements Przeładowalny, Listener {
-	static class DataPack {
-		static class Drzewko {
-			// nazwa: drzewko
-			final static HashMap<String, Drzewko> mapaDrzew = new HashMap<>();
-			// nazwa: osiągnięcie
-			final HashMap<String, Osiągnięcie> mapa = new HashMap<>();
-			
-			String nazwa;
-			
-			private Drzewko(String nazwa) {
-				mapaDrzew.put(nazwa, this);
-				this.nazwa = nazwa;
-			}
-			public static Drzewko wczytaj(String nazwa) {
-				return Func.domyślna(mapaDrzew.get(nazwa), () -> new Drzewko(nazwa));
-			}
-		}
-		static class Osiągnięcie {
-			Osiągnięcie parent; // null dla roota
-			Drzewko drzewko;
-			File plik;
-			
-			Napis opis;
-			Napis nazwa;
-			ItemStack ikona;
-			
-			Advancement adv;
-			
-			Ramka ramka;
-			boolean hidden;
-			boolean show_toast;
-			boolean announce_to_chat;
-			
-			@SuppressWarnings("unchecked")
-			private Osiągnięcie(Drzewko drzewko, File plik, Advancement adv) {
-				drzewko.mapa.put(plik.getName().substring(0, plik.getName().length() - 5), this);
-				this.drzewko = drzewko;
-				this.plik = plik;
-				
-				LepszaMapa<String> mapa = new LepszaMapa<String>((JSONObject) Func.wczytajJSON(plik.getAbsolutePath()));
-				
-				LepszaMapa<Object> display = mapa.getLMap("display");
-				hidden = display.getBoolean("hidden");
-				show_toast = display.getBoolean("show_toast");
-				announce_to_chat = display.getBoolean("announce_to_chat");
-				ramka = Func.StringToEnum(Ramka.class, display.getString("frame"));
-				
-				nazwa = Napis.zRawJson(display.getJSONObject("title").toJSONString());
-				opis = Napis.zRawJson(display.getJSONObject("description").toJSONString());
-				ikona = new Gson().fromJson(display.getJSONObject("icon").toJSONString(), ItemStack.class);
-				
-				if (mapa.containsKey("parent"))
-					parent = wczytaj(mapa.getString("parent"));
-			}
-			public static Osiągnięcie wczytaj(String scieżka) {
-				if (scieżka.contains(":"))
-					scieżka = scieżka.substring(scieżka.indexOf(':') + 1);
-				String fscieżka = scieżka;
-				
-				List<String> części = Func.tnij(scieżka, "/");
-				
-				@SuppressWarnings("deprecation")
-				Advancement adv = ((CraftAdvancement) Bukkit.getAdvancement(new NamespacedKey(Main.plugin.getName().toLowerCase(), scieżka))).getHandle();
-				
-				Drzewko drzewko = Drzewko.wczytaj(części.get(0));
-				return Func.domyślna(drzewko.mapa.get(części.get(1)), () -> new Osiągnięcie(drzewko, new File(sc + fscieżka), adv));
-			}
-			
-			@SuppressWarnings("unchecked")
-			public void zapisz() {
-				//JSONObject jsonDisplay = new JSONObject();
-				
-				//jsonDisplay.put("frame", ramka.name().toLowerCase());
-				//jsonDisplay.put("hidden", hidden);
-				//jsonDisplay.put("show_toast", show_toast);
-				//jsonDisplay.put("announce_to_chat", announce_to_chat);
-				
-				//jsonDisplay.put("title", nazwa.wJson());
-				//jsonDisplay.put("description", opis.wJson());
-				//jsonDisplay.put("icon", new Gson().toJsonTree(ikona));
+public class EdytorOsiągnięć implements Listener, Przeładowalny {
+	abstract static class Kryterium extends Mapowany {
+		@Mapowane String nazwa;
+		@Mapowane int ile;
 
-				
-				JSONObject json = new JSONObject();
-				//json.put("display", jsonDisplay);
-				json.put("display", adv.c().k());
-				json.put("parent", Main.plugin.getName().toLowerCase() + ":" + drzewko.nazwa + "/" + nazwa);
-			
-				try (FileWriter writer = new FileWriter(plik, StandardCharsets.UTF_8)) {
-					writer.write(json.toJSONString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		void Init() {
+			if (nazwa == null)
+				nazwa = Func.losujZnaki(10, 20, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890");
+			else if (nazwa.contains(":") || nazwa.contains(","))
+				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \",\"");
 		}
-		static enum Ramka {
-			TASK,
-			GOAL,
-			CHALLENGE;
-		}
+		
+		abstract <T> T czego();
+	}
+	static class KryteriumWykop extends Kryterium {
+		@SuppressWarnings("unchecked") @Override <T> T czego() { return (T) blok; }
+		@Mapowane Material blok;
+	}
+	static class KryteriumZabij extends Kryterium {
+		@SuppressWarnings("unchecked") @Override <T> T czego() { return (T) mob; }
+		@Mapowane EntityType mob;
+	}
+	static class KryteriumZdobądz extends Kryterium {
+		@SuppressWarnings("unchecked") @Override <T> T czego() { return (T) item; }
+		@Mapowane SelektorItemów item;
+		@Mapowane boolean zabierz;
 	}
 	
 	static class Osiągnięcie extends Mapowany {
-		@Mapowane String scieżka;
+		final static HashMap<NamespacedKey, Osiągnięcie> mapa = new HashMap<>();
+		@Mapowane String namespacedKey;
 		@Mapowane List<ItemStack> nagroda;
-		@Mapowane List<Kryterium> kryteria;
-	}
-	abstract static class Kryterium extends Mapowany {
-		@Mapowane int ile;
+		@Mapowane List<Kryterium> kryteria;// TODO zapewnić unikalne nazwy kryteriów w obrębie osiągnięcia
+
+		@Mapowane ItemStack ikona;
+		@Mapowane String nazwa;
+		@Mapowane String opis;
+		@Mapowane AdvancementFrameType ramka;
+		@Mapowane boolean show_toast;
+		@Mapowane boolean announce_to_chat;
+		@Mapowane boolean hidden;
 		
-	}
-	static class KryteriumWykop extends Mapowany {
-		@Mapowane Material blok;
-		@Mapowane ItemSelektor item;
-	}
-	static class ItemSelektor extends Mapowany {
-		@Mapowane ItemStack kopia; // null jeśli item nie ma być sprawdzany przez ItemStack.isSimillar
+		@Mapowane String tło;
+		@Mapowane String parent;
 		
-		static class Lista extends Mapowany {
-			// null gdziekolwiek oznacza pomijanie tego kryterium
-			@Mapowane List<Material> typ;
-			@Mapowane List<String> enchanty; // ench - "<nazwa>-<lvl>" np. "fire_aspect-2" "fire_aspect-..2" "fire_aspect-1..2" "fire_aspect-1.."
-			@Mapowane List<String> nazwa; // wyrażenia regularne dla nazwy
-			@Mapowane Boolean unbreakable;
-			@Mapowane String durability; // tak samo jak <lvl> w ench/ 0 oznacza maxa, 2 oznacza ubyte 2 durability itd
-			
-			public boolean spełnia(ItemStack item) {
-				try {
-					if (typ != null && !spełniaTyp(item.getType()))
-						return false;
-					if (enchanty != null) // TODO enchanty lepiej przemyśleć
-						for (Map.Entry<Enchantment, Integer> en : item.getItemMeta().getEnchants().entrySet())
-							if (!spełniaEnchanty(en.getKey(), en.getValue()))
-								return false;
-					if (nazwa != null && !spełniaNazwe(item.getItemMeta().getDisplayName()))
-						return false;
-					if (unbreakable != null && !spełniaUnbreakable(item.getItemMeta().isUnbreakable()))
-						return false;
-					if (durability != null && !spełniaDurability(((Damageable) item.getItemMeta()).getDamage()))
-						return false;
-				} catch(Throwable e) {
-					e.printStackTrace();
-					return false;
-				}
-				return true;
-			}
-			public boolean spełniaTyp(Material typ) {
-				for (Material mat : this.typ)
-					if (mat == typ)
-						return true;
-				return false;
-			}
-			public boolean spełniaEnchanty(Enchantment ench, int lvl) {
-				for (String kod : enchanty) {
-					List<String> części = Func.tnij(kod, "-");
-					if (!ench.equals(Enchantment.getByKey(NamespacedKey.minecraft(części.get(0)))))
-						continue;
-					if (części.size() > 1 && Func.xWZakresie(części.get(1), lvl))
-						return true;
-				}
-				return false;
-			}
-			public boolean spełniaNazwe(String nazwa) {
-				for (String możliwa : this.nazwa)
-					if (Pattern.compile(możliwa).matcher(nazwa).matches())
-						return true;
-				return false;
-			}
-			public boolean spełniaUnbreakable(boolean unbreakable) {
-				return this.unbreakable == unbreakable;
-			}
-			public boolean spełniaDurability(int durability) {
-				return Func.xWZakresie(this.durability, durability);
-			}
-			
+		NamespacedKey klucz;
+		org.bukkit.advancement.Advancement adv;
+		
+		
+		void Init() {
+			klucz = CraftNamespacedKey.fromString(namespacedKey);
+			nazwa = Func.koloruj(nazwa);
+			opis = Func.koloruj(opis);
 		}
-		
-		@Mapowane Lista czarnaLista; // null jeśli nieakceptowalne jest wszystko spoza akceptowalnych i wymaganych
-		@Mapowane Lista wymagane; // null jeśli kopia != null
-		@Mapowane Lista akceptowalne; // null jeśli akceptowane jest wszystko spozaczarnej listy i akceptowanych
+
+		boolean stworzone = false;
+		void stwórz() {
+			if (stworzone)
+				return;
+			Advancement adv = null;
+			if (this.parent != null) {
+				NamespacedKey parent = CraftNamespacedKey.fromString(this.parent);
+				mapa.get(parent).stwórz();
+				adv = ((CraftAdvancement) Bukkit.getAdvancement(parent)).getHandle();
+			}
+			stworzone = true;
+			this.adv = stwórzNowe(ikona, nazwa, opis, ramka, adv, tło, show_toast, announce_to_chat, hidden).bukkit;
+		}
 	
-		
-		
-	}
-	static class KryteriumZabij extends Mapowany {
-		
+		public void odznacz(Player p, int indexKryterium) {
+			Gracz g = Gracz.wczytaj(p);
+			Kryterium kryterium = kryteria.get(indexKryterium);
+			List<String> lista = Func.domyślna(g.osiągnięciaUkończoneKryteria.get(namespacedKey), Lists::newArrayList);
+			if (!lista.contains(kryterium.nazwa)) {
+				lista.add(kryterium.nazwa);
+				g.osiągnięciaUkończoneKryteria.put(namespacedKey, lista);
+				g.zapisz();
+				
+				if (g.osiągnięciaUkończoneKryteria.size() >= kryteria.size()) {
+					for (Kryterium k : kryteria)
+						if (!lista.contains(k.nazwa))
+							return;
+					Bukkit.getPluginManager().callEvent(new PlayerAdvancementDoneEvent(p, adv));
+				}
+			}
+		}
 	}
 	
-	static String sc;
-	
-	static final AdvancementRewards reward;
-	static final String[][] strs = new String[1][1];
-	static final HashMap<String, Criterion> mapa = new HashMap<>();
-	static {
-		CustomFunction func = new CustomFunction(new MinecraftKey(Main.plugin.getName().toLowerCase(), "c"), new CustomFunction.c[0]);
-		// new AdvancementRewards(exp, loot, recipes, function)
-		reward = new AdvancementRewards(0, new MinecraftKey[0], new MinecraftKey[0], new CustomFunction.a(func));
-		mapa.put("i", new Criterion(new CriterionTriggerImpossible.a()));
-		strs[0][0] = "i";
+	static class AdvStałe {
+		static final AdvancementRewards reward;
+		static final String[][] strs = new String[1][1];
+		static final HashMap<String, Criterion> mapa = new HashMap<>();
+		static {
+			CustomFunction func = new CustomFunction(new MinecraftKey(Main.plugin.getName().toLowerCase(), "c"), new CustomFunction.c[0]);
+			// new AdvancementRewards(exp, loot, recipes, function)
+			reward = new AdvancementRewards(0, new MinecraftKey[0], new MinecraftKey[0], new CustomFunction.a(func));
+			mapa.put("i", new Criterion(new CriterionTriggerImpossible.a()));
+			strs[0][0] = "i";
+		}
 	}
-	void stwórzNowe(org.bukkit.inventory.ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka,
+	static Advancement stwórzNowe(ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka,
 			boolean show_toast, boolean announce_to_chat, boolean hidden) {
-		stwórzNowe(ikona, nazwa, opis, ramka, null, null, show_toast, announce_to_chat, hidden);
+		return stwórzNowe(ikona, nazwa, opis, ramka, null, null, show_toast, announce_to_chat, hidden);
 	}
 	@SuppressWarnings("resource")
-	void stwórzNowe(org.bukkit.inventory.ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka, Advancement parent, String tło,
+	static Advancement stwórzNowe(ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka, Advancement parent, String tło,
 			boolean show_toast, boolean announce_to_chat, boolean hidden) {
 		AdvancementDisplay display = new AdvancementDisplay(
 				CraftItemStack.asNMSCopy(ikona),
@@ -263,49 +164,67 @@ public class EdytorOsiągnięć implements Przeładowalny, Listener {
 		
 		MinecraftKey key = new MinecraftKey(Main.plugin.getName().toLowerCase(), parent == null ? "root" : nazwa);
 		
-		Advancement adv2 = new Advancement(key, parent, display, reward, mapa, strs);
+		Advancement adv2 = new Advancement(key, parent, display, AdvStałe.reward, AdvStałe.mapa, AdvStałe.strs);
 		
 		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements.put(key, adv2);
+		
+		return adv2;
 	}
+	
+	
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
+		String klucz = ev.getAdvancement().getKey().getKey() + ":" + ev.getAdvancement().getKey().getNamespace();
+		Func.wykonajDlaNieNull(Osiągnięcie.mapa.get(ev.getAdvancement().getKey()), adv -> {
+			Gracz g = Gracz.wczytaj(ev.getPlayer());
+			g.osiągnięciaUkończoneKryteria.remove(klucz);
+			g.osiągnięciaPostęp.remove(klucz);
+			g.zapisz();
+			
+			adv.nagroda.forEach(item -> Func.dajItem(ev.getPlayer(), item.clone()));
+		});
+	}
+	
+	
+	// mob/blok: [(osiągnięcie, indexKryterium)]
+	final HashMap<EntityType, List<Krotka<Osiągnięcie, Integer>>> mapaMobów = new HashMap<>(); 
+	final HashMap<Material, List<Krotka<Osiągnięcie, Integer>>> mapaBloków = new HashMap<>(); 
 
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void zabicieMoba(EntityDeathEvent ev) {
+		Func.wykonajDlaNieNull(ev.getEntity().getKiller(), p ->
+			Func.wykonajDlaNieNull(mapaMobów.get(ev.getEntity().getType()), lista ->
+				lista.forEach(krotka -> {
+					if (	!p.getAdvancementProgress(krotka.a.adv).isDone() &&
+							p.getStatistic(Statistic.KILL_ENTITY, ev.getEntity().getType()) >= krotka.a.kryteria.get(krotka.b).ile)
+						krotka.a.odznacz(p, krotka.b);
+				})));
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void wykopanieBloku(BlockBreakEvent ev) {
+		if (ev.isCancelled()) return;
+		Player p = ev.getPlayer();
+		Func.wykonajDlaNieNull(mapaBloków.get(ev.getBlock().getType()), lista ->
+			lista.forEach(krotka -> {
+				if (	!p.getAdvancementProgress(krotka.a.adv).isDone() &&
+						p.getStatistic(Statistic.MINE_BLOCK, ev.getBlock().getType()) >= krotka.a.kryteria.get(krotka.b).ile)
+					krotka.a.odznacz(p, krotka.b);
+		}));
+	}
+	
 	@Override
 	public void przeładuj() {
-		try {
-			String pl = Main.plugin.getName().toLowerCase();
-			String scGłówna = "world/datapacks/" + pl + "/";
-			sc = scGłówna + "data/" + pl + "/advancements/";
-			
-			File dir = new File(sc);
-			if (!dir.exists())
-				dir.mkdirs();
-			
-			File f = new File(scGłówna + "pack.mcmeta");
-			if (!f.exists()) {
-				f.createNewFile();
-				try (FileWriter writer = new FileWriter(f, StandardCharsets.UTF_8)) {
-					writer.write("{\n  \"pack\": {\n    \"pack_format\": 6,\n    \"description\": \"mimiDataPack dla " + Main.plugin.getName() + "\"\n  }\n}");
-					writer.flush();
-				}
-	 		}
-
-			for (File strona : new File(sc).listFiles())
-				if (strona.isDirectory()) {
-					DataPack.Drzewko drzewko = DataPack.Drzewko.wczytaj(strona.getName());
-					
-					for (File plik : strona.listFiles())
-						DataPack.Osiągnięcie.wczytaj(drzewko.nazwa + "/" + plik.getName());
-				}
-		} catch(Throwable e) {
-			e.printStackTrace();
-		}
+		Config config = new Config("configi/Customowe Osiągnięcia");
 		
-		Main.reloadBukkitData();
+		Osiągnięcie.mapa.clear();
+		
+		config.wartości(Osiągnięcie.class).forEach(adv -> Osiągnięcie.mapa.put(adv.klucz, adv));
+		
+		Osiągnięcie.mapa.forEach((klucz, adv) -> adv.stwórz());
+		
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		int licz = 0;
-		for (DataPack.Drzewko drzewko : DataPack.Drzewko.mapaDrzew.values())
-			licz += drzewko.mapa.size();
-		return Func.r("Wczytane osiągnięcia", licz + "/" + DataPack.Drzewko.mapaDrzew.size());
+		return Func.r("Wczytane osiągnięcia", Osiągnięcie.mapa.size());
 	}
 }
