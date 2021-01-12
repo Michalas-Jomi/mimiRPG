@@ -2,7 +2,6 @@ package me.jomi.mimiRPG;
 
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -29,6 +28,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.common.collect.Lists;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -41,16 +41,14 @@ import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.PojedynczeKomendy.Budownik;
-import me.jomi.mimiRPG.PojedynczeKomendy.CustomoweCraftingi;
-import me.jomi.mimiRPG.PojedynczeKomendy.EdytorOsiągnięć;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
-import me.jomi.mimiRPG.PojedynczeKomendy.Przeładuj;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Przeładuj;
 import me.jomi.mimiRPG.util.Zegar;
 
 import net.milkbowl.vault.chat.Chat;
@@ -146,13 +144,6 @@ public class Main extends JavaPlugin implements Listener {
 		new Mimi();
         new Raport();
         
-        try {
-        	Bukkit.getPluginCommand("statspurge").setPermission("jbwmstats.statspurge");
-        	Bukkit.getPluginCommand("statspurge").setPermissionMessage("§cNie mas dostępu do tego");
-        } catch (Throwable e) {
-        	Main.warn("Nie wykryto komendy Korala /statspurge");
-        }
-        
 		zarejestruj(new Moduły());
 		
 		new Przeładuj();
@@ -165,8 +156,9 @@ public class Main extends JavaPlugin implements Listener {
 		Bukkit.getConsoleSender().sendMessage(msg);
 		
 		pluginEnabled = true;        
+		przeładowywanaBukkitData = false;
 	}
-	static Matcher mat;
+	
 	@Override
 	public void onDisable() {
 		for (Player p : Bukkit.getOnlinePlayers())
@@ -190,7 +182,7 @@ public class Main extends JavaPlugin implements Listener {
 			Paintball.wyłącz();
 		if (włączonyModół(SkyBlock.class))
 			SkyBlock.onDisable();
-		
+
 		Func.onDisable();
 	}
 
@@ -213,7 +205,10 @@ public class Main extends JavaPlugin implements Listener {
 			Zegar.zarejestruj((Zegar) obj);
 		if (obj instanceof Przeładowalny) {
 			Przeładowalny p = (Przeładowalny) obj;
+			if (obj.getClass().isAnnotationPresent(Przeładowalny.WymagaReloadBukkitData.class))
+				doPrzeładowywaniaBukkitData.add(p);
 			Przeładowalny.przeładowalne.put(obj.getClass().getSimpleName(), p);
+			p.preReloadBukkitData();
 			p.przeładuj();
 		}
 		if (obj instanceof Komenda && !((Komenda) obj)._zarejestrowane_komendy) {
@@ -270,15 +265,22 @@ public class Main extends JavaPlugin implements Listener {
 		return Moduły.włączony(modół.getSimpleName());
 	}
 
-	public static void reloadBukkitData() {
-		Bukkit.getServer().reloadData();
-		for (Class<?> clazz : new Class<?>[] {CustomoweCraftingi.class, EdytorOsiągnięć.class})
-			if (Main.włączonyModół(clazz))
-				Przeładuj.przeładuj(Bukkit.getConsoleSender(), clazz.getSimpleName());
+	private static boolean przeładowywanaBukkitData = true;
+	public static boolean przeładowywanaBukkitData() {
+		return przeładowywanaBukkitData;
 	}
-	
-	
-	
+	static final List<Przeładowalny> doPrzeładowywaniaBukkitData = Lists.newArrayList();
+	public static void reloadBukkitData() {
+		przeładowywanaBukkitData = true;
+		for (Przeładowalny p : doPrzeładowywaniaBukkitData)
+			if (Main.włączonyModół(p.getClass()))
+				p.preReloadBukkitData();
+		Bukkit.getServer().reloadData();
+		for (Przeładowalny p : doPrzeładowywaniaBukkitData)
+			if (Main.włączonyModół(p.getClass()))
+				Przeładuj.przeładuj(Bukkit.getConsoleSender(), p.getClass().getSimpleName());
+		przeładowywanaBukkitData = false;
+	}
 	
 	
 	private static class PanelTakNieHolder extends Func.abstractHolder {

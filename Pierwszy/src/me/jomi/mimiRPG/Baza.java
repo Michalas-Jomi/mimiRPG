@@ -12,12 +12,14 @@ import org.bukkit.inventory.ItemStack;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.SelektorItemów;
 
 public class Baza implements Listener {
 	public static final ItemStack pustySlot		  = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
 	public static final ItemStack pustySlotCzarny = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&1&l ");
 	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
+	public static final HashMap<String, SelektorItemów> selektoryItemów = new HashMap<>();
 	public static final HashMap<String, Drop> dropy = new HashMap<>();
 	public static ConfigurationSection grupy;
 	
@@ -29,9 +31,10 @@ public class Baza implements Listener {
 
 		config.przeładuj();
 									
-		wczytajCustomoweItemy();
-		wczytajDropy();
 		wczytajGrupy();
+		wczytajDropy();
+		wczytajCustomoweItemy();
+		wczytajSelektoryItemów();
 	}
 
 	public static Grupa grupa(String nazwa) {
@@ -41,6 +44,12 @@ public class Baza implements Listener {
 		return (Grupa) obj;
 	}
 	
+	private static void wczytajSelektoryItemów() {
+		selektoryItemów.clear();
+		Config config = new Config("configi/Selektory Itemów");
+		for (String klucz : config.klucze(false))
+			selektoryItemów.put(klucz, config.wczytajSelektorItemów(klucz));
+	}
 	private static void wczytajCustomoweItemy() {
 		itemy.clear();
 		Config config = new Config("Customowe Itemy");

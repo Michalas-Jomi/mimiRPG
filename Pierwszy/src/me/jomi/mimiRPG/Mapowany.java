@@ -4,14 +4,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.MimiObject;
 
-public abstract class Mapowany implements ConfigurationSerializable {
+public abstract class Mapowany extends MimiObject implements ConfigurationSerializable {
 	public static Mapowany deserialize(Map<String, Object> mapa) {
 		Mapowany obj = null;
 		String klasa = (String) mapa.get("=mimi=");
@@ -40,9 +42,24 @@ public abstract class Mapowany implements ConfigurationSerializable {
 		mapa.put("==", "me.jomi.mimiRPG.Mapowany");
 		return mapa;
 	}
+
+
+	@Override
+	public String[] dajSprawdzanePola() {
+		Set<String> set = mapowane().keySet();
+		String[] w = new String[set.size()];
+		int i=0;
+		for (String nazwa : set)
+			w[i++] = nazwa;
+		return w;
+	}
 	
 	@Override
 	public String toString() {
+		return String.format("%s(%s)", this.getClass().getSimpleName(), mapowane());
+	}
+	
+	private HashMap<String, Object> mapowane() {
 		HashMap<String, Object> mapa = new HashMap<>();
 		
 		for (Class<?> c : Lists.reverse(Func.dajKlasy(this.getClass())))
@@ -55,6 +72,6 @@ public abstract class Mapowany implements ConfigurationSerializable {
 						e.printStackTrace();
 					}
 		
-		return String.format("%s(%s)", this.getClass().getSimpleName(), mapa);
+		return mapa;
 	}
 }

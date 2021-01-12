@@ -28,7 +28,9 @@ public class Config {
 	private String sciezka;
 	
 	public Config(String nazwa) {
-		this.sciezka = Main.path + nazwa + ".yml";
+		this.sciezka = Main.path + nazwa;
+			if (!nazwa.endsWith(".yml"))
+				this.sciezka += ".yml";
 		this.sciezkaJarDomyślny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
 		przeładuj();
 	}
@@ -217,7 +219,16 @@ public class Config {
 		
 		return _dropy;
 	}
-	
+
+	public SelektorItemów wczytajSelektorItemów(String klucz) {
+		return (SelektorItemów) wczytaj(klucz);
+	}
+	public static SelektorItemów selektorItemów(Object obj) {
+		if (obj == null) return null;
+		if (obj instanceof SelektorItemów)
+			return (SelektorItemów) obj;
+		return Baza.selektoryItemów.get(obj);
+	}
 	
 	public Napis wczytajNapis(Object... sciezka) {
 		return _napis(wczytaj(sc(sciezka)));

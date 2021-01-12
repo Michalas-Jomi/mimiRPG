@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.util;
 
 import java.util.List;
 
@@ -10,11 +10,8 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Chat.Raport;
-import me.jomi.mimiRPG.util.Func;
-import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Przeładuj extends Komenda {
-
 	public Przeładuj() {
 		super("przeładuj");
 	}
@@ -47,6 +44,13 @@ public class Przeładuj extends Komenda {
 		sender.sendMessage("§aPrzeładowano " + co);
 	}
 	public static void przeładuj(CommandSender sender, Przeładowalny p) {
+		if (p.getClass().isAnnotationPresent(Przeładowalny.WymagaReloadBukkitData.class)) {
+			if (!Main.przeładowywanaBukkitData()) {
+				Main.reloadBukkitData();
+				return;
+			}
+		}
+		
 		p.przeładuj();
 		String r = Raport.raport(p);
 		if (sender instanceof Player)

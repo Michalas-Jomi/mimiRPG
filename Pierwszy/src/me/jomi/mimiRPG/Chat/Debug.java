@@ -1,7 +1,9 @@
 package me.jomi.mimiRPG.Chat;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.List;
 
 import org.bukkit.command.Command;
@@ -121,6 +123,45 @@ public class Debug extends Komenda {
 		if (arg.equals("false")) return false;
 		throw new ValueConversionException("Nieprawidłowy parametr: '" + arg + "'");
 	}
+
+
+	private static String params(Parameter[] parameters) {
+		StringBuilder str = new StringBuilder();
+		
+		for (Parameter param : parameters)
+			str.append(param.getType().getSimpleName()).append(", ");
+		
+		return str.isEmpty() ? str.toString() : str.substring(0, str.length() - 2);
+	}
+	public static String info(Class<?> clazz) {
+		StringBuilder str = new StringBuilder('\n');
+		
+		for (Field f : clazz.getDeclaredFields())
+			str.append(f.getType()).append(' ').append(f.getName()).append('\n');
+		str.append('\n');
+		for (Constructor<?> c : clazz.getDeclaredConstructors())
+			str.append(clazz.getSimpleName()).append('(').append(Lists.newArrayList(c.getParameters())).append(")\n");
+		str.append('\n');
+		for (Method m : clazz.getDeclaredMethods())
+			str.append(m.getReturnType()).append(' ').append(m.getName()).append('(').append(Lists.newArrayList(m.getParameters())).append(")\n");
+		
+		return str.toString();
+	}
+	public static String infoSimple(Class<?> clazz) {
+		StringBuilder str = new StringBuilder();
+		
+		for (Field f : clazz.getDeclaredFields())
+			str.append(f.getType().getSimpleName()).append(' ').append(f.getName()).append('\n');
+		str.append('\n');
+		for (Constructor<?> c : clazz.getDeclaredConstructors())
+			str.append(clazz.getSimpleName()).append('(').append(params(c.getParameters())).append(")\n");
+		str.append('\n');
+		for (Method m : clazz.getDeclaredMethods())
+			str.append(m.getReturnType().getSimpleName()).append(' ').append(m.getName()).append('(').append(params(m.getParameters())).append(")\n");
+		
+		return str.toString();
+	}
+	
 }
 
 

@@ -38,12 +38,24 @@ public class EdytorOgólny<T> {
 	// ścieżka : (główny obiekt, obiekt na ścieżce) -> napis
 	final HashMap<String, BiFunction<T, String, Napis>> wyjątki = new HashMap<>();
 	final List<BiConsumer<T, String>> listaDlaZatwierdzenia = Lists.newArrayList();
+	final List<BiConsumer<T, EdytorOgólnyInst>> listaDlaZatwierdzenia2 = Lists.newArrayList();
+	final List<BiConsumer<T, String>> listaDlaInit = Lists.newArrayList();
+	final List<Runnable> listaPoZatwierdz = Lists.newArrayList();
 	
 	public void zarejestrójWyjątek(String ścieżka, BiFunction<T, String, Napis> bif) {
 		wyjątki.put(ścieżka.trim(), bif);
 	}
 	public void zarejestrujOnZatwierdz(BiConsumer<T, String> bic) {
 		listaDlaZatwierdzenia.add(bic);
+	}
+	public void zarejestrujOnZatwierdzZEdytorem(BiConsumer<T, EdytorOgólnyInst> bic) {
+		listaDlaZatwierdzenia2.add(bic);
+	}
+	public void zarejestrujOnInit(BiConsumer<T, String> bic) {
+		listaDlaInit.add(bic);
+	}
+	public void zarejestrujPoZatwierdz(Runnable runnable) {
+		listaPoZatwierdz.add(runnable);
 	}
 	
 	public EdytorOgólny(String komenda, Class<T> clazz) {
@@ -89,16 +101,16 @@ public class EdytorOgólny<T> {
 		return edytor.onCommand(args);
 	}
 	
-	private class EdytorOgólnyInst {
-		Config config;
-		String ścieżka;
+	public class EdytorOgólnyInst {
+		public Config config;
+		public String ścieżka;
 	
 		CommandSender sender;
 		Player p;
 		
-		T obiekt;
-	
-	
+		public T obiekt;
+		
+		
 		@SuppressWarnings("unchecked")
 		public EdytorOgólnyInst(CommandSender sender, Config config, String ścieżkaWConfigu) {
 			this.ścieżka = ścieżkaWConfigu;
@@ -115,7 +127,10 @@ public class EdytorOgólny<T> {
 			if (obiekt == null)
 				try {
 					obiekt = Func.utwórz(clazz);
-				} catch (Throwable e) {}
+					listaDlaInit.forEach(bic -> bic.accept(obiekt, ścieżka));
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 		}
 		
 		public boolean onCommand(String[] args) {
@@ -293,7 +308,9 @@ public class EdytorOgólny<T> {
 			
 		void zatwierdz() throws Throwable {
 			listaDlaZatwierdzenia.forEach(cons -> cons.accept(obiekt, ścieżka));
+			listaDlaZatwierdzenia2.forEach(cons -> cons.accept(obiekt, this));
 			config.ustaw_zapisz(ścieżka, obiekt);
+			listaPoZatwierdz.forEach(Runnable::run);
 			sender.sendMessage("Zapisano w " + ścieżka + " w " + config.path());
 		}
 	}

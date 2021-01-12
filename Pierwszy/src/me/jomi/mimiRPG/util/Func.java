@@ -159,7 +159,7 @@ public abstract class Func {
 			} catch (Throwable e) {}
 			return (E) met.invoke(null, str.toUpperCase());
 		} catch (Throwable e) {
-			return null;
+			throw new IllegalArgumentException();
 		}
 	}
 	
@@ -354,6 +354,9 @@ public abstract class Func {
 		if (liczba instanceof Integer)
 			return (int) liczba;
 		return Double((String) liczba, 0);
+	}
+	public static float Float(Object liczba) {
+		return (float) DoubleObj(liczba);
 	}
 	public static double Double(String liczba) throws NumberFormatException {
 		liczba = liczba.trim();
@@ -1170,10 +1173,19 @@ public abstract class Func {
 						Main.warn(String.format("Nieprawidłowa wartość wyliczeniowa \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
 								en.getValue(), en.getKey(), clazz.getName()));
 					}
+				else if (field.getType().isAssignableFrom(ItemStack.class))
+					field.set(obj, Config.item(en.getValue()));
+				else if (field.getType().isAssignableFrom(Drop.class))
+					field.set(obj, Config.drop(en.getValue()));
+				else if (field.getType().isAssignableFrom(SelektorItemów.class))
+					field.set(obj, Config.selektorItemów(en.getValue()));
+				else if (field.getType().isAssignableFrom(Float.TYPE))
+					field.set(obj, Func.Float(en.getValue()));
 				else
 					field.set(obj, en.getValue());
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
+				e.printStackTrace();
 			}
 
 		try {
@@ -1416,7 +1428,6 @@ public abstract class Func {
 				_lista.add(el);
 		return _lista;
 	}
-
 	
 	public static <T1, T2> List<Krotka<T1, T2>> zip(Iterable<T1> c1, Iterable<T2> c2) {
 		Iterator<T1> it1 = c1.iterator();
@@ -1438,7 +1449,6 @@ public abstract class Func {
 			lista = zip(c[i], lista);
 		return lista;
 	}
-	
 	
 	static class IterableBloków implements Iterable<Block> {
 		Iterator<Block> iterator;

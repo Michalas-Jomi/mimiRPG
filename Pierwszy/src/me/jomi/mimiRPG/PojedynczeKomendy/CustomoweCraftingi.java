@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +23,7 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
+@Przeładowalny.WymagaReloadBukkitData
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
@@ -94,7 +96,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 	public void przeładuj() {
 		config.przeładuj();
 		
-		Func.opóznij(1, () -> {
+		Bukkit.getScheduler().runTask(Main.plugin, () -> {
 			// TODO wydzielić
 			// Usuwanie niechcianych craftingów
 			// TODO przetestować zapominanie recept, które są usuwane

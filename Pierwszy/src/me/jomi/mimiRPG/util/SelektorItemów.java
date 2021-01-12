@@ -23,8 +23,9 @@ public class SelektorItemów extends Mapowany {
 		// null gdziekolwiek oznacza pomijanie tego kryterium
 		@Mapowane List<Material> typ;
 		@Mapowane List<String> nazwa; // wyrażenia regularne dla nazwy
+		@Mapowane List<String> durability; // tak samo jak <lvl> w ench/ 0 oznacza maxa, 2 oznacza ubyte 2 durability itd
+		@Mapowane List<String> customModelData;
 		@Mapowane Boolean unbreakable;
-		@Mapowane String durability; // tak samo jak <lvl> w ench/ 0 oznacza maxa, 2 oznacza ubyte 2 durability itd
 		
 		final List<Krotka<Enchantment, Predicate<Integer>>> enchanty = Lists.newArrayList();
 		
@@ -60,9 +61,25 @@ public class SelektorItemów extends Mapowany {
 			return this.unbreakable == null || this.unbreakable == unbreakable;
 		}
 		public boolean spełniaDurability(int durability) {
-			return this.durability == null || Func.xWZakresie(this.durability, durability);
+			if (this.durability == null)
+				return true;
+			for (String kod : this.durability)
+				if (Func.xWZakresie(kod, durability))
+					return true;
+			return false;
 		}
-		
+		public boolean spełniaCustomModelData(Integer customModelData) {
+			if (this.customModelData == null)
+				return true;
+			if (customModelData == null)
+				return false;
+			for (String kod : this.customModelData)
+				if (Func.xWZakresie(kod, customModelData))
+					return true;
+			return false;
+			
+		}
+
 		public boolean zawieraEnchant(Map.Entry<Enchantment, Integer> en) {
 			return zawieraEnchant(en.getKey(), en.getValue());
 		}
@@ -82,7 +99,10 @@ public class SelektorItemów extends Mapowany {
 	
 	void Init() {
 		if (czarnaLista == null && akceptowalne == null)
-			throw new Error("Niepoprawny Selektor Itemów, nie może być jednocześnie czarnaLista jak lista akceptowalnych równa null");
+			if (kopia == null && wymagane == null)
+				return;
+			else
+				throw new Error("Niepoprawny Selektor Itemów, nie może być jednocześnie czarnaLista jak lista akceptowalnych równa null");
 		if (kopia == null && wymagane == null)
 			throw new Error("Niepoprawny Selektor Itemów, nie może być jednocześnie kopia jak i lista wymagań równa null");
 	}
@@ -104,26 +124,37 @@ public class SelektorItemów extends Mapowany {
 			return false;
 		
 		
+		boolean unbreakable = meta.isUnbreakable();
+		int durability = meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0;
+		Integer customModelData = meta.hasCustomModelData() ? meta.getCustomModelData() : null;
+		Material typ = item.getType();
+		String nazwa = meta.hasDisplayName() ? meta.getDisplayName() : "";
+		
 		if (akceptowalne == null) {
-			if (	wymagane.spełniaUnbreakable(meta.isUnbreakable()) &&
-					wymagane.spełniaDurability(meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0) &&
-					wymagane.spełniaTyp(item.getType()) &&
-					wymagane.spełniaNazwe(meta.hasDisplayName() ? meta.getDisplayName() : ""))
+			if (	wymagane.spełniaUnbreakable(unbreakable) &&
+					wymagane.spełniaDurability(durability) &&
+					wymagane.spełniaCustomModelData(customModelData) &&
+					wymagane.spełniaTyp(typ) &&
+					wymagane.spełniaNazwe(nazwa)
+					)
 				return false;
-			if (	czarnaLista.spełniaUnbreakable(meta.isUnbreakable()) ||
-					czarnaLista.spełniaDurability(meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0) ||
-					czarnaLista.spełniaTyp(item.getType()) ||
-					czarnaLista.spełniaNazwe(meta.hasDisplayName() ? meta.getDisplayName() : ""))
+			if (	czarnaLista.spełniaUnbreakable(unbreakable) ||
+					czarnaLista.spełniaDurability(durability) ||
+					czarnaLista.spełniaCustomModelData(customModelData) ||
+					czarnaLista.spełniaTyp(typ) ||
+					czarnaLista.spełniaNazwe(nazwa)
+					)
 				return false;
 			if (meta.hasEnchants())
 				for (Map.Entry<Enchantment, Integer> en : meta.getEnchants().entrySet())
 					if (czarnaLista.zawieraEnchant(en.getKey(), en.getValue()))
 						return false;
 		} else if (czarnaLista == null) {
-			if (	test(Lista::spełniaDurability, meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0) ||
-					test(Lista::spełniaUnbreakable, meta.isUnbreakable()) ||
-					test(Lista::spełniaTyp, item.getType()) ||
-					test(Lista::spełniaNazwe, meta.hasDisplayName() ? meta.getDisplayName() : "")
+			if (	test(Lista::spełniaUnbreakable, unbreakable) ||
+					test(Lista::spełniaDurability, durability) ||
+					test(Lista::spełniaCustomModelData, customModelData) ||
+					test(Lista::spełniaTyp, typ) ||
+					test(Lista::spełniaNazwe, nazwa)
 					)
 				return false;
 			if (!meta.hasEnchants())
