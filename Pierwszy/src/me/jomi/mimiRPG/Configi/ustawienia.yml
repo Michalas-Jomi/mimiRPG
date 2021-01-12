@@ -56,6 +56,19 @@ Moduły:
   ZabezpieczGracza: true
   ZamienEq: true
 
+###############################
+### Zablokowane Osiągnięcia ###
+
+# używane wyrażenia regularne
+# https://www.w3schools.com/java/java_regex.asp
+Zablokowane Osiągnięcia:
+  #- 'minecraft:srecipes/.*' # Blokuje wszystkie Craftingi z minecraft!
+  - 'minecraft:husbandry/.*'
+  - 'minecraft:nether/.*'
+  - 'minecraft:adventure/.*'
+  - 'minecraft:end/.*'
+  - 'minecraft:story/.*'
+
 
 ###############################
 ### Automatyczne Wiadomości ###

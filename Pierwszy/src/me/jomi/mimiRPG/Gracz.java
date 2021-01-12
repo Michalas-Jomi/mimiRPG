@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +52,6 @@ public class Gracz extends Mapowany {
 	@Mapowane public Zadania.ZadaniaGracza zadania = Func.utwórz(Zadania.ZadaniaGracza.class);
 
 	@Mapowane public HashMap<String, List<String>> osiągnięciaUkończoneKryteria  = new HashMap<>();
-	@Mapowane public HashMap<String, HashMap<String, Integer>> osiągnięciaPostęp = new HashMap<>();
 	
 	@Mapowane public int wyspa = -1;
 	
@@ -67,18 +67,24 @@ public class Gracz extends Mapowany {
 		Config config = mapa.get(nick);
 		if (config != null)
 			return config;
-		config = new Config("configi/gracze/" + nick);
+		config = new Config(scieżkaConfigu(nick));
 		if (Bukkit.getPlayer(nick) != null)
 			mapa.put(nick, config);
 		return config;
 	}
- 	
+ 	private static String scieżkaConfigu(String nick) {
+ 		return "configi/gracze/" + nick + ".yml";
+ 	}
+	
 	public Gracz() {}
 	private Gracz(String nick) {
 		this.nick = nick;
 	}
 	public static Gracz wczytaj(String nick) {
-		return config(nick).wczytajLubDomyślna("gracz", new Gracz(nick));
+		if (new File(scieżkaConfigu(nick)).exists())
+			return config(nick).wczytajLubDomyślna("gracz", () -> new Gracz(nick));
+		else
+			return new Gracz(nick);
 	}
 	public static Gracz wczytaj(Player p) {
 		return wczytaj(p.getName());
