@@ -23,6 +23,7 @@ import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
@@ -32,6 +33,10 @@ public class EdytorOgólny<T> {
 	String komenda;
 	Class<T> clazz;
 	
+	@SuppressWarnings("serial")
+	public static class DomyślnyWyjątekException extends Error {}
+	
+	
 	private final HashMap<String, EdytorOgólnyInst> mapa = new HashMap<>();
 	
 	
@@ -40,7 +45,7 @@ public class EdytorOgólny<T> {
 	final List<BiConsumer<T, String>> listaDlaZatwierdzenia = Lists.newArrayList();
 	final List<BiConsumer<T, EdytorOgólnyInst>> listaDlaZatwierdzenia2 = Lists.newArrayList();
 	final List<BiConsumer<T, String>> listaDlaInit = Lists.newArrayList();
-	final List<Runnable> listaPoZatwierdz = Lists.newArrayList();
+	final List<BiConsumer<T, T>> listaPoZatwierdz = Lists.newArrayList();
 	
 	public void zarejestrójWyjątek(String ścieżka, BiFunction<T, String, Napis> bif) {
 		wyjątki.put(ścieżka.trim(), bif);
@@ -54,8 +59,8 @@ public class EdytorOgólny<T> {
 	public void zarejestrujOnInit(BiConsumer<T, String> bic) {
 		listaDlaInit.add(bic);
 	}
-	public void zarejestrujPoZatwierdz(Runnable runnable) {
-		listaPoZatwierdz.add(runnable);
+	public void zarejestrujPoZatwierdz(BiConsumer<T, T> bic) {
+		listaPoZatwierdz.add(bic);
 	}
 	
 	public EdytorOgólny(String komenda, Class<T> clazz) {
@@ -109,6 +114,7 @@ public class EdytorOgólny<T> {
 		Player p;
 		
 		public T obiekt;
+		private T kopiaObiektu;
 		
 		
 		@SuppressWarnings("unchecked")
@@ -131,6 +137,8 @@ public class EdytorOgólny<T> {
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
+			
+			kopiaObiektu = (T) ((Mapowany) obiekt).clone();
 		}
 		
 		public boolean onCommand(String[] args) {
@@ -140,7 +148,7 @@ public class EdytorOgólny<T> {
 					return true;
 				}
 				komenda(args);
-			} catch (ArrayIndexOutOfBoundsException aioobe) {
+			} catch (ArrayIndexOutOfBoundsException e) {
 				
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -148,7 +156,8 @@ public class EdytorOgólny<T> {
 			}
 			try {
 				sender.sendMessage("§5" + clazz);
-				edytor(obiekt, "§0", "edytor", komenda + " ", false).dodaj(new Napis("\n§a[zatwierdz]", "§bKliknij aby zatwierdzić", komenda + " edytor -zatwierdz")).dodaj("\n").wyświetl(sender);
+				edytor(obiekt, "§0", "edytor", komenda + " ", false).dodaj(
+						new Napis("\n§a[zatwierdz]", "§bKliknij aby zatwierdzić", komenda + " edytor -zatwierdz")).dodaj("\n").wyświetl(sender);
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -221,7 +230,9 @@ public class EdytorOgólny<T> {
 			case "Double": 		return 0d;
 			case "String": 		return "-";
 			case "Character": 	return '-';
+			case "Boolean":		return false;
 			case "Location": 	return p.getLocation();
+			case "List":		return Lists.newArrayList();
 			case "ItemStack": 	return p.getInventory().getItemInMainHand();
 			}
 			if (klasa.isEnum())
@@ -230,7 +241,12 @@ public class EdytorOgólny<T> {
 		}
 		Object konwertuj(Class<?> klasa, String[] args, int i) throws Throwable {
 			if (klasa.isEnum()) 
-				return klasa.getMethod("valueOf", String.class).invoke(null, args[i]);
+				return Func.StringToEnum(klasa, args[i]);
+			
+			try {
+				if (args[i].equals("null"))
+					return null;
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			
 			switch (klasa.getSimpleName()) {
 			case "int":
@@ -246,6 +262,7 @@ public class EdytorOgólny<T> {
 			case "char":
 			case "Character":	return args[i].charAt(0);
 			case "ItemStack":	return p.getInventory().getItemInMainHand();
+			case "List":		return Lists.newArrayList();
 			}
 			Main.warn("Nieprzewidziany typ w EdytorzeOgólnym przy konwerowaniu: " + klasa.getSimpleName());
 			return null;
@@ -259,27 +276,28 @@ public class EdytorOgólny<T> {
 				if (Func.Int(lsc.get(i), -1) != -1)
 					lsc.set(i, "<int>");
 			String sc = String.join(" ", lsc);
-			if (wyjątki.containsKey(sc)) {
-				Napis n = wyjątki.get(sc).apply(obiekt, scieżka);
-				if (n == null)
-					return new Napis();
-				return new Napis(pref).dodaj(n);
-			}
+			if (wyjątki.containsKey(sc))
+				try {
+					Napis n = wyjątki.get(sc).apply(obiekt, scieżka);
+					if (n == null)
+						return new Napis();
+					return new Napis(pref).dodaj(n);
+				} catch (DomyślnyWyjątekException e) {}
 			
 			if (objekt instanceof ConfigurationSerializable && !objekt.getClass().getName().startsWith("org.bukkit")) {
 				pref += "-";
-				Napis n = new Napis((wLiście ? "\n" : "") + pref + "§9" + nazwa);
+				Napis n = new Napis((wLiście ? "\n" : "")).dodaj(new Napis(pref, "§bKliknij aby ustawić null\n§3" + nazwa, scieżka + ">> null")).dodaj("§9" + nazwa);
 				for (Field field : Func.głębokiSkanKlasy(objekt.getClass())) {
 					field.setAccessible(true);
 					if (field.isAnnotationPresent(Mapowane.class)) {
 						n.dodaj("\n");
 						n.dodaj(edytor(field.get(objekt), pref, field.getName(), scieżka, false));
 					}
-				}	
+				}
 				return n;
 			} else if (objekt instanceof List) {
-				Napis n = new Napis(pref + "§6" + nazwa + "§8: §2[");
-				int i=0;
+				Napis n = new Napis().dodaj(new Napis(pref, "§bKliknij aby ustawić null\n§3" + nazwa, scieżka + ">> null")).dodaj("§6" + nazwa + "§8: §2[");
+				int i = 0;
 				for (Object obj : (List<?>) objekt) {
 					n.dodaj(edytor(obj, pref, "" + i, scieżka, true));
 					n.dodaj(new Napis("§c{X}", "§cKliknij aby usunąć element z listy §4" + nazwa, scieżka + "[] usuń " + i++));
@@ -291,7 +309,7 @@ public class EdytorOgólny<T> {
 			} else {
 				Napis n = new Napis();
 				if (!wLiście)
-					n.dodaj(pref).dodaj("§6" + nazwa + "§8: ");
+					n.dodaj(new Napis(pref, "§bKliknij aby ustawić null\n§3" + nazwa, scieżka + ">> null")).dodaj("§6" + nazwa + "§8: ");
 				if (objekt == null)
 					n.dodaj(new Napis("§e" + objekt, "§bKliknij aby utworzyć", scieżka + "<null>"));
 				else if (objekt instanceof ItemStack)
@@ -310,7 +328,7 @@ public class EdytorOgólny<T> {
 			listaDlaZatwierdzenia.forEach(cons -> cons.accept(obiekt, ścieżka));
 			listaDlaZatwierdzenia2.forEach(cons -> cons.accept(obiekt, this));
 			config.ustaw_zapisz(ścieżka, obiekt);
-			listaPoZatwierdz.forEach(Runnable::run);
+			listaPoZatwierdz.forEach(cons -> cons.accept(kopiaObiektu, obiekt));
 			sender.sendMessage("Zapisano w " + ścieżka + " w " + config.path());
 		}
 	}
