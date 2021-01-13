@@ -51,7 +51,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		@Mapowane Drop drop;
 		@Mapowane int czasOdrespiania;
 		
-		void Init() {
+		@Override
+		protected void Init() {
 			nazwa = Func.koloruj(nazwa);
 		}
 		

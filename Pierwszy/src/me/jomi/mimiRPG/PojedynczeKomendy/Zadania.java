@@ -311,7 +311,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		edytor.zarejestrójWyjątek("/zadaniaadmin edytor id", (zadanie, ścieżka) -> null);
 		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.id = ścieżka);
-		edytor.zarejestrujPoZatwierdz(this::przeładuj);
+		edytor.zarejestrujPoZatwierdz((dawneZadanie, zadanie) -> przeładuj());
 	}
 	
 	

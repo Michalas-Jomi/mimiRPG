@@ -19,7 +19,8 @@ public class Ciąg<T> extends Mapowany {
 		this.lista = lista;
 		przetwórz();
 	}
-	void Init() {
+	@Override
+	protected void Init() {
 		if (suma == 0)
 			przetwórz();
 	}

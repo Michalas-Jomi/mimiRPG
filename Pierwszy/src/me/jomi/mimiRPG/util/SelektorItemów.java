@@ -30,7 +30,8 @@ public class SelektorItemów extends Mapowany {
 		final List<Krotka<Enchantment, Predicate<Integer>>> enchanty = Lists.newArrayList();
 		
 		@Mapowane List<String> _enchanty; // ench - "<nazwa>-<lvl>" np. "fire_aspect-2" "fire_aspect-..2" "fire_aspect-1..2" "fire_aspect-1.."
-		void Init() {
+		@Override
+		protected void Init() {
 			_enchanty.forEach(str -> {
 				List<String> ench_lvl = Func.tnij(str, "-");
 				enchanty.add(new Krotka<>(
@@ -97,7 +98,8 @@ public class SelektorItemów extends Mapowany {
 		}
 	}
 	
-	void Init() {
+	@Override
+	protected void Init() {
 		if (czarnaLista == null && akceptowalne == null)
 			if (kopia == null && wymagane == null)
 				return;
@@ -107,11 +109,11 @@ public class SelektorItemów extends Mapowany {
 			throw new Error("Niepoprawny Selektor Itemów, nie może być jednocześnie kopia jak i lista wymagań równa null");
 	}
 	
-	@Mapowane ItemStack kopia; // null jeśli item nie ma być sprawdzany przez ItemStack.isSimillar
+	@Mapowane public ItemStack kopia; // null jeśli item nie ma być sprawdzany przez ItemStack.isSimillar
 	
-	@Mapowane Lista czarnaLista; // null jeśli nieakceptowalne jest wszystko spoza akceptowalnych i wymaganych
-	@Mapowane Lista wymagane; // null jeśli kopia != null
-	@Mapowane Lista akceptowalne; // null jeśli akceptowane jest wszystko spozaczarnej listy i akceptowanych
+	@Mapowane public Lista wymagane; // null jeśli kopia != null
+	@Mapowane public Lista czarnaLista; // null jeśli nieakceptowalne jest wszystko spoza akceptowalnych i wymaganych
+	@Mapowane public Lista akceptowalne; // null jeśli akceptowane jest wszystko spozaczarnej listy i akceptowanych
 	
 	public boolean pasuje(ItemStack item) {
 		if (kopia != null)

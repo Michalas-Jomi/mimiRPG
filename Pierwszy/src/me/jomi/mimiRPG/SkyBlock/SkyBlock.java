@@ -683,7 +683,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane List<String> permsKody; // grupa: Permisje // posortowane według priorytetów
 		final HashMap<String, Permisje> perms = new HashMap<>();
 
-		void Init() {
+		@Override
+		protected void Init() {
 			wczytajPermisjeZKodów();
 		}
 		void wczytajPermisjeZKodów() {
@@ -1230,9 +1231,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		private static String kodcoop(Wyspa wyspa1, Wyspa wyspa2) {
 			return wyspa1.id + "-" + wyspa2.id;
 		}
-		
-		
-		
 		
 		
 		// /is drop

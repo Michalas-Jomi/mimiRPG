@@ -457,7 +457,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 
 		public Baza() {}// konstruktor dla Mapowanego
-		public void Init() throws NiepoprawneDemapowanieException {
+		@Override
+		protected void Init() throws NiepoprawneDemapowanieException {
 			świat = Bukkit.getWorld(nazwaŚwiata);
 			region = (ProtectedCuboidRegion) Func.regiony(świat).getRegion(nazwa);
 			if (region == null)

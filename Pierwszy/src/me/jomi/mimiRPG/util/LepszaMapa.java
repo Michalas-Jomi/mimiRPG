@@ -31,25 +31,28 @@ public class LepszaMapa<K> {
 	public int				 size			()											{ return mapa.size(); }
 	public void				 forEach		(BiConsumer<? super K, ? super Object> bic)	{ mapa.forEach(bic); }
 	
-	@SuppressWarnings("unchecked") public <T> T getOrDefaultFactory(K klucz, Supplier<T> factory) { return mapa.containsKey(klucz) ? (T) mapa.get(klucz) : factory.get();}
-	@SuppressWarnings("unchecked") public <T> T getOrDefault(K klucz, T domyślna) { return (T) mapa.getOrDefault(klucz, domyślna); }
-	@SuppressWarnings("unchecked") public <T> T get(K klucz, Class<T> clazz) { return (T) mapa.get(klucz); }
-
-	@SuppressWarnings("unchecked") public <T>	List<T>		getList(K klucz) { return (List<T>)	  mapa.get(klucz); }
-	@SuppressWarnings("unchecked") public <T>	Set<T>		getSet (K klucz) { return (Set<T>) 	  mapa.get(klucz); }
-	@SuppressWarnings("unchecked") public <T, V>Map<T, V>	getMap (K klucz) { return (Map<T, V>) mapa.get(klucz); }
-	public <T> LepszaMapa<T> getLMap(K klucz) { return new LepszaMapa<>(getMap(klucz)); }
+	public final <T>	List<T>		 getList(K klucz) { return getD(klucz); }
+	public final <T>	Set<T>		 getSet (K klucz) { return getD(klucz); }
+	public final <T,V>	Map<T, V>	 getMap (K klucz) { return getD(klucz); }
+	public final <T> 	LepszaMapa<T>getLMap(K klucz) { return new LepszaMapa<>(getMap(klucz)); }
 	
-	public int			getInt			(K klucz) { return (int)		mapa.get(klucz); }
-	public char			getChar			(K klucz) { return (char)		mapa.get(klucz); }
-	public long			getLong			(K klucz) { return (long)		mapa.get(klucz); }
-	public float		getFloat		(K klucz) { return (float)		mapa.get(klucz); }
-	public double		getDouble		(K klucz) { return (double)		mapa.get(klucz); }
-	public boolean		getBoolean		(K klucz) { return (boolean)	mapa.get(klucz); }
-	public World		getWorld		(K klucz) { return (World)		mapa.get(klucz); }
-	public String		getString		(K klucz) { return (String)		mapa.get(klucz); }
-	public Location		getLocation		(K klucz) { return (Location)	mapa.get(klucz); }
-	public JSONArray	getJSONArray	(K klucz) { return (JSONArray)	mapa.get(klucz); }
-	public ItemStack	getItemStack	(K klucz) { return (ItemStack)	mapa.get(klucz); }
-	public JSONObject	getJSONObject	(K klucz) { return (JSONObject)	mapa.get(klucz); }
+	@SuppressWarnings("unchecked")
+	public final <T> T		getD(K klucz) 						{ return (T) get(klucz); }
+	public final <T> T 		getD(K klucz, Class<T> typ) 		{ return getD(klucz); }
+	public final <T> T		get	(K klucz, T domyślna) 			{ return Func.domyślna(getD(klucz), domyślna); }
+	public final <T> T		get	(K klucz, Supplier<T> domyślna) { return Func.domyślna(getD(klucz), domyślna); }
+	public Object			get	(K klucz)						{ return mapa.get(klucz); }
+	
+	public final int		getInt			(K klucz) { return getD(klucz); }
+	public final char		getChar			(K klucz) { return getD(klucz); }
+	public final long		getLong			(K klucz) { return getD(klucz); }
+	public final boolean	getBoolean		(K klucz) { return getD(klucz); }
+	public final World		getWorld		(K klucz) { return getD(klucz); }
+	public final String		getString		(K klucz) { return getD(klucz); }
+	public final Location	getLocation		(K klucz) { return getD(klucz); }
+	public final JSONArray	getJSONArray	(K klucz) { return getD(klucz); }
+	public final JSONObject	getJSONObject	(K klucz) { return getD(klucz); }
+	public final float		getFloat		(K klucz) { return Func.Float(get(klucz)); }
+	public final double		getDouble		(K klucz) { return Func.DoubleObj(get(klucz)); }
+	public final ItemStack	getItemStack	(K klucz) { return Config.item(get(klucz)); }
 }

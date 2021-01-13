@@ -273,6 +273,62 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 			return String.format("PustyDrop %s %s-%s x%s +%s +x%s", (szansa * 100) + "%", min_ilość, max_ilość, rolle, (szansaPerPoziom * 100) + "%", rollePerPoziom);
 	}
 	
+	
+	// TODO kod wygenerowany przez eclipse, przeanalizować
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((drop == null) ? 0 : drop.hashCode());
+		result = prime * result + ((item == null) ? 0 : item.hashCode());
+		result = prime * result + max_ilość;
+		result = prime * result + min_ilość;
+		result = prime * result + rolle;
+		result = prime * result + rollePerPoziom;
+		long temp;
+		temp = Double.doubleToLongBits(szansa);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(szansaPerPoziom);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + (tylkoJeden ? 1231 : 1237);
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Drop other = (Drop) obj;
+		if (drop == null) {
+			if (other.drop != null)
+				return false;
+		} else if (!drop.equals(other.drop))
+			return false;
+		if (item == null) {
+			if (other.item != null)
+				return false;
+		} else if (!item.equals(other.item))
+			return false;
+		if (max_ilość != other.max_ilość)
+			return false;
+		if (min_ilość != other.min_ilość)
+			return false;
+		if (rolle != other.rolle)
+			return false;
+		if (rollePerPoziom != other.rollePerPoziom)
+			return false;
+		if (Double.doubleToLongBits(szansa) != Double.doubleToLongBits(other.szansa))
+			return false;
+		if (Double.doubleToLongBits(szansaPerPoziom) != Double.doubleToLongBits(other.szansaPerPoziom))
+			return false;
+		if (tylkoJeden != other.tylkoJeden)
+			return false;
+		return true;
+	}
+	
 	/*
 	 * nazwa:
 	 * 	 ==: Drop

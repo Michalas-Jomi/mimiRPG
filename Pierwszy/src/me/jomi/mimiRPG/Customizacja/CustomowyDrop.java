@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.Customizacja;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

@@ -44,6 +44,7 @@ public class Config {
 	}
 	@SuppressWarnings("unchecked")
 	protected static Object _item(Object item) {
+		if (item == null) return null;
 		if (item instanceof List) {
 			List<Object> lista = Lists.newArrayList();
 			for (Object _obj : (List<Object>) item)
@@ -219,7 +220,23 @@ public class Config {
 		
 		return _dropy;
 	}
-
+	@SuppressWarnings("unchecked")
+	protected static Object _drop(Object drop) {
+		if (drop == null) return null;
+		if (drop instanceof List) {
+			List<Object> lista = Lists.newArrayList();
+			for (Object _obj : (List<Object>) drop)
+				lista.add(_drop(_obj));
+			return lista;
+		}
+		if (drop instanceof Drop) {
+			for (Entry<String, Drop> en : Baza.dropy.entrySet())
+				if (((Drop) drop).equals(en.getValue()))
+					return en.getKey();
+		}
+		return drop;
+	}
+	
 	public SelektorItemów wczytajSelektorItemów(String klucz) {
 		return (SelektorItemów) wczytaj(klucz);
 	}
@@ -228,6 +245,22 @@ public class Config {
 		if (obj instanceof SelektorItemów)
 			return (SelektorItemów) obj;
 		return Baza.selektoryItemów.get(obj);
+	}
+	@SuppressWarnings("unchecked")
+	protected static Object _selektorItemów(Object selektor) {
+		if (selektor == null) return null;
+		if (selektor instanceof List) {
+			List<Object> lista = Lists.newArrayList();
+			for (Object _obj : (List<Object>) selektor)
+				lista.add(_selektorItemów(_obj));
+			return lista;
+		}
+		if (selektor instanceof SelektorItemów) {
+			for (Entry<String, SelektorItemów> en : Baza.selektoryItemów.entrySet())
+				if (((SelektorItemów) selektor).equals(en.getValue()))
+					return en.getKey();
+		}
+		return selektor;
 	}
 	
 	public Napis wczytajNapis(Object... sciezka) {

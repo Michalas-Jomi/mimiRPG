@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.Chat;
 
 import java.util.HashMap;
 import java.util.List;

@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1153,6 +1155,7 @@ public abstract class Func {
 		return item1.isSimilar(item2);
 	}
 
+	// z mapy w obiekt
 	public static void zdemapuj(Object obj, Map<String, Object> mapa) {
 		if (obj == null) return;
 		
@@ -1168,21 +1171,13 @@ public abstract class Func {
 					throw new Throwable();
 				if (field.getType().isEnum())
 					try {
-						field.set(obj, field.getType().getMethod("valueOf", String.class).invoke(null, en.getValue()));
+						field.set(obj, Func.StringToEnum(field.getType(), (String) en.getValue()));
 					} catch (Throwable _e) {
 						Main.warn(String.format("Nieprawidłowa wartość wyliczeniowa \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
 								en.getValue(), en.getKey(), clazz.getName()));
 					}
-				else if (field.getType().isAssignableFrom(ItemStack.class))
-					field.set(obj, Config.item(en.getValue()));
-				else if (field.getType().isAssignableFrom(Drop.class))
-					field.set(obj, Config.drop(en.getValue()));
-				else if (field.getType().isAssignableFrom(SelektorItemów.class))
-					field.set(obj, Config.selektorItemów(en.getValue()));
-				else if (field.getType().isAssignableFrom(Float.TYPE))
-					field.set(obj, Func.Float(en.getValue()));
 				else
-					field.set(obj, en.getValue());
+					field.set(obj, zdemapuj_wez(field.getGenericType(), en.getValue()));
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
 				e.printStackTrace();
@@ -1208,6 +1203,7 @@ public abstract class Func {
 			e.printStackTrace();
 		}
 	}
+	// z obiektu w mape
 	public static Map<String, Object> zmapuj(Object obj) {
 		Map<String, Object> mapa = new HashMap<String, Object>();
 		Class<?> clazz = obj.getClass();
@@ -1216,20 +1212,65 @@ public abstract class Func {
 				if (!field.isAnnotationPresent(Mapowane.class)) continue;
 				field.setAccessible(true);
 				String name = field.getName();
-				mapa.put(name, zmapuj_wez(field, obj));
+				mapa.put(name, zmapuj_wez(field.getGenericType(), field.get(obj)));
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		return mapa;
 	}
-	private static Object zmapuj_wez(Field field, Object obj) throws Throwable {
-		Object w = field.get(obj);
-		if (w == null) return w;
-		if (w.getClass().isEnum())
-			return Func.dajMetode(w.getClass(), "name").invoke(w);
-		return w;
+	@SuppressWarnings("unchecked")
+	private static Object zdemapuj_wez(Type type, Object obj) throws Throwable {
+		if (obj == null) return obj;
+		if (type instanceof ParameterizedType) {
+			ParameterizedType typ = (ParameterizedType) type;
+			
+			if (typ.getRawType() instanceof List) {
+				List<Object> lista = (List<Object>) obj;
+				for (int i=0; i < lista.size(); i++)
+					lista.set(i, zdemapuj_wez(typ.getActualTypeArguments()[0], lista.get(i)));
+			}
+			
+			
+		} else if (type instanceof Class) {
+			Class<?> clazz = (Class<?>) type;
+			if (clazz.isEnum())
+				return Func.StringToEnum(clazz, (String) obj);
+			if (clazz.isAssignableFrom(ItemStack.class))
+				return Config.item(obj);
+			if (clazz.isAssignableFrom(Drop.class))
+				return Config.drop(obj);
+			if (clazz.isAssignableFrom(SelektorItemów.class))
+				return Config.selektorItemów(obj);
+			if (clazz.isAssignableFrom(Float.TYPE))
+				return Func.Float(obj);
+		}
+		return obj;
 	}
-
+	@SuppressWarnings("unchecked")
+	private static Object zmapuj_wez(Type type, Object obj) throws Throwable {
+		if (obj == null) return obj;
+		if (type instanceof ParameterizedType) {
+			ParameterizedType typ = (ParameterizedType) type;
+			
+			if (typ.getRawType() instanceof List) {
+				List<Object> lista = (List<Object>) obj;
+				for (int i=0; i < lista.size(); i++)
+					lista.set(i, zmapuj_wez(typ.getActualTypeArguments()[0], lista.get(i)));
+			}
+		} else if (type instanceof Class) {
+			Class<?> clazz = (Class<?>) type;
+			if (clazz.isEnum())
+				return Func.dajMetode(clazz, "name").invoke(obj);
+			if (clazz.isAssignableFrom(ItemStack.class))
+				return Config._item(obj);
+			if (clazz.isAssignableFrom(Drop.class))
+				return Config._drop(obj);
+			if (clazz.isAssignableFrom(SelektorItemów.class))
+				return Config._selektorItemów(obj);
+		}
+		return obj;
+	}
+	
 	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1) { 												return _stwórzMape(k1, v1);}
 	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2) { 									return _stwórzMape(k1, v1, k2, v2);}
 	public static <K, V> HashMap<K, V> stwórzMape(K k1, V v1, K k2, V v2, K k3, V v3) { 						return _stwórzMape(k1, v1, k2, v2, k3, v3);} 
@@ -1372,6 +1413,11 @@ public abstract class Func {
 		return lista;
 	}
 	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
+		Field field = _dajField(clazz, nazwa);
+		field.setAccessible(true);
+		return field;
+	}
+	private static Field _dajField(Class<?> clazz, String nazwa) throws Throwable {
 		if (clazz.getName().equals(Object.class.getName()))
 			throw new NoSuchFieldException();
 		try {
@@ -1381,19 +1427,31 @@ public abstract class Func {
 		}
 	}
 	public static Method dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
+		Method met = _dajMetode(clazz, nazwa, klasy);
+		met.setAccessible(true);
+		return met;
+	}
+	private static Method _dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
 		if (clazz.getName().equals(Object.class.getName()))
 			throw new NoSuchMethodException();
 		try {
 			return clazz.getDeclaredMethod(nazwa, klasy);
 		} catch (NoSuchMethodException e) {
 			return dajMetode(clazz.getSuperclass(), nazwa);
-		}
+		}	
 	}
 	public static List<Class<?>> dajKlasy(Class<?> clazz) {
 		List<Class<?>> lista = Lists.newArrayList(clazz);
 		
-		while (!clazz.getName().equals(Object.class.getName()))
+		while (!clazz.getName().equals(Object.class.getName())) {
+			if (clazz.isAssignableFrom(Integer.class))	lista.add(int.class);
+			if (clazz.isAssignableFrom(Float.class))	lista.add(float.class);
+			if (clazz.isAssignableFrom(Boolean.class))	lista.add(boolean.class);
+			if (clazz.isAssignableFrom(Double.class))	lista.add(double.class);
+			if (clazz.isAssignableFrom(Float.class))	lista.add(float.class);
+			if (clazz.isAssignableFrom(Character.class))lista.add(char.class);
 			lista.add(clazz = clazz.getSuperclass());
+		}
 		
 		return lista;
 	}

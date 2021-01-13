@@ -13,7 +13,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MimiObject;
 
-public abstract class Mapowany extends MimiObject implements ConfigurationSerializable {
+public abstract class Mapowany extends MimiObject implements ConfigurationSerializable, Cloneable {
 	public static Mapowany deserialize(Map<String, Object> mapa) {
 		Mapowany obj = null;
 		String klasa = (String) mapa.get("=mimi=");
@@ -42,7 +42,8 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 		mapa.put("==", "me.jomi.mimiRPG.Mapowany");
 		return mapa;
 	}
-
+	
+	protected void Init() throws NiepoprawneDemapowanieException {};
 
 	@Override
 	public String[] dajSprawdzanePola() {
@@ -73,5 +74,26 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 					}
 		
 		return mapa;
+	}
+
+	@Override
+	public Mapowany clone() {
+		Mapowany nowy = Func.utwórz(this.getClass());
+		
+		mapowane().forEach((pole, obj) -> {
+			try {
+				Field field = this.getClass().getDeclaredField(pole);
+				field.setAccessible(true);
+				field.set(nowy, obj);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		});
+		
+		try {
+			nowy.Init();
+		} catch (NiepoprawneDemapowanieException e) {}
+		
+		return nowy;
 	}
 }

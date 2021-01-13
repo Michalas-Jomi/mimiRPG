@@ -110,13 +110,13 @@ public class Debug extends Komenda {
 			throw new ValueConversionException("brak drugiego apostrofa (\'): " + arg);
 		}
 		// int
-		try { return Integer.parseInt(arg);
+		try { return (int) Integer.parseInt(arg);
 		} catch(NumberFormatException nfe) {}
 		// double
-		try { return Double.parseDouble(arg);
+		try { return (double) Double.parseDouble(arg);
 		} catch(NumberFormatException nfe) {}
 		// float
-		try { return Float.parseFloat(arg);
+		try { return (float) Float.parseFloat(arg);
 		} catch(NumberFormatException nfe3) {}
 		// boolean
 		if (arg.equals("true")) return true;
@@ -151,7 +151,7 @@ public class Debug extends Komenda {
 		StringBuilder str = new StringBuilder();
 		
 		for (Field f : clazz.getDeclaredFields())
-			str.append(f.getType().getSimpleName()).append(' ').append(f.getName()).append('\n');
+			str.append(f.getGenericType().getTypeName()).append(' ').append(f.getName()).append('\n');
 		str.append('\n');
 		for (Constructor<?> c : clazz.getDeclaredConstructors())
 			str.append(clazz.getSimpleName()).append('(').append(params(c.getParameters())).append(")\n");
@@ -161,7 +161,6 @@ public class Debug extends Komenda {
 		
 		return str.toString();
 	}
-	
 }
 
 

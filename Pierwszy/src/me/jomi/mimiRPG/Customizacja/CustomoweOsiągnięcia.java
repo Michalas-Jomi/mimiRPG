@@ -1,10 +1,12 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.Customizacja;
 
-import java.lang.reflect.Method;
+import java.io.File;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
@@ -27,6 +29,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -44,6 +47,7 @@ import net.minecraft.server.v1_16_R2.CriterionTriggerImpossible;
 import net.minecraft.server.v1_16_R2.CustomFunction;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.MinecraftKey;
+import net.minecraft.server.v1_16_R2.PacketPlayOutAdvancements;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
@@ -51,6 +55,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Chat.Debug;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -63,24 +68,23 @@ import me.jomi.mimiRPG.util.SelektorItemów;
 public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeładowalny {
 	public static class Kryterium extends Mapowany {
 		@Mapowane String nazwa;
-		@Mapowane int ile;
-		@Mapowane private String czego;// Material | EntityType | SelektorItemów
+		@Mapowane int ile = 1;
+		@Mapowane private String czego = "Zombie";// Material | EntityType | SelektorItemów
 
 		Object co;
-		void Init() {
+		@Override
+		protected void Init() {
 			if (nazwa == null)
 				nazwa = Func.losujZnaki(10, 20, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890");
 			else if (nazwa.contains(":") || nazwa.contains(","))
 				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \",\"");
 			
-			if (co != null)
+			if (co == null)
 				Func.multiTry(IllegalArgumentException.class,
 						() -> co = Func.StringToEnum(EntityType.class, czego),
 						() -> co = Func.StringToEnum(Material.class, czego),
 						() -> co = Config.selektorItemów(czego)
 						);
-			
-			
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -91,13 +95,13 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	public static class Osiągnięcie extends Mapowany {
 		final static Map<NamespacedKey, Osiągnięcie> mapa = new HashMap<>();
 		@Mapowane List<ItemStack> nagroda;
-		@Mapowane List<Kryterium> kryteria;// TODO zapewnić unikalne nazwy kryteriów w obrębie osiągnięcia
+		@Mapowane List<Kryterium> kryteria;
 		@Mapowane String namespacedKey;
 		@Mapowane int exp;
 
 		@Mapowane ItemStack ikona;
-		@Mapowane String nazwa;
-		@Mapowane String opis;
+		@Mapowane String nazwa = "Osiągnięcie";
+		@Mapowane String opis = "Zwyczajne osiągnięcie\nco więcej potrzeba?";
 		@Mapowane AdvancementFrameType ramka = AdvancementFrameType.TASK;
 		@Mapowane boolean show_toast = true;
 		@Mapowane boolean announce_to_chat = true;
@@ -106,14 +110,15 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		@Mapowane float x;
 		@Mapowane float y;
 		
-		@Mapowane String tło;
 		@Mapowane String parent;
+		@Mapowane String tło;
 		
 		NamespacedKey klucz;
 		org.bukkit.advancement.Advancement adv;
 		
 		
-		void Init() {
+		@Override
+		protected void Init() {
 			klucz = CraftNamespacedKey.fromString(namespacedKey);
 			nazwa = Func.koloruj(nazwa);
 			opis = Func.koloruj(opis);
@@ -207,13 +212,29 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		super("edytujosiągnięcia", "edytujosiągnięcia edytor (-t <nazwa>)");
 		
 		edytor.zarejestrujOnInit((adv, ścieżka) -> adv.namespacedKey = ścieżka);
+		edytor.zarejestrójWyjątek("/edytujosiągnięcia edytor tło", (adv, ścieżka) -> {
+			if (adv.parent != null)
+				return null;
+			throw new EdytorOgólny.DomyślnyWyjątekException();
+		});
+		edytor.zarejestrójWyjątek("/edytujosiągnięcia edytor parent", (adv, ścieżka) -> {
+			if (adv.tło != null)
+				return null;
+			throw new EdytorOgólny.DomyślnyWyjątekException();
+		});
 		edytor.zarejestrujOnZatwierdzZEdytorem((adv, edytor) -> {
 			if (!adv.namespacedKey.contains(":"))
 				adv.namespacedKey = Main.plugin.getName() + ":" + adv.namespacedKey;
 			adv.namespacedKey = adv.namespacedKey.toLowerCase();
 			edytor.ścieżka = adv.namespacedKey;
+			adv.Init();
 		});
-		edytor.zarejestrujPoZatwierdz(Main::reloadBukkitData);
+		edytor.zarejestrujPoZatwierdz((dawnyAdv, adv) -> {
+			if (dawnyAdv.klucz != null)
+				Osiągnięcie.mapa.remove(dawnyAdv.klucz);
+			Osiągnięcie.mapa.put(adv.klucz, adv);
+			zapisz();
+		});
 	}
 	
 	
@@ -278,9 +299,29 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	}
 	
 	
+	@SuppressWarnings("resource")
+	void zapomnijUsunięte(Player p) {
+		Map<MinecraftKey, Advancement> advs = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements;
+		Map<Advancement, AdvancementProgress> data = ((CraftPlayer) p).getHandle().getAdvancementData().data;
+		Set<Advancement> doUsunięcia = Sets.newConcurrentHashSet();
+		data.forEach((adv, nmsprog) -> {
+			if (!advs.containsKey(adv.getName())) {
+				org.bukkit.advancement.AdvancementProgress prog = p.getAdvancementProgress(adv.bukkit);
+				prog.getAwardedCriteria().forEach(prog::revokeCriteria);
+				doUsunięcia.add(adv);
+			}
+		});
+		doUsunięcia.forEach(data::remove);
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void dołączanie(PlayerJoinEvent ev) {
+		zapomnijUsunięte(ev.getPlayer());
+	}
+	
 	
 	// Override
 	
+	final File configPlik = new File(Main.path + "configi/Customowe Osiągnięcia.yml");
 	private final Map<String, Map<MinecraftKey, AdvancementProgress>> preReload = new HashMap<>();
 	@Override
 	public void preReloadBukkitData() {
@@ -295,7 +336,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	}
 	@Override
 	public void przeładuj() {
-		Config config = new Config("configi/Customowe Osiągnięcia");
+		Config config = new Config(configPlik);
 		
 		Osiągnięcie.mapa.clear();
 		
@@ -330,53 +371,112 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		AdvancementDataWorld dataWorld = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData();
 		Map<MinecraftKey, Advancement> advs = dataWorld.REGISTRY.advancements;
 		
-		Main.ust.wczytajListe("Zablokowane Osiągnięcia").forEach(pattern -> {
-			Pattern pat = Pattern.compile(pattern);
-			Set<MinecraftKey> doUsunięcia = Sets.newConcurrentHashSet();
-			advs.forEach((klucz, adv) -> {
-				if (pat.matcher(klucz.toString()).matches())
-					doUsunięcia.add(klucz);
-			});
-			doUsunięcia.forEach(advs::remove);
-		});
+		//Class<?> c = Class.forName("net.minecraft.server.v1_16_R2.AdvancementDataPlayer$IterationEntryPoint");
+		//Main.log("\n", Debug.infoSimple(PacketPlayInAdvancements.class));
+		//Main.warn("\n");
+		//Main.log("\n", Debug.infoSimple(PacketPlayOutAdvancements.class));
+		//Main.warn("\n");
+		Main.log("\n", Debug.infoSimple(AdvancementDataPlayer.class));
+		
 		preReload.forEach((nick, mapa) ->
 				Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> {
 					AdvancementDataPlayer data = ((CraftPlayer) p).getHandle().getAdvancementData();
+
+					Set<Advancement> setAdvs = Sets.newConcurrentHashSet();
+					Set<MinecraftKey> setKluczy = Sets.newConcurrentHashSet();
+					
 					mapa.forEach((klucz, prog) ->
 					Func.wykonajDlaNieNull(advs.get(klucz), adv -> {
 						try {
-							Method met = data.getClass().getDeclaredMethod("a", Advancement.class, AdvancementProgress.class);
-							met.setAccessible(true);
-							met.invoke(data, adv, prog);
+							Func.dajMetode(AdvancementDataPlayer.class, "a", Advancement.class, AdvancementProgress.class).invoke(data, adv, prog);
 							
-							met = data.getClass().getDeclaredMethod("e", Advancement.class);
-							met.setAccessible(true);
-							met.invoke(data, adv);
+							setAdvs.add(adv);
+							setKluczy.add(adv.getName());
+							
+							//met = data.getClass().getDeclaredMethod("e", EntityPlayer.class);
+							//met.setAccessible(true);
+							//met.invoke(data, ((CraftPlayer) p).getHandle());
 						} catch (Throwable e) {
 							e.printStackTrace();
 						}
 					}));
+
+					Map<MinecraftKey, AdvancementProgress> m = new HashMap<>();
+					data.data.forEach((adv, prog) -> m.put(adv.getName(), prog));
+					
+					PacketPlayOutAdvancements packet = new PacketPlayOutAdvancements(
+							true,
+							setAdvs,
+							setKluczy,
+							m);
+					((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
 				}));
 		preReload.clear();
+
+		
+		
+		Main.ust.wczytajListe("Zablokowane Osiągnięcia").forEach(pattern -> {
+			Pattern pat = Pattern.compile(pattern);
+			Set<MinecraftKey> doUsunięcia = Sets.newConcurrentHashSet();
+			advs.forEach((klucz, adv) -> {
+				if (pat.matcher(klucz.toString()).matches()) {
+					doUsunięcia.add(klucz);
+					try {
+						Field requirements = Advancement.class.getDeclaredField("requirements");
+						requirements.setAccessible(true);
+						requirements.set(adv, AdvStałe.strs);
+						Field criteria = Advancement.class.getDeclaredField("criteria");
+						criteria.setAccessible(true);
+						criteria.set(adv, AdvStałe.mapa);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+					
+				}
+			});
+			doUsunięcia.forEach(advs::remove);
+		});
+		Bukkit.getOnlinePlayers().forEach(this::zapomnijUsunięte);
 	}
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Wczytane osiągnięcia", Osiągnięcie.mapa.size());
 	}
-
-
+	
+	public void zapisz() {
+		Config config = new Config(configPlik);
+		
+		config.klucze(false).forEach(klucz -> config.ustaw(klucz, null));
+		
+		Osiągnięcie.mapa.values().forEach(adv -> config.ustaw(adv.namespacedKey, adv));
+		
+		config.zapisz();
+		
+		Main.reloadBukkitData();
+	}
 	
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Auto-generated method stub
+		Supplier<List<String>> advs = () -> Func.wykonajWszystkim(Osiągnięcie.mapa.keySet(), NamespacedKey::toString);
+		if (args.length <= 1)
+			return utab(args, "edytor", "usuń");
+		if (args.length == 2)
+			if (args[0].equalsIgnoreCase("edytor"))
+				return utab(args, "-t", "-u");
+			else
+				return utab(args, advs.get());
+		if (args.length == 3 && args[1].equals("-t"))
+			return utab(args, advs.get());
 		return null;
 	}
-
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length >= 1 && args[0].equalsIgnoreCase("edytor")) {
+		if (args.length < 1) return false;
+		
+		switch (args[0].toLowerCase()) {
+		case "e":
+		case "edytor":
 			if (args.length <= 2 && !edytor.maEdytor(sender))
 				return Func.powiadom(sender, "/edytujosiągnięcia edytor -t <nazwa osiągnięcia>");
 			else if (args.length >= 2 && args[1].equals("-t")) {
@@ -386,7 +486,25 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				args[2] = "configi/Customowe Osiągnięcia|" + args[2];
 			}
 			return edytor.onCommand(sender, "edytujosiągnięcia", args);
+		case "delete":
+		case "del":
+		case "remove":
+		case "rem":
+		case "u":
+		case "usun":
+		case "usuń":
+			if (args.length < 2)
+				return Func.powiadom(sender, "/edytujosiągnięcia usuń <nazwa>");
+			if (!args[1].contains(":"))
+				args[1] = Main.plugin.getName() + ":" + args[1];
+			args[1] = args[1].toLowerCase();
+			Osiągnięcie adv = Osiągnięcie.mapa.remove(CraftNamespacedKey.fromString(args[2]));
+			if (adv == null)
+				return Func.powiadom(sender, "Nieprawidłowe osiągnięcie " + args[1]);
+			zapisz();
+			return Func.powiadom(sender, "Usunięto osiągnięcie " + args[1]);
 		}
+		
 		return false;
 	}
 }
