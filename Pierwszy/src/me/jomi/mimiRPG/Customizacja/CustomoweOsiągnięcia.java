@@ -25,11 +25,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -49,13 +48,12 @@ import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.MinecraftKey;
 import net.minecraft.server.v1_16_R2.PacketPlayOutAdvancements;
 
-import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Chat.Debug;
+import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -69,9 +67,9 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	public static class Kryterium extends Mapowany {
 		@Mapowane String nazwa;
 		@Mapowane int ile = 1;
-		@Mapowane private String czego = "Zombie";// Material | EntityType | SelektorItemów
+		@Mapowane private List<String> czego; // Material | EntityType | SelektorItemów
 
-		Object co;
+		List<Object> co = Lists.newArrayList();
 		@Override
 		protected void Init() {
 			if (nazwa == null)
@@ -79,25 +77,24 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			else if (nazwa.contains(":") || nazwa.contains(","))
 				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \",\"");
 			
-			if (co == null)
+			czego.forEach(el -> 
 				Func.multiTry(IllegalArgumentException.class,
-						() -> co = Func.StringToEnum(EntityType.class, czego),
-						() -> co = Func.StringToEnum(Material.class, czego),
-						() -> co = Config.selektorItemów(czego)
-						);
+						() -> co.add(Func.StringToEnum(EntityType.class, el)),
+						() -> co.add(Func.StringToEnum(Material.class, el)),
+						() -> {
+							SelektorItemów selektor = Config.selektorItemów(el);
+							if (selektor == null)
+								Main.warn("Customowe Osiągnięcia - Niepopwane kryterium  " + nazwa + " \"" + el + "\"");
+							else
+								co.add(selektor);
+						}
+						));
 		}
-		
-		@SuppressWarnings("unchecked")
-		<T> T czego() {
-			return (T) co;
-		};
 	}
 	public static class Osiągnięcie extends Mapowany {
 		final static Map<NamespacedKey, Osiągnięcie> mapa = new HashMap<>();
-		@Mapowane List<ItemStack> nagroda;
 		@Mapowane List<Kryterium> kryteria;
 		@Mapowane String namespacedKey;
-		@Mapowane int exp;
 
 		@Mapowane ItemStack ikona;
 		@Mapowane String nazwa = "Osiągnięcie";
@@ -106,6 +103,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		@Mapowane boolean show_toast = true;
 		@Mapowane boolean announce_to_chat = true;
 		@Mapowane boolean hidden = false;
+		
+		@Mapowane List<ItemStack> nagroda;
+		@Mapowane double nagrodaKasa = 0d;
+		@Mapowane int nagrodaWalutaPremium = 0;
+		@Mapowane int exp;
 		
 		@Mapowane float x;
 		@Mapowane float y;
@@ -119,23 +121,34 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		@Override
 		protected void Init() {
-			klucz = CraftNamespacedKey.fromString(namespacedKey);
-			nazwa = Func.koloruj(nazwa);
-			opis = Func.koloruj(opis);
 			if (parent != null) {
 				if (!parent.contains(":"))
 					parent = Main.plugin.getName() + ":" + parent;
 				parent = parent.toLowerCase();
 			}
+			if (namespacedKey != null) {
+				if (!namespacedKey.contains(":"))
+					namespacedKey = Main.plugin.getName() + ":" + namespacedKey;
+				namespacedKey = namespacedKey.toLowerCase();
+			} else
+				throw new NiepoprawneDemapowanieException("Brak namespacedKey w Cusomowym osiągnięciu");
+			
+			klucz = CraftNamespacedKey.fromString(namespacedKey);
+			
+			nagrodaWalutaPremium = Math.max(0, nagrodaWalutaPremium);
+			nagrodaKasa = Math.max(0, nagrodaKasa);
+			
+			nazwa = Func.koloruj(nazwa);
+			opis = Func.koloruj(opis);
 			
 			Set<String> nazwy = Sets.newConcurrentHashSet();
 			kryteria.forEach(k -> {
 				if (!nazwy.add(k.nazwa))
-					throw new Error("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
+					throw new NiepoprawneDemapowanieException("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
 			});
 		}
 
-		boolean stworzone = false;
+		private boolean stworzone = false;
 		void stwórz() {
 			if (stworzone)
 				return;
@@ -150,25 +163,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				}
 			}
 			stworzone = true;
-			this.adv = stwórzNowe(CraftNamespacedKey.toMinecraft(klucz), ikona, nazwa, opis, ramka, adv, tło, x, y, show_toast, announce_to_chat, hidden).bukkit;
+			this.adv = stwórzNowe(CraftNamespacedKey.toMinecraft(klucz), ikona, nazwa, opis, ramka, adv, tło, x, y, show_toast, announce_to_chat, hidden, kryteria).bukkit;
 		}
-	
-		public void odznacz(Player p, int indexKryterium) {
-			Gracz g = Gracz.wczytaj(p);
-			Kryterium kryterium = kryteria.get(indexKryterium);
-			List<String> lista = Func.domyślna(g.osiągnięciaUkończoneKryteria.get(namespacedKey), Lists::newArrayList);
-			if (!lista.contains(kryterium.nazwa)) {
-				lista.add(kryterium.nazwa);
-				g.osiągnięciaUkończoneKryteria.put(namespacedKey, lista);
-				g.zapisz();
-				
-				if (g.osiągnięciaUkończoneKryteria.size() >= kryteria.size()) {
-					for (Kryterium k : kryteria)
-						if (!lista.contains(k.nazwa))
-							return;
-					Bukkit.getPluginManager().callEvent(new PlayerAdvancementDoneEvent(p, adv));
-				}
-			}
+		
+		public void odznacz(Player p, int index) {
+			p.getAdvancementProgress(adv).awardCriteria(kryteria.get(index).nazwa);
 		}
 	}
 	
@@ -176,17 +175,18 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		static final AdvancementRewards reward;
 		static final String[][] strs = new String[1][1];
 		static final Map<String, Criterion> mapa = new HashMap<>();
+		static final Criterion niewykonalneKryterium = new Criterion(new CriterionTriggerImpossible.a());
 		static {
 			CustomFunction func = new CustomFunction(new MinecraftKey(Main.plugin.getName().toLowerCase(), "c"), new CustomFunction.c[0]);
 			// new AdvancementRewards(exp, loot, recipes, function)
 			reward = new AdvancementRewards(0, new MinecraftKey[0], new MinecraftKey[0], new CustomFunction.a(func));
-			mapa.put("i", new Criterion(new CriterionTriggerImpossible.a()));
+			mapa.put("i", niewykonalneKryterium);
 			strs[0][0] = "i";
 		}
 	}
 	@SuppressWarnings("resource")
 	static Advancement stwórzNowe(MinecraftKey key, ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka, Advancement parent, String tło,
-			float x, float y, boolean show_toast, boolean announce_to_chat, boolean hidden) {
+			float x, float y, boolean show_toast, boolean announce_to_chat, boolean hidden, List<Kryterium> kryteria) {
 		AdvancementDisplay display = new AdvancementDisplay(
 				CraftItemStack.asNMSCopy(ikona),
 				ChatSerializer.a("{\"text\":\""+nazwa+"\"}"),
@@ -199,7 +199,23 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		display.a(x, y);
 		
-		Advancement adv = new Advancement(key, parent, display, AdvStałe.reward, AdvStałe.mapa, AdvStałe.strs);
+		
+		Map<String, Criterion> mapaKryteriów;
+		String[][] wymaganeKryteria;
+		if (!kryteria.isEmpty()) {
+			wymaganeKryteria = new String[kryteria.size()][1];
+			mapaKryteriów = new HashMap<>();
+			int i = 0;
+			for (Kryterium kryterium : kryteria) {
+				wymaganeKryteria[i++][0] = kryterium.nazwa;
+				mapaKryteriów.put(kryterium.nazwa, AdvStałe.niewykonalneKryterium);
+			}
+		} else {
+			mapaKryteriów = AdvStałe.mapa;
+			wymaganeKryteria = AdvStałe.strs;
+		}
+		
+		Advancement adv = new Advancement(key, parent, display, AdvStałe.reward, mapaKryteriów, wymaganeKryteria);
 		
 		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements.put(key, adv);
 		
@@ -243,43 +259,63 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
-		String klucz = ev.getAdvancement().getKey().getKey() + ":" + ev.getAdvancement().getKey().getNamespace();
 		Func.wykonajDlaNieNull(Osiągnięcie.mapa.get(ev.getAdvancement().getKey()), adv -> {
-			Gracz g = Gracz.wczytaj(ev.getPlayer());
-			g.osiągnięciaUkończoneKryteria.remove(klucz);
-			g.zapisz();
-			
 			adv.nagroda.forEach(item -> Func.dajItem(ev.getPlayer(), item.clone()));
+			Func.dajWPremium(ev.getPlayer(), adv.nagrodaWalutaPremium);
 			ev.getPlayer().giveExp(adv.exp);
+			if (adv.nagrodaKasa != 0)
+				if (Main.ekonomia)
+					Main.econ.depositPlayer(ev.getPlayer(), adv.nagrodaKasa);
+				else
+					Main.warn("Nie odnaleziono ekonomi na serwerze! " + ev.getPlayer().getName() + " nie otrzymał należnych mu " 
+							+ adv.nagrodaKasa + "$ za osiągnięcie " + adv.namespacedKey);
+			Main.log(ev.getPlayer().getName() + " ukończył osiągnięcie " + adv.namespacedKey);
 		});
 	}
 	
 	
 	// mob/blok: [(osiągnięcie, indexKryterium)]
-	final Map<EntityType, List<Krotka<Osiągnięcie, Integer>>> mapaMobów	= new HashMap<>(); 
-	final Map<Material, List<Krotka<Osiągnięcie, Integer>>> mapaBloków	= new HashMap<>();
-	final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList(); 
+	static final Map<EntityType, List<Krotka<Osiągnięcie, Integer>>> mapaMobów	= new HashMap<>(); 
+	static final Map<Material, List<Krotka<Osiągnięcie, Integer>>> mapaBloków	= new HashMap<>();
+	static final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList(); 
 
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void zabicieMoba(EntityDeathEvent ev) {
-		Func.wykonajDlaNieNull(ev.getEntity().getKiller(), p ->
-			Func.wykonajDlaNieNull(mapaMobów.get(ev.getEntity().getType()), lista ->
-				lista.forEach(krotka -> {
-					if (	!p.getAdvancementProgress(krotka.a.adv).isDone() &&
-							p.getStatistic(Statistic.KILL_ENTITY, ev.getEntity().getType()) >= krotka.a.kryteria.get(krotka.b).ile)
-						krotka.a.odznacz(p, krotka.b);
-				})));
+	void sprawdzKryterium(Player p, Osiągnięcie adv, int index) {
+		Kryterium kryterium = adv.kryteria.get(index);
+		
+		if (p.getAdvancementProgress(adv.adv).getAwardedCriteria().contains(kryterium.nazwa))
+				return;
+		
+		int ile = 0;
+		
+		for (Object co : kryterium.co) {
+			if (co instanceof Material)
+				ile += p.getStatistic(Statistic.MINE_BLOCK, (Material) co);
+			else if (co instanceof EntityType)
+				ile += p.getStatistic(Statistic.KILL_ENTITY, (EntityType) co);
+			else if (co instanceof SelektorItemów)
+				ile += ((SelektorItemów) co).zlicz(p.getInventory());
+			else
+				throw new Error("Nieprawidłowe kryterium Customowych osiągnięć: " + co);
+			
+			if (ile >= kryterium.ile) {
+				adv.odznacz(p, index);
+				return;
+			}
+		}
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void wykopanieBloku(BlockBreakEvent ev) {
+	public void podnoszenieStatystyk(PlayerStatisticIncrementEvent ev) {
 		if (ev.isCancelled()) return;
+		List<Krotka<Osiągnięcie, Integer>> lista;
+		switch (ev.getStatistic()) {
+		case KILL_ENTITY: lista = mapaMobów .get(ev.getEntityType()); break;
+		case MINE_BLOCK:  lista = mapaBloków.get(ev.getMaterial());   break;
+		default:
+			return;
+		}
 		Player p = ev.getPlayer();
-		Func.wykonajDlaNieNull(mapaBloków.get(ev.getBlock().getType()), lista ->
-			lista.forEach(krotka -> {
-				if (	!p.getAdvancementProgress(krotka.a.adv).isDone() &&
-						p.getStatistic(Statistic.MINE_BLOCK, ev.getBlock().getType()) >= krotka.a.kryteria.get(krotka.b).ile)
-					krotka.a.odznacz(p, krotka.b);
-		}));
+		if (lista != null)
+			Bukkit.getScheduler().runTask(Main.plugin, () -> lista.forEach(krotka -> sprawdzKryterium(p, krotka.a, krotka.b)));
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void podnoszenieItemów(EntityPickupItemEvent ev) {
@@ -288,14 +324,9 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		Player p = (Player) ev.getEntity();
 		
-		ItemStack item = ev.getItem().getItemStack();
-		Bukkit.getScheduler().runTask(Main.plugin, () -> {
-			listaSelektorów.forEach(krotka -> {
-				if (	!p.getAdvancementProgress(krotka.b.a.adv).isDone() &&
-						p.getInventory().containsAtLeast(item, krotka.b.a.kryteria.get(krotka.b.b).ile))
-					krotka.b.a.odznacz(p, krotka.b.b);
-			});
-		});
+		Bukkit.getScheduler().runTask(Main.plugin, () ->
+			listaSelektorów.forEach(krotka ->
+				sprawdzKryterium(p, krotka.b.a, krotka.b.b)));
 	}
 	
 	
@@ -351,32 +382,28 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				Kryterium kryterium = adv.kryteria.get(i);
 				Krotka<Osiągnięcie, Integer> krotka = new Krotka<>(adv, i);
 				
-				Map<?, List<Krotka<Osiągnięcie, Integer>>> mapa = null;
+				kryterium.co.forEach(kco -> {
+					
+					Map<? extends Enum<?>, List<Krotka<Osiągnięcie, Integer>>> mapa = null;
+					
+					if (kco instanceof Material)
+						mapa = mapaBloków;
+					else if (kco instanceof EntityType)
+						mapa = mapaMobów;
+					else if (kco instanceof SelektorItemów)
+						listaSelektorów.add(new Krotka<>((SelektorItemów) kco, krotka));
+					if (mapa != null)
+						if (mapa.containsKey(kco))
+							mapa.get(kco).add(krotka);
+						else
+							mapa.put(Func.pewnyCast(kco), Lists.newArrayList(krotka));
+				});
 				
-				if (kryterium.co instanceof Material)
-					mapa = mapaBloków;
-				else if (kryterium.co instanceof EntityType)
-					mapa = mapaMobów;
-				else if (kryterium.co instanceof SelektorItemów)
-					listaSelektorów.add(new Krotka<>(kryterium.czego(), krotka));
-				
-				if (mapa != null)
-					if (mapa.containsKey(kryterium.czego()))
-						mapa.get(kryterium.czego()).add(krotka);
-					else
-						mapa.put(kryterium.czego(), Lists.newArrayList(krotka));
 			}
 		});
 		
 		AdvancementDataWorld dataWorld = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData();
 		Map<MinecraftKey, Advancement> advs = dataWorld.REGISTRY.advancements;
-		
-		//Class<?> c = Class.forName("net.minecraft.server.v1_16_R2.AdvancementDataPlayer$IterationEntryPoint");
-		//Main.log("\n", Debug.infoSimple(PacketPlayInAdvancements.class));
-		//Main.warn("\n");
-		//Main.log("\n", Debug.infoSimple(PacketPlayOutAdvancements.class));
-		//Main.warn("\n");
-		Main.log("\n", Debug.infoSimple(AdvancementDataPlayer.class));
 		
 		preReload.forEach((nick, mapa) ->
 				Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> {
@@ -393,9 +420,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 							setAdvs.add(adv);
 							setKluczy.add(adv.getName());
 							
-							//met = data.getClass().getDeclaredMethod("e", EntityPlayer.class);
-							//met.setAccessible(true);
-							//met.invoke(data, ((CraftPlayer) p).getHandle());
 						} catch (Throwable e) {
 							e.printStackTrace();
 						}
@@ -498,7 +522,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			if (!args[1].contains(":"))
 				args[1] = Main.plugin.getName() + ":" + args[1];
 			args[1] = args[1].toLowerCase();
-			Osiągnięcie adv = Osiągnięcie.mapa.remove(CraftNamespacedKey.fromString(args[2]));
+			Osiągnięcie adv = Osiągnięcie.mapa.remove(CraftNamespacedKey.fromString(args[1]));
 			if (adv == null)
 				return Func.powiadom(sender, "Nieprawidłowe osiągnięcie " + args[1]);
 			zapisz();

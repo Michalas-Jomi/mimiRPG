@@ -1,7 +1,6 @@
 package me.jomi.mimiRPG;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,10 +27,12 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 		Func.zdemapuj(obj, mapa);
 		
 		try {
-			Method met = Func.dajMetode(obj.getClass(), "Init");
-			met.setAccessible(true);
-			met.invoke(obj);
-		} catch (Throwable e) {};
+			obj.Init();
+		} catch (NiepoprawneDemapowanieException e) {
+			Main.warn(e.getMessage());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		};
 		
 		return obj;
 	}

@@ -554,6 +554,19 @@ public abstract class Func {
 		item.setItemMeta(Cmeta);
 		return item;
 	}
+	public static boolean dajWPremium(Player p, int ile) {
+		return dajItem(p, Baza.walutaPremium, ile);
+	}
+	public static boolean dajItem(Player p, ItemStack item, int ile) {
+		item = item.clone();
+		boolean w = true;
+		while (ile > 0) {
+			item.setAmount(Math.min(64, ile));
+			ile -= item.getAmount();
+			w = w && Func.dajItem(p, item);
+		}
+		return w;
+	}
 	public static boolean dajItem(Player p, ItemStack item) {
 		if (item == null || item.getType().equals(Material.AIR))
 			return false;
@@ -912,7 +925,7 @@ public abstract class Func {
 				if (!sc.endsWith(".class")) continue;
 				sc = sc.substring(0, sc.length()-6).replace('/', '.');
 				try {
-					lista.add(Class.forName(sc, false, Main.classLoader)); // XXX użyć tego w ModuleManagerze
+					lista.add(Class.forName(sc, false, Main.classLoader));
 				} catch (Throwable e) {}
 			}
 			jar.close();
@@ -1186,7 +1199,7 @@ public abstract class Func {
 		try {
 			for (Field field : głębokiSkanKlasy(clazz)) {
 				field.setAccessible(true);
-				if (field.isAnnotationPresent(Mapowane.class) && field.get(obj) == null) {
+				if (field.isAnnotationPresent(Mapowane.class) && !field.getDeclaredAnnotation(Mapowane.class).nieTwórz() && field.get(obj) == null) {
 					if (List.class.isAssignableFrom(field.getType()))
 						field.set(obj, Lists.newArrayList());
 					else if (HashMap.class.isAssignableFrom(field.getType()))
@@ -1222,12 +1235,14 @@ public abstract class Func {
 	private static Object zdemapuj_wez(Type type, Object obj) throws Throwable {
 		if (obj == null) return obj;
 		if (type instanceof ParameterizedType) {
-			ParameterizedType typ = (ParameterizedType) type;
+			ParameterizedType Ptype = (ParameterizedType) type;
 			
-			if (typ.getRawType() instanceof List) {
+			Type typ = Ptype.getActualTypeArguments()[0];
+			
+			if (Ptype.getRawType() instanceof Class && ((Class<?>) Ptype.getRawType()).isAssignableFrom(List.class)) {
 				List<Object> lista = (List<Object>) obj;
 				for (int i=0; i < lista.size(); i++)
-					lista.set(i, zdemapuj_wez(typ.getActualTypeArguments()[0], lista.get(i)));
+					lista.set(i, zdemapuj_wez(typ, lista.get(i)));
 			}
 			
 			
@@ -1243,7 +1258,8 @@ public abstract class Func {
 				return Config.selektorItemów(obj);
 			if (clazz.isAssignableFrom(Float.TYPE))
 				return Func.Float(obj);
-		}
+		} else
+			Main.error("Nieprzewidzany typ przy Demapowaniu: " + type, "\n", type.getClass());
 		return obj;
 	}
 	@SuppressWarnings("unchecked")
@@ -1351,6 +1367,11 @@ public abstract class Func {
 			dlaObjNull.run();
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T pewnyCast(Object obj) {
+		return (T) obj;
+	}
+	
 	public static <T> T domyślna(T obj, T domyślna) {
 		return obj != null ? obj : domyślna;
 	}
@@ -1402,10 +1423,12 @@ public abstract class Func {
 		List<Field> lista = Lists.newArrayList();
 		if (clazz == null || clazz.getName().equals(Object.class.getName()))
 			return lista;
-		
+		// TODO połączyć głębokiSkanKlasy i głębokiSkanKlasyM bo mają wiele wspólnego
 		for (Field field : clazz.getDeclaredFields())
-			if (nazwyfieldsów.add(field.getName()))
+			if (nazwyfieldsów.add(field.getName())) {
+				field.setAccessible(true);
 				lista.add(field);
+			}
 		
 		for (Field field : głębokiSkanKlasy(clazz.getSuperclass(), nazwyfieldsów))
 			lista.add(field);
@@ -1452,6 +1475,25 @@ public abstract class Func {
 			if (clazz.isAssignableFrom(Character.class))lista.add(char.class);
 			lista.add(clazz = clazz.getSuperclass());
 		}
+		
+		return lista;
+	}
+	public static List<Method> głębokiSkanKlasyM(Class<?> clazz) {
+		return głębokiSkanKlasyM(clazz, Sets.newConcurrentHashSet());
+	}
+	private static List<Method> głębokiSkanKlasyM(Class<?> clazz, Set<String> nazwyMethod) {
+		List<Method> lista = Lists.newArrayList();
+		if (clazz == null || clazz.getName().equals(Object.class.getName()))
+			return lista;
+		
+		for (Method met : clazz.getDeclaredMethods())
+			if (nazwyMethod.add(met.getName())) {
+				met.setAccessible(true);
+				lista.add(met);
+			}
+		
+		for (Method met : głębokiSkanKlasyM(clazz.getSuperclass(), nazwyMethod))
+			lista.add(met);
 		
 		return lista;
 	}

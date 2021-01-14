@@ -51,8 +51,6 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public Zadania.ZadaniaGracza zadania = Func.utwórz(Zadania.ZadaniaGracza.class);
 
-	@Mapowane public HashMap<String, List<String>> osiągnięciaUkończoneKryteria  = new HashMap<>();
-	
 	@Mapowane public int wyspa = -1;
 	
 	public Wilczek.Wilk wilk;

@@ -21,29 +21,30 @@ import me.jomi.mimiRPG.Mapowany;
 public class SelektorItemów extends Mapowany {
 	public static class Lista extends Mapowany {
 		// null gdziekolwiek oznacza pomijanie tego kryterium
-		@Mapowane List<Material> typ;
-		@Mapowane List<String> nazwa; // wyrażenia regularne dla nazwy
-		@Mapowane List<String> durability; // tak samo jak <lvl> w ench/ 0 oznacza maxa, 2 oznacza ubyte 2 durability itd
-		@Mapowane List<String> customModelData;
-		@Mapowane Boolean unbreakable;
+		@Mapowane(nieTwórz = true) List<Material> typ;
+		@Mapowane(nieTwórz = true) List<String> nazwa; // wyrażenia regularne dla nazwy
+		@Mapowane(nieTwórz = true) List<String> durability; // tak samo jak <lvl> w ench/ 0 oznacza maxa, 2 oznacza ubyte 2 durability itd
+		@Mapowane(nieTwórz = true) List<String> customModelData;
+		@Mapowane(nieTwórz = true) Boolean unbreakable;
 		
 		final List<Krotka<Enchantment, Predicate<Integer>>> enchanty = Lists.newArrayList();
 		
-		@Mapowane List<String> _enchanty; // ench - "<nazwa>-<lvl>" np. "fire_aspect-2" "fire_aspect-..2" "fire_aspect-1..2" "fire_aspect-1.."
+		@Mapowane(nieTwórz = true) List<String> _enchanty; // ench - "<nazwa>-<lvl>" np. "fire_aspect-2" "fire_aspect-..2" "fire_aspect-1..2" "fire_aspect-1.."
 		@Override
 		protected void Init() {
-			_enchanty.forEach(str -> {
-				List<String> ench_lvl = Func.tnij(str, "-");
-				enchanty.add(new Krotka<>(
-						Enchantment.getByKey(NamespacedKey.minecraft(ench_lvl.get(0))),
-						lvl -> ench_lvl.size() < 2 || Func.xWZakresie(ench_lvl.get(1), lvl)
-						));
-			});
+			if (_enchanty != null)
+				_enchanty.forEach(str -> {
+					List<String> ench_lvl = Func.tnij(str, "-");
+					enchanty.add(new Krotka<>(
+							Enchantment.getByKey(NamespacedKey.minecraft(ench_lvl.get(0))),
+							lvl -> ench_lvl.size() < 2 || Func.xWZakresie(ench_lvl.get(1), lvl)
+							));
+				});
 		}
 		
 		
 		public boolean spełniaTyp(Material typ) {
-			if (typ == null)
+			if (this.typ == null)
 				return true;
 			for (Material mat : this.typ)
 				if (mat == typ)
@@ -118,6 +119,8 @@ public class SelektorItemów extends Mapowany {
 	public boolean pasuje(ItemStack item) {
 		if (kopia != null)
 			return kopia.isSimilar(item);
+		if (item == null)
+			return false;
 		
 		ItemMeta meta = item.getItemMeta();
 		
@@ -173,5 +176,13 @@ public class SelektorItemów extends Mapowany {
 	}
 	private <T> boolean test(BiPredicate<Lista, T> test, T obj) {
 		return !(test.test(wymagane, obj) || test.test(akceptowalne, obj));
+	}
+	
+	public int zlicz(Iterable<ItemStack> itemy) {
+		int ile = 0;
+		for (ItemStack item : itemy)
+			if (pasuje(item))
+				ile += item.getAmount();
+		return ile;
 	}
 }

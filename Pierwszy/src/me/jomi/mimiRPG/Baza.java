@@ -22,6 +22,7 @@ public class Baza implements Listener {
 	public static final HashMap<String, SelektorItemów> selektoryItemów = new HashMap<>();
 	public static final HashMap<String, Drop> dropy = new HashMap<>();
 	public static ConfigurationSection grupy;
+	public static ItemStack walutaPremium;
 	
 	public Baza() {	
 		przeładuj();
@@ -30,11 +31,15 @@ public class Baza implements Listener {
 		Main.ust.przeładuj();
 
 		config.przeładuj();
-									
+		
+		walutaPremium = config.wczytajItem("Waluta Premium");
+		
 		wczytajGrupy();
 		wczytajDropy();
 		wczytajCustomoweItemy();
 		wczytajSelektoryItemów();
+		
+		itemy.put("WalutaPremium", walutaPremium);
 	}
 
 	public static Grupa grupa(String nazwa) {
