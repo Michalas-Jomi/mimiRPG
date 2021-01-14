@@ -6,16 +6,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
-
-import joptsimple.ValueConversionException;
 
 @Moduł
 public class Debug extends Komenda {
@@ -31,13 +32,70 @@ public class Debug extends Komenda {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 2) return false;
 		try {
-			List<String> _args = Func.tnij(Func.listToString(args, 1), ".");
+			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Main.classLoader);
 			
-			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Debug.class.getClassLoader());
-			Object obj = wez(klasa, null, _args.remove(0));
+			Object obj = null;
 			
-			for (String arg : _args)
-				obj = wez(obj, arg);
+			int wNawiasie = 0;
+			boolean wStringu = false;
+			String metoda = null;
+			StringBuilder strB = new StringBuilder();
+			List<String> parametry = null;
+			for (char znak : Func.listToString(args, 1).toCharArray()) {
+				switch (znak) {
+				case '.':
+					if (wNawiasie != 0 || wStringu)
+						strB.append(znak);
+					else {
+						obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
+						parametry = null;
+						metoda = null;
+						strB = new StringBuilder();
+					}
+					break;
+				case '(':
+					if (wStringu)
+						break;
+					if (wNawiasie == 0) {
+						parametry = Lists.newArrayList();
+						metoda = strB.toString();
+						strB = new StringBuilder();
+					}
+					wNawiasie++;
+					break;
+				case ')':
+					if (wStringu)
+						break;
+					wNawiasie--;
+					if (wNawiasie == 0) {
+						parametry.add(strB.toString());
+						strB = new StringBuilder();
+					} else if (wNawiasie < 0)
+						throw new Error("Za dużo nawiasów \")\"");
+					break;
+				case ',':
+					if (wStringu)
+						break;
+					parametry.add(strB.toString());
+					strB = new StringBuilder();
+					break;
+				case '\"':
+					wStringu = !wStringu;
+					strB.append(znak);
+					break;
+				case ' ':
+					if (!wStringu)
+						break;
+				default:
+					strB.append(znak);
+				}
+			}
+			
+			if (parametry != null || (!strB.isEmpty() && metoda == null))
+				obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
+			
+			if (obj == null)
+				return Func.powiadom(sender, "null");
 			
 			// TODO napisać rekurencyjnie
 			if (obj.getClass().isArray()) {
@@ -54,74 +112,62 @@ public class Debug extends Komenda {
 		return true;
 	}
 
-	Object wez(Object skąd, String co) throws Throwable {
-		return wez(skąd.getClass(), skąd, co);
+	Object wez(CommandSender p, Class<?> klasa, Object naCzym, String co, List<String> parametry) throws Throwable {
+		if (parametry != null) {
+			if (parametry.size() == 1 && parametry.get(0).isEmpty())
+				parametry.clear();
+			Object[] args = new Object[parametry.size()];
+			for (Method met : Func.głębokiSkanKlasyM(klasa))
+				if (met.getName().equals(co))
+					try {
+						for (int i=0; i < args.length; i++)
+							args[i] = typ(p, met.getParameters()[i], parametry.get(i));
+						return met.invoke(naCzym, args);
+					} catch (Throwable e) {}
+			throw new Error("Nie odnaleziono takiej metody");
+		} else
+			return Func.dajField(klasa, co).get(naCzym);
 	}
-	Object wez(Class<?> klasa, Object naCzym, String co) throws Throwable {
-		if (co.endsWith(")")) {
-			Object[] parametry = parametry(co.substring(co.indexOf('(')+1, co.indexOf(')')));
-			
-			List<List<Class<?>>> klasy = Lists.newArrayList();
-			for (int i=0; i<parametry.length; i++)
-				klasy.add(Func.dajKlasy(parametry[i].getClass()));
-			
-			String metoda = co.substring(0, co.indexOf('('));
-			Method met = wezMetode(klasa, metoda, klasy, 0, new Class<?>[klasy.size()]);
-			met.setAccessible(true);
-			return met.invoke(naCzym, parametry);
-		} else {
-			Field f = Func.dajField(klasa, co);
-			f.setAccessible(true);
-			return f.get(naCzym);
+	Object typ(CommandSender p, Parameter parameter, String str) {
+		if (str.equals("null"))
+			return null;
+		
+		if (str.startsWith("\"") && str.endsWith("\""))
+			str = str.substring(1, str.length() - 1);
+		
+		if (parameter.getType().isEnum())
+			return Func.StringToEnum(parameter.getType(), str);
+		
+		switch (parameter.getType().getSimpleName()) {
+		case "Integer":
+		case "int":
+			return Func.Int(str);
+		case "Double":
+		case "double":
+			return Func.Double(str);
+		case "Float":
+		case "float":
+			return Func.Float(str);
+		case "Boolean":
+		case "boolean":
+			return Boolean.parseBoolean(str);
+		case "Character":
+		case "char":
+			return str.charAt(0);
+		case "String":
+			return str;
+		case "ItemStack":
+			return ((Player) p).getInventory().getItemInMainHand();
+		case "Location":
+			return ((Player) p).getLocation();
+		case "Player":
+			return Bukkit.getPlayer(str);
+		case "Object":
+			return str;
 		}
-	}
-	Method wezMetode(Class<?> klasa, String metoda, List<List<Class<?>>> klasy, int i, Class<?>[] args) throws Throwable {
-		if (i >= args.length)
-			return Func.dajMetode(klasa, metoda, args);
-		for (Class<?> arg : klasy.get(i))
-			try {
-				args[i] = arg;
-				return wezMetode(klasa, metoda, klasy, i + 1, args);
-			} catch(Throwable e) {}
-		throw new Throwable();
-	}
-	Method wezMetode(Class<?> klasa, String metoda, Class<?>[] args) throws Throwable {
-		return Func.dajMetode(klasa, metoda, args);
-	}
-	Object[] parametry(String nawiasy) {
-		List<Object> lista = Lists.newArrayList();
-		for (String arg : Func.tnij(nawiasy, ","))
-			lista.add(typ(arg.trim()));
-		return lista.toArray();
-	}
-	Object typ(String arg) {
-		// null
-		if (arg.equals("null")) return null;
-		// String
-		if (arg.startsWith("\"")) {
-			if (arg.endsWith("\"") && arg.length() > 2)
-				return arg.substring(1, arg.length()-1);
-			throw new ValueConversionException("brak drugiego cudzysłowia (\"): " + arg);
-		}
-		// char
-		if (arg.startsWith("\'")) {
-			if (arg.length() == 3 && arg.endsWith("\'"))
-				return arg.charAt(1);
-			throw new ValueConversionException("brak drugiego apostrofa (\'): " + arg);
-		}
-		// int
-		try { return (int) Integer.parseInt(arg);
-		} catch(NumberFormatException nfe) {}
-		// double
-		try { return (double) Double.parseDouble(arg);
-		} catch(NumberFormatException nfe) {}
-		// float
-		try { return (float) Float.parseFloat(arg);
-		} catch(NumberFormatException nfe3) {}
-		// boolean
-		if (arg.equals("true")) return true;
-		if (arg.equals("false")) return false;
-		throw new ValueConversionException("Nieprawidłowy parametr: '" + arg + "'");
+		
+		p.sendMessage("Nieobsługiwany typ zmiennych " + parameter.getType().getSimpleName());
+		return null;
 	}
 
 
