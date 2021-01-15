@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -13,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Statistic;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_16_R2.CraftServer;
@@ -25,6 +27,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -48,6 +52,7 @@ import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.MinecraftKey;
 import net.minecraft.server.v1_16_R2.PacketPlayOutAdvancements;
 
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -55,54 +60,203 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.SelektorItemów;
 
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
+
+
+
+/**
+ * Rezerwuje statystykę (Statistic.USE_ITEM, Material.MAGMA_CREAM) jako postawione bloki gracza 
+ * 
+ * Rezerwuje statystykę (Statistic.MINE_BLOCK, Material.WHEAT) jako zebrane plony (dorosła przenica, marchewki ziemniaki, netherowe brodawki, buraki)
+ * 
+ * Rezerwuje statystykę (Statistic.MINE_BLOCK, Material.BRICK) jako wykopane bloki pomijając te nietrwałe (np pochodnie, kwiatki, grzyby, trawa itp)
+ *
+ */
 @Moduł
 @Przeładowalny.WymagaReloadBukkitData
 public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeładowalny {
 	public static class Kryterium extends Mapowany {
+		public static enum Typ {
+			POSTAWIONE_BLOKI_WSZYSTKIE(Rodzaj.WSKAZANE, Statistic.USE_ITEM,	  Material.MAGMA_CREAM),
+			ZNISZCZONE_BLOKI_WSZYSTKIE(Rodzaj.WSKAZANE, Statistic.MINE_BLOCK, Material.BRICK),
+			FARMER					  (Rodzaj.WSKAZANE, Statistic.MINE_BLOCK, Material.WHEAT),
+			
+			WYRZUCONE_DROP		(Rodzaj.ZAKRES, Statistic.DROP,			Material.class),
+			PODNIESIONE_ITEMY	(Rodzaj.ZAKRES, Statistic.PICKUP,		Material.class),
+			ZNISZCZONE_BLOKI	(Rodzaj.ZAKRES, Statistic.MINE_BLOCK,	Material.class),
+			UŻYCIE				(Rodzaj.ZAKRES, Statistic.USE_ITEM,		Material.class),
+			ZNISZCZONE_NARZĘDZIA(Rodzaj.ZAKRES, Statistic.BREAK_ITEM,	Material.class),
+			WYCRAFTOWANE_ITEMY	(Rodzaj.ZAKRES, Statistic.CRAFT_ITEM,	Material.class),
+			ZABITE_MOBY			(Rodzaj.ZAKRES, Statistic.KILL_ENTITY,		EntityType.class),
+			ZABITY_PRZEZ_MOBY	(Rodzaj.ZAKRES, Statistic.ENTITY_KILLED_BY,	EntityType.class),
+
+			SKYBLOCK_PUNKTY_WYSPY(Rodzaj.INNE, null, null, false), // api SkyBlock
+			ZEBRANE_ITEMY(Rodzaj.INNE, null, null, SelektorItemów.class, true), // selektor itemów
+			
+			STATYSTYKA(Rodzaj.INNE, null, null, Statistic.class, true);
+
+			public static enum Rodzaj {
+				WSKAZANE,
+				ZAKRES,
+				INNE;
+			}
+			
+			static {
+				FARMER.mapaBloków = ZNISZCZONE_BLOKI.mapaBloków;
+				ZNISZCZONE_BLOKI_WSZYSTKIE.mapaBloków = ZNISZCZONE_BLOKI.mapaBloków;
+				POSTAWIONE_BLOKI_WSZYSTKIE.mapaBloków = UŻYCIE.mapaBloków;
+			}
+			
+			private Map<Material, List<Krotka<Osiągnięcie, Integer>>> mapaBloków;
+			private Map<EntityType, List<Krotka<Osiągnięcie, Integer>>> mapaMobów;
+			public final Map<Statistic, List<Krotka<Osiągnięcie, Integer>>> mapaStatystyk;
+			
+			public final Rodzaj rodzaj;
+			public final Statistic stat;
+			public final Enum<?> konkret;
+			public final boolean wymaganaLista;
+			private final Class<?> klasaKonkretu;
+			Typ(Rodzaj rodzaj, Statistic stat, Enum<?> konkret, Class<?> klasaKonkretu, boolean wymaganaLista) {
+				this.wymaganaLista = wymaganaLista;
+				this.klasaKonkretu = klasaKonkretu;
+				this.konkret = konkret;
+				this.rodzaj = rodzaj;
+				this.stat = stat;
+				
+				if (rodzaj == Rodzaj.ZAKRES) {
+					boolean bloki = klasaKonkretu.isAssignableFrom(Material.class);
+					mapaBloków	= bloki ? new HashMap<>() : null;
+					mapaMobów	= bloki ? null : new HashMap<>();
+					mapaStatystyk = null;
+				} else {
+					mapaStatystyk = this.name().equals("STATYSTYKA") ? new HashMap<>() : null;
+					mapaBloków = null;
+					mapaMobów = null;
+				}
+			}
+			Typ(Rodzaj rodzaj, Statistic stat, Enum<?> konkret, boolean wymaganaLista) {
+				this(rodzaj, stat, konkret, null, wymaganaLista);
+			}
+			Typ(Rodzaj rodzaj, Statistic stat, Enum<?> konkret) {
+				this(rodzaj, stat, konkret, false);
+			}
+			Typ(Rodzaj rodzaj, Statistic stat, Class<?> klasaKonkretu) {
+				this(rodzaj, stat, null, klasaKonkretu, true);
+			}
+			
+			@SuppressWarnings("unchecked")
+			public <T> Map<T, List<Krotka<Osiągnięcie, Integer>>> mapa() {
+				return mapaBloków == null ? (Map<T, List<Krotka<Osiągnięcie, Integer>>>) mapaMobów : (Map<T, List<Krotka<Osiągnięcie, Integer>>>) mapaBloków;
+			} 
+			public int ile(Player p, Kryterium kryterium) {
+				if (rodzaj == Rodzaj.WSKAZANE)
+					if (konkret.getClass().isAssignableFrom(Material.class))
+						return p.getStatistic(this.stat, (Material) konkret);
+					else
+						return p.getStatistic(this.stat, (EntityType) konkret);
+
+				if (this == SKYBLOCK_PUNKTY_WYSPY)
+					try {
+						return (int) SkyBlock.Wyspa.wczytaj(Gracz.wczytaj(p)).getPkt();
+					} catch (NullPointerException e) {
+						return 0;
+					}
+				
+				int ile = 0;
+				
+				if (this == STATYSTYKA) {
+					for (Object stat : kryterium.co)
+						ile += p.getStatistic((Statistic) stat);
+					return ile;
+				}
+				
+				if (this == ZEBRANE_ITEMY) {
+					for (Object selektor : kryterium.co)
+						ile += ((SelektorItemów) selektor).zlicz(p.getInventory());
+					return ile;
+				}
+				
+				if (rodzaj == Rodzaj.ZAKRES) {
+					if (klasaKonkretu.isAssignableFrom(Material.class))
+						for (Object stat : kryterium.co)
+							ile += p.getStatistic(this.stat, (Material) stat);
+					else
+						for (Object stat : kryterium.co)
+							ile += p.getStatistic(this.stat, (EntityType) stat);
+					return ile;
+				}
+				
+				
+				throw new Error("Nieobsługiwany CustomoweOsiągnięcia.Kryterium.Typ " + this);
+			}
+			public Class<?> klasaKonkretu() {
+				return konkret != null ? konkret.getClass() : klasaKonkretu;
+			}
+		}
 		@Mapowane String nazwa;
 		@Mapowane int ile = 1;
-		@Mapowane private List<String> czego; // Material | EntityType | SelektorItemów
+		@Mapowane Typ typ = Typ.ZNISZCZONE_BLOKI;
+		@Mapowane(nieTwórz = true) private List<String> konkrety = Lists.newArrayList();
 
-		List<Object> co = Lists.newArrayList();
+		List<Object> co;
 		@Override
 		protected void Init() {
 			if (nazwa == null)
 				nazwa = Func.losujZnaki(10, 20, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890");
-			else if (nazwa.contains(":") || nazwa.contains(","))
-				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \",\"");
+			else if (nazwa.contains(":") || nazwa.contains("."))
+				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \".\""); // TODO tylko \w
 			
-			czego.forEach(el -> 
-				Func.multiTry(IllegalArgumentException.class,
-						() -> co.add(Func.StringToEnum(EntityType.class, el)),
-						() -> co.add(Func.StringToEnum(Material.class, el)),
-						() -> {
-							SelektorItemów selektor = Config.selektorItemów(el);
-							if (selektor == null)
-								Main.warn("Customowe Osiągnięcia - Niepopwane kryterium  " + nazwa + " \"" + el + "\"");
-							else
-								co.add(selektor);
-						}
-						));
+			if (typ.wymaganaLista) {
+				co = Lists.newArrayList();
+				konkrety.forEach(str -> {
+					Class<?> clazz = typ.klasaKonkretu();
+					if (clazz.isEnum())
+						co.add(Func.StringToEnum(clazz, str));
+					else  if (clazz.isAssignableFrom(SelektorItemów.class))
+						co.add(Config.selektorItemów(str));
+					else
+						throw new Error("Nieprzewidzana Klasa konkretu w CustomoweOsiągnięcia.Typ: " + clazz);
+				});
+			}
+			
+			if (konkrety != null)
+				konkrety.forEach(el -> 
+					Func.multiTry(IllegalArgumentException.class,
+							() -> co.add(Func.StringToEnum(EntityType.class, el)),
+							() -> co.add(Func.StringToEnum(Material.class, el)),
+							() -> co.add(Func.StringToEnum(Statistic.class, el)),
+							() -> {
+								SelektorItemów selektor = Config.selektorItemów(el);
+								if (selektor == null)
+									Main.warn("Customowe Osiągnięcia - Niepopwane kryterium  " + nazwa + " \"" + el + "\"");
+								else
+									co.add(selektor);
+							}
+							));
 		}
 	}
 	public static class Osiągnięcie extends Mapowany {
 		final static Map<NamespacedKey, Osiągnięcie> mapa = new HashMap<>();
-		@Mapowane List<Kryterium> kryteria;
+		@Mapowane String tło;
+		@Mapowane String parent;
 		@Mapowane String namespacedKey;
+		@Mapowane List<Kryterium> kryteria;
 
-		@Mapowane ItemStack ikona;
-		@Mapowane String nazwa = "Osiągnięcie";
-		@Mapowane String opis = "Zwyczajne osiągnięcie\nco więcej potrzeba?";
 		@Mapowane AdvancementFrameType ramka = AdvancementFrameType.TASK;
 		@Mapowane boolean show_toast = true;
 		@Mapowane boolean announce_to_chat = true;
 		@Mapowane boolean hidden = false;
+		
+		@Mapowane ItemStack ikona;
+		@Mapowane String nazwa = "Osiągnięcie";
+		@Mapowane String opis = "Zwyczajne osiągnięcie\nco więcej potrzeba?";
 		
 		@Mapowane List<ItemStack> nagroda;
 		@Mapowane double nagrodaKasa = 0d;
@@ -111,9 +265,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		@Mapowane float x;
 		@Mapowane float y;
-		
-		@Mapowane String parent;
-		@Mapowane String tło;
+
 		
 		NamespacedKey klucz;
 		org.bukkit.advancement.Advancement adv;
@@ -138,14 +290,72 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			nagrodaWalutaPremium = Math.max(0, nagrodaWalutaPremium);
 			nagrodaKasa = Math.max(0, nagrodaKasa);
 			
-			nazwa = Func.koloruj(nazwa);
-			opis = Func.koloruj(opis);
 			
 			Set<String> nazwy = Sets.newConcurrentHashSet();
 			kryteria.forEach(k -> {
 				if (!nazwy.add(k.nazwa))
 					throw new NiepoprawneDemapowanieException("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
 			});
+			
+/*
+			/// XXX DEBUG
+			if (namespacedKey.startsWith("mimirpg:budowniczy")) {
+				Kryterium k = kryteria.get(0);
+				k.typ = Kryterium.Typ.POSTAWIONE_BLOKI_WSZYSTKIE;
+				opis = "Postaw " + Func.IntToString(k.ile) + " bloków";
+				k.nazwa = "k1";
+				k.konkrety = null;
+				k.co = null;
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:farmer")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Zbierz " + Func.IntToString(k.ile) + " plonów";
+				k.typ = Kryterium.Typ.FARMER;
+				k.nazwa = "k1";
+				k.konkrety = null;
+				k.co = null;
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:lowca")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Zabij " + Func.IntToString(k.ile) + " potworów";
+				k.typ = Kryterium.Typ.ZABITE_MOBY;
+				k.nazwa = "k1";
+				k.konkrety = Lists.newArrayList("Zombie", "Skeleton", "Spider", "Creeper", "Blaze", "Enderman", "Wither Skeleton", "Zoglin", "Witch", "Guardian", "Evoker", "Vindicator", "Husk", "Slime", "Magma Cube", "Phantom", "Pillager", "Shulker", "Drowned", "Stray", "Zombified Piglin");
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:miner")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Wykop " + Func.IntToString(k.ile) + " Rud";
+				k.typ = Kryterium.Typ.ZNISZCZONE_BLOKI;
+				k.nazwa = "k1";
+				k.konkrety = Lists.newArrayList("Coal Ore", "Iron Ore", "Gold Ore", "Diamond Ore", "Emerald Ore", "Redstone Ore", "Lapis Ore", "Nether Quartz Ore");
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:poziomwyspy")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Zdobądz " + Func.IntToString(k.ile) + " punktów wyspy";
+				k.typ = Kryterium.Typ.SKYBLOCK_PUNKTY_WYSPY;
+				k.nazwa = "k1";
+				k.konkrety = null;
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:rybak")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Wyłów " + Func.IntToString(k.ile) + " ryb";
+				k.typ = Kryterium.Typ.STATYSTYKA;
+				k.nazwa = "k1";
+				k.konkrety = Lists.newArrayList("FISH_CAUGHT");
+				k.Init();
+			} else if (namespacedKey.startsWith("mimirpg:zabojca")) {
+				Kryterium k = kryteria.get(0);
+				opis = "Zabij " + Func.IntToString(k.ile) + " graczy";
+				k.typ = Kryterium.Typ.STATYSTYKA;
+				k.nazwa = "k1";
+				k.konkrety = Lists.newArrayList("PLAYER_KILLS");
+				k.Init();
+			} else
+				Main.warn("Omijane osiągnięcie debugu: " + namespacedKey);
+			/// XXX DEBUG
+*/
+			nazwa = Func.koloruj(nazwa);
+			opis = Func.koloruj(opis);
 		}
 
 		private boolean stworzone = false;
@@ -275,10 +485,17 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	
 	
 	// mob/blok: [(osiągnięcie, indexKryterium)]
-	static final Map<EntityType, List<Krotka<Osiągnięcie, Integer>>> mapaMobów	= new HashMap<>(); 
-	static final Map<Material, List<Krotka<Osiągnięcie, Integer>>> mapaBloków	= new HashMap<>();
-	static final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList(); 
-
+	static final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList();
+	static final List<Krotka<Osiągnięcie, Integer>> listaPunktówWyspy = Lists.newArrayList();
+	
+	
+	int staty(Player p, Statistic stat, Object konkret) {
+		if (konkret instanceof Material)
+			return p.getStatistic(stat, (Material) konkret);
+		else
+			return p.getStatistic(stat, (EntityType) konkret);
+		
+	}
 	void sprawdzKryterium(Player p, Osiągnięcie adv, int index) {
 		Kryterium kryterium = adv.kryteria.get(index);
 		
@@ -287,35 +504,69 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		int ile = 0;
 		
-		for (Object co : kryterium.co) {
-			if (co instanceof Material)
-				ile += p.getStatistic(Statistic.MINE_BLOCK, (Material) co);
-			else if (co instanceof EntityType)
-				ile += p.getStatistic(Statistic.KILL_ENTITY, (EntityType) co);
-			else if (co instanceof SelektorItemów)
-				ile += ((SelektorItemów) co).zlicz(p.getInventory());
+		switch (kryterium.typ.rodzaj) {
+		case INNE:
+			if (kryterium.typ == Kryterium.Typ.SKYBLOCK_PUNKTY_WYSPY)
+				try {
+					ile += SkyBlock.Wyspa.wczytaj(Gracz.wczytaj(p)).getPkt();
+				} catch (NullPointerException e) {}
+			else if (kryterium.typ == Kryterium.Typ.ZEBRANE_ITEMY)
+				for (Object co : kryterium.co)
+					ile += ((SelektorItemów) co).zlicz(p.getInventory());
+			else if (kryterium.typ == Kryterium.Typ.STATYSTYKA)
+				for (Object co : kryterium.co)
+					ile += p.getStatistic((Statistic) co);
 			else
-				throw new Error("Nieprawidłowe kryterium Customowych osiągnięć: " + co);
-			
-			if (ile >= kryterium.ile) {
-				adv.odznacz(p, index);
-				return;
-			}
+				throw new Error("Nieznany typ kryterium Customowego Osiągnięcia " + kryterium.typ);
+			break;
+		case WSKAZANE:
+			ile += staty(p, kryterium.typ.stat, kryterium.typ.konkret);
+			break;
+		case ZAKRES:
+			for (Object co : kryterium.co)
+				ile += staty(p, kryterium.typ.stat, co);
+			break;
 		}
+		
+		if (ile >= kryterium.ile)
+			adv.odznacz(p, index);
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void podnoszenieStatystyk(PlayerStatisticIncrementEvent ev) {
 		if (ev.isCancelled()) return;
-		List<Krotka<Osiągnięcie, Integer>> lista;
-		switch (ev.getStatistic()) {
-		case KILL_ENTITY: lista = mapaMobów .get(ev.getEntityType()); break;
-		case MINE_BLOCK:  lista = mapaBloków.get(ev.getMaterial());   break;
-		default:
-			return;
-		}
+
 		Player p = ev.getPlayer();
-		if (lista != null)
-			Bukkit.getScheduler().runTask(Main.plugin, () -> lista.forEach(krotka -> sprawdzKryterium(p, krotka.a, krotka.b)));
+		Consumer<List<Krotka<Osiągnięcie, Integer>>> cons = lista -> {
+			if (lista != null)
+				Bukkit.getScheduler().runTask(Main.plugin, () -> lista.forEach(krotka -> sprawdzKryterium(p, krotka.a, krotka.b)));
+		};
+		
+		
+		Func.wykonajDlaNieNull(Kryterium.Typ.STATYSTYKA.mapaStatystyk.get(ev.getStatistic()), cons::accept);
+				
+		if (ev.getStatistic().isSubstatistic())
+			for (Kryterium.Typ typ : Kryterium.Typ.values())
+				if (ev.getStatistic() == typ.stat)
+					switch (typ.rodzaj) {
+					case WSKAZANE:
+						if (typ.konkret == ev.getMaterial())
+							cons.accept(typ.mapa().get(ev.getMaterial()));
+						break;
+					case ZAKRES:
+						Enum<?> en = ev.getMaterial() == null ? ev.getEntityType() : ev.getMaterial();
+						if (typ.klasaKonkretu().isAssignableFrom(en.getClass()))
+							cons.accept(typ.mapa().get(en));
+						break;
+					case INNE:
+						break;
+					}
+	}
+	private void incrementStatistic(Player p, Statistic stat, Material mat) {
+		int akt = p.getStatistic(stat, mat);
+		PlayerStatisticIncrementEvent ev = new PlayerStatisticIncrementEvent(p, stat, akt, akt+1, mat);
+		Bukkit.getPluginManager().callEvent(ev);
+		if (!ev.isCancelled())
+			p.setStatistic(stat, mat, ev.getNewValue());
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void podnoszenieItemów(EntityPickupItemEvent ev) {
@@ -328,7 +579,44 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			listaSelektorów.forEach(krotka ->
 				sprawdzKryterium(p, krotka.b.a, krotka.b.b)));
 	}
-	
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void stawianie(BlockPlaceEvent ev) {
+		if (!ev.isCancelled())
+			incrementStatistic(ev.getPlayer(), Statistic.USE_ITEM, Material.MAGMA_CREAM);
+	}
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void niszczenieBloków(BlockBreakEvent ev) {
+		if (ev.isCancelled())
+			return;
+		
+		Player p = ev.getPlayer();
+		Block b = ev.getBlock();
+		if  (b != null)
+			switch (b.getType()) {
+			case WHEAT:
+			case POTATOES:
+			case CARROTS:
+				if (b.getBlockData().getAsString().contains("age=7"))
+					incrementStatistic(p, Statistic.MINE_BLOCK, Material.WHEAT);
+				break;
+			case NETHER_WART:
+			case BEETROOTS:
+				if (b.getBlockData().getAsString().contains("age=3"))
+					incrementStatistic(p, Statistic.MINE_BLOCK, Material.WHEAT);
+				break;
+			default:
+				if (b.getType().getHardness() != 0)
+					incrementStatistic(p, Statistic.MINE_BLOCK, Material.BRICK);
+				break;
+			}
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void liczenieWartościWyspy(SkyBlock.API.PrzeliczaniePunktówWyspyEvent ev) {
+		Func.wykonajDlaNieNull(ev.p, p -> 
+			Bukkit.getScheduler().runTask(Main.plugin, () ->
+				listaPunktówWyspy.forEach(krotka ->
+					sprawdzKryterium(p, krotka.a, krotka.b))));
+	}
 	
 	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {
@@ -372,9 +660,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		Osiągnięcie.mapa.clear();
 		
 		config.wartości(Osiągnięcie.class).forEach(adv -> Osiągnięcie.mapa.put(adv.klucz, adv));
+
+		Kryterium.Typ.STATYSTYKA.mapaStatystyk.clear();
+		for (Kryterium.Typ typ : Kryterium.Typ.values())
+			Func.wykonajDlaNieNull(typ.mapa(), Map::clear);
 		
-		mapaMobów.clear();
-		mapaBloków.clear();
 		listaSelektorów.clear();
 		Osiągnięcie.mapa.forEach((klucz, adv) -> {
 			adv.stwórz();
@@ -382,22 +672,38 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				Kryterium kryterium = adv.kryteria.get(i);
 				Krotka<Osiągnięcie, Integer> krotka = new Krotka<>(adv, i);
 				
-				kryterium.co.forEach(kco -> {
-					
-					Map<? extends Enum<?>, List<Krotka<Osiągnięcie, Integer>>> mapa = null;
-					
-					if (kco instanceof Material)
-						mapa = mapaBloków;
-					else if (kco instanceof EntityType)
-						mapa = mapaMobów;
-					else if (kco instanceof SelektorItemów)
-						listaSelektorów.add(new Krotka<>((SelektorItemów) kco, krotka));
-					if (mapa != null)
-						if (mapa.containsKey(kco))
-							mapa.get(kco).add(krotka);
-						else
-							mapa.put(Func.pewnyCast(kco), Lists.newArrayList(krotka));
-				});
+				BiConsumer<Map<?, List<Krotka<Osiągnięcie, Integer>>>, Object> bic = (mapa, k) -> {
+					if (mapa.containsKey(k))
+						mapa.get(k).add(krotka);
+					else
+						mapa.put(Func.pewnyCast(k), Lists.newArrayList(krotka));
+				};
+				switch (kryterium.typ.rodzaj) {
+				case WSKAZANE:
+					bic.accept(kryterium.typ.mapa(), kryterium.typ.konkret);
+					break;
+				case ZAKRES:
+					for (Object co : kryterium.co)
+						bic.accept(kryterium.typ.mapa(), co);
+					break;
+				case INNE:
+					switch (kryterium.typ) {
+					case STATYSTYKA:
+						for (Object co : kryterium.co)
+							bic.accept(Kryterium.Typ.STATYSTYKA.mapaStatystyk, co);
+						break;
+					case ZEBRANE_ITEMY:
+						for (Object co : kryterium.co)
+							listaSelektorów.add(new Krotka<>((SelektorItemów) co, krotka));
+						break;
+					case SKYBLOCK_PUNKTY_WYSPY:
+						listaPunktówWyspy.add(krotka);
+						break;
+					default:
+						break;
+					}
+					break;
+				}
 				
 			}
 		});

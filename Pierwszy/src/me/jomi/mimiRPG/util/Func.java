@@ -1086,8 +1086,8 @@ public abstract class Func {
 		return permisja;
 	}
 
-	public static boolean powiadom(CommandSender p, String msg) {
-		return powiadom(p, msg, true);
+	public static boolean powiadom(CommandSender p, String msg, Object... uzupełnienia) {
+		return powiadom(p, Func.msg(msg, uzupełnienia), true);
 	}
 	public static boolean powiadom(CommandSender p, String msg, boolean zwrot) {
 		p.sendMessage(msg);

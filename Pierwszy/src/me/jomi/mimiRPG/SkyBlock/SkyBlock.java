@@ -144,10 +144,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		public static class PrzeliczaniePunktówWyspyEvent extends WyspyEvent {
 			public final double pktPrzed;
+			public final Player p;
 			public double pktPo;
 
-			public PrzeliczaniePunktówWyspyEvent(Wyspa wyspa, double pktPrzed, double pktPo) {
+			public PrzeliczaniePunktówWyspyEvent(Wyspa wyspa, Player p, double pktPrzed, double pktPo) {
 				super(wyspa);
+				this.p = p;
 				this.pktPo = pktPo;
 				this.pktPrzed = pktPrzed;
 			}
@@ -520,7 +522,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			typ.wklejSchematy(locŚrodek.getBlockX(), locŚrodek.getBlockY(), locŚrodek.getBlockZ());
 
-			policzWartość(null);
+			policzWartość(null, null);
 			sprawdzTop();
 
 			zapiszNatychmiast();
@@ -1641,7 +1643,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			if (maBypass(p) || ostatnieLiczenie.minąłToUstaw(strId)) {
 				p.sendMessage(prefix + "Liczenie wartości wyspy");
-				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> policzWartość(() -> {
+				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> policzWartość(p, () -> {
 					Main.log(prefix + Func.msg("Wartość wyspy przeliczanej przez %s to %s", p.getDisplayName(),
 							Func.IntToString((int) pkt)));
 					if (Gracz.wczytaj(p).wyspa != id)
@@ -1656,7 +1658,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return false;
 
 		}
-		public void policzWartość(Runnable taskNaKoniec) {
+		public void policzWartość(Player p, Runnable taskNaKoniec) {
 			double ile = 0;
 			Set<Material> omijane = Sets.newConcurrentHashSet();
 
@@ -1687,7 +1689,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			double _ile = ile;
 			Bukkit.getScheduler().runTask(Main.plugin, () -> {
-				double nowe = new PrzeliczaniePunktówWyspyEvent(this, this.pkt, _ile).pktPo;
+				double nowe = new PrzeliczaniePunktówWyspyEvent(this, p, this.pkt, _ile).pktPo;
 				if (nowe != this.pkt) {
 					this.pkt = nowe;
 					sprawdzTop();
@@ -1836,6 +1838,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						return Func.powiadom(p,
 								prefix + Func.msg("%s nie jest online i nie należy do twojej wyspy", kogo));
 					if (zawiera(kogoP.getLocation())) {
+						if (maBypass(kogoP))
+							return Func.powiadom(p, prefix + "Nie możesz wyprosić tego gracza");
 						Func.tpSpawn(kogoP);
 						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", kogoP.getDisplayName()));
 						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", p.getDisplayName()));
@@ -2834,10 +2838,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		boolean dp = gracz.test(ev.getDamager());
 		boolean ep = gracz.test(ev.getEntity());
 		
+		Player p;
+		if (dp)
+			p = (Player) (ev.getDamager() instanceof Player ? ev.getDamager() : ((Projectile) ev.getDamager()).getShooter());
+		else
+			p = (Player) ev.getEntity();
 		
 		if ((dp || ep) && !(dp && ep))
 			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getDamager().getLocation()), wyspa -> {
-				if (!wyspa.permisje((Player) (dp ? ev.getDamager() : ev.getEntity())).bicie_mobów)
+				if (!wyspa.permisje(p).bicie_mobów)
 					ev.setCancelled(true);
 			});
 	}

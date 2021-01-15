@@ -155,7 +155,7 @@ public class Main extends JavaPlugin implements Listener {
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
 		
-		pluginEnabled = true;        
+		pluginEnabled = true;
 		przeładowywanaBukkitData = false;
 	}
 	
