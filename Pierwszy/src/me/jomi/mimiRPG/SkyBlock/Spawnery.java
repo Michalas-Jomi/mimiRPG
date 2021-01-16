@@ -20,8 +20,10 @@ import org.bukkit.craftbukkit.v1_16_R2.block.CraftCreatureSpawner;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -29,6 +31,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -47,6 +50,7 @@ import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa;
+import me.jomi.mimiRPG.SkyBlock.Spawnery.API.PlayerEwoluowałSpawnerEvent;
 import me.jomi.mimiRPG.SkyBlock.Spawnery.Ulepszenie.Ulepszenia;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -80,6 +84,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 			public Ulepszenia() {
 				id = _id++;
 			}
+			@Override
 			public void Init() {
 				SzybkoscPoczatkowa *= 20;
 			}
@@ -187,9 +192,26 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		@Mapowane int slotUlepszeńMoba = 8;
 		@Mapowane List<Ulepszenie> ulepszenia;
 		
+		@Override
 		public void Init() {
 			sloty = Math.max(1, Math.min(6, sloty));
 			sloty *= 9;
+		}
+	}
+	
+	public static class API {
+		public static class PlayerEwoluowałSpawnerEvent extends PlayerEvent {
+			public final EntityType zCzego;
+			public final EntityType wCo;
+			public PlayerEwoluowałSpawnerEvent(Player kto, EntityType zCzego, EntityType wCo) {
+				super(kto);
+				this.wCo = wCo;
+				this.zCzego = zCzego;
+			}
+
+			private static final HandlerList handlers = new HandlerList();
+			public static HandlerList getHandlerList() { return handlers; }
+			@Override public HandlerList getHandlers() { return handlers; }
 		}
 	}
 	
@@ -272,11 +294,14 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 					Bukkit.broadcastMessage(Func.msg(prefix + "%s Wyeluował spawner | %s -> %s |", p.getDisplayName(), spawner.getSpawnedType(), upgr.mob));
 				else
 					p.sendMessage(prefix + Func.msg("Wyeluowałeś Spawner! | %s -> %s |", spawner.getSpawnedType(), upgr.mob));
+				Event event = new PlayerEwoluowałSpawnerEvent(p, spawner.getSpawnedType(), upgr.mob);
 				spawner.setSpawnedType(upgr.mob);
 				if (dane.ulepszenia.get(i).resetowaćNastępny)
 					upgr.zresetuj(spawner);
 				spawner.getWorld().spawnParticle(Particle.HEART, spawner.getBlock().getLocation().add(.5, 1, .5), 5, .5, .5, .5, 0);
 				spawner.getWorld().playSound(spawner.getLocation(), Sound.ENTITY_WITHER_SPAWN, .5f, 0f);
+				
+				Bukkit.getPluginManager().callEvent(event);
 			}
 		} else {
 			List<String> lore = item.getItemMeta().getLore();

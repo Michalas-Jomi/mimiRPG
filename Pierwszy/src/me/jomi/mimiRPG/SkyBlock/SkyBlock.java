@@ -2041,8 +2041,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			inv.setItem(21, dajItemekInvUlepszenia("limityBloków", Material.HOPPER, "Limity Bloków",
 					"&aZwiększa limity bloków na wyspie",
-					limit -> String.format("Aktualny limit: &3%s &askrzyń &3%s &aspawnerów", limit, limit / 2),
-					limit -> String.format("Następny limit: &3%s &askrzyń &3%s &aspawnerów", limit, limit / 2)));
+					limit -> String.format("Aktualny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 2),
+					limit -> String.format("Następny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 2)));
 
 			inv.setItem(22,
 					dajItemekInvUlepszenia("magazyn", Material.CHEST, "Magazyn", "&aZwiększa pojemność magazynu wyspy",

@@ -25,6 +25,8 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -35,10 +37,165 @@ import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.NowyEkwipunek;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zegar {
+	public static class Event {
+		static String prefix = AutoEventy.prefix;
+		
+		List<ItemStack> itemy;
+		RodzajEventu rodzaj;
+		Location meta1;
+		Location meta2;
+		GameMode gamemode;
+		double nagroda;
+		int min_gracze;
+		int max_gracze;
+		String nazwa;
+		int zbiórka;
+		int czas;
+		Location loc_start;
+		Location loc_zbiórka;
+		
+		final List<Player> gracze = Lists.newArrayList();
+		boolean koniec = false;
+		
+		boolean grane = false;
+		
+		Event(List<ItemStack> itemy, RodzajEventu rodzaj, Location meta1, Location meta2, GameMode gamemode, double nagroda,
+				int min_gracze, int max_gracze, String nazwa, int zbiórka, int czas, Location loc_start, Location loc_zbiórka) {
+			this.itemy = itemy;
+			this.rodzaj = rodzaj;
+			this.meta1 = meta1;
+			this.meta2 = meta2;
+			this.gamemode = gamemode;
+			this.nagroda = nagroda;
+			this.min_gracze = min_gracze;
+			this.max_gracze = max_gracze;
+			this.nazwa = nazwa;
+			this.zbiórka = zbiórka;
+			this.czas = czas;
+			this.loc_start = loc_start;
+			this.loc_zbiórka = loc_zbiórka;
+		}
+		
+		void dołącz(Player p) {
+			if (zbiórka <= 0) {
+				p.sendMessage(prefix + "Event już wystartował");
+				return;
+			}
+			if (gracze.size() >= max_gracze) {
+				p.sendMessage(prefix + "Wszystkie miejsca w evencie są już zajęte");
+				return;
+			}
+			for (Player gracz : gracze)
+				if (gracz.getName().equals(p.getName())) {
+					opuść(p);
+					return;
+				}
+			
+			gracze.add(p);
+			NowyEkwipunek.dajNowy(p, loc_zbiórka, gamemode);
+			for (Player gracz : gracze)
+				gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", p.getDisplayName(), gracze.size(), max_gracze));
+			if (gracze.size() >= max_gracze)
+				zbiórka = Math.max(zbiórka, 5);
+			return;
+		}
+		void opuść(Player p) {
+			for (int i=0; i<gracze.size(); i++)
+				if (gracze.get(i).getName().equals(p.getName())) {
+					if (!koniec)
+						for (Player gracz : gracze)
+							gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + " §e" + gracze.size() + "§6/§e" + max_gracze);
+					gracze.remove(i);
+					NowyEkwipunek.wczytajStary(p);
+					if (grane && rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
+						wygrał(gracze.get(0));
+					return;
+				}
+		}
+		void wygrał(Player p) {
+			Main.econ.depositPlayer(p, nagroda);
+			p.sendMessage(prefix + Func.msg("Na twoje konto wpłyneło %s§e$", nagroda));
+			Bukkit.broadcastMessage(prefix + Func.msg("%s wygrał event %s!", p.getName(), nazwa));
+			koniec();
+		}
+		void koniec() {
+			koniec = true;
+			grane = false;
+			for (Player p : Lists.newCopyOnWriteArrayList(gracze))
+				opuść(p);
+			AutoEventy.inst.event = null;
+		}
+
+		void start() {
+			if (gracze.size() < min_gracze) {
+				Bukkit.broadcastMessage(Func.msg("Event %s nie wystartował przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
+				koniec();
+				return;
+			}
+			for (Player p : gracze) {
+				p.teleport(loc_start);
+				int i=0;
+				for (ItemStack item : itemy)
+					p.getInventory().setItem(i++, item);
+			}
+			grane = true;
+			Bukkit.broadcastMessage(Func.msg("Event %s rozpoczął się %s/%s", nazwa, gracze.size(), max_gracze));
+		}
+		
+		// wykonuje się co sekunde
+		void czas() {
+			if (zbiórka-- > 0) {
+				// czas zbiórki
+				if (zbiórka % 60 == 0 || zbiórka == 30 || zbiórka == 10)
+					AutoEventy.inst.infoStart();
+				else if (zbiórka % 30 == 0)
+					for (Player p : gracze)
+						p.sendMessage(prefix + "Start za §e" + Func.czas(zbiórka));
+				if (zbiórka < 5 && zbiórka > 0)
+					for (Player p : gracze)
+						p.sendTitle("§bStart za", "§a" + zbiórka, 20, 50, 30);
+				else if (zbiórka <= 0)
+					start();
+			} else if (--czas <= 0) {
+				// czas gry
+				Bukkit.broadcastMessage(prefix + Func.msg("Event %s dobiegł końca, nikt nie wygrał", nazwa));
+				koniec();
+			} else if (czas % 60 == 0 || (czas <= 60 && czas % 10 == 0))
+					for (Player p : gracze)
+						p.sendMessage(prefix + "Koniec za §e" + Func.czas(czas));
+		}
+
+		void śmierć(PlayerDeathEvent ev) {
+			switch (rodzaj) {
+			case OstatniNaArenie:
+				opuść(ev.getEntity());
+				break;
+			case PierwszyNaMecie:
+				for (Player p : gracze)
+					if (p.getName().equals(ev.getEntity().getName())) {
+						ev.getEntity().teleport(loc_start);
+						ev.setKeepInventory(true);
+						ev.setKeepLevel(true);
+						return;
+					}
+				break;
+			}
+		}
+		void poruszanie(PlayerMoveEvent ev) {
+			if (rodzaj.equals(RodzajEventu.PierwszyNaMecie))
+				for (Player p : gracze)
+					if (p.getName().equals(ev.getPlayer().getName())) {
+						if (Func.zawiera(ev.getTo(), meta1, meta2))
+							wygrał(p);
+						return;
+					}
+		}
+	}
+	
+	
 	public static final String prefix = Func.prefix("Event");
 	
 	final String permEdytuj = Func.permisja("autoevent.edytuj");
@@ -206,160 +363,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 	}
 }
 
-class Event {
-	static String prefix = AutoEventy.prefix;
-	
-	List<ItemStack> itemy;
-	RodzajEventu rodzaj;
-	Location meta1;
-	Location meta2;
-	GameMode gamemode;
-	double nagroda;
-	int min_gracze;
-	int max_gracze;
-	String nazwa;
-	int zbiórka;
-	int czas;
-	Location loc_start;
-	Location loc_zbiórka;
-	
-	final List<Player> gracze = Lists.newArrayList();
-	boolean koniec = false;
-	
-	boolean grane = false;
-	
-	Event(List<ItemStack> itemy, RodzajEventu rodzaj, Location meta1, Location meta2, GameMode gamemode, double nagroda,
-			int min_gracze, int max_gracze, String nazwa, int zbiórka, int czas, Location loc_start, Location loc_zbiórka) {
-		this.itemy = itemy;
-		this.rodzaj = rodzaj;
-		this.meta1 = meta1;
-		this.meta2 = meta2;
-		this.gamemode = gamemode;
-		this.nagroda = nagroda;
-		this.min_gracze = min_gracze;
-		this.max_gracze = max_gracze;
-		this.nazwa = nazwa;
-		this.zbiórka = zbiórka;
-		this.czas = czas;
-		this.loc_start = loc_start;
-		this.loc_zbiórka = loc_zbiórka;
-	}
-	
-	void dołącz(Player p) {
-		if (zbiórka <= 0) {
-			p.sendMessage(prefix + "Event już wystartował");
-			return;
-		}
-		if (gracze.size() >= max_gracze) {
-			p.sendMessage(prefix + "Wszystkie miejsca w evencie są już zajęte");
-			return;
-		}
-		for (Player gracz : gracze)
-			if (gracz.getName().equals(p.getName())) {
-				opuść(p);
-				return;
-			}
-		
-		gracze.add(p);
-		NowyEkwipunek.dajNowy(p, loc_zbiórka, gamemode);
-		for (Player gracz : gracze)
-			gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", p.getDisplayName(), gracze.size(), max_gracze));
-		if (gracze.size() >= max_gracze)
-			zbiórka = Math.max(zbiórka, 5);
-		return;
-	}
-	void opuść(Player p) {
-		for (int i=0; i<gracze.size(); i++)
-			if (gracze.get(i).getName().equals(p.getName())) {
-				if (!koniec)
-					for (Player gracz : gracze)
-						gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + " §e" + gracze.size() + "§6/§e" + max_gracze);
-				gracze.remove(i);
-				NowyEkwipunek.wczytajStary(p);
-				if (grane && rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
-					wygrał(gracze.get(0));
-				return;
-			}
-	}
-	void wygrał(Player p) {
-		Main.econ.depositPlayer(p, nagroda);
-		p.sendMessage(prefix + Func.msg("Na twoje konto wpłyneło %s§e$", nagroda));
-		Bukkit.broadcastMessage(prefix + Func.msg("%s wygrał event %s!", p.getName(), nazwa));
-		koniec();
-	}
-	void koniec() {
-		koniec = true;
-		grane = false;
-		for (Player p : Lists.newCopyOnWriteArrayList(gracze))
-			opuść(p);
-		AutoEventy.inst.event = null;
-	}
 
-	void start() {
-		if (gracze.size() < min_gracze) {
-			Bukkit.broadcastMessage(Func.msg("Event %s nie wystartował przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
-			koniec();
-			return;
-		}
-		for (Player p : gracze) {
-			p.teleport(loc_start);
-			int i=0;
-			for (ItemStack item : itemy)
-				p.getInventory().setItem(i++, item);
-		}
-		grane = true;
-		Bukkit.broadcastMessage(Func.msg("Event %s rozpoczął się %s/%s", nazwa, gracze.size(), max_gracze));
-	}
-	
-	// wykonuje się co sekunde
-	void czas() {
-		if (zbiórka-- > 0) {
-			// czas zbiórki
-			if (zbiórka % 60 == 0 || zbiórka == 30 || zbiórka == 10)
-				AutoEventy.inst.infoStart();
-			else if (zbiórka % 30 == 0)
-				for (Player p : gracze)
-					p.sendMessage(prefix + "Start za §e" + Func.czas(zbiórka));
-			if (zbiórka < 5 && zbiórka > 0)
-				for (Player p : gracze)
-					p.sendTitle("§bStart za", "§a" + zbiórka, 20, 50, 30);
-			else if (zbiórka <= 0)
-				start();
-		} else if (--czas <= 0) {
-			// czas gry
-			Bukkit.broadcastMessage(prefix + Func.msg("Event %s dobiegł końca, nikt nie wygrał", nazwa));
-			koniec();
-		} else if (czas % 60 == 0 || (czas <= 60 && czas % 10 == 0))
-				for (Player p : gracze)
-					p.sendMessage(prefix + "Koniec za §e" + Func.czas(czas));
-	}
-
-	void śmierć(PlayerDeathEvent ev) {
-		switch (rodzaj) {
-		case OstatniNaArenie:
-			opuść(ev.getEntity());
-			break;
-		case PierwszyNaMecie:
-			for (Player p : gracze)
-				if (p.getName().equals(ev.getEntity().getName())) {
-					ev.getEntity().teleport(loc_start);
-					ev.setKeepInventory(true);
-					ev.setKeepLevel(true);
-					return;
-				}
-			break;
-		}
-	}
-	void poruszanie(PlayerMoveEvent ev) {
-		if (rodzaj.equals(RodzajEventu.PierwszyNaMecie))
-			for (Player p : gracze)
-				if (p.getName().equals(ev.getPlayer().getName())) {
-					if (Func.zawiera(ev.getTo(), meta1, meta2))
-						wygrał(p);
-					return;
-				}
-	}
-}
 
 
 enum RodzajEventu {

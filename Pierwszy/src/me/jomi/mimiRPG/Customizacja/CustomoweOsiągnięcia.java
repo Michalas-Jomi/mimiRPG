@@ -61,6 +61,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
+import me.jomi.mimiRPG.SkyBlock.Spawnery.API.PlayerEwoluowałSpawnerEvent;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -99,6 +100,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 
 			SKYBLOCK_PUNKTY_WYSPY(Rodzaj.INNE, null, null, false), // api SkyBlock
 			ZEBRANE_ITEMY(Rodzaj.INNE, null, null, SelektorItemów.class, true), // selektor itemów
+			EWOLUOWOCJA_SPAWNERA(Rodzaj.INNE, null, null, EntityType.class, true), // ewoluowane spawnery
 			
 			STATYSTYKA(Rodzaj.INNE, null, null, Statistic.class, true);
 
@@ -218,7 +220,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				konkrety.forEach(str -> {
 					Class<?> clazz = typ.klasaKonkretu();
 					if (clazz.isEnum())
-						co.add(Func.StringToEnum(clazz, str));
+						try {
+							co.add(Func.StringToEnum(clazz, str));
+						} catch (IllegalArgumentException e) {
+							Main.warn("Nieprawidłowa wartość w Customowe Osiągnięcia.yml \"" + str + "\" nie pasuje do klasy " + clazz.getName());
+						}
 					else  if (clazz.isAssignableFrom(SelektorItemów.class))
 						co.add(Config.selektorItemów(str));
 					else
@@ -297,6 +303,21 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 					throw new NiepoprawneDemapowanieException("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
 			});
 			
+			/// XXX DEBUG
+/*
+			if (namespacedKey.startsWith("mimirpg:spawner")) {
+				try {
+					nazwa = "Spawner " + Func.enumToString((EntityType) kryteria.get(0).co.get(0));
+				} catch (Throwable e) {
+					Main.warn("problem z nazwą od " + namespacedKey);
+				}
+			} else if (namespacedKey.startsWith("mimirpg:moby")) {
+				int i = Func.Int(namespacedKey.substring("mimirpg:moby".length()));
+				parent = "mimirpg:spawner" + i;
+				y = -2;
+				ramka = AdvancementFrameType.CHALLENGE;
+			}
+*/
 /*
 			/// XXX DEBUG
 			if (namespacedKey.startsWith("mimirpg:budowniczy")) {
@@ -431,7 +452,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		return adv;
 	}
-
+	
 	
 	final EdytorOgólny<Osiągnięcie> edytor = new EdytorOgólny<>("edytujosiągnięcia", Osiągnięcie.class);
 	public CustomoweOsiągnięcia() {
@@ -448,12 +469,14 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				return null;
 			throw new EdytorOgólny.DomyślnyWyjątekException();
 		});
+		edytor.zarejestrójWyjątek("/edytujosiągnięcia edytor kryteria <int> ile", (adv, ścieżka) -> {
+			if (adv.kryteria.get(Func.Int(Func.tnij(ścieżka, " ").get(3))).typ == Kryterium.Typ.EWOLUOWOCJA_SPAWNERA)
+				return null;
+			throw new EdytorOgólny.DomyślnyWyjątekException();
+		});
 		edytor.zarejestrujOnZatwierdzZEdytorem((adv, edytor) -> {
-			if (!adv.namespacedKey.contains(":"))
-				adv.namespacedKey = Main.plugin.getName() + ":" + adv.namespacedKey;
-			adv.namespacedKey = adv.namespacedKey.toLowerCase();
-			edytor.ścieżka = adv.namespacedKey;
 			adv.Init();
+			edytor.ścieżka = adv.namespacedKey;
 		});
 		edytor.zarejestrujPoZatwierdz((dawnyAdv, adv) -> {
 			if (dawnyAdv.klucz != null)
@@ -462,7 +485,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			zapisz();
 		});
 	}
-	
 	
 	
 	// EventHandler
@@ -486,6 +508,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	
 	// mob/blok: [(osiągnięcie, indexKryterium)]
 	static final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList();
+	static final List<Krotka<Osiągnięcie, Integer>> listaEwolucjiSpawnera = Lists.newArrayList();
 	static final List<Krotka<Osiągnięcie, Integer>> listaPunktówWyspy = Lists.newArrayList();
 	
 	
@@ -617,6 +640,14 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				listaPunktówWyspy.forEach(krotka ->
 					sprawdzKryterium(p, krotka.a, krotka.b))));
 	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void ewolucjaSpawnera(PlayerEwoluowałSpawnerEvent ev) {
+		listaEwolucjiSpawnera.forEach(krotka -> {
+			if (krotka.a.kryteria.get(krotka.b).co.contains(ev.wCo))
+				krotka.a.odznacz(ev.getPlayer(), krotka.b);
+		});
+	}
+	
 	
 	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {
@@ -666,6 +697,8 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			Func.wykonajDlaNieNull(typ.mapa(), Map::clear);
 		
 		listaSelektorów.clear();
+		listaPunktówWyspy.clear();
+		listaEwolucjiSpawnera.clear();
 		Osiągnięcie.mapa.forEach((klucz, adv) -> {
 			adv.stwórz();
 			for (int i=0; i < adv.kryteria.size(); i++) {
@@ -698,6 +731,9 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 						break;
 					case SKYBLOCK_PUNKTY_WYSPY:
 						listaPunktówWyspy.add(krotka);
+						break;
+					case EWOLUOWOCJA_SPAWNERA:
+						listaEwolucjiSpawnera.add(krotka);
 						break;
 					default:
 						break;
