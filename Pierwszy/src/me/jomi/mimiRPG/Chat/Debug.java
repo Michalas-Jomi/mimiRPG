@@ -91,7 +91,7 @@ public class Debug extends Komenda {
 				}
 			}
 			
-			if (parametry != null || (!strB.isEmpty() && metoda == null))
+			if (parametry != null || (strB.length() != 0 && metoda == null))
 				obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
 			
 			if (obj == null)

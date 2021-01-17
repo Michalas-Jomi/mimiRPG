@@ -20,6 +20,7 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 			obj = (Mapowany) Func.nowaInstancja(Class.forName(klasa, false, Main.classLoader));
 		} catch (ClassNotFoundException e) {
 			Main.error("Nieodnaleziono klasy " + klasa);
+			return obj;
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

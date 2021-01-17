@@ -296,85 +296,12 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			nagrodaWalutaPremium = Math.max(0, nagrodaWalutaPremium);
 			nagrodaKasa = Math.max(0, nagrodaKasa);
 			
-			
 			Set<String> nazwy = Sets.newConcurrentHashSet();
 			kryteria.forEach(k -> {
 				if (!nazwy.add(k.nazwa))
 					throw new NiepoprawneDemapowanieException("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
 			});
 			
-			/// XXX DEBUG
-/*
-			if (namespacedKey.startsWith("mimirpg:spawner")) {
-				try {
-					nazwa = "Spawner " + Func.enumToString((EntityType) kryteria.get(0).co.get(0));
-				} catch (Throwable e) {
-					Main.warn("problem z nazwą od " + namespacedKey);
-				}
-			} else if (namespacedKey.startsWith("mimirpg:moby")) {
-				int i = Func.Int(namespacedKey.substring("mimirpg:moby".length()));
-				parent = "mimirpg:spawner" + i;
-				y = -2;
-				ramka = AdvancementFrameType.CHALLENGE;
-			}
-*/
-/*
-			/// XXX DEBUG
-			if (namespacedKey.startsWith("mimirpg:budowniczy")) {
-				Kryterium k = kryteria.get(0);
-				k.typ = Kryterium.Typ.POSTAWIONE_BLOKI_WSZYSTKIE;
-				opis = "Postaw " + Func.IntToString(k.ile) + " bloków";
-				k.nazwa = "k1";
-				k.konkrety = null;
-				k.co = null;
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:farmer")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Zbierz " + Func.IntToString(k.ile) + " plonów";
-				k.typ = Kryterium.Typ.FARMER;
-				k.nazwa = "k1";
-				k.konkrety = null;
-				k.co = null;
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:lowca")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Zabij " + Func.IntToString(k.ile) + " potworów";
-				k.typ = Kryterium.Typ.ZABITE_MOBY;
-				k.nazwa = "k1";
-				k.konkrety = Lists.newArrayList("Zombie", "Skeleton", "Spider", "Creeper", "Blaze", "Enderman", "Wither Skeleton", "Zoglin", "Witch", "Guardian", "Evoker", "Vindicator", "Husk", "Slime", "Magma Cube", "Phantom", "Pillager", "Shulker", "Drowned", "Stray", "Zombified Piglin");
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:miner")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Wykop " + Func.IntToString(k.ile) + " Rud";
-				k.typ = Kryterium.Typ.ZNISZCZONE_BLOKI;
-				k.nazwa = "k1";
-				k.konkrety = Lists.newArrayList("Coal Ore", "Iron Ore", "Gold Ore", "Diamond Ore", "Emerald Ore", "Redstone Ore", "Lapis Ore", "Nether Quartz Ore");
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:poziomwyspy")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Zdobądz " + Func.IntToString(k.ile) + " punktów wyspy";
-				k.typ = Kryterium.Typ.SKYBLOCK_PUNKTY_WYSPY;
-				k.nazwa = "k1";
-				k.konkrety = null;
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:rybak")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Wyłów " + Func.IntToString(k.ile) + " ryb";
-				k.typ = Kryterium.Typ.STATYSTYKA;
-				k.nazwa = "k1";
-				k.konkrety = Lists.newArrayList("FISH_CAUGHT");
-				k.Init();
-			} else if (namespacedKey.startsWith("mimirpg:zabojca")) {
-				Kryterium k = kryteria.get(0);
-				opis = "Zabij " + Func.IntToString(k.ile) + " graczy";
-				k.typ = Kryterium.Typ.STATYSTYKA;
-				k.nazwa = "k1";
-				k.konkrety = Lists.newArrayList("PLAYER_KILLS");
-				k.Init();
-			} else
-				Main.warn("Omijane osiągnięcie debugu: " + namespacedKey);
-			/// XXX DEBUG
-*/
 			nazwa = Func.koloruj(nazwa);
 			opis = Func.koloruj(opis);
 		}
@@ -759,7 +686,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 						try {
 							Func.dajMetode(AdvancementDataPlayer.class, "a", Advancement.class, AdvancementProgress.class).invoke(data, adv, prog);
 							
-							setAdvs.add(adv);
+							if (prog.isDone()) {
+								setAdvs.add(adv);
+								adv.e().forEach(adv2 -> adv2.e().forEach(setAdvs::add));
+								adv.e().forEach(setAdvs::add);
+								}
 							setKluczy.add(adv.getName());
 							
 						} catch (Throwable e) {
@@ -771,10 +702,10 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 					data.data.forEach((adv, prog) -> m.put(adv.getName(), prog));
 					
 					PacketPlayOutAdvancements packet = new PacketPlayOutAdvancements(
-							true,
-							setAdvs,
+							true,// czy ukryty, czy przyznać bez powiadomienia
+							setAdvs, // osiągnięcia które mają być pokazane w drzewku
 							setKluczy,
-							m);
+							m);// mapa z progresem
 					((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
 				}));
 		preReload.clear();

@@ -1178,19 +1178,15 @@ public abstract class Func {
 			try {
 				if (en.getKey().equals("==")) continue;
 				if (en.getKey().equals("=mimi=")) continue;
+				
 				Field field = dajField(clazz, en.getKey());
 				field.setAccessible(true);
+				
 				if (!field.isAnnotationPresent(Mapowane.class))
 					throw new Throwable();
-				if (field.getType().isEnum())
-					try {
-						field.set(obj, Func.StringToEnum(field.getType(), (String) en.getValue()));
-					} catch (Throwable _e) {
-						Main.warn(String.format("Nieprawidłowa wartość wyliczeniowa \"%s\" dla pola \"%s\" przy demapowianiu klasy %s",
-								en.getValue(), en.getKey(), clazz.getName()));
-					}
-				else
-					field.set(obj, zdemapuj_wez(field.getGenericType(), en.getValue()));
+				
+				field.set(obj, zdemapuj_wez(field.getGenericType(), en.getValue()));
+				
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
 				e.printStackTrace();
@@ -1210,7 +1206,6 @@ public abstract class Func {
 							field.set(obj, enumy[0]);
 					}
 				}
-	
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -1234,6 +1229,7 @@ public abstract class Func {
 	@SuppressWarnings("unchecked")
 	private static Object zdemapuj_wez(Type type, Object obj) throws Throwable {
 		if (obj == null) return obj;
+		
 		if (type instanceof ParameterizedType) {
 			ParameterizedType Ptype = (ParameterizedType) type;
 			
@@ -1258,8 +1254,12 @@ public abstract class Func {
 				return Config.selektorItemów(obj);
 			if (clazz.isAssignableFrom(Float.TYPE))
 				return Func.Float(obj);
-		} else
+		} else {
+			Main.error(obj);
+			Main.error(obj == null ? null : obj.getClass());
 			Main.error("Nieprzewidzany typ przy Demapowaniu: " + type, "\n", type.getClass());
+			throw new Error();
+		}
 		return obj;
 	}
 	@SuppressWarnings("unchecked")

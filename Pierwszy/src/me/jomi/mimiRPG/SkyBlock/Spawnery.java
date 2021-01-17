@@ -86,7 +86,8 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 			}
 			@Override
 			public void Init() {
-				SzybkoscPoczatkowa *= 20;
+				if (SzybkoscPoczatkowa != null)
+					SzybkoscPoczatkowa *= 20;
 			}
 		}
 		@Mapowane Ulepszenia ulepszenia;

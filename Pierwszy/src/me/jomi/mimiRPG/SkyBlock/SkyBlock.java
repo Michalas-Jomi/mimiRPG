@@ -2296,7 +2296,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				for (int i = 0; i < slotyTopki.size() && i < topInfo.size(); i++) {
 					TopInfo top = topInfo.get(i);
 					int slot = slotyTopki.get(i);
-					invTop.setItem(slot, Func.ustawGłowe(Func.graczOffline(top.nick), invTop.getItem(slot)));
+					try {
+						invTop.setItem(slot, Func.ustawGłowe(Func.graczOffline(top.nick), invTop.getItem(slot)));
+					} catch (Throwable e) {}
 				}
 				taskInvTop = null;
 			});
@@ -3204,7 +3206,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 						Ciąg<Material> ciąg = new Ciąg<>();
 						if (mapa != null)
-							mapa.forEach((typ, szansa) -> ciąg.dodaj(Func.StringToEnum(Material.class, typ), szansa));
+							mapa.forEach((typ, szansa) -> {
+								try {
+									ciąg.dodaj(Func.StringToEnum(Material.class, typ), szansa);
+								} catch (IllegalArgumentException e) {
+									Main.warn("Niepoprawny blok w Skyblock.yml w generatorze: " + typ);
+								}
+							});
 
 						return ciąg;
 					};

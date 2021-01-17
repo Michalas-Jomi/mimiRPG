@@ -65,13 +65,13 @@ public class Gracz extends Mapowany {
 		Config config = mapa.get(nick);
 		if (config != null)
 			return config;
-		config = new Config(scieżkaConfigu(nick));
+		config = new Config(new File(scieżkaConfigu(nick)));
 		if (Bukkit.getPlayer(nick) != null)
 			mapa.put(nick, config);
 		return config;
 	}
  	private static String scieżkaConfigu(String nick) {
- 		return "configi/gracze/" + nick + ".yml";
+ 		return Main.path + "configi/gracze/" + nick.toLowerCase() + ".yml";
  	}
 	
 	public Gracz() {}
