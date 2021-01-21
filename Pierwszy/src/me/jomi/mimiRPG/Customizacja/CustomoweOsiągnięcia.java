@@ -61,6 +61,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.Spawnery.API.PlayerEwoluowałSpawnerEvent;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -275,7 +276,10 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		NamespacedKey klucz;
 		org.bukkit.advancement.Advancement adv;
-		
+
+		/// XXX DEBUG
+		static Config debugConfig = new Config("nazwyZadań");
+		/// XXX DEBUG
 		
 		@Override
 		protected void Init() {
@@ -458,8 +462,10 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		case INNE:
 			if (kryterium.typ == Kryterium.Typ.SKYBLOCK_PUNKTY_WYSPY)
 				try {
-					ile += SkyBlock.Wyspa.wczytaj(Gracz.wczytaj(p)).getPkt();
-				} catch (NullPointerException e) {}
+					ile += SkyBlock.Wyspa.wczytaj(p).getPkt();
+				} catch (NullPointerException e) {
+					e.printStackTrace(); /// XXX DEBUG
+				}
 			else if (kryterium.typ == Kryterium.Typ.ZEBRANE_ITEMY)
 				for (Object co : kryterium.co)
 					ile += ((SelektorItemów) co).zlicz(p.getInventory());
@@ -561,8 +567,8 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			}
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void liczenieWartościWyspy(SkyBlock.API.PrzeliczaniePunktówWyspyEvent ev) {
-		Func.wykonajDlaNieNull(ev.p, p -> 
+	public void liczenieWartościWyspy(PrzeliczaniePunktówWyspyEvent ev) {
+		Func.wykonajDlaNieNull(ev.p, p ->
 			Bukkit.getScheduler().runTask(Main.plugin, () ->
 				listaPunktówWyspy.forEach(krotka ->
 					sprawdzKryterium(p, krotka.a, krotka.b))));
@@ -574,7 +580,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				krotka.a.odznacz(ev.getPlayer(), krotka.b);
 		});
 	}
-	
 	
 	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {

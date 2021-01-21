@@ -127,6 +127,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			public WyspyEvent(Wyspa wyspa) {
 				this.wyspa = wyspa;
+			}
+			
+			protected void wywołaj() {
 				Bukkit.getPluginManager().callEvent(this);
 			}
 
@@ -152,12 +155,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				this.p = p;
 				this.pktPo = pktPo;
 				this.pktPrzed = pktPrzed;
+				wywołaj();
 			}
 		}
 		
 		public static class UsuwanieWyspyEvent extends WyspyCancellableEvent {
 			public UsuwanieWyspyEvent(Wyspa wyspa) {
 				super(wyspa);
+				wywołaj();
 			}
 		}
 		public static class TworzenieWyspyEvent extends WyspyCancellableEvent {
@@ -165,7 +170,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			public TworzenieWyspyEvent(Wyspa wyspa, Player p) {
 				super(wyspa);
-				this.p = p;
+				this.p = p;;
+				wywołaj();
 			}
 		}
 		public static class OpuszczanieWyspyEvent extends WyspyCancellableEvent {
@@ -174,6 +180,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			public OpuszczanieWyspyEvent(Wyspa wyspa, String nick) {
 				super(wyspa);
 				this.nick = nick;
+				wywołaj();
 			}
 		}
 		public static class DołączanieDoWyspyEvent extends WyspyCancellableEvent {
@@ -181,7 +188,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			public DołączanieDoWyspyEvent(Wyspa wyspa, Player p) {
 				super(wyspa);
-				this.p = p;
+				this.p = p;;
+				wywołaj();
 			}
 		}
 	}

@@ -31,25 +31,18 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Plecaki extends Komenda implements Przeładowalny, Listener {
-	final String premOtwieranie = Func.permisja("plecaki.dostęp");
-	public Plecaki() {
-		super("plecaki", "/plecaki <plecak>");
-		Main.dodajPermisje(premOtwieranie);
-	}
-
-	public static final String prefix = Func.prefix("Plecaki");
-	static final ItemStack zablokowanySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&6Slot niedostępny");
-	
 	static class Holder extends Func.abstractHolder {
 		final Plecak plecak;
-		private Holder(Plecak plecak, int maxSlot) {
+		final ItemStack item;
+		private Holder(Plecak plecak, int maxSlot, ItemStack item) {
 			super(Func.potrzebneRzędy(Math.max(plecak.sloty, maxSlot)), plecak.nazwa);
 			for (int i=plecak.sloty; i < inv.getSize(); i++)
 				inv.setItem(i, zablokowanySlot);
 			this.plecak = plecak;
+			this.item = item;
 		}
-		public Holder(NBTTagCompound tag) {
-			this(Plecak.wczytaj(tag.getString("nazwa")), tag.getInt("maxSlot"));
+		public Holder(NBTTagCompound tag, ItemStack item) {
+			this(Plecak.wczytaj(tag.getString("nazwa")), tag.getInt("maxSlot"), item);
 			for (NBTBase nbt : (NBTTagList) tag.get("itemy"))
 				inv.setItem(
 						((NBTTagCompound) nbt).getInt("Slot"),
@@ -57,6 +50,16 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 						);
 		}
 	}
+	public static final String prefix = Func.prefix("Plecaki");
+	static final ItemStack zablokowanySlot = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&6Slot niedostępny");
+	
+	final String premOtwieranie = Func.permisja("plecaki.dostęp");
+	public Plecaki() {
+		super("plecaki", "/plecaki <plecak>");
+		Main.dodajPermisje(premOtwieranie);
+	}
+
+	
 	
 	static class Plecak {
 		final int sloty;
@@ -94,6 +97,11 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {
+			if (!holder.item.equals(ev.getWhoClicked().getInventory().getItemInMainHand())) {
+				ev.setCancelled(true);
+				ev.getWhoClicked().closeInventory();
+				return;
+			}
 			if (ev.getCurrentItem() != null && ev.getCurrentItem().isSimilar(zablokowanySlot))
 				ev.setCancelled(true);
 			else if (ev.getCurrentItem() != null && !CraftItemStack.asNMSCopy(ev.getCurrentItem()).getOrCreateTag().getCompound("plecak").isEmpty())
@@ -105,6 +113,9 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {
+			if (!holder.item.equals(ev.getPlayer().getInventory().getItemInMainHand()))
+				return;
+			
 			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(ev.getPlayer().getInventory().getItemInMainHand());
 			NBTTagCompound nmstag = nmsItem.getOrCreateTag();
 			
@@ -149,7 +160,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 				return;
 			ev.setCancelled(true);
 			if (item.getAmount() == 1)
-				ev.getPlayer().openInventory(new Holder(tag).getInventory());
+				ev.getPlayer().openInventory(new Holder(tag, item).getInventory());
 		}
 	}
 	

@@ -66,21 +66,24 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		@Mapowane Object czego;
 		@Mapowane int ile = 1;
 		
+		@Override
 		public void Init() {
-			switch (rodzaj) {
-			case ZDOBĄDZ:
-			case DOSTARCZ:
-				czego = Config.item(czego);
-				break;
-			case WYKOP:
-				czego = Material.valueOf((String) czego);
-				break;
-			case ZABIJ:
-				czego = EntityType.valueOf((String) czego);
-				break;
+			try {
+				switch (rodzaj) {
+				case ZDOBĄDZ:
+				case DOSTARCZ:
+					czego = Config.item(czego);
+					break;
+				case WYKOP:
+					czego = Func.StringToEnum(Material.class, (String) czego);
+					break;
+				case ZABIJ:
+					czego = Func.StringToEnum(EntityType.class, (String) czego);
+					break;
+				}
+			} catch (Throwable e) {
+				Main.warn("Niepoprawny wskaźnik(" + czego + ") w jednym z kryteriów Zadań, kryterium wymaga: " + rodzaj + " " + ile + " " + czego);
 			}
-			
-			ile = Math.max(1, Math.min(ile, 64));
 		}
 	}
 	public static class Zadanie extends Mapowany {
@@ -94,6 +97,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		@Mapowane List<Kryterium> kryteria;
 		@Mapowane boolean autoObieranie = false;
 		
+		@Override
 		public void Init() {
 			opis = Func.koloruj(opis);
 			nazwaWyświetlana = Func.koloruj(nazwaWyświetlana);
