@@ -28,12 +28,12 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.MineZ.połączoneEq.Ekwipunki.Itemki;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 
 
-// TODO zamiast w configu trzymać to w configach Graczy
 @Moduł
 public class połączoneEq extends Komenda implements Listener {
 	public połączoneEq() {
@@ -94,12 +94,13 @@ public class połączoneEq extends Komenda implements Listener {
 		}
 		@Mapowane public Itemki s1;
 		@Mapowane public Itemki s2;
-		@Mapowane public Itemki s3;
+		//@Mapowane public Itemki s3;
 		
+		@Override
 		public void Init() {
 			s1.getEq(this);
 			s2.getEq(this);
-			s3.getEq(this);
+			//s3.getEq(this);
 		}
 		
 		@Override public Inventory getInventory() { return null; }
@@ -112,9 +113,14 @@ public class połączoneEq extends Komenda implements Listener {
 		Ekwipunki eqs = new Ekwipunki();
 		eqs.s1 = new Ekwipunki.Itemki();
 		eqs.s2 = new Ekwipunki.Itemki();
-		eqs.s3 = new Ekwipunki.Itemki();
+		Itemki fake = new Ekwipunki.Itemki();
 		
 		BiConsumer<String, Ekwipunki.Itemki> cons = (scieżka, itemki) -> {
+			File dir = new File(scieżka);
+			if (!dir.exists())
+				dir.mkdirs();
+			
+			
 			final String nowe = scieżka + "/" + uuid + ".dat";
 			final String stare = "world/playerdata/" + uuid + ".dat";
 			final String chwilowy = scieżka + "/mimi chwilowy pliczek.dat";
@@ -150,7 +156,7 @@ public class połączoneEq extends Komenda implements Listener {
 		};
 		
 		cons.accept("s2", eqs.s2);
-		cons.accept("s3", eqs.s3);
+		cons.accept("s3", fake);
 		cons.accept("s2", eqs.s1);
 		
 		getConfig(p.getUniqueId()).ustaw_zapisz(p.getName(), eqs);
@@ -166,12 +172,12 @@ public class połączoneEq extends Komenda implements Listener {
 		
 		Func.wypełnij(gui);
 
-		gui.setItem(11, Func.stwórzItem(Material.CHEST, 1, "&1&lEkwipunek &7&lMine&4&lZ &a&ls1"));
-		gui.setItem(13, Func.stwórzItem(Material.CHEST, 2, "&1&lEkwipunek &7&lMine&4&lZ &a&ls2"));
-		gui.setItem(15, Func.stwórzItem(Material.CHEST, 3, "&1&lEkwipunek &7&lMine&4&lZ &a&ls3"));
-		gui.setItem(20, Func.stwórzItem(Material.ENDER_CHEST, 1, "&1&5Ender Chest &7&lMine&4&lZ &a&ls1"));
-		gui.setItem(22, Func.stwórzItem(Material.ENDER_CHEST, 2, "&1&5Ender Chest &7&lMine&4&lZ &a&ls2"));
-		gui.setItem(24, Func.stwórzItem(Material.ENDER_CHEST, 3, "&1&5Ender Chest &7&lMine&4&lZ &a&ls3"));
+		gui.setItem(12, Func.stwórzItem(Material.CHEST, 1, "&1&lEkwipunek &7&lMine&4&lZ &a&ls1"));
+		gui.setItem(14, Func.stwórzItem(Material.CHEST, 2, "&1&lEkwipunek &7&lMine&4&lZ &a&ls2"));
+		//gui.setItem(15, Func.stwórzItem(Material.CHEST, 3, "&1&lEkwipunek &7&lMine&4&lZ &a&ls3"));
+		gui.setItem(21, Func.stwórzItem(Material.ENDER_CHEST, 1, "&1&5Ender Chest &7&lMine&4&lZ &a&ls1"));
+		gui.setItem(23, Func.stwórzItem(Material.ENDER_CHEST, 2, "&1&5Ender Chest &7&lMine&4&lZ &a&ls2"));
+		//gui.setItem(24, Func.stwórzItem(Material.ENDER_CHEST, 3, "&1&5Ender Chest &7&lMine&4&lZ &a&ls3"));
 	}
 	
 	

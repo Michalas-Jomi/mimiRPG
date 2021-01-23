@@ -28,6 +28,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldguard.WorldGuard;
@@ -70,6 +71,8 @@ public class Main extends JavaPlugin implements Listener {
 	public static StateFlag flagaRadiacja;
 	// Api WorldEdit
 	public static WorldEdit we;
+	// Api Essentials
+	public static Essentials essentials;
 
 	
 	public static JavaPlugin plugin;
@@ -138,6 +141,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		włączVault();
+		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
 		
 		zarejestruj(this);
 		zarejestruj(new Baza());

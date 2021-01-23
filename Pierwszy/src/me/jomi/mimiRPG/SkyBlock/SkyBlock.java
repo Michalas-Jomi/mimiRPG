@@ -1340,8 +1340,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return inv;
 		}
 		public void odświeżGenerator() {
-			Lists.newArrayList(invDropOverworld.getViewers()).forEach(HumanEntity::closeInventory);
-			Lists.newArrayList(invDropNether.getViewers()).forEach(HumanEntity::closeInventory);
+			Lists.newArrayList(invDropOverworld.getViewers()).forEach(p -> Func.wykonajDlaNieNull(p, __ -> p.closeInventory()));
+			Lists.newArrayList(invDropNether.getViewers()).forEach(p -> Func.wykonajDlaNieNull(p, __ -> p.closeInventory()));
 
 			invDropOverworld = null;
 			invDropNether = null;
@@ -2626,7 +2626,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		
 		// util
-
+		
 		void powiadomCzłonków(String msg, Object... uzupełnienia) {
 			msg = Func.msg(msg, uzupełnienia);
 			if (!msg.startsWith(prefix))

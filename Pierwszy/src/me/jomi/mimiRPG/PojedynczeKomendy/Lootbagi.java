@@ -28,6 +28,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Config;
@@ -35,7 +37,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class Lootbagi extends Komenda implements Listener, Przeładowalny {
@@ -48,6 +49,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		super("lootbag");
 	}
 	
+	@Override
 	public void przeładuj() {
 		for (Inventory inv : itemy.values())
 			for (HumanEntity p : inv.getViewers()) {
@@ -59,6 +61,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		for (String klucz : config.klucze(false))
 			Lootbag.wczytaj(config, klucz);
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Lootbagi", lootbagi.size());
 	}
@@ -242,7 +245,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 			if (p.getInventory().firstEmpty() == -1)
 				return Func.powiadom(p, prefix + "Twój ekwipunek jest pełny");
 			p.sendMessage(prefix + "Wziołeś lootbag §e" + lootbag.nazwa);
-			p.getInventory().addItem(lootbag.item);
+			Func.dajItem(p, lootbag.item);
 			break;
 		default:
 			return info(sender);
@@ -298,7 +301,7 @@ class Lootbag {
 		if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
 		
 		lootbag.item = config.wczytajItem(nazwa, "item");
-		lootbag.broadcast = (boolean) config.wczytajLubDomyślna(nazwa + ".broadcast", false);
+		lootbag.broadcast = config.wczytajLubDomyślna(nazwa + ".broadcast", false);
 		lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
 		
 		lootbag.ustawPodgląd();
@@ -338,6 +341,7 @@ class Lootbag {
 		if (broadcast) Bukkit.broadcastMessage(prefix+"§e"+p.getDisplayName()+"§6 otworzył lootbag "+nazwa+"§6!");
 	}
 	
+	@Override
 	public String toString() {
 		return String.format("Lootbag(%s, item:%s, wygrane:%s)", nazwa, item.getType(), wygrane.size());
 	}
