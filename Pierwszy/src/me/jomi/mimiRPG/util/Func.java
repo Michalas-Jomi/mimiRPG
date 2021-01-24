@@ -239,6 +239,9 @@ public abstract class Func {
 				func.apply(loc.getX()), func.apply(loc.getY()), func.apply(loc.getZ()),
 				(int) loc.getPitch(), (int) loc.getYaw());
 	}
+	public static String locBlockToString(Location loc) {
+		return String.format("%sx %sy %sz", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	}
 	
 	public static String odkoloruj(String text) {
 		if (text == null) return null;
@@ -265,10 +268,13 @@ public abstract class Func {
 		while (text.contains("&%")) {
 			int index = text.indexOf("&%");
 			String m = text.substring(index+2);
-			if (m.contains("&"))
-				m = m.substring(0, m.indexOf("&"));
-			if (m.contains("§"))
-				m = m.substring(0, m.indexOf("§"));
+			while (m.contains("&")) {
+				int i = m.indexOf("&");
+				if ((m.length() > i + 1 && "lmnok&".contains(String.valueOf(m.charAt(i+1)))) || (i > 0 && m.charAt(i-1) == '§'))
+					m = m.substring(0, i) + "§" + m.substring(i+1);
+				else
+					m = m.substring(0, i);
+			}
 			try {
 				String przejście = przejście(m);
 				text = text.substring(0, index) + przejście + text.substring(index + 2 + m.length());
@@ -284,6 +290,15 @@ public abstract class Func {
 			throw new IndexOutOfBoundsException();
 		String hex2 = text.substring(7, 13);
 		text = text.substring(13);
+		
+		String prefix = "";
+		
+		while (text.length() >= 2 && text.startsWith("§")) {
+			if (text.startsWith("§§"))
+				break;
+			prefix += "§" + text.charAt(1);
+			text = text.substring(2);
+		}
 		
 		if (text.isEmpty())
 			return "";
@@ -312,7 +327,7 @@ public abstract class Func {
 			w.append("§x");
 			hex.accept(rakt); hex.accept(gakt);	hex.accept(bakt);
 			rakt += rskok;	  gakt += gskok;	bakt += bskok;
-			w.append(znak);
+			w.append(prefix).append(znak);
 		}
 		return w.toString();
 	}
@@ -726,6 +741,17 @@ public abstract class Func {
 		return sloty;
 	}
 
+	
+	public static String losujPrzejścieKolorów(String msg) {
+		List<Character> cyfry = Lists.newArrayList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f');
+		StringBuilder str = new StringBuilder("&%");
+
+		for (int i=0; i < 6; i++) str.append(losuj(cyfry));
+		str.append('-');
+		for (int i=0; i < 6; i++) str.append(losuj(cyfry));
+		
+		return Func.koloruj(str + msg);
+	}
 	public static boolean losuj(double szansa) {
 		double rand = Math.random();
 		return 0 < rand && rand <= szansa;
@@ -1367,6 +1393,15 @@ public abstract class Func {
 			dlaObjNull.run();
 	}
 
+	public static <T, R> R zwrotDlaNieNull(T obj, Function<T, R> func) {
+		return zwrotDlaNieNull(obj, func, null);
+	}
+	public static <T, R> R zwrotDlaNieNull(T obj, Function<T, R> func, R domyslna) {
+		if (obj != null)
+			return func.apply(obj);
+		return null;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static <T> T pewnyCast(Object obj) {
 		return (T) obj;

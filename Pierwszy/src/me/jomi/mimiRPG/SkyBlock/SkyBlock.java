@@ -416,62 +416,62 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			String grupa;
 
 			@ObejmujeOdwiedzających
-			boolean niszczenie; // v
+			public boolean niszczenie; // v
 			@ObejmujeOdwiedzających
-			boolean stawianie; // v
+			public boolean stawianie; // v
 			@ObejmujeOdwiedzających
-			boolean dostęp_do_spawnerów; // v
-
-			@ObejmujeOdwiedzających
-			boolean otwieranie_drzwi_i_furtek; // v
-			@ObejmujeOdwiedzających
-			boolean otwieranie_skrzyń; // v
-			@ObejmujeOdwiedzających
-			boolean używanie_przycisków_dzwigni; // v
-			@ObejmujeOdwiedzających
-			boolean używanie_armorstandów_itemframów; // v
-
-			boolean wyrzucanie_członków_i_uncoop; // v
-			boolean zapraszanie_członków_i_coop; // v
-
-			boolean wyrzucanie_banowanie_odwiedzających; // v
-
-			boolean zmiana_prywatności; // v
+			public boolean dostęp_do_spawnerów_i_maszyn; // v
 
 			@ObejmujeOdwiedzających
-			boolean używanie_portalu; // v
+			public boolean otwieranie_drzwi_i_furtek; // v
+			@ObejmujeOdwiedzających
+			public boolean otwieranie_skrzyń; // v
+			@ObejmujeOdwiedzających
+			public boolean używanie_przycisków_dzwigni; // v
+			@ObejmujeOdwiedzających
+			public boolean używanie_armorstandów_itemframów; // v
 
-			boolean liczenie_wartości_wyspy; // v
+			public boolean wyrzucanie_członków_i_uncoop; // v
+			public boolean zapraszanie_członków_i_coop; // v
 
-			boolean kupowianie_ulepszeń; // v
+			public boolean wyrzucanie_banowanie_odwiedzających; // v
 
-			boolean ustawianie_home_wyspy; // v
-
-			boolean dodawanie_i_usuwanie_warpów;
-
-			boolean dostęp_do_kasy_banku; // v
-			boolean dostęp_do_expa_banku; // v
-			boolean dostęp_do_magazynu; // v
+			public boolean zmiana_prywatności; // v
 
 			@ObejmujeOdwiedzających
-			boolean bicie_mobów; // v
+			public boolean używanie_portalu; // v
+
+			public boolean liczenie_wartości_wyspy; // v
+
+			public boolean kupowianie_ulepszeń; // v
+
+			public boolean ustawianie_home_wyspy; // v
+
+			public boolean dodawanie_i_usuwanie_warpów;
+
+			public boolean dostęp_do_kasy_banku; // v
+			public boolean dostęp_do_expa_banku; // v
+			public boolean dostęp_do_magazynu; // v
 
 			@ObejmujeOdwiedzających
-			boolean podnoszenie_itemów; // v
+			public boolean bicie_mobów; // v
 
-			boolean zmiana_koloru_bordera;
+			@ObejmujeOdwiedzających
+			public boolean podnoszenie_itemów; // v
 
-			boolean usuwanie_grup_permisji; // v
-			boolean tworzenie_grup_permisji; // v
-			boolean edytowanie_hierarchii_grup_permisji; // v
-			boolean edytowanie_permisji; // v
-			boolean awansowanie_i_degradowanie_członków; // v
+			public boolean zmiana_koloru_bordera;
 
-			boolean zmiana_dropu; // v
+			public boolean usuwanie_grup_permisji; // v
+			public boolean tworzenie_grup_permisji; // v
+			public boolean edytowanie_hierarchii_grup_permisji; // v
+			public boolean edytowanie_permisji; // v
+			public boolean awansowanie_i_degradowanie_członków; // v
 
-			boolean zmiana_nazwy_wyspy; // v
+			public boolean zmiana_dropu; // v
 
-			boolean zmiana_biomu; // v
+			public boolean zmiana_nazwy_wyspy; // v
+
+			public boolean zmiana_biomu; // v
 
 			List<Boolean> warpy = Lists.newArrayList(); // v
 		}
@@ -753,12 +753,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Lists.newArrayList(perms.values()).forEach(this::odświeżKodPermisji);
 		}
 
-		Permisje permisje(Player p) {
+		public Permisje permisje(Player p) {
 			if (maBypass(p))
 				return perms.get("właściciel");
 			return permisje(p.getName());
 		}
-		Permisje permisje(String nick) {
+		public Permisje permisje(String nick) {
 			return perms.get(Func.domyślna(członkowie.get(nick), () -> 
 				Func.domyślnaTry(() -> coop.contains(Wyspa.wczytaj(Gracz.wczytaj(nick)).id), false) ? "członek" : "odwiedzający"));
 		}

@@ -410,7 +410,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		if (p.hasPermission("mimirpg.spawnery.bypass") || 
 				(Main.włączonyModół(SkyBlock.class) && 
 				(wyspa = Wyspa.wczytaj(ev.getClickedBlock().getLocation())) != null &&
-				wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów)) {
+				wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn)) {
 			edytuj(p, spawner);
 			ev.setCancelled(true);
 		}

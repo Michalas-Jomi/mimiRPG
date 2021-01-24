@@ -39,9 +39,9 @@ import com.sk89q.worldguard.protection.flags.StringFlag;
 
 import me.jomi.mimiRPG.Chat.Mimi;
 import me.jomi.mimiRPG.Chat.Raport;
+import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony;
-import me.jomi.mimiRPG.PojedynczeKomendy.Budownik;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
