@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł
@@ -40,45 +39,6 @@ public class AutoCrafting extends ModułMaszyny {
 		
 		@Override
 		protected void Init() {
-			odświeżRecepte();
-		}
-		
-		@SuppressWarnings("deprecation")
-		void odświeżRecepte() {
-			if (recepta == null)
-				return;
-			int index = recepta.indexOf(':');
-			Func.wykonajDlaNieNull(Bukkit.getRecipe(new NamespacedKey(recepta.substring(0, index), recepta.substring(index + 1))), rec -> {
-				result = rec.getResult();
-				if (rec instanceof ShapedRecipe) {
-					ShapedRecipe shapedRec = (ShapedRecipe) rec;
-					
-					Map<Character, Integer> ilości = new HashMap<>();
-					for (String linia : shapedRec.getShape())
-						for (char znak : linia.toCharArray())
-							ilości.put(znak, ilości.getOrDefault(znak, 0) + 1);
-					
-					choice = Lists.newArrayList();
-					shapedRec.getChoiceMap().forEach((znak, choicer) -> {
-						if (choicer == null)
-							return;
-						int ile = ilości.remove(znak);
-						for (int i=0; i < ile; i++)
-							choice.add(choicer);
-					});
-
-					
-				} else if (rec instanceof ShapelessRecipe) {
-					ShapelessRecipe shapelessRec = (ShapelessRecipe) rec;
-					choice = shapelessRec.getChoiceList();
-				} else
-					result = null;
-			});
-		}
-		
-		public void ustawRecepte(NamespacedKey recepta) {
-			this.recepta = recepta.toString();
-			zapisz();
 			odświeżRecepte();
 		}
 		
@@ -127,6 +87,43 @@ public class AutoCrafting extends ModułMaszyny {
 				wchłonięte.forEach(inv::addItem);
 		}
 		
+		@SuppressWarnings("deprecation")
+		void odświeżRecepte() {
+			if (recepta == null)
+				return;
+			int index = recepta.indexOf(':');
+			Func.wykonajDlaNieNull(Bukkit.getRecipe(new NamespacedKey(recepta.substring(0, index), recepta.substring(index + 1))), rec -> {
+				result = rec.getResult();
+				if (rec instanceof ShapedRecipe) {
+					ShapedRecipe shapedRec = (ShapedRecipe) rec;
+					
+					Map<Character, Integer> ilości = new HashMap<>();
+					for (String linia : shapedRec.getShape())
+						for (char znak : linia.toCharArray())
+							ilości.put(znak, ilości.getOrDefault(znak, 0) + 1);
+					
+					choice = Lists.newArrayList();
+					shapedRec.getChoiceMap().forEach((znak, choicer) -> {
+						if (choicer == null)
+							return;
+						int ile = ilości.remove(znak);
+						for (int i=0; i < ile; i++)
+							choice.add(choicer);
+					});
+
+					
+				} else if (rec instanceof ShapelessRecipe) {
+					ShapelessRecipe shapelessRec = (ShapelessRecipe) rec;
+					choice = shapelessRec.getChoiceList();
+				} else
+					result = null;
+			});
+		}
+		public void ustawRecepte(NamespacedKey recepta) {
+			this.recepta = recepta.toString();
+			zapisz();
+			odświeżRecepte();
+		}
 		public void wybierzRecepte(Player p) {
 			p.openWorkbench(p.getLocation(), true);
 			mapaWybierającychRecepte.put(p.getName(), this);
@@ -147,17 +144,12 @@ public class AutoCrafting extends ModułMaszyny {
 	
 	
 	@Override
-	public ModułMaszyny.Maszyna postawMaszyne(Location loc) {
+	public ModułMaszyny.Maszyna postawMaszyne(Player p, Location loc) {
 		Maszyna maszyna = new Maszyna();
 		maszyna.locShulker = loc.clone();
-		maszyna.potrzebneTicki = 100;
 		return maszyna;
 	}
 	
-	@Override
-	public Config getConfig() {
-		return new Config("configi/AutoCraftingi");
-	}
 	@Override
 	public Material getShulkerType() {
 		return Material.BARREL;
@@ -187,7 +179,7 @@ public class AutoCrafting extends ModułMaszyny {
 				);
 	}
 	@Override
-	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFuncjePanelu() {
+	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu() {
 		return funkcjePanelu;
 	}
 }

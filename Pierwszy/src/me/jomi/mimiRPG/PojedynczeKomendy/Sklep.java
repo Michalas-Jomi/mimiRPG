@@ -35,6 +35,10 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Sklep extends Komenda implements Listener, Przeładowalny {
+	static boolean warunekModułu() {
+		return Main.ekonomia;
+	}
+
 	static class SklepItem {
 		int slot;
 		double pkt_min;
@@ -89,12 +93,22 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				
 				item.setAmount(Math.min(config.wczytajLubDomyślna(_slot + ".ilość", 1), 64));
 				
+				
 				double max = config.wczytajLubDomyślna(_slot + ".pkt_max", -1.0);
 				double min = config.wczytajLubDomyślna(_slot + ".pkt_min", 0.0);
 				if (max != -1 || min != 0) {
 					bezpośrednia = false;
 					ustaw = false;
 					specjalneItemy.add(new SklepItem(item, slot, min, max));
+				}
+				
+				if (min <= 0) {
+					double cenaZaJeden = config.wczytajLubDomyślna(_slot + ".cena sprzedarzy" , 0) / (double) item.getAmount();
+					if (cenaZaJeden > 0) {
+						ItemStack klucz = Func.ilość(item.clone(), 1);
+						Func.wykonajDlaNieNull(mapaCen.put(klucz, cenaZaJeden),
+								poprzednia -> mapaCen.put(klucz, Math.min(poprzednia, cenaZaJeden)));
+					}
 				}
 				
 				String strona = config.wczytajLubDomyślna(_slot + ".strona", "");
@@ -224,12 +238,17 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix("Sklep");
 	final HashMap<String, Strona> otwarte = new HashMap<>();
 	final HashMap<String, Strona> strony = new HashMap<>();
+	static final HashMap<ItemStack, Double> mapaCen = new HashMap<>();
 	public static Sklep inst;
 	public Sklep() {
 		super("sklep");
 		inst = this;
 	}
 
+	public static double getCena(ItemStack item) {
+		return mapaCen.getOrDefault(Func.ilość(item.clone(), 1), 0d);
+	}
+	
 	@Override
 	public void przeładuj() {
 		for (String gracz : otwarte.keySet()) {
@@ -238,6 +257,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			p.closeInventory();
 			p.sendMessage(prefix + "Przeładowywanie Sklepu");
 		}
+		mapaCen.clear();
 		otwarte.clear();
 		strony.clear();
 		File f = new File (Main.path + "sklep");
@@ -259,7 +279,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		Config config;
 		try {
 			config = new Config(plik);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			Main.error("Nieprawidłowy plik:", plik.getAbsolutePath(), "omijanie go");
 			return;
 		}

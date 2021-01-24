@@ -69,7 +69,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void użycie(PlayerInteractEvent ev) {
 		Player p = ev.getPlayer();
-		ItemStack item = ev.getItem();
+		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		if (item == null) return;
 		if (ev.getAction().toString().contains("LEFT")) return;
 		if (!(item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName() && 

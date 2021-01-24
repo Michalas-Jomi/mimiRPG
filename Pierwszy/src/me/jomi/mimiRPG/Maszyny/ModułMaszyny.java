@@ -41,7 +41,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 	
 	public abstract static class Maszyna extends Mapowany {
 		@Mapowane Location locShulker;
-		@Mapowane int potrzebneTicki;
+		@Mapowane int potrzebneTicki = 100;
 		
 		Holder holder;
 		
@@ -113,7 +113,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 					ev.getBlock().getWorld().dropItem(ev.getBlock().getLocation().add(.5, .5, .5), itemMaszyny.clone());
 				ev.getPlayer().sendMessage(prefix + Func.msg("%s usuniety", this.getClass().getSimpleName()));
 				Main.log(prefix + Func.msg("%s usunoł %s na koordynatach %s w świecie %s",
-						ev.getPlayer(), this.getClass().getSimpleName(), Func.locBlockToString(ev.getBlock().getLocation()), ev.getBlock().getWorld()));
+						ev.getPlayer().getName(), this.getClass().getSimpleName(), Func.locBlockToString(ev.getBlock().getLocation()), ev.getBlock().getWorld().getName()));
 			});
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -121,11 +121,11 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		if (!ev.isCancelled() && itemMaszyny.isSimilar(ev.getItemInHand()))
 			Bukkit.getScheduler().runTask(Main.plugin, () -> {
 				ev.getBlock().setType(Material.AIR);
-				postawMaszyne(ev.getBlock().getLocation()).postaw();
-				ev.getBlock().getWorld().spawnParticle(Particle.CLOUD, ev.getBlock().getLocation().clone().add(.5, .5, .5), 1, 1, 1, 20, 0);
+				postawMaszyne(ev.getPlayer(), ev.getBlock().getLocation()).postaw();
+				ev.getBlock().getWorld().spawnParticle(Particle.CLOUD, ev.getBlock().getLocation().clone().add(.5, .5, .5), 200, 1, 1, 1, 0);
 				ev.getPlayer().sendMessage(prefix + Func.msg("%s postawiony", this.getClass().getSimpleName()));
 				Main.log(prefix + Func.msg("%s postawił %s na koordynatach %s w świecie %s",
-						ev.getPlayer(), this.getClass().getSimpleName(), Func.locBlockToString(ev.getBlock().getLocation()), ev.getBlock().getWorld()));
+						ev.getPlayer().getName(), this.getClass().getSimpleName(), Func.locBlockToString(ev.getBlock().getLocation()), ev.getBlock().getWorld().getName()));
 			});
 	}
 	
@@ -160,10 +160,11 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 						(wyspa = SkyBlock.Wyspa.wczytaj(ev.getClickedBlock().getLocation())) != null &&
 						wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn
 					)) {
+				ev.setCancelled(true);
 				if (maszyna.holder != null)
 					ev.getPlayer().openInventory(maszyna.holder.getInventory());
-				ev.getPlayer().openInventory(new Holder(3, "&1Konfiguracja " + this.getClass().getSimpleName(), getFuncjePanelu(), maszyna).getInventory());
-				ev.setCancelled(true);
+				else if (!getFunkcjePanelu().isEmpty())
+					ev.getPlayer().openInventory(new Holder(3, "&1Konfiguracja " + this.getClass().getSimpleName(), getFunkcjePanelu(), maszyna).getInventory());
 			}
 		});
 	}
@@ -183,10 +184,12 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		}));
 	}
 
-	protected abstract Map<ItemStack, BiConsumer<Player, Maszyna>> getFuncjePanelu();
+	protected abstract Map<ItemStack, BiConsumer<Player, Maszyna>> getFunkcjePanelu();
 	public abstract Material getShulkerType();
-	public abstract Config getConfig();
-	public abstract Maszyna postawMaszyne(Location loc);
+	public final Config getConfig() {
+		return new Config("configi/Maszyny/" + this.getClass().getSimpleName());
+	};
+	public abstract Maszyna postawMaszyne(Player p, Location loc);
 	
 	ItemStack itemMaszyny;
 	
