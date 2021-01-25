@@ -277,9 +277,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		NamespacedKey klucz;
 		org.bukkit.advancement.Advancement adv;
 
-		/// XXX DEBUG
-		static Config debugConfig = new Config("nazwyZadań");
-		/// XXX DEBUG
 		
 		@Override
 		protected void Init() {
@@ -463,9 +460,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			if (kryterium.typ == Kryterium.Typ.SKYBLOCK_PUNKTY_WYSPY)
 				try {
 					ile += SkyBlock.Wyspa.wczytaj(p).getPkt();
-				} catch (NullPointerException e) {
-					e.printStackTrace(); /// XXX DEBUG
-				}
+				} catch (NullPointerException e) {}
 			else if (kryterium.typ == Kryterium.Typ.ZEBRANE_ITEMY)
 				for (Object co : kryterium.co)
 					ile += ((SelektorItemów) co).zlicz(p.getInventory());

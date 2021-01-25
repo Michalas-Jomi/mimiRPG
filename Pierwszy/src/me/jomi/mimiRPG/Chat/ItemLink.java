@@ -11,15 +11,19 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
 
 @Moduł
 public class ItemLink implements Listener {
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(priority=EventPriority.LOWEST)
 	private void itemLink(AsyncPlayerChatEvent ev) {
 		String msg = ev.getMessage();
+		
+		if (Main.essentials != null && Main.essentials.getUser(ev.getPlayer()).isMuted())
+			return;
 		
 		if (msg.contains("[i]")) {
 			int i = msg.indexOf("[i]");
@@ -56,5 +60,4 @@ public class ItemLink implements Listener {
 				}
 		return "§r";
 	}
-	
 }

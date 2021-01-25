@@ -1,18 +1,16 @@
 package me.jomi.mimiRPG.Chat;
 
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-
-import com.google.common.collect.Lists;
-
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+
+import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Gracz;
@@ -49,7 +47,7 @@ public class KolorPisania extends Komenda implements Listener {
 		
 		msg = msgB.toString();
 		if (ev.getPlayer().hasPermission("mimirpg.przejściakolorów"))
-			msg = Func.przejścia(msg);
+			msg = Func.koloruj(msg);
 		ev.setMessage(msg);
 	}
 	@EventHandler(priority=EventPriority.MONITOR)

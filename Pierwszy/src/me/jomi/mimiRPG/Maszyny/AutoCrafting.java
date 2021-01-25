@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.Maszyny;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -12,14 +13,20 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Container;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ArmorStand.LockType;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.util.EulerAngle;
 
 import com.google.common.collect.Lists;
 
@@ -32,14 +39,22 @@ import me.jomi.mimiRPG.util.Func;
 public class AutoCrafting extends ModułMaszyny {
 	public static class Maszyna extends ModułMaszyny.Maszyna {
 		@Mapowane private String recepta;
+		@Mapowane List<String> armorstandy;
 		
 		ItemStack result;
 		List<RecipeChoice> choice;
-
+		
 		
 		@Override
 		protected void Init() {
 			odświeżRecepte();
+		}
+		
+		@Override
+		protected void zlikwiduj() {
+			super.zlikwiduj();
+			armorstandy.forEach(uuid ->
+				Func.wykonajDlaNieNull(Bukkit.getEntity(UUID.fromString(uuid)), Entity::remove));
 		}
 		
 		@Override
@@ -118,6 +133,10 @@ public class AutoCrafting extends ModułMaszyny {
 				} else
 					result = null;
 			});
+			
+			armorstandy.forEach(uuid ->
+				Func.wykonajDlaNieNull(Bukkit.getEntity(UUID.fromString(uuid)), en ->
+					((ArmorStand) en).getEquipment().setHelmet(result == null ? new ItemStack(Material.BARRIER) : result)));
 		}
 		public void ustawRecepte(NamespacedKey recepta) {
 			this.recepta = recepta.toString();
@@ -147,6 +166,21 @@ public class AutoCrafting extends ModułMaszyny {
 	public ModułMaszyny.Maszyna postawMaszyne(Player p, Location loc) {
 		Maszyna maszyna = new Maszyna();
 		maszyna.locShulker = loc.clone();
+		maszyna.armorstandy = Lists.newArrayList();
+		for (int i=0; i < 4; i++) {
+			ArmorStand armorStand = (ArmorStand) loc.getWorld().spawnEntity(loc.clone().add(.5, 0, .5), EntityType.ARMOR_STAND);
+			armorStand.setGravity(false); armorStand.teleport(loc.clone().add(.5, 0, .5));
+			armorStand.setSmall(true);
+			armorStand.setVisible(false);
+			armorStand.setInvulnerable(true);
+			armorStand.setRotation(90 * i, 0);
+			armorStand.setRemoveWhenFarAway(false);
+			armorStand.setHeadPose(new EulerAngle(45, 90, 45));
+			for (EquipmentSlot slot : EquipmentSlot.values())
+				armorStand.addEquipmentLock(slot, LockType.REMOVING_OR_CHANGING);
+			armorStand.getEquipment().setHelmet(new ItemStack(Material.BARRIER));
+			maszyna.armorstandy.add(armorStand.getUniqueId().toString());
+		}
 		return maszyna;
 	}
 	

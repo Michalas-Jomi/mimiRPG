@@ -2,13 +2,19 @@ package me.jomi.mimiRPG.Maszyny;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Container;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ArmorStand.LockType;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -26,6 +32,14 @@ public class Sprzedajnik extends ModułMaszyny {
 	public static class Maszyna extends ModułMaszyny.Maszyna {
 		@Mapowane int ileNaRaz = 8;
 		@Mapowane String właściciel;
+		
+		@Mapowane String uuidNapis;
+		
+		@Override
+		protected void zlikwiduj() {
+			super.zlikwiduj();
+			Func.wykonajDlaNieNull(Bukkit.getEntity(UUID.fromString(uuidNapis)), Entity::remove);
+		}
 		
 		@Override
 		protected void wykonaj() {
@@ -85,6 +99,19 @@ public class Sprzedajnik extends ModułMaszyny {
 		Maszyna maszyna = new Maszyna();
 		maszyna.locShulker = loc.clone();
 		maszyna.właściciel = p.getName();
+		
+		ArmorStand armorStand = (ArmorStand) loc.getWorld().spawnEntity(loc.clone().add(.5, 0, .5), EntityType.ARMOR_STAND);
+		armorStand.setInvulnerable(true);
+		armorStand.setSmall(true);
+		armorStand.setVisible(false);
+		armorStand.setGravity(false);
+		armorStand.setRemoveWhenFarAway(false);
+		for (EquipmentSlot slot : EquipmentSlot.values())
+			armorStand.addEquipmentLock(slot, LockType.REMOVING_OR_CHANGING);
+		armorStand.setCustomName(Func.losujPrzejścieKolorów("&lSprzedajnik"));
+		armorStand.setCustomNameVisible(true);
+		maszyna.uuidNapis = armorStand.getUniqueId().toString();
+		
 		return maszyna;
 	}
 }
