@@ -265,41 +265,39 @@ public abstract class Func {
 		return strB.toString();
 	}
 	public static String przejścia(String text) {
-		while (text.contains("&%")) {
-			int index = text.indexOf("&%");
-			String m = text.substring(index+2);
-			while (m.contains("&")) {
-				int i = m.indexOf("&");
-				if ((m.length() > i + 1 && "lmnok&".contains(String.valueOf(m.charAt(i+1)))) || (i > 0 && m.charAt(i-1) == '§'))
-					m = m.substring(0, i) + "§" + m.substring(i+1);
-				else
-					m = m.substring(0, i);
-			}
-			try {
-				String przejście = przejście(m);
-				text = text.substring(0, index) + przejście + text.substring(index + 2 + m.length());
-			} catch (IndexOutOfBoundsException | NumberFormatException e) {
-				text = text.substring(0, index) + text.substring(index + 2);
-			}
+		Matcher matcher = Pattern.compile("([&§])?[&§]%([0-9a-fA-F]{6})-([0-9a-fA-F]{6})(.*)").matcher(text);
+		StringBuilder strB = new StringBuilder();
+		if (matcher.find()) {
+			if (matcher.group(1) == null) {
+				StringBuilder kolor = new StringBuilder();
+				String efekty = "lmnok&§";
+				StringBuilder reszta = new StringBuilder();
+				boolean specjalny = false;
+				boolean koniec = false;
+				for (char znak : matcher.group(4).toCharArray())
+					if (koniec)
+						reszta.append(znak);
+					else if (specjalny) {
+						specjalny = false;
+						if (efekty.contains(String.valueOf(znak)))
+							kolor.append('§').append(znak);
+						else {
+							reszta.append('§').append(znak);
+							koniec = true;
+						}
+					} else if (znak == '&' || znak == '§')
+						specjalny = true;
+					else
+						kolor.append(znak);
+				matcher.appendReplacement(strB, przejście(matcher.group(2), matcher.group(3), kolor.toString()).replace("$", "\\$"));
+				strB.append(przejścia(reszta.toString()));
+			} else
+				matcher.appendReplacement(strB, "$1%$2-$3$4");
 		}
-		return text;
+		matcher.appendTail(strB);
+		return strB.toString();
 	}
-	private static String przejście(String text) {
-		String hex1 = text.substring(0, 6);
-		if (text.charAt(6) != '-')
-			throw new IndexOutOfBoundsException();
-		String hex2 = text.substring(7, 13);
-		text = text.substring(13);
-		
-		String prefix = "";
-		
-		while (text.length() >= 2 && text.startsWith("§")) {
-			if (text.startsWith("§§"))
-				break;
-			prefix += "§" + text.charAt(1);
-			text = text.substring(2);
-		}
-		
+	private static String przejście(String hex1, String hex2, String text) {
 		if (text.isEmpty())
 			return "";
 		
@@ -317,18 +315,26 @@ public abstract class Func {
 		stop  	 = Integer.parseInt(hex2.substring(4, 6), 16);
 		int bskok = (stop - bakt) / text.length();
 		
+		String prefix = "";
 		
 		StringBuilder w = new StringBuilder();
 		Consumer<Integer> hex = liczba -> {
 			String _hex = (Integer.toHexString(liczba)+'0');
 			w.append('§').append(_hex.charAt(0)).append('§').append(_hex.charAt(1));
 		};
-		for (char znak : text.toCharArray()) {
-			w.append("§x");
-			hex.accept(rakt); hex.accept(gakt);	hex.accept(bakt);
-			rakt += rskok;	  gakt += gskok;	bakt += bskok;
-			w.append(prefix).append(znak);
-		}
+		boolean specjalne = false;
+		for (char znak : text.toCharArray())
+			if (specjalne) {
+				specjalne = false;
+				prefix += "§" + String.valueOf(znak);
+			} else if (znak == '§' || znak == '&')
+				specjalne = true;
+			else {
+				w.append("§x");
+				hex.accept(rakt); hex.accept(gakt);	hex.accept(bakt);
+				rakt += rskok;	  gakt += gskok;	bakt += bskok;
+				w.append(prefix).append(znak);
+			}
 		return w.toString();
 	}
 	private static String kolorkiRGB(String msg) {

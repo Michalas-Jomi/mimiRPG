@@ -47,7 +47,7 @@ public class KolorPisania extends Komenda implements Listener {
 		
 		msg = msgB.toString();
 		if (ev.getPlayer().hasPermission("mimirpg.przejściakolorów"))
-			msg = Func.koloruj(msg);
+			msg = Func.przejścia(msg);
 		ev.setMessage(msg);
 	}
 	@EventHandler(priority=EventPriority.MONITOR)

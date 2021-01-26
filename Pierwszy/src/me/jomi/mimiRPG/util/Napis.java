@@ -150,7 +150,6 @@ public class Napis implements ConfigurationSerializable {
 	public static Napis item(ItemStack item) {
 		if (item == null)
 			return new Napis("[brak itemu]");
-		
 		net.minecraft.server.v1_16_R2.ItemStack item2 = CraftItemStack.asNMSCopy(item);
 		Napis n = new Napis("§b[" + (item.getAmount() != 1 ? "§9"+item.getAmount() + "§3x§b " : "") +
 			((item.hasItemMeta() && item.getItemMeta().hasDisplayName()) ? item.getItemMeta().getDisplayName() : item2.getName().getString()) 

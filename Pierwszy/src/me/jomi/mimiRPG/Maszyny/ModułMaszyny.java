@@ -142,8 +142,8 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 			maszyna.holder = this;
 			
 			Iterator<ItemStack> it = mapaItemów.keySet().iterator();
-			for (int i : Func.sloty(mapaItemów.size(), rzędy))
-				inv.setItem(i, it.next());
+			for (int i : Func.sloty(mapaItemów.size(), 1))
+				inv.setItem(9 + i, it.next());
 		}
 		
 	}

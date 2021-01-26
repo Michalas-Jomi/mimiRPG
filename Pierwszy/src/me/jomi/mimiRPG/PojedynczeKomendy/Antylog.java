@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -28,6 +29,9 @@ import com.google.common.collect.Sets;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -35,8 +39,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 @Moduł
 public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny {
@@ -68,6 +70,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	
 	int maxCzas = 40;
 	
+	@Override
 	public int czas() {
 		for (String klucz : Lists.newArrayList(czasy.keySet()))
 			if (czasy.containsKey(klucz)) {
@@ -93,6 +96,10 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		txt.append(' ').append(walka);
 		Bukkit.getPlayer(nick).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(txt.toString()));
 	}
+	@EventHandler
+	public void dołączanieDoGry(PlayerJoinEvent ev) {
+		ev.getPlayer().removeScoreboardTag("mimiAntylog");
+	}
 	
 	void koniec(String nick) {
 		czasy.remove(nick);
@@ -106,6 +113,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> {
 			p.sendMessage(prefix + "Nie jesteś już w walce");
 			p.removePotionEffect(PotionEffectType.GLOWING);
+			p.removeScoreboardTag("mimiAntylog");
 			info(nick);
 		});
 	}
@@ -137,7 +145,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		
 		czasy.put(atakujący.getName(), 0);
 		czasy.put(atakowany.getName(), 0);
-
+		
 		if (!gracze.containsKey(atakowany.getName())) {
 			atakowany.sendMessage(prefix + Func.msg("%s zaatakował cię, nie wychodz teraz z gry!", atakujący.getDisplayName()));
 			gracze.put(atakowany.getName(), Sets.newHashSet());
@@ -157,6 +165,9 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 			atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
 			atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
 		}
+
+		atakowany.addScoreboardTag("mimiAntylog");
+		atakujący.addScoreboardTag("mimiAntylog");
 	}
 	
 	@EventHandler
