@@ -266,7 +266,7 @@ public abstract class Func {
 	}
 	public static String przejścia(String text) {
 		Matcher matcher = Pattern.compile("([&§])?[&§]%([0-9a-fA-F]{6})-([0-9a-fA-F]{6})(.*)").matcher(text);
-		StringBuilder strB = new StringBuilder();
+		StringBuffer strB = new StringBuffer();
 		if (matcher.find()) {
 			if (matcher.group(1) == null) {
 				StringBuilder kolor = new StringBuilder();

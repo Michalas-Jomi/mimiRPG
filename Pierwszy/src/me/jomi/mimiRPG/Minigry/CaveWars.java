@@ -32,6 +32,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -137,19 +138,23 @@ public class CaveWars extends MinigraDrużynowa {
 		
 		@Override
 		public void Init() {
-			super.Init();
-			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
-					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
-			Krotka<Integer, Integer> kx = krotka.apply(Location::getBlockX);
-			Krotka<Integer, Integer> ky = krotka.apply(Location::getBlockY);
-			Krotka<Integer, Integer> kz = krotka.apply(Location::getBlockZ);
-			róg1 = new Location(róg1.getWorld(), kx.a, ky.a, kz.a);
-			róg2 = new Location(róg2.getWorld(), kx.b, ky.b, kz.b);
-			
-			List<Krotka<Integer, Material>> lista = Lists.newArrayList();
-			for (Box box : BlokiAreny)
-				lista.add(new Krotka<>(box.szansa, box.blok));
-			blokiAreny = new Ciąg<>(lista);
+			try {
+				super.Init();
+				Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
+						func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
+						Krotka<Integer, Integer> kx = krotka.apply(Location::getBlockX);
+						Krotka<Integer, Integer> ky = krotka.apply(Location::getBlockY);
+						Krotka<Integer, Integer> kz = krotka.apply(Location::getBlockZ);
+						róg1 = new Location(róg1.getWorld(), kx.a, ky.a, kz.a);
+						róg2 = new Location(róg2.getWorld(), kx.b, ky.b, kz.b);
+						
+						List<Krotka<Integer, Material>> lista = Lists.newArrayList();
+						for (Box box : BlokiAreny)
+							lista.add(new Krotka<>(box.szansa, box.blok));
+						blokiAreny = new Ciąg<>(lista);
+			} catch (NullPointerException e) {
+				throw new NiepoprawneDemapowanieException("Nie wszystkie wymagane parametry zostały ustawione");
+			}
 		}
 		
 		void wygenerujArene(Runnable runnable) {
@@ -242,8 +247,8 @@ public class CaveWars extends MinigraDrużynowa {
 		if (niegrana.test(ev.getEntity()))	return;
 		if (niegrana.test(ev.getDamager()))	return;
 
-		Drużyna d1 = drużyna((Player) ev.getEntity());
-		Drużyna d2 = drużyna((Player) ev.getDamager());
+		Drużyna d1 = drużyna(ev.getEntity());
+		Drużyna d2 = drużyna(ev.getDamager());
 		if (!d1.equals(d2)) return;
 		ev.setCancelled(true);
 	}

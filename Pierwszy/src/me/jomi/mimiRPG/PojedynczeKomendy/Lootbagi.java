@@ -40,6 +40,87 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Lootbagi extends Komenda implements Listener, Przeładowalny {
+	public static class Lootbag {
+		public static final String prefix = Lootbagi.prefix;
+		public String nazwa;
+		protected ItemStack item = new ItemStack(Material.LEATHER);
+		protected List<ItemStack> wygrane = Lists.newArrayList();
+		protected Inventory inv;
+		private boolean broadcast;
+		private int ilośćItemów = 1;
+		
+		public Lootbag(String nazwa) {
+			this.nazwa = Func.koloruj(nazwa);
+			Lootbagi.lootbagi.put(this.nazwa, this);
+			
+			item = Func.stwórzItem(Material.LEATHER, 1, "&6Lootbag " + nazwa, Arrays.asList(
+					"PPM aby podejrzeć", "Shift + PPM aby otworzyć", "/lootbag edytuj aby dodać drop", 
+					"/lootbag item aby ustawić item lootbaga"));
+			
+			ustawItemy(Arrays.asList(Func.stwórzItem(Material.FIREWORK_ROCKET, 1, 
+					"&6Przykładowa fajerwerka", Arrays.asList("Wrzuć tu itemy które mogą wydropić"))));
+		}
+		public void zapisz(Config config, boolean zapisz) {
+			config.ustaw(nazwa + ".wygrane", wygrane);
+			config.ustaw(nazwa + ".item", item);
+			config.ustaw(nazwa + ".broadcast", broadcast);
+			
+			if (zapisz)
+				config.zapisz();
+		}
+		public static Lootbag wczytaj(Config config, String nazwa) {
+			Lootbag lootbag = new Lootbag(nazwa);
+			
+			lootbag.wygrane = config.wczytajItemy(nazwa, "wygrane");
+			if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
+			
+			lootbag.item = config.wczytajItem(nazwa, "item");
+			lootbag.broadcast = config.wczytajLubDomyślna(nazwa + ".broadcast", false);
+			lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
+			
+			lootbag.ustawPodgląd();
+			
+			return lootbag;
+		}
+		
+		public void ustawItemy(List<ItemStack> itemy) {
+			wygrane = itemy;
+			ustawPodgląd();
+		}
+		private void ustawPodgląd() {
+			inv = Bukkit.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "§1Lootbag §r" + nazwa);
+			for (int i=0; i < wygrane.size() && i < 54; i++)
+				inv.setItem(i, wygrane.get(i));
+		}
+		
+		public List<ItemStack> losuj() {
+			Set<Integer> wygrywające = Sets.newConcurrentHashSet();
+			while (wygrywające.size() < ilośćItemów && wygrywające.size() < wygrane.size())
+				wygrywające.add(Func.losujWZasięgu(wygrane.size()));
+			
+			List<ItemStack> itemy = Lists.newArrayList();
+			for (int i : wygrywające)
+				itemy.add(wygrane.get(i));
+			
+			return itemy;
+		}
+		
+		public void otwórz(Player p) {
+			for (ItemStack item : losuj())
+				Func.dajItem(p, item);
+			ItemStack itemWRęce = p.getInventory().getItemInMainHand();
+			itemWRęce.setAmount(itemWRęce.getAmount()-1);
+			p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation(), 50, .3, .5, .3);
+			p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, .6f, .6f);
+			if (broadcast) Bukkit.broadcastMessage(prefix+"§e"+p.getDisplayName()+"§6 otworzył lootbag "+nazwa+"§6!");
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("Lootbag(%s, item:%s, wygrane:%s)", nazwa, item.getType(), wygrane.size());
+		}
+	}
+	
 	public static final HashMap<String, Lootbag> lootbagi = new HashMap<>();
 	public static final HashMap<String, Inventory> itemy = new HashMap<>();
 	public static final Config config = new Config("configi/lootbagi");
@@ -163,8 +244,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1 && (args[0].equalsIgnoreCase("lista") || args[0].equalsIgnoreCase("l"))) {
-			sender.sendMessage("§6Lootbagi: §a" + 
-(lootbagi.keySet().isEmpty() ? "§ebrak" : Func.listToString(Lists.newArrayList(lootbagi.keySet()), 0, "§f, §a")));
+			sender.sendMessage("§6Lootbagi: §a" + (lootbagi.keySet().isEmpty() ? "§ebrak" : Func.listToString(Lists.newArrayList(lootbagi.keySet()), 0, "§f, §a")));
 			return true;
 		}
 		if (args.length < 2) return info(sender);
@@ -263,86 +343,5 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		n.dodaj("\n");
 		n.wyświetl(p);
 		return true;
-	}
-}
-
-class Lootbag {
-	public static final String prefix = Lootbagi.prefix;
-	public String nazwa;
-	protected ItemStack item = new ItemStack(Material.LEATHER);
-	protected List<ItemStack> wygrane = Lists.newArrayList();
-	protected Inventory inv;
-	private boolean broadcast;
-	private int ilośćItemów = 1;
-	
-	public Lootbag(String nazwa) {
-		this.nazwa = Func.koloruj(nazwa);
-		Lootbagi.lootbagi.put(this.nazwa, this);
-		
-		item = Func.stwórzItem(Material.LEATHER, 1, "&6Lootbag " + nazwa, Arrays.asList(
-				"PPM aby podejrzeć", "Shift + PPM aby otworzyć", "/lootbag edytuj aby dodać drop", 
-				"/lootbag item aby ustawić item lootbaga"));
-		
-		ustawItemy(Arrays.asList(Func.stwórzItem(Material.FIREWORK_ROCKET, 1, 
-				"&6Przykładowa fajerwerka", Arrays.asList("Wrzuć tu itemy które mogą wydropić"))));
-	}
-	public void zapisz(Config config, boolean zapisz) {
-		config.ustaw(nazwa + ".wygrane", wygrane);
-		config.ustaw(nazwa + ".item", item);
-		config.ustaw(nazwa + ".broadcast", broadcast);
-		
-		if (zapisz)
-			config.zapisz();
-	}
-	public static Lootbag wczytaj(Config config, String nazwa) {
-		Lootbag lootbag = new Lootbag(nazwa);
-		
-		lootbag.wygrane = config.wczytajItemy(nazwa, "wygrane");
-		if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
-		
-		lootbag.item = config.wczytajItem(nazwa, "item");
-		lootbag.broadcast = config.wczytajLubDomyślna(nazwa + ".broadcast", false);
-		lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
-		
-		lootbag.ustawPodgląd();
-		
-		return lootbag;
-	}
-	
-	public void ustawItemy(List<ItemStack> itemy) {
-		wygrane = itemy;
-		ustawPodgląd();
-	}
-	private void ustawPodgląd() {
-		inv = Bukkit.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "§1Lootbag §r" + nazwa);
-		for (int i=0; i < wygrane.size() && i < 54; i++)
-			inv.setItem(i, wygrane.get(i));
-	}
-	
-	public List<ItemStack> losuj() {
-		Set<Integer> wygrywające = Sets.newConcurrentHashSet();
-		while (wygrywające.size() < ilośćItemów && wygrywające.size() < wygrane.size())
-			wygrywające.add(Func.losujWZasięgu(wygrane.size()));
-		
-		List<ItemStack> itemy = Lists.newArrayList();
-		for (int i : wygrywające)
-			itemy.add(wygrane.get(i));
-		
-		return itemy;
-	}
-	
-	public void otwórz(Player p) {
-		for (ItemStack item : losuj())
-			Func.dajItem(p, item);
-		ItemStack itemWRęce = p.getInventory().getItemInMainHand();
-		itemWRęce.setAmount(itemWRęce.getAmount()-1);
-		p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation(), 50, .3, .5, .3);
-		p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, .6f, .6f);
-		if (broadcast) Bukkit.broadcastMessage(prefix+"§e"+p.getDisplayName()+"§6 otworzył lootbag "+nazwa+"§6!");
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("Lootbag(%s, item:%s, wygrane:%s)", nazwa, item.getType(), wygrane.size());
 	}
 }

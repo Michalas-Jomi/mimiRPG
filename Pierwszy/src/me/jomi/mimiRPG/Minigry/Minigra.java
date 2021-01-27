@@ -131,7 +131,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			if (info)
 				if (!grane)
-					napiszGraczom("%s opuścił pokuj", p.getDisplayName());
+					napiszGraczom("%s opuścił pokój", p.getDisplayName());
 				else {
 					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
 					sprawdzKoniec();

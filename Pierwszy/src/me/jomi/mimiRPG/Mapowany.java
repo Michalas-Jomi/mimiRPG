@@ -30,7 +30,7 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 		try {
 			obj.Init();
 		} catch (NiepoprawneDemapowanieException e) {
-			Main.warn(e.getMessage());
+			Main.warn(obj != null ? obj.getClass().getSimpleName() + ": " : "", e.getMessage());
 		} catch (Throwable e) {
 			e.printStackTrace();
 		};
@@ -84,9 +84,7 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 		
 		mapowane().forEach((pole, obj) -> {
 			try {
-				Field field = this.getClass().getDeclaredField(pole);
-				field.setAccessible(true);
-				field.set(nowy, obj);
+				Func.dajField(this.getClass(), pole).set(nowy, obj);
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}

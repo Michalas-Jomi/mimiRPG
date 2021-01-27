@@ -32,6 +32,7 @@ import com.google.common.collect.Sets;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
+import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.ItemCreator;
@@ -56,16 +57,20 @@ public abstract class MinigraDrużynowa extends Minigra {
 		@Override Minigra getInstMinigra() { return getInstMinigraDrużynowa(); }
 
 		public void Init() {
-			for (Drużyna drużyna : getDrużyny()) {
-				Team team = sb.registerNewTeam(drużyna.nazwa);
-				team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
-				team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
-				team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
-				team.setColor(drużyna.kolorRGB.zbliżony());
-				team.setDisplayName(drużyna.toString());
-				team.setCanSeeFriendlyInvisibles(true);
-				team.setPrefix(drużyna.napisy);
-				drużyna.team = team;
+			try {
+				for (Drużyna drużyna : getDrużyny()) {
+					Team team = sb.registerNewTeam(drużyna.nazwa);
+					team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
+					team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
+					team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
+					team.setColor(drużyna.kolorRGB.zbliżony());
+					team.setDisplayName(drużyna.toString());
+					team.setCanSeeFriendlyInvisibles(true);
+					team.setPrefix(drużyna.napisy);
+					drużyna.team = team;
+				}
+			} catch (NullPointerException e) {
+				throw new NiepoprawneDemapowanieException("Nie wszystkie wymagane parametry zostały ustawione");
 			}
 		}
 		

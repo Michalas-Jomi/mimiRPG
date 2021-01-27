@@ -46,10 +46,8 @@ public class NowyEkwipunek {
 	public static void dajNowy(Player p, Location gdzieTepnąć)	{ dajNowy(p, gdzieTepnąć, null); }
 	public static void dajNowy(Player p, Location gdzieTepnąć, GameMode gm) {
 		Inventory inv = p.getInventory();
-		String nick = p.getName();
 
-		if (mapa.containsKey(nick))
-			wczytajStary(p);
+		wczytajStary(p);
 		
 		
 		List<ItemStack> itemy = Lists.newArrayList();
@@ -91,9 +89,9 @@ public class NowyEkwipunek {
 		
 		p.setGameMode(dane.gm);
 		
-		p.setFlying(dane.lata);// w razie gdyby inny plugin sprawdzał Player.isFlying to przy teleportacji
+		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie gdyby inny plugin sprawdzał Player.isFlying to przy teleportacji
 		p.teleport(dane.loc);
-		p.setFlying(dane.lata);// w razie jakby inny plugin wyłączył przy teleportacji
+		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie jakby inny plugin wyłączył przy teleportacji
 		
 		p.giveExp(dane.exp);	
 		
