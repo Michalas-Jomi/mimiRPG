@@ -1,12 +1,10 @@
 package me.jomi.mimiRPG.Minigry;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.bukkit.Bukkit;
 import org.bukkit.FireworkEffect;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Location;
@@ -36,13 +34,11 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
-import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
 
 @Moduł
@@ -52,7 +48,6 @@ public class Paintball extends MinigraDrużynowa {
 	static List<Krotka<String, Integer>> topka = Lists.newArrayList();
 	
 	static final Config configRangi = new Config("configi/minigry/PaintballRangi");
-	static Statystyki.Rangi rangi;
 
 	public static class Broń extends Mapowany {
 		@Mapowane double siłaStrzału;
@@ -102,15 +97,6 @@ public class Paintball extends MinigraDrużynowa {
 				respawn(p);
 			for (Broń broń : dodatkoweBronie)
 				broń.timer = broń.coIleSek;
-		}
-		@Override
-		boolean dołącz(Player p) {
-			if (!super.dołącz(p)) return false;
-
-			Statystyki.Ranga ranga = inst.staty(p).ranga();
-			if (ranga != null)
-				ranga.ubierz(p);
-			return true;
 		}
 
 		@Override
@@ -217,69 +203,13 @@ public class Paintball extends MinigraDrużynowa {
 	}
 	
 	public static class Statystyki extends Minigra.Statystyki {
-		public static class Rangi extends Mapowany {
-			@Mapowane public List<Ranga> rangi;
-			
-			public boolean rozpisz(CommandSender p) {
-				
-				p.sendMessage(" ");
-				p.sendMessage("§9Rangi Paintaballa:");
-				p.sendMessage(" ");
-				for (Ranga ranga : rangi)
-					p.sendMessage(ranga.toString() + "§8: §e" + Func.IntToString(ranga.potrzebnePunkty) + "pkt");
-				p.sendMessage(" ");
-				return true;
-			}
-		}
-		public static class Ranga extends Mapowany {
-			@Mapowane public KolorRGB kolor = new KolorRGB();
-			@Mapowane public int potrzebnePunkty;
-			@Mapowane public String nazwa;
-			
-			void ubierz(Player p) {
-				ItemStack item = Func.stwórzItem(Material.LEATHER_CHESTPLATE, this.toString());
-				Func.pokolorujZbroje(item, kolor.kolor());
-				p.getEquipment().setChestplate(item);
-			}
-			
-			@Override
-			public String toString() {
-				return kolor.kolorChat() + nazwa;
-			}
-		}		
-		
 		@Mapowane int kille;
 		@Mapowane int śmierci;
 		@Mapowane int rzucone;
 		
-		private int punkty;
-		
-		public int policzPunkty() {
-			punkty = 0;
-
-			Consumer<String> consumer = (sc) -> {
-				try {
-					Field field = Func.dajField(getClass(), sc);
-					field.setAccessible(true);
-					punkty += ((int) field.get(this)) * configRangi.wczytajLubDomyślna("punktacja." + sc, 0);
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
-			};
-			
-			consumer.accept("rozegraneAreny");
-			consumer.accept("przegraneAreny");
-			consumer.accept("wygraneAreny");
-			consumer.accept("rzucone");
-			consumer.accept("śmierci");
-			consumer.accept("kille");
-			
-			return punkty;
-		}
-		
 		@Override
-		void rozpiska(Consumer<String> cons, boolean usuwaćKolor) {
-			super.rozpiska(cons, usuwaćKolor);
+		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
+			super.rozpiska(cons, usuwaćKolor, minigra);
 
 			cons.accept(_rozpiska("kill ratio", _rozpiska(kille, kille + śmierci)));
 			cons.accept(_rozpiska("Kille", kille));
@@ -287,26 +217,14 @@ public class Paintball extends MinigraDrużynowa {
 			cons.accept("  ");
 			cons.accept(_rozpiska("Rzucone śnieżki", rzucone));
 			cons.accept("   ");
-			int punkty = policzPunkty();
+			int punkty = policzPunkty(minigra);
 			cons.accept(_rozpiska("Punkty", punkty));
-			Ranga ranga = ranga(punkty);
-			
-			if (ranga != null) {
-				String _ranga = usuwaćKolor ? Func.usuńKolor(ranga.toString()) : ranga.toString();
-				Func.multiTry(IllegalArgumentException.class,
-					() -> cons.accept(_rozpiska("Ranga", _ranga)),
-					() -> cons.accept(_ranga),
-					() -> cons.accept(_rozpiska("Ranga", Func.inicjały(_ranga))),
-					() -> cons.accept(Func.inicjały(_ranga)),
-					() -> cons.accept("    ")
-					);
-			}
-			
+			użyjRangi(ranga(punkty, minigra), usuwaćKolor, cons);
 		}
 		
 		@Override
-		void sprawdzTopke(Player p) {
-			int pkt = policzPunkty();
+		void sprawdzTopke(Player p, Minigra minigra) {
+			int pkt = policzPunkty(minigra);
 			
 			int i = -1;
 			while (++i < topka.size()) {
@@ -329,19 +247,6 @@ public class Paintball extends MinigraDrużynowa {
 			
 			configDane.ustaw_zapisz("Topki.Paintball", topka);
 		}
-		
-		Ranga ranga() {
-			return ranga(policzPunkty());
-		}
-		Ranga ranga(int pkt) {
-			Ranga ranga = null;
-			
-			for (Ranga _ranga : rangi.rangi)
-				if (_ranga.potrzebnePunkty <= pkt && (ranga == null || ranga.potrzebnePunkty < _ranga.potrzebnePunkty))
-					ranga = _ranga;
-			
-			return ranga;
-		}
 	}
 
 	static final String metaPocisków = "mimiMinigraPaintballPocisk";
@@ -350,10 +255,8 @@ public class Paintball extends MinigraDrużynowa {
 	static final String metaid = "mimiMinigraPaintball";
 	
 	@Override String getPrefix() { return prefix; }
-	final Config configAreny = new Config("configi/minigry/PaintballAreny");
-	@Override Config getConfigAreny() { return configAreny; }
-	@Override String getMetaId() { return metaid; }
-	@Override String getMetaDrużynaId() { return metaDrużynaId; }
+	@Override String getMetaId() 		 { return metaid; }
+	@Override String getMetaDrużynaId()  { return metaDrużynaId; }
 	@Override String getMetaStatystyki() { return metaStatystyki; }
 
 	@EventHandler
@@ -477,7 +380,7 @@ public class Paintball extends MinigraDrużynowa {
 		
 		switch (args[1]) {
 		case "staty":	return staty(sender, args);
-		case "stopnie": return rangi.rozpisz(sender);
+		case "stopnie": return rangi.rozpisz(sender, "Paintballa");
 		case "topka":
 			sender.sendMessage(" ");
 			sender.sendMessage(prefix + "Top 10 graczy paintballa");
@@ -514,27 +417,6 @@ public class Paintball extends MinigraDrużynowa {
 			return staty(p, p.getName());
 		}
 		return true;
-	}
-	
-	private boolean staty(CommandSender sender, String[] args) {
-		if (args.length <= 2 && (!(sender instanceof Player)))
-			return Func.powiadom(prefix, sender, "/pb staty <nick>");
-		return staty(sender, args.length <= 2 ? sender.getName() : args[2]);
-	}
-	private boolean staty(CommandSender sender, String nick) {
-		Player p = Bukkit.getPlayer(nick);
-		if (p != null) {
-			Statystyki staty = staty(p);
-			if (staty != null)
-				return staty(sender, p.getName(), staty);
-		}
-		
-		Gracz g = Gracz.wczytaj(nick);
-		return staty(sender, g.nick, (Statystyki) g.staty.get(Arena.class.getName()));
-	} 
-	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
-		return Func.powiadom(prefix, sender, "Staty %s\n\n%s",
-				nick, staty == null ? nick + " §6Nigdy nie grał w Paintball" : staty.rozpisz());
 	}
 }
 

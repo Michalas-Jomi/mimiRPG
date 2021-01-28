@@ -43,7 +43,6 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
@@ -444,7 +443,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	public static class Statystyki extends Minigra.Statystyki {
 
 		@Override
-		void sprawdzTopke(Player p) {
+		void sprawdzTopke(Player p, Minigra minigra) {
 			// TODO Auto-generated method stub
 			
 		}
@@ -711,9 +710,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	@Override @SuppressWarnings("unchecked") Drużyna 	drużyna (Entity p) { return super.drużyna(p); }
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }
 	
-
-	static final Config configAreny = new Config("configi/BedWarsAlaZiga Areny");
-	@Override Config getConfigAreny()	 { return configAreny; }
 
 	@Override String getMetaStatystyki() { return "mimiBedWarsAlaZigaStaty"; }
 	@Override String getMetaDrużynaId()	 { return "mimiBedWarsAlaZigaDrużyna"; }

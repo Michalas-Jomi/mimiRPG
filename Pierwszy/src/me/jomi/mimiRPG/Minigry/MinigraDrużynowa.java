@@ -56,7 +56,8 @@ public abstract class MinigraDrużynowa extends Minigra {
 		abstract MinigraDrużynowa getInstMinigraDrużynowa();
 		@Override Minigra getInstMinigra() { return getInstMinigraDrużynowa(); }
 
-		public void Init() {
+		@Override
+		protected void Init() {
 			try {
 				for (Drużyna drużyna : getDrużyny()) {
 					Team team = sb.registerNewTeam(drużyna.nazwa);
@@ -96,8 +97,11 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 		@Override
 		boolean dołącz(Player p) {
-			if (!super.dołącz(p)) return false;
+			if (!super.dołącz(p))
+				return false;
+			
 			p.getInventory().setItem(4, itemWybórDrużyny);
+			
 			return true;
 		}
 		@Override
@@ -201,6 +205,10 @@ public abstract class MinigraDrużynowa extends Minigra {
 			ubierz(p, getInstMinigraDrużynowa().drużyna(p));
 		}
 		<D extends Drużyna> void wybierzDrużyne(Player p, D drużyna) {
+			if (drużyna.maxGracze >= 0 && drużyna.gracze >= drużyna.maxGracze) {
+				p.sendMessage(getInstMinigra().getPrefix() + "Drużyna " + drużyna + " jest już pełna!");
+				return;
+			}
 			if (!cooldownWyboruDrużyny.minął(p.getName())) {
 				p.sendMessage(getInstMinigra().getPrefix() + "Poczekaj chwile zanim zmienisz drużyne");
 				return;
@@ -318,6 +326,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 	}
 	public abstract static class Drużyna extends Mapowany {
 		@Mapowane KolorRGB kolorRGB = new KolorRGB();
+		@Mapowane int maxGracze = -1;
 		@Mapowane String nazwa;
 
 		Team team;
@@ -330,6 +339,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		String napisy;
 		
 		// Init
+		@Override
 		public void Init() {
 			this.kolor 	= kolorRGB.kolor();
 			this.napisy = kolorRGB.kolorChat();	
@@ -353,6 +363,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 			return false;
 		}
 
+		@Override
 		public String toString() {
 			return napisy + nazwa;
 		}

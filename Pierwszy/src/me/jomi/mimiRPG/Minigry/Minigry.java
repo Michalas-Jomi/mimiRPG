@@ -27,12 +27,12 @@ public class Minigry extends Komenda {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		if (args.length <= 1)
+			return utab(args, Func.wykonajWszystkim(mapaGier.values(), m -> m.getClass().getSimpleName().toLowerCase()));
 		if (args.length <= 2 && args[0].equalsIgnoreCase("paintball")) // TODO uniwersalnić
 			return utab(args, "dołącz", "staty", "stopnie", "topka");
 		if (args.length <= 2)
-			return utab(args, "dołącz", "staty");
-		if (args.length <= 1)
-			return utab(args, Func.wykonajWszystkim(mapaGier.values(), m -> m.getClass().getSimpleName().toLowerCase()));
+			return utab(args, "dołącz", "staty", "rangi");
 		return null;
 	}
 

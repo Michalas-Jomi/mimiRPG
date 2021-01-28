@@ -28,14 +28,14 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 @Moduł
 public class Golf extends Minigra {
@@ -187,11 +187,11 @@ public class Golf extends Minigra {
 		@Mapowane int dołki;
 		
 		@Override
-		void sprawdzTopke(Player p) {}
+		void sprawdzTopke(Player p, Minigra minigra) {}
 		
 		@Override
-		void rozpiska(Consumer<String> cons, boolean usuwaćKolor) {
-			super.rozpiska(cons, usuwaćKolor);
+		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
+			super.rozpiska(cons, usuwaćKolor, minigra);
 
 			cons.accept(_rozpiska("Uderzenia", uderzenia));
 			cons.accept(_rozpiska("Dołki", dołki));
@@ -230,7 +230,7 @@ public class Golf extends Minigra {
 	}
 	@EventHandler
 	public void respawn(PlayerRespawnEvent ev) {
-		Func.wykonajDlaNieNull(arena(ev.getPlayer()), a -> ev.setRespawnLocation(((Arena) a).locStart));
+		Func.wykonajDlaNieNull(arena(ev.getPlayer()), a -> ev.setRespawnLocation(a.locStart));
 	}
 	
 	@EventHandler
@@ -290,14 +290,12 @@ public class Golf extends Minigra {
 			kijki[i++] = kijek.apply(lvl);
 	}
 	
-	static final Config configAreny = new Config("configi/Areny Golf");
 	static final String metaKury = "mimiMinigraGolfKura";
 	static final String metaStaty = "mimiMinigraGolfStatystyki";
 	static final String meta = "mimiMinigraGolf";
 	@Override String getMetaId()		 { return meta; }
 	@Override String getPrefix()		 { return prefix; }
 	@Override String getMetaStatystyki() { return metaStaty; }
-	@Override Config getConfigAreny()	 { return configAreny; }
 
 	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }

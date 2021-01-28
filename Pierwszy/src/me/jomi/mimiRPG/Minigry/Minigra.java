@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -26,6 +28,9 @@ import org.bukkit.scoreboard.Scoreboard;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
@@ -33,12 +38,12 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.PojedynczeKomendy.Antylog;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Krotki.Box;
 import me.jomi.mimiRPG.util.NowyEkwipunek;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	public static abstract class Arena extends Mapowany {
@@ -91,11 +96,15 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			p.setScoreboard(scoreboard);
 			Objective obj = scoreboard.registerNewObjective("staty", "dummy", "§6§lStatystyki");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-			staty.rozpisz(obj);
+			staty.rozpisz(obj, getInstMinigra());
 			
 			Antylog.włączBypass(p);
 			
 			sprawdzStart();
+			
+			Statystyki.Ranga ranga = getInstMinigra().staty(p).ranga(getInstMinigra());
+			if (ranga != null)
+				ranga.ubierz(p);
 			
 			return true;
 		}
@@ -121,8 +130,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Statystyki staty = getInstMinigra().staty(p);
 			if (staty != null) {
 				Gracz g = Gracz.wczytaj(p.getName());
-				staty.sprawdzTopke(p);
-				g.staty.put(this.getClass().getName(), staty);
+				staty.sprawdzTopke(p, getInstMinigra());
+				g.staty.put(getInstMinigra().getClass().getName(), staty);
 				g.zapisz();
 			}
 			
@@ -252,36 +261,67 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 	}
 	public static abstract class Statystyki extends Mapowany {
+		public static class Rangi extends Mapowany {
+			@Mapowane public List<Ranga> rangi;
+			
+			public boolean rozpisz(CommandSender p, String tytuł) {
+				
+				p.sendMessage(" ");
+				p.sendMessage("§9Rangi " + tytuł + ":");
+				p.sendMessage(" ");
+				for (Ranga ranga : rangi)
+					p.sendMessage(ranga.toString() + "§8: §e" + Func.IntToString(ranga.potrzebnePunkty) + "pkt");
+				p.sendMessage(" ");
+				return true;
+			}
+		}
+		public static class Ranga extends Mapowany {
+			@Mapowane public KolorRGB kolor = new KolorRGB();
+			@Mapowane public int potrzebnePunkty;
+			@Mapowane public String nazwa;
+			
+			void ubierz(Player p) {
+				ItemStack item = Func.stwórzItem(Material.LEATHER_CHESTPLATE, this.toString());
+				Func.pokolorujZbroje(item, kolor.kolor());
+				p.getEquipment().setChestplate(item);
+			}
+			
+			@Override
+			public String toString() {
+				return kolor.kolorChat() + nazwa;
+			}
+		}
+		
 		@Mapowane int rozegraneAreny;
 		@Mapowane int przegraneAreny;
 		@Mapowane int wygraneAreny;
 		
 		private int licz_linie;
-		public void rozpisz(Objective obj) {
+		public void rozpisz(Objective obj, Minigra minigra) {
 			licz_linie = -1;
 			
-			rozpiska(str -> obj.getScore(str).setScore(licz_linie--), true);
+			rozpiska(str -> obj.getScore(str).setScore(licz_linie--), true, minigra);
 		}
-		public String rozpisz() {
+		public String rozpisz(Minigra minigra) {
 			StringBuilder s = new StringBuilder();
 
 			s.append('\n');
 			
-			rozpiska(str -> s.append(str).append('\n'), false);
+			rozpiska(str -> s.append(str).append('\n'), false, minigra);
 			
 			s.append('\n');
 			
 			return s.toString();
 		}
 		
-		String _rozpiska(String info, Object stan) {
+		static String _rozpiska(String info, Object stan) {
 			return "§6" + info + "§8: §e" + stan;
 		}
-		String _rozpiska(int liczone, int wszystkie) {
+		static String _rozpiska(int liczone, int wszystkie) {
 			if (wszystkie == 0) return "100%";
 			return ((int) ( ((double) liczone) / ((double) wszystkie) * 100 ) ) + "%";
 		}
-		void rozpiska(Consumer<String> cons, boolean usuwaćKolor) {
+		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
 			cons.accept(_rozpiska("win ratio", _rozpiska(wygraneAreny, rozegraneAreny)));
 			cons.accept(_rozpiska("Rozegrane gry", rozegraneAreny));
 			cons.accept(_rozpiska("Wygrane gry", wygraneAreny));
@@ -290,7 +330,49 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 		}
 	
-		abstract void sprawdzTopke(Player p);
+		public int policzPunkty(Minigra minigra) {
+			Box<Integer> punkty = new Box<>(0);
+
+			Func.głębokiSkanKlasy(getClass()).forEach(field -> {
+				if (field.isAnnotationPresent(Mapowane.class)) {
+					try {
+						punkty.a += field.getInt(this) * Main.ust.wczytajLubDomyślna("Minigry." + minigra.getClass().getSimpleName() + ".punktacja." + field.getName(), 0);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			
+			return punkty.a;
+		}
+		
+		public Ranga ranga(Minigra minigra) {
+			return ranga(policzPunkty(minigra), minigra);
+		}
+		public static Ranga ranga(int pkt, Minigra minigra) {
+			Ranga ranga = null;
+			
+			for (Ranga _ranga : minigra.rangi.rangi)
+				if (_ranga.potrzebnePunkty <= pkt && (ranga == null || ranga.potrzebnePunkty < _ranga.potrzebnePunkty))
+					ranga = _ranga;
+			
+			return ranga;
+		}
+		protected static void użyjRangi(Ranga ranga, boolean usuwaćKolor, Consumer<String> cons) {
+			if (ranga != null) {
+				String _ranga = usuwaćKolor ? Func.usuńKolor(ranga.toString()) : ranga.toString();
+				Func.multiTry(IllegalArgumentException.class,
+					() -> cons.accept(_rozpiska("Ranga", _ranga)),
+					() -> cons.accept(_ranga),
+					() -> cons.accept(_rozpiska("Ranga", Func.inicjały(_ranga))),
+					() -> cons.accept(Func.inicjały(_ranga)),
+					() -> cons.accept("    ")
+					);
+			}
+		}
+		
+		
+		abstract void sprawdzTopke(Player p, Minigra minigra);
 	}
 
 	static Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
@@ -299,9 +381,15 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
 	Arena zaczynanaArena;
 	
+	Statystyki.Rangi rangi;
+	
+	
+	private Config configAreny = new Config("configi/minigry/areny/" + this.getClass().getSimpleName());
+	public Config getConfigAreny() {
+		return configAreny;
+	}
 	// abstract
 	abstract String getPrefix();
-	abstract Config getConfigAreny();
 	abstract String getMetaStatystyki();
 	abstract String getMetaId();
 	
@@ -402,6 +490,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	@Override
 	public void przeładuj() {
 		configDane.przeładuj();
+		
+		rangi = new Config("configi/minigry/Rangi").wczytajLubDomyślna(this.getClass().getSimpleName(), () -> Func.utwórz(Statystyki.Rangi.class));
 
 		wyłącz("Przeładowywanie pluginu");
 		
@@ -434,6 +524,12 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		
 		if (args[1].equalsIgnoreCase("staty"))
 			return staty(sender, args);
+		
+		switch (args[1]) {
+		case "rangi":
+		case "stopnie": return rangi.rozpisz(sender, getClass().getSimpleName());
+		case "staty":	return staty(sender, args);
+		}
 				
 		if (!(sender instanceof Player))
 			return Func.powiadom(getPrefix(), sender, "Paintball jest tylko dla graczy");
@@ -443,7 +539,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		
 		switch (Func.odpolszcz(args[1])) {
 		case "dolacz":
-			arena = (Arena) zaczynanaArena();
+			arena = zaczynanaArena();
 			if (arena == null)
 				return Func.powiadom(getPrefix(), sender, "Aktualnie nie ma żadnych wolnych aren");
 			if (arena.pełna())
@@ -461,12 +557,12 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 		return true;
 	}
-	private boolean staty(CommandSender sender, String[] args) {
+	protected boolean staty(CommandSender sender, String[] args) {
 		if (args.length <= 2 && (!(sender instanceof Player)))
 			return Func.powiadom(getPrefix(), sender, "/" + args[0] + " staty <nick>");
 		return staty(sender, args.length <= 2 ? sender.getName() : args[2]);
 	}
-	private boolean staty(CommandSender sender, String nick) {
+	protected boolean staty(CommandSender sender, String nick) {
 		Player p = Bukkit.getPlayer(nick);
 		if (p != null) {
 			Statystyki staty = staty(p);
@@ -475,11 +571,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 		
 		Gracz g = Gracz.wczytaj(nick);
-		return staty(sender, g.nick, (Statystyki) g.staty.get(Arena.class.getName()));
+		return staty(sender, g.nick, g.staty.get(Arena.class.getName()));
 	} 
 	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
 		return Func.powiadom(getPrefix(), sender, "Staty %s\n\n%s",
-				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz());
+				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz(this));
 	}
 }
 

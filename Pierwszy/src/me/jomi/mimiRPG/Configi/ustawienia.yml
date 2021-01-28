@@ -6,55 +6,94 @@ WiadomoscConsole: '[Konsola]'
 # Nie będą one wczytywane, ani inicjowane
 # wyłączanie modółów bez restartu jest możliwe, ale nie zalecane
 Moduły:
-  Antylog: true
+  AirDrop: false
+  Antylog: false
+  AutoCrafting: false
   AutoEventy: false
   AutoWiadomosci: true
-  BlockSkrzyńNaZwierzętach: true
+  Bazy: false
+  BezpiecznePociski: false
+  BlockSkrzyńNaZwierzętach: false
   Budownik: false
+  CaveWars: false
   ChatGrupowy: true
   CustomoweCraftingi: true
+  CustomoweCraftingiUlepszanie: false
   CustomoweItemy: true
+  CustomoweKomendy: true
+  CustomoweMoby: false
+  CustomoweOsiągnięcia: true
   CustomowyDrop: true
-  Czapka: true
+  CustomowyDropŁowienie: true
+  Czapka: false
+  DajPermisjeKomendomPluginów: false
   Debug: false
+  DomyślneItemyPoŚmieci: true
   DrabinaPlus: false
+  EdytorSelektorówItemów: false
   EdytorTabliczek: true
+  EdytorUogólniony: false
   EdytujItem: true
+  Efekty: false
   Funkcje: true
+  Glosowanie: false
+  Golf: false
+  Hitman: false
   InvulnerablePlus: true
   ItemLink: true
   JednorekiBandyta: false
+  Język: false
+  KalendarzAdwentowy: false
+  Karabiny: false
   KolorPisania: true
   KomendyInfo: true
+  KompasPvP: false
   Koniki: false
-  Kosz: true
-  Lootbagi: true
-  LosowyDropGracza: true
-  Menu: true
+  Kosz: false
+  LepszeEnchanty: false
+  Lootbagi: false
+  LosowyDropGracza: false
+  MenedżerStatystyk: true
+  Menu: false
   Menurpg: false
   Mi: true
-  Miniony: false
-  Osiągnięcia: false
+  Minigry: false
+  Niewidka: false
+  OchronaStartowa: false
+  Paintball: false
   Patrzeq: true
   PiszJako: true
-  Plecak: true
-  Pomoc: true
+  Plecak: false
+  Plecaki: true
+  Pomoc: false
   Poziom: true
   Przyjaciele: true
-  RTP: false
+  Radiacja: false
   RandomoweRespy: false
   RangiWysp: false
+  RegionyFrakcyjne: false
+  RTP: false
+  Samobójstwo: false
+  SkinyItemków: false
   Sklep: true
+  SkrzynieSkarbów: true
+  SkyBlock: false
   Spawnery: false
+  Sprzedajnik: false
+  SuperItem: true
+  Szkatułki: true
   Targ: false
   Ujezdzaj: true
-  UstawAttr: true
-  WeryfikacjaPelnoletnosci: true
-  WykonajWszystkim: true
-  Wymienianie: false
-  Wyplac: true
-  ZabezpieczGracza: true
-  ZamienEq: true
+  UstawAttr: false
+  Wilczek: false
+  WracająceBloki: false
+  WykonajWszystkim: false
+  Wymienianie: true
+  Wyplac: false
+  ZabezpieczGracza: false
+  Zadania: false
+  ZamienEq: false
+  ZmienioneKusze: false
 
 ###############################
 ### Zablokowane Osiągnięcia ###

@@ -34,7 +34,6 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.util.Ciąg;
-import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 
@@ -216,16 +215,20 @@ public class CaveWars extends MinigraDrużynowa {
 		@Mapowane int kille;
 		
 		@Override
-		void rozpiska(Consumer<String> cons, boolean usuwaćKolor) {
-			super.rozpiska(cons, usuwaćKolor);
+		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
+			super.rozpiska(cons, usuwaćKolor, minigra);
 
 			cons.accept(_rozpiska("kill ratio", _rozpiska(kille, kille + śmierci)));
 			cons.accept(_rozpiska("Kille", kille));
 			cons.accept(_rozpiska("Zgony", śmierci));
+			cons.accept("   ");
+			int punkty = policzPunkty(minigra);
+			cons.accept(_rozpiska("Rozkopane Bloki", rozkopaneBloki));
+			cons.accept(_rozpiska("Punkty", punkty));
+			użyjRangi(ranga(punkty, minigra), usuwaćKolor, cons);
 		}
 
-		@Override void sprawdzTopke(Player p) {}
-		
+		@Override void sprawdzTopke(Player p, Minigra minigra) {}
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -280,9 +283,6 @@ public class CaveWars extends MinigraDrużynowa {
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }
 	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }
 	@Override @SuppressWarnings("unchecked") Drużyna 	drużyna (Entity p) { return super.drużyna(p); }
-
-	final Config configAreny = new Config("configi/minigry/CaveWarsAreny");
-	@Override Config getConfigAreny() 	 { return configAreny; }
 
 	@Override String getMetaId() 		 { return "mimiMinigraCaveWarsArena"; }
 	@Override String getMetaDrużynaId()  { return "mimiMinigraCaveWarsDrużyna"; }

@@ -1,30 +1,12 @@
 package me.jomi.mimiRPG.Minigry;
 
-import java.util.HashMap;
-import java.util.List;
-
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.ItemStack;
-
-import com.google.common.collect.Lists;
-
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Minigry.BedWarsAlaZiga.Arena;
 import me.jomi.mimiRPG.util.Func;
-import me.jomi.mimiRPG.util.Krotka;
-import me.jomi.mimiRPG.util.PanelStronny;
 
 @Moduł
-public class BedWarsAlaZigaEdytor extends Komenda implements Listener {
+public class BedWarsAlaZigaEdytor/* extends Komenda implements Listener TODO odnowić */{
 	public static final String prefix = Func.prefix("BedWars Ala Ziga &5Edytor");
-	
+	/*
 	public BedWarsAlaZigaEdytor() {
 		super("edytujBedWarsAlaZiga", "/edytujBedWarsAlaZiga <czynność> <arena>");
 	}
@@ -44,7 +26,7 @@ public class BedWarsAlaZigaEdytor extends Komenda implements Listener {
 	void otwórzPanelEdycjiItemów(Player p, String nazwa) {
 		Box box = mapa.get(nazwa);
 		if (box == null) {
-			BedWarsAlaZiga.Arena arena = (Arena) BedWarsAlaZiga.configAreny.wczytaj(nazwa);
+			BedWarsAlaZiga.Arena arena = (Arena) BedWarsAlaZiga.getconfigAreny.wczytaj(nazwa);
 			if (arena != null)
 				box = nowyPanelEdycjiItemów(nazwa, arena);
 			else {
@@ -150,4 +132,4 @@ public class BedWarsAlaZigaEdytor extends Komenda implements Listener {
 		
 		return true;
 	}
-}
+*/}

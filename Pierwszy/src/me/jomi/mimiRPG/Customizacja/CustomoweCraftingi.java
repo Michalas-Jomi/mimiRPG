@@ -97,8 +97,6 @@ public class CustomoweCraftingi implements Przeładowalny {
 		config.przeładuj();
 		
 		Bukkit.getScheduler().runTask(Main.plugin, () -> {
-			// TODO wydzielić
-			// Usuwanie niechcianych craftingów
 			// TODO przetestować zapominanie recept, które są usuwane
 			for (Object przepis :  Main.ust.wczytajLubDomyślna("ZablokowaneCraftingi", Lists.newArrayList()))
 				Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
