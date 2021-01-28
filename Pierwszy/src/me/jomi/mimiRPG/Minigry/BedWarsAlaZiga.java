@@ -123,6 +123,17 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			super.opuść(p, i, info);
 		}
 		
+		@Override
+		boolean dołącz(Player p) {
+			boolean f1 = gracze.size() == 0;
+			boolean f2 = super.dołącz(p);
+			
+			if (f1 && f2)
+				regeneruj();
+			
+			return f2;
+		}
+		
 		void upuśćSerce(Player p) {
 			Func.wykonajDlaNieNull(oznaczeni.remove(p.getName()), lista -> lista.forEach(serce -> {
 				serce.powrót();
@@ -676,20 +687,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	
 	
 	// Override
-
-	@Override
-	Minigra.Arena zaczynanaArena() {
-		if (zaczynanaArena != null) 
-			return zaczynanaArena;
-		
-		Arena arena = (Arena) super.zaczynanaArena();
-		if (arena == null) 
-			return null;
-		
-		arena.regeneruj();
-		
-		return arena;
-	}
 	
 	@Override
 	public int czas() {

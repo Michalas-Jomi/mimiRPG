@@ -117,6 +117,16 @@ public class CaveWars extends MinigraDrużynowa {
 			if (taskGlowingu != null)
 				Bukkit.getScheduler().cancelTask(taskGlowingu);
 		}
+		@Override
+		boolean dołącz(Player p) {
+			boolean f1 = gracze.size() == 0;
+			boolean f2 = super.dołącz(p);
+			
+			if (f1 && f2 && !wygenerowana())
+				wygenerujArene(this::skończoneGenerowanie);
+			
+			return f2;
+		}
 		
 		void zabity(Player kto, Player kiler) {
 			inst.staty(kto).śmierci++;
@@ -262,21 +272,6 @@ public class CaveWars extends MinigraDrużynowa {
 		Arena arena = arena(p);
 		if (arena != null && arena.grane)
 			staty(p).rozkopaneBloki++;
-	}
-
-	@Override
-	Minigra.Arena zaczynanaArena() {
-		if (zaczynanaArena != null) 
-			return zaczynanaArena;
-		
-		Arena arena = (Arena) super.zaczynanaArena();
-		if (arena == null) 
-			return null;
-		
-		if (!arena.wygenerowana())
-			arena.wygenerujArene(arena::skończoneGenerowanie);
-		
-		return arena;
 	}
 	
 	

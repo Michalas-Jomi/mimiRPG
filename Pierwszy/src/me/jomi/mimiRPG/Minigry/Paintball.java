@@ -376,12 +376,7 @@ public class Paintball extends MinigraDrużynowa {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, String[] args) {
-		if (args.length < 2) return staty(sender, args);
-		
-		switch (args[1]) {
-		case "staty":	return staty(sender, args);
-		case "stopnie": return rangi.rozpisz(sender, "Paintballa");
-		case "topka":
+		if (args.length >= 2 && args[1].equalsIgnoreCase("topka")) {
 			sender.sendMessage(" ");
 			sender.sendMessage(prefix + "Top 10 graczy paintballa");
 			sender.sendMessage(" ");
@@ -392,31 +387,7 @@ public class Paintball extends MinigraDrużynowa {
 			return true;
 		}
 		
-		if (!(sender instanceof Player))
-			return Func.powiadom(prefix, sender, "Paintball jest tylko dla graczy");
-		Player p = (Player) sender;
-		
-		Arena arena;
-		
-		switch (Func.odpolszcz(args[1])) {
-		case "dolacz":
-			arena = (Arena) zaczynanaArena();
-			if (arena == null)
-				return Func.powiadom(prefix, sender, "Aktualnie nie ma żadnych wolnych aren");
-			if (arena.pełna())
-				return Func.powiadom(prefix, sender, "Brak miejsc w poczekalni");
-			arena.dołącz(p);
-			break;
-		case "opusc":
-			arena = arena(p);
-			if (arena == null)
-				return Func.powiadom(prefix, sender, "Nie jesteś w żadnej rozgrywce");
-			arena.opuść(p);
-			break;
-		default:
-			return staty(p, p.getName());
-		}
-		return true;
+		return super.onCommand(sender, args);
 	}
 }
 

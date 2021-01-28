@@ -7,6 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -21,7 +23,7 @@ public class Minigry extends Komenda {
 	
 	public Minigry() {
 		super("minigra", null, "mg");
-		ustawKomende("opuśćMinigre", null, null);
+		ustawKomende("opuśćMinigre", null, Lists.newArrayList("opuść"));
 		Main.dodajPermisje(permCmdBypass);
 	}
 

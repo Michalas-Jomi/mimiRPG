@@ -190,12 +190,14 @@ public abstract class Func {
 	}
 	public static String IntToString(int liczba) {
 		String r = "";
-		for (char x : ("" + liczba).toCharArray())
+		for (char x : String.valueOf(liczba).toCharArray())
 			r = x + r;
 		String w = "";
 		int i = 0;
 		for (char x : r.toCharArray()) {
 			w += x;
+			if (x == '-')
+				continue;
 			i ++;
 			if (i >= 3) {
 				w += ",";
@@ -504,6 +506,9 @@ public abstract class Func {
 	}
 	public static ItemStack stwórzItem(Material materiał, String nazwa, String... lore) {
 		return stwórzItem(materiał, 1, nazwa, Lists.newArrayList(lore));
+	}
+	public static ItemStack stwórzItem(Material materiał, String nazwa, int ilość, String... lore) {
+		return stwórzItem(materiał, ilość, nazwa, Lists.newArrayList(lore));
 	}
 	public static ItemStack stwórzItem(Material materiał, String nazwa, List<String> lore) {
 		return stwórzItem(materiał, 1, nazwa, lore);

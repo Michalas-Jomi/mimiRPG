@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -12,11 +13,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -52,6 +55,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		@Mapowane int czasStartu = 60;
 		@Mapowane int min_gracze = 2;
 		@Mapowane Location zbiorka;
+		@Mapowane int slotWPanelu = -1; // -1 oznacza auto przydzielanie slotu
 
 		Set<String> wszyscyGracze = Sets.newConcurrentHashSet();
 		List<Player> gracze = Lists.newArrayList();
@@ -72,7 +76,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		void start() {
 			timer = -1;
 			grane = true;
-			getInstMinigra().zaczynanaArena = null;
 			for (Player p : gracze) {
 				p.getInventory().clear();
 				getInstMinigra().staty(p).rozegraneAreny++;
@@ -80,9 +83,13 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 				wszyscyGracze.add(p.getName());
 			}
+			
+			odświeżWPanelu();
 		}
 		
 		boolean dołącz(Player p) {
+			if (p.hasMetadata(getInstMinigra().getMetaId()))
+				return false;
 			if (opuść(p)) return false;
 			Func.ustawMetadate(p, getInstMinigra().getMetaId(), this);
 			NowyEkwipunek.dajNowy(p, zbiorka, GameMode.ADVENTURE);
@@ -105,6 +112,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Statystyki.Ranga ranga = getInstMinigra().staty(p).ranga(getInstMinigra());
 			if (ranga != null)
 				ranga.ubierz(p);
+			
+			odświeżWPanelu();
 			
 			return true;
 		}
@@ -152,6 +161,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
 						nazwa, gracze.size(), strMaxGracze()));
 			}
+			
+			odświeżWPanelu();
 		}
 
 		boolean wygrana(Player p) {
@@ -178,6 +189,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					Bukkit.getScheduler().cancelTask(id);
 				doAnulowania.clear();
 			} catch (IllegalPluginAccessException e) {}
+			
+			odświeżWPanelu();
 		}
 		private Set<Integer> doAnulowania = Sets.newConcurrentHashSet();
 		void opóznijTask(int ticki, Runnable runnable) {
@@ -224,10 +237,22 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				timer = czasStartu;
 		}
 		
+		ItemStack dajItemWPanelu() {
+			return Func.stwórzItem(
+					grane ? Material.RED_DYE : (timer == -1 ? Material.LIME_DYE : Material.YELLOW_DYE),
+					nazwa,
+					Math.max(1, gracze.size() > 64 ? 1 : gracze.size()),
+					"",
+					"&e" + gracze.size() + "/" + max_gracze,
+					"",
+					grane ? "&cW trakcie gry" : (timer == -1 ? "&cWolna" : "&6Rozpoczyna się"));
+		}
+		void odświeżWPanelu() {
+			getInstMinigra().holderAren.ustawItem(this);
+		}
 		
 		// Override
 		
-		// Wykonywane co sekunde dla "zaczynanaArena"
 		void czas() {
 			if (timer == -1) return;
 			
@@ -379,7 +404,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	static Config configDane = new Config("configi/minigry/Dane");
 	
 	HashMap<String, Arena> mapaAren = new HashMap<String, Arena>();
-	Arena zaczynanaArena;
 	
 	Statystyki.Rangi rangi;
 	
@@ -399,24 +423,30 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 
 
-	Arena zaczynanaArena() {
-		if (zaczynanaArena != null) 
-			return zaczynanaArena;
-		
+	Arena zaczynanaArena(List<String> patterny) {
 		if (mapaAren.isEmpty())
 			return null;
 		
-		for (int i=0; i < 10; i++) {
-			Arena arena = Func.losuj(mapaAren.values());
-			if (arena.grane) continue;
-			return zaczynanaArena = arena;
-		}
-		for (Arena arena : mapaAren.values()) {
-			if (arena.grane) continue;
-			return zaczynanaArena = arena;
-		}
+		Arena najArena = null;
+		int najGracze = -1;
 		
-		return null;
+		for (Arena arena : mapaAren.values())
+			if (!arena.grane)
+				if (patterny.isEmpty()) {
+					if (arena.gracze.size() < arena.max_gracze && arena.gracze.size() > najGracze) {
+						najGracze = arena.gracze.size();
+						najArena = arena;
+						break;
+					}
+				} else
+					for (String pattern : patterny)
+						if (Pattern.compile(pattern).matcher(arena.nazwa).matches() && arena.gracze.size() < arena.max_gracze && arena.gracze.size() > najGracze) {
+							najGracze = arena.gracze.size();
+							najArena = arena;
+							break;
+						}
+		
+		return najArena;
 	}
 
 
@@ -441,14 +471,30 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				if (arena.grane) {
 					arena.napiszGraczom(msg);
 					arena.koniec();
+				} else if (!arena.gracze.isEmpty()) {
+					arena.napiszGraczom(msg);
+					arena.koniec();
+					
 				}
-			if (minigra.zaczynanaArena != null) {
-				minigra.zaczynanaArena.napiszGraczom(msg);
-				minigra.zaczynanaArena.koniec();
-				minigra.zaczynanaArena = null;
-			}
 		}
 	}
+	
+	
+	class Holder extends Func.abstractHolder {
+		public Holder(int rzędy, String nazwaMinigry, Iterable<Arena> areny) {
+			super(rzędy, "&4&lAreny &1&l" + nazwaMinigry);
+			Func.ustawPuste(inv);
+			areny.forEach(this::ustawItem);
+		}
+		
+		final HashMap<Integer, Arena> mapaAren = new HashMap<>();
+		
+		public void ustawItem(Arena arena) {
+			inv.setItem(arena.slotWPanelu, arena.dajItemWPanelu());
+			mapaAren.put(arena.slotWPanelu, arena);
+		}
+	}
+	Holder holderAren;
 	
 	
 	// EventHandler
@@ -479,11 +525,21 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		Func.wykonajDlaNieNull(arena, a -> a.opuść(ev.getPlayer()));
 	}
 	
+	@EventHandler
+	public void klikaniePaneluWyboruAreny(InventoryClickEvent ev) {
+		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class,  holder -> {
+			ev.setCancelled(true);
+			Func.wykonajDlaNieNull(holder.mapaAren.get(ev.getRawSlot()), arena -> {
+				if (!arena.grane && !arena.pełna())
+					arena.dołącz((Player) ev.getWhoClicked());
+			});
+		});
+	}
+	
 	// Override
 	@Override
 	public int czas() {
-		if (zaczynanaArena != null)
-			zaczynanaArena.czas();
+		mapaAren.values().forEach(Arena::czas);// TODO sprawdzić czy nic sie nie posypie
 		return 20;
 	}
 	
@@ -513,6 +569,34 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			} catch (Throwable e) {
 				Main.warn("Niepoprawna arena " + this.getClass().getSimpleName() + " " + klucz + " w " + configAreny.path());
 			}
+		
+		
+		boolean[] zajęte = new boolean[6*9];
+		List<Arena> autoAreny = Lists.newArrayList();
+		for (Arena arena : mapaAren.values())
+			if (arena.slotWPanelu == -1)
+				autoAreny.add(arena);
+			else if (zajęte[arena.slotWPanelu]) {
+				Main.warn("Podwojono slot areny " + arena.slotWPanelu + " " + this.getClass().getSimpleName() + " " + arena.nazwa + ", autoprzydzielanie slotu w panelu");
+				autoAreny.add(arena);
+			} else
+				zajęte[arena.slotWPanelu] = true;
+		for (int i = 0; i < zajęte.length; i++)
+			if (autoAreny.isEmpty())
+				break;
+			else if (!zajęte[i]) {
+				autoAreny.remove(0).slotWPanelu = i;
+				zajęte[i] = true;
+			}
+		int mxSlot = 0;
+		for (int i=zajęte.length - 1; i > 0; i--)
+			if (zajęte[i]) {
+				mxSlot = i;
+				break;
+			}
+		if (holderAren != null)
+			Lists.newArrayList(holderAren.getInventory().getViewers()).forEach(HumanEntity::closeInventory);
+		holderAren = new Holder(Func.potrzebneRzędy(mxSlot), this.getClass().getSimpleName(), mapaAren.values());
 	}
 	@Override
 	public Krotka<String, Object> raport() {
@@ -520,7 +604,13 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 	
 	boolean onCommand(CommandSender sender, String[] args) {
-		if (args.length < 2) return staty(sender, args);
+		if (args.length < 2) {
+			if (sender instanceof Player)
+				((Player) sender).openInventory(holderAren.getInventory());
+			else
+				return false;
+			return true;
+		}
 		
 		if (args[1].equalsIgnoreCase("staty"))
 			return staty(sender, args);
@@ -532,14 +622,18 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 				
 		if (!(sender instanceof Player))
-			return Func.powiadom(getPrefix(), sender, "Paintball jest tylko dla graczy");
+			return Func.powiadom(getPrefix(), sender, "Ta minigra jest tylko dla graczy");
 		Player p = (Player) sender;
 		
 		Arena arena;
 		
 		switch (Func.odpolszcz(args[1])) {
 		case "dolacz":
-			arena = zaczynanaArena();
+			List<String> patterny = Lists.newArrayList();
+			for (int i=2; i < args.length; i++)// TODO jakić TabCompleter np z nazwami aren
+				patterny.add(args[i]);
+			
+			arena = zaczynanaArena(patterny);
 			if (arena == null)
 				return Func.powiadom(getPrefix(), sender, "Aktualnie nie ma żadnych wolnych aren");
 			if (arena.pełna())
@@ -578,32 +672,4 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz(this));
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
