@@ -46,7 +46,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 	static ShapedRecipe wczytajShaped(NamespacedKey nms, String klucz) {
 		ItemStack item		= config.wczytajItem(klucz + ".item");
 		List<String> lista	= config.wczytajListe(klucz + ".układ");
-
+		
 		String linia		= Func.listToString(lista, 0, "");
 		Set<Character> set	= Sets.newConcurrentHashSet();
 		for (int i=0; i < linia.length(); i++)

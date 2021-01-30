@@ -251,6 +251,8 @@ public abstract class Func {
 	}
 	public static String koloruj(String text) {
 		if (text == null) return null;
+		if (text.contains("§"))
+			return text;
 		text = kolorkiRGB(przejścia(text));
 		return text.replace("&", "§").replace("§§", "&");
 	}
@@ -879,8 +881,10 @@ public abstract class Func {
 		}
 		return l;
 	}
-	public static <T> void insort(T obj, List<T> posortowanaLista, Function<T, Double> wartość) {
-		posortowanaLista.add(wyszukajBinarniePIndex(wartość.apply(obj), posortowanaLista, wartość), obj);
+	public static <T> int insort(T obj, List<T> posortowanaLista, Function<T, Double> wartość) {
+		int index = wyszukajBinarniePIndex(wartość.apply(obj), posortowanaLista, wartość);
+		posortowanaLista.add(index, obj);
+		return index;
 	}
 	public static <T> int wyszukajBinarnieLIndex(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
 		int l = 0;

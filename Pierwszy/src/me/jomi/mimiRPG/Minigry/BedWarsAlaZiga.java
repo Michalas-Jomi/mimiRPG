@@ -200,8 +200,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 
 		@Override List<? extends Drużyna> getDrużyny() { return drużyny; }
 		@Override int getMinDrużyny() 				   { return 2; }
-
-		@Override Supplier<? extends me.jomi.mimiRPG.Minigry.Minigra.Statystyki> noweStaty() { return Statystyki::new; }
 	}
 	public static class Drużyna extends MinigraDrużynowa.Drużyna implements InventoryHolder  {
 		public static enum Slot {
@@ -452,12 +450,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		@Mapowane List<UlepszenieCena> ceny;
 	}	
 	public static class Statystyki extends Minigra.Statystyki {
-
-		@Override
-		void sprawdzTopke(Player p, Minigra minigra) {
-			// TODO Auto-generated method stub
-			
-		}
 	}
 	public static class Serce {
 		Arena arena;
@@ -711,6 +703,8 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	@Override String getMetaStatystyki() { return "mimiBedWarsAlaZigaStaty"; }
 	@Override String getMetaDrużynaId()	 { return "mimiBedWarsAlaZigaDrużyna"; }
 	@Override String getMetaId()		 { return "mimiMinigraBedWarsAlaZiga"; }
+	
+	@Override Supplier<? extends Minigra.Statystyki> noweStaty() { return Statystyki::new; }
 
 	@Override String getPrefix() { return prefix; }
 }

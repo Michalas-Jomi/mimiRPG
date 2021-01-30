@@ -180,14 +180,10 @@ public class Golf extends Minigra {
 		@Override Minigra getInstMinigra() 							 { return inst; }
 		@Override int policzGotowych() 								 { return gracze.size(); }
 		@Override <M extends Minigra> void setInst(M inst) 			 { this.inst = (Golf) inst; }
-		@Override Supplier<? extends Minigra.Statystyki> noweStaty() { return Statystyki::new; }
 	}
 	public static class Statystyki extends Minigra.Statystyki {
 		@Mapowane int uderzenia;
 		@Mapowane int dołki;
-		
-		@Override
-		void sprawdzTopke(Player p, Minigra minigra) {}
 		
 		@Override
 		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
@@ -296,6 +292,8 @@ public class Golf extends Minigra {
 	@Override String getMetaId()		 { return meta; }
 	@Override String getPrefix()		 { return prefix; }
 	@Override String getMetaStatystyki() { return metaStaty; }
+	
+	@Override Supplier<? extends Minigra.Statystyki> noweStaty() { return Statystyki::new; }
 
 	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }

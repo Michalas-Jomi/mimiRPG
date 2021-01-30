@@ -25,11 +25,13 @@ public class NowyEkwipunek {
 		final Boolean vanish;
 		final Location loc;
 		final boolean lata;
+		final boolean możeLatać;
 		final GameMode gm;
 		final int exp;
 
 		//Krotka<Location, Krotka<Integer, Krotka<GameMode, List<ItemStack>>>>
-		public Dane(Location loc, int exp, GameMode gm, boolean lata, Boolean vanish, List<ItemStack> itemy, Collection<PotionEffect> efekty) {
+		public Dane(Location loc, int exp, GameMode gm, boolean lata, boolean możeLatać, Boolean vanish, List<ItemStack> itemy, Collection<PotionEffect> efekty) {
+			this.możeLatać = możeLatać;
 			this.vanish = vanish;
 			this.efekty = efekty;
 			this.itemy = itemy;
@@ -61,10 +63,11 @@ public class NowyEkwipunek {
 			user.setVanished(false);
 		}
 		
-		mapa.put(p.getName(), new Dane(p.getLocation(), Poziom.policzCałyExp(p), p.getGameMode(), p.isFlying(), vanish, itemy, p.getActivePotionEffects()));
+		mapa.put(p.getName(), new Dane(p.getLocation(), Poziom.policzCałyExp(p), p.getGameMode(), p.isFlying(), p.getAllowFlight(), vanish, itemy, p.getActivePotionEffects()));
 		
 		p.getActivePotionEffects().forEach(effect -> p.removePotionEffect(effect.getType()));
 		
+		p.setAllowFlight(false);
 		p.setFlying(false);
 		
 		inv.clear();
@@ -89,6 +92,7 @@ public class NowyEkwipunek {
 		
 		p.setGameMode(dane.gm);
 		
+		p.setAllowFlight(dane.możeLatać);
 		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie gdyby inny plugin sprawdzał Player.isFlying to przy teleportacji
 		p.teleport(dane.loc);
 		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie jakby inny plugin wyłączył przy teleportacji

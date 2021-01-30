@@ -71,24 +71,50 @@ public class CaveWars extends MinigraDrużynowa {
 				_start();
 			else
 				for (Player p : gracze)
-					p.sendTitle("§aGenerowanie areny", "§2Za moment zostaniecie przeteleportowani", 20,  2400, 200);
+					p.sendTitle("§aGenerowanie areny", "§2Za moment zostaniecie przeteleportowani", 20,  600, 200);
 		}
 		void _start() {
 			startuje = false;
+			
+			double minDystans = 50.0;
+			List<Location> ustawione = Lists.newArrayList();
 			for (Drużyna drużyna : drużyny) {
 				if (drużyna.gracze <= 0) continue;
-				int x = Func.losuj(róg1.getBlockX() + 2, róg2.getBlockX() - 1);
-				int y = Func.losuj(róg1.getBlockY() + 0, róg2.getBlockY() - 3);
-				int z = Func.losuj(róg1.getBlockZ() + 2, róg2.getBlockZ() - 0);
-				drużyna.respawn = new Location(róg1.getWorld(), x, y, z);
+				boolean poprawna = false;
+				while (!poprawna) {
+					for (int i=0; i < 5; i++) {
+						int x = Func.losuj(róg1.getBlockX() + 2, róg2.getBlockX() - 1);
+						int y = Func.losuj(róg1.getBlockY() + 0, róg2.getBlockY() - 3);
+						int z = Func.losuj(róg1.getBlockZ() + 2, róg2.getBlockZ() - 0);
+						drużyna.respawn = new Location(róg1.getWorld(), x, y, z);
+						poprawna = true;
+						for (Location loc : ustawione)
+							if (loc.distance(drużyna.respawn) < minDystans) {
+								poprawna = false;
+								break;
+							}
+						if (poprawna)
+							break;
+					}
+					minDystans *= .95;
+				}
+				ustawione.add(drużyna.respawn);
 				
 				for (Block blok : Func.bloki(drużyna.respawn.clone().add(-2, 0, -2), drużyna.respawn.clone().add(1, 3, 0)))
 					blok.setType(Material.AIR, false);
 				
 				drużyna.respawn.getBlock().setType(Material.TORCH);
+				Block podłoga = drużyna.respawn.clone().add(0, -1, 0).getBlock();
+				if (podłoga.getType() != Material.BEDROCK)
+					podłoga.setType(Material.OBSIDIAN, false);
 			}
 			
 			for (Player p : gracze) {
+				p.resetTitle();
+				if (inst.drużyna(p) == null) {
+					opuść(p);
+					continue;
+				}
 				p.teleport(inst.drużyna(p).respawn);
 				p.setGameMode(GameMode.SURVIVAL);
 				p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 20*60*60*6, 1, false, false, false));
@@ -129,8 +155,10 @@ public class CaveWars extends MinigraDrużynowa {
 		}
 		
 		void zabity(Player kto, Player kiler) {
-			inst.staty(kto).śmierci++;
-			Func.wykonajDlaNieNull(kiler, p -> inst.staty(p).kille++);
+			if (rangingowe)
+				inst.staty(kto).śmierci++;
+			if (rangingowe && kiler != null)
+				Func.wykonajDlaNieNull(inst.staty(kiler), staty -> staty.kille++);
 			
 			if (kiler != null)
 				napiszGraczom("%s został zabity przez %s", inst.nick(kto), inst.nick(kiler));
@@ -209,7 +237,6 @@ public class CaveWars extends MinigraDrużynowa {
 		}
 		
 		@Override List<Drużyna> getDrużyny() 	   { return drużyny; }
-		@Override Supplier<Statystyki> noweStaty() { return Statystyki::new; }
 
 		CaveWars inst;
 		@Override MinigraDrużynowa getInstMinigraDrużynowa() { return inst; }
@@ -237,8 +264,6 @@ public class CaveWars extends MinigraDrużynowa {
 			cons.accept(_rozpiska("Punkty", punkty));
 			użyjRangi(ranga(punkty, minigra), usuwaćKolor, cons);
 		}
-
-		@Override void sprawdzTopke(Player p, Minigra minigra) {}
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -269,15 +294,18 @@ public class CaveWars extends MinigraDrużynowa {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void kopanie(BlockBreakEvent ev) {
 		Player p = ev.getPlayer();
-		Arena arena = arena(p);
-		if (arena != null && arena.grane)
-			staty(p).rozkopaneBloki++;
+		Func.wykonajDlaNieNull(arena(p), arena -> {
+			if (arena.rangingowe && arena.grane)
+				staty(p).rozkopaneBloki++;
+		});
 	}
 	
 	
 	@Override @SuppressWarnings("unchecked") Arena 		arena	(Entity p) { return super.arena(p); }
 	@Override @SuppressWarnings("unchecked") Statystyki staty	(Entity p) { return super.staty(p); }
 	@Override @SuppressWarnings("unchecked") Drużyna 	drużyna (Entity p) { return super.drużyna(p); }
+	
+	@Override Supplier<Statystyki> noweStaty() { return Statystyki::new; }
 
 	@Override String getMetaId() 		 { return "mimiMinigraCaveWarsArena"; }
 	@Override String getMetaDrużynaId()  { return "mimiMinigraCaveWarsDrużyna"; }

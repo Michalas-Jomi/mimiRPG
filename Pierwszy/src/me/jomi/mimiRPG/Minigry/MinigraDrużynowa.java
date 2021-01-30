@@ -37,6 +37,7 @@ import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.ItemCreator;
 import me.jomi.mimiRPG.util.KolorRGB;
+import me.jomi.mimiRPG.util.Krotka;
 
 public abstract class MinigraDrużynowa extends Minigra {
 	public abstract static class Arena extends Minigra.Arena {
@@ -44,7 +45,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		
 		private final Cooldown cooldownWyboruDrużyny = new Cooldown(5);
 
-		private final HashMap<String, StringBuffer> mapaDrużynDlaMsgWin = new HashMap<>();
+		private final HashMap<String, Krotka<StringBuffer, Integer>> mapaDrużynDlaMsgWin = new HashMap<>();
 		
 		Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();;
 		
@@ -87,9 +88,9 @@ public abstract class MinigraDrużynowa extends Minigra {
 					drużyna = autoDrużyna(p);
 				drużyna.team.addEntry(p.getName());
 				p.setScoreboard(sb);
-				StringBuffer msg = mapaDrużynDlaMsgWin.getOrDefault(drużyna.nazwa, new StringBuffer());
+				StringBuffer msg = mapaDrużynDlaMsgWin.getOrDefault(drużyna.nazwa, new Krotka<>(new StringBuffer(), 0)).a;
 				msg.append(" ").append(drużyna.napisy).append(p.getName());
-				mapaDrużynDlaMsgWin.put(drużyna.nazwa, msg);
+				mapaDrużynDlaMsgWin.put(drużyna.nazwa, new Krotka<>(msg, drużyna.gracze));
 				ubierz(p);
 			}
 			
@@ -122,12 +123,17 @@ public abstract class MinigraDrużynowa extends Minigra {
 			
 			
 			StringBuilder przegrani = new StringBuilder();
-			for (Entry<String, StringBuffer> en : mapaDrużynDlaMsgWin.entrySet())
+			for (Entry<String, Krotka<StringBuffer, Integer>> en : mapaDrużynDlaMsgWin.entrySet())
 				if (!en.getKey().equals(drużyna.nazwa))
-					przegrani.append(en.getValue());
+					przegrani.append(en.getValue().a);
 			
-			Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
-					drużyna, mapaDrużynDlaMsgWin.get(drużyna.nazwa).substring(1), nazwa, przegrani));
+			Krotka<StringBuffer, Integer> zwycięskaKrotka = mapaDrużynDlaMsgWin.get(drużyna.nazwa);
+			if (zwycięskaKrotka.b > 1)
+				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
+						drużyna, zwycięskaKrotka.a.substring(1), nazwa, przegrani));
+			else
+				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("%s wygrał na arenie %s przeciwko %s",
+						zwycięskaKrotka.a.substring(1), nazwa, przegrani));
 			mapaDrużynDlaMsgWin.clear();
 			koniec();
 			return true;
@@ -256,7 +262,21 @@ public abstract class MinigraDrużynowa extends Minigra {
 				if (getInstMinigraDrużynowa().drużyna(p).equals(drużyna))
 					p.sendMessage(getInstMinigraDrużynowa().getPrefix() + Func.msg(msg, uzupełnienia));
 		}
-		
+
+		private Drużyna autoDrużyna(Player p) {
+			Drużyna akt = null;
+			int min = gracze.size() + 1;
+			
+			for (Drużyna drużyna : getDrużyny())
+				if (min > drużyna.gracze) {
+					min = drużyna.gracze;
+					akt = drużyna;
+				}
+			
+			wybierzDrużyne(p, akt);
+			
+			return akt;
+		}
 		
 		// Override
 		
@@ -294,24 +314,9 @@ public abstract class MinigraDrużynowa extends Minigra {
 				if (drużyna.gracze > 0)
 					d++;
 			}
-			if (getMinDrużyny() >= d)
+			if (getMinDrużyny() <= d)
 				return w;
 			return 0;
-		}
-		
-		private Drużyna autoDrużyna(Player p) {
-			Drużyna akt = null;
-			int min = gracze.size() + 1;
-			
-			for (Drużyna drużyna : getDrużyny())
-				if (min > drużyna.gracze) {
-					min = drużyna.gracze;
-					akt = drużyna;
-				}
-			
-			wybierzDrużyne(p, akt);
-			
-			return akt;
 		}
 		
 		@Override void sprawdzStart() {};

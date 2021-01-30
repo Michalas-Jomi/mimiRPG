@@ -163,8 +163,10 @@ public class Main extends JavaPlugin implements Listener {
 		przeładowywanaBukkitData = false;
 	}
 	
+	public static boolean pluginWyłączany = false;
 	@Override
 	public void onDisable() {
+		pluginWyłączany = true;
 		for (Player p : Bukkit.getOnlinePlayers())
 			p.closeInventory();
 		if (włączonyModół(Miniony.class))

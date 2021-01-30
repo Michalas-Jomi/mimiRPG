@@ -188,7 +188,6 @@ public class Paintball extends MinigraDrużynowa {
 			}
 		}
 		
-		@Override Supplier<Statystyki> noweStaty() { return Statystyki::new; }
 		@Override List<Drużyna> getDrużyny() { return druzyny; }
 		
 		Paintball inst;
@@ -221,32 +220,6 @@ public class Paintball extends MinigraDrużynowa {
 			cons.accept(_rozpiska("Punkty", punkty));
 			użyjRangi(ranga(punkty, minigra), usuwaćKolor, cons);
 		}
-		
-		@Override
-		void sprawdzTopke(Player p, Minigra minigra) {
-			int pkt = policzPunkty(minigra);
-			
-			int i = -1;
-			while (++i < topka.size()) {
-				if (i >= 10) return;
-				Krotka<String, Integer> k = topka.get(i);
-				if (k.a.equals(p.getName())) return;
-				if (pkt > k.b) break;
-			}
-		
-			topka.add(i, new Krotka<>(p.getName(), pkt));
-			
-			while(++i < topka.size())
-				if (topka.get(i).a.equals(p.getName())) {
-					topka.remove(i);
-					break;
-				}
-			
-			if (topka.size() > 10)	
-				topka.remove(10);
-			
-			configDane.ustaw_zapisz("Topki.Paintball", topka);
-		}
 	}
 
 	static final String metaPocisków = "mimiMinigraPaintballPocisk";
@@ -258,6 +231,8 @@ public class Paintball extends MinigraDrużynowa {
 	@Override String getMetaId() 		 { return metaid; }
 	@Override String getMetaDrużynaId()  { return metaDrużynaId; }
 	@Override String getMetaStatystyki() { return metaStatystyki; }
+	
+	@Override Supplier<Statystyki> noweStaty() { return Statystyki::new; }
 
 	@EventHandler
     public void onCreatureSpawn(CreatureSpawnEvent ev) {

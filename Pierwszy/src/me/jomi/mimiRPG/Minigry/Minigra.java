@@ -1,7 +1,9 @@
 package me.jomi.mimiRPG.Minigry;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -12,7 +14,10 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,7 +26,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -44,6 +51,7 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Krotki.Box;
+import me.jomi.mimiRPG.util.Krotki.TriKrotka;
 import me.jomi.mimiRPG.util.NowyEkwipunek;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
@@ -56,6 +64,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		@Mapowane int min_gracze = 2;
 		@Mapowane Location zbiorka;
 		@Mapowane int slotWPanelu = -1; // -1 oznacza auto przydzielanie slotu
+		@Mapowane boolean rangingowe = true; // liczenie pkt
 
 		Set<String> wszyscyGracze = Sets.newConcurrentHashSet();
 		List<Player> gracze = Lists.newArrayList();
@@ -67,8 +76,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		abstract Minigra getInstMinigra();
 		abstract <M extends Minigra> void setInst(M inst);
 		
-		abstract Supplier<? extends Statystyki> noweStaty();
-		
 		abstract int policzGotowych();
 		
 		
@@ -78,32 +85,49 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			grane = true;
 			for (Player p : gracze) {
 				p.getInventory().clear();
-				getInstMinigra().staty(p).rozegraneAreny++;
+				if (rangingowe)
+					getInstMinigra().staty(p).rozegraneAreny++;
 				p.closeInventory();
 				p.getScoreboard().clearSlot(DisplaySlot.SIDEBAR);
 				wszyscyGracze.add(p.getName());
 			}
 			
 			odświeżWPanelu();
+			
+			Main.log(getInstMinigra().getPrefix() + Func.msg("Arena %s wsytartowała z graczami(%s) %s", nazwa, gracze.size(), gracze));
 		}
 		
 		boolean dołącz(Player p) {
-			if (p.hasMetadata(getInstMinigra().getMetaId()))
+			if (p.hasMetadata(getInstMinigra().getMetaId()) || gracze.size() >= max_gracze || opuść(p))
 				return false;
-			if (opuść(p)) return false;
+			Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
+				Arena arena = getInstMinigra().arena(onlinePlayer);
+				if (arena != null) {
+					if (arena.equals(this)) {
+						p.showPlayer(Main.plugin, onlinePlayer);
+						onlinePlayer.showPlayer(Main.plugin, p);
+					} else {
+						p.hidePlayer(Main.plugin, onlinePlayer);
+						onlinePlayer.hidePlayer(Main.plugin, p);
+					}
+				} else
+					p.hidePlayer(Main.plugin, onlinePlayer);
+			});
 			Func.ustawMetadate(p, getInstMinigra().getMetaId(), this);
 			NowyEkwipunek.dajNowy(p, zbiorka, GameMode.ADVENTURE);
 			gracze.add(p);
 			napiszGraczom("%s dołączył do poczekalni %s/%s", p.getDisplayName(), gracze.size(), strMaxGracze());
 
-			Statystyki staty = Gracz.wczytaj(p.getName()).staty.getOrDefault(this.getClass().getName(), noweStaty().get());
+			Statystyki staty = Gracz.wczytaj(p.getName()).staty.getOrDefault(getInstMinigra().getClass().getName(), getInstMinigra().noweStaty().get());
 			Func.ustawMetadate(p, getInstMinigra().getMetaStatystyki(), staty);
 			
 			Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 			p.setScoreboard(scoreboard);
 			Objective obj = scoreboard.registerNewObjective("staty", "dummy", "§6§lStatystyki");
-			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-			staty.rozpisz(obj, getInstMinigra());
+			if (rangingowe) {
+				obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+				staty.rozpisz(obj, getInstMinigra());
+			}
 			
 			Antylog.włączBypass(p);
 			
@@ -140,6 +164,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			if (staty != null) {
 				Gracz g = Gracz.wczytaj(p.getName());
 				staty.sprawdzTopke(p, getInstMinigra());
+				if (Main.chat != null && Main.ust.wczytajLubDomyślna("Minigry.CaveWars.ustawSuffixRange", false))
+					Func.wykonajDlaNieNull(staty.ranga(getInstMinigra()), ranga -> Main.chat.setPlayerSuffix(null, p, ranga.toString()));
 				g.staty.put(getInstMinigra().getClass().getName(), staty);
 				g.zapisz();
 			}
@@ -163,6 +189,11 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			}
 			
 			odświeżWPanelu();
+			
+			if (!Main.pluginWyłączany) {
+				gracze.forEach(graczAreny -> graczAreny.hidePlayer(Main.plugin, p));
+				Bukkit.getOnlinePlayers().forEach(onlinePlayer -> p.showPlayer(Main.plugin, onlinePlayer));
+			}
 		}
 
 		boolean wygrana(Player p) {
@@ -244,6 +275,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					Math.max(1, gracze.size() > 64 ? 1 : gracze.size()),
 					"",
 					"&e" + gracze.size() + "/" + max_gracze,
+					rangingowe ? "&6Rankingowe" : "&aNie rankingowe",
 					"",
 					grane ? "&cW trakcie gry" : (timer == -1 ? "&cWolna" : "&6Rozpoczyna się"));
 		}
@@ -397,9 +429,54 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 		
 		
-		abstract void sprawdzTopke(Player p, Minigra minigra);
+		private boolean wymaganyZapis; // zmienna pod metode
+		final void sprawdzTopke(Player p, Minigra minigra) {
+			wymaganyZapis = false;
+			minigra.topki.forEach((pole, topka) -> {
+				int akt = 0;
+				try {
+					akt = pole.equals("punkty") ? policzPunkty(minigra) : Func.dajField(this.getClass(), pole).getInt(this);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+				String format = Main.ust.wczytajLubDomyślna("Minigry.CaveWars.format.wyświetlany nick", "%displayname%");
+				format = format.replace("%nick%", p.getName());
+				format = format.replace("%displayname%", p.getDisplayName());
+				if (Main.chat != null) {
+					format = format.replace("%prefix%", Main.chat.getPlayerPrefix(p));
+					format = format.replace("%suffix%", Main.chat.getPlayerSuffix(p));
+				}
+				TriKrotka<String, Integer, String> krotka = new TriKrotka<>(p.getName(), akt, Func.koloruj(format));
+				int index = Func.insort(krotka, topka, k -> (double) -k.b);
+				if (index >= 10) {
+					topka.remove(index);
+					return;
+				}
+				
+				boolean był = false;
+				for (int i=0; i < topka.size(); i++)
+					if (topka.get(i).a.equals(p.getName()))
+						if (był) {
+							topka.remove(i);
+							break;
+						} else
+							był = true;
+				
+				if (był)
+					minigra.postawHologram(pole, topka);
+				
+				wymaganyZapis = wymaganyZapis || był;
+				
+				while (topka.size() > 10)
+					topka.remove(10);
+			});
+			
+			if (wymaganyZapis)
+				minigra.zapiszTopki();
+		}
 	}
-
+	
+	
 	static Set<String> dozwoloneKomendy = Sets.newConcurrentHashSet();
 	static Config configDane = new Config("configi/minigry/Dane");
 	
@@ -407,6 +484,99 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	
 	Statystyki.Rangi rangi;
 	
+	/*
+	 * Założenia:
+	 * nie da sie utracić wartości (pkt/kille/?)
+	 * topki to posortowane malejąco listy
+	 * 
+	 * 
+	 * ///
+	 * - topX
+	 * - <nick> <pkt/kille/?>
+	 * ///
+	 * 
+	 *   punkty:
+	 *   - top1 pkt displayname
+	 *   - top2 pkt displayname
+	 *   ...
+	 *   - top10 pkt displayname
+	 *   kille:
+	 *   - top1 killi displayname
+	 *   - top2 killi displayname
+	 *   ...
+	 *   - top10 killi displayname
+	 * 
+	 * 
+	 * 
+	 */
+	
+	// Topki
+	private Config configTopki = new Config("configi/minigry/topki/" + this.getClass().getSimpleName());
+	// {statystyka: [(nick, wartość, displayname)]}
+	public final Map<String, List<TriKrotka<String, Integer, String>>> topki = new HashMap<>();
+	public void wczytajTopki() {
+		configTopki.przeładuj();
+		topki.clear();
+		Consumer<String> wczytaj = pole -> {
+			List<TriKrotka<String, Integer, String>> topka = new ArrayList<>();
+			configTopki.wczytajListe(pole).forEach(str -> {
+				List<String> części = Func.tnij(str, " ");
+				String nick = części.get(0);
+				int wartość = Func.Int(części.get(1));
+				String displayName = Func.listToString(części, 2);
+				topka.add(new TriKrotka<>(nick, wartość, displayName));
+				postawHologram(pole, topka);
+			});
+			topki.put(pole, topka);
+		};
+		Func.głębokiSkanKlasy(noweStaty().get().getClass()).forEach(field -> {
+			if (field.isAnnotationPresent(Mapowane.class))
+				wczytaj.accept(field.getName());
+		});
+		wczytaj.accept("punkty");
+	}
+	public void zapiszTopki() {
+		topki.forEach((klucz, topka) -> {
+			List<String> lista = new ArrayList<>();
+			topka.forEach(krotka -> 
+				lista.add(new StringBuilder().append(krotka.a).append(' ').append(krotka.b).append(' ').append(krotka.c).toString()));
+			configTopki.ustaw(klucz, lista);
+		});
+		configTopki.zapisz();
+	}
+	static final double odstępMiędzyLiniamiHologramu = .25;
+	public void postawHologram(String pole, List<TriKrotka<String, Integer, String>> topka) {
+		Func.wykonajDlaNieNull(Main.ust.wczytajStr("Minigry." + this.getClass().getSimpleName() + ".hologramy." + pole + ".loc"), strLoc -> {
+			List<String> części = Func.tnij(strLoc, " ");
+			Location loc = new Location(Bukkit.getWorld(części.get(0)),Func.Double(części.get(1)), Func.Double(części.get(2)), Func.Double(części.get(3)));
+			this.postawHologram(loc, topka, "&9" + this.getClass().getSimpleName() + " Top " +
+					Main.ust.wczytajLubDomyślna("Minigry." + this.getClass().getSimpleName() + ".hologramy." + pole + ".nazwa", pole));
+		});
+	}
+	private void postawHologram(Location loc, List<TriKrotka<String, Integer, String>> topka, String tytuł) {
+		String tag = "mimiHoloTopMinigry" + this.getClass().getSimpleName() + tytuł;
+		for (Entity entity : loc.getChunk().getEntities())
+			if (entity.getScoreboardTags().contains(tag))
+				entity.remove();
+		postawLinie(loc, Func.koloruj(tytuł), tag);
+		topka.forEach(krotka -> {
+			loc.add(0, -odstępMiędzyLiniamiHologramu, 0);
+			postawLinie(loc, krotka.c + " " + krotka.b, tag);
+		});
+	}
+	private void postawLinie(Location loc, String text, String tag) {
+		ArmorStand armorStand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+		armorStand.setSmall(true);
+		armorStand.setGravity(false);
+		armorStand.setVisible(false);
+		armorStand.setBasePlate(false);
+		armorStand.setCustomName(text);
+		armorStand.addScoreboardTag(tag);
+		armorStand.setInvulnerable(true);
+		armorStand.setCustomNameVisible(true);
+		for (EquipmentSlot slot : EquipmentSlot.values())
+			armorStand.addEquipmentLock(slot, LockType.ADDING_OR_CHANGING);
+	}
 	
 	private Config configAreny = new Config("configi/minigry/areny/" + this.getClass().getSimpleName());
 	public Config getConfigAreny() {
@@ -416,6 +586,9 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	abstract String getPrefix();
 	abstract String getMetaStatystyki();
 	abstract String getMetaId();
+	
+	abstract Supplier<? extends Statystyki> noweStaty();
+	
 	
 	
 	public Minigra() {
@@ -459,7 +632,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return null;
 		return (T) p.getMetadata(meta).get(0).value();	
 	}
-
+	
 	
 	// onDisable
 	public static void wyłącz() {
@@ -499,8 +672,22 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	
 	// EventHandler
 	@EventHandler
+	public void dołączanieDoGry(PlayerJoinEvent ev) {
+		Bukkit.getOnlinePlayers().forEach(p ->
+			Func.wykonajDlaNieNull(arena(p), arena ->
+				p.hidePlayer(Main.plugin, ev.getPlayer())));
+	}
+	@EventHandler
+	public void opuszczanieGry(PlayerQuitEvent ev) {
+		Bukkit.getOnlinePlayers().forEach(p -> {
+			ev.getPlayer().showPlayer(Main.plugin, p);
+			p.showPlayer(Main.plugin, ev.getPlayer());
+		});
+	}
+	
+	@EventHandler
 	public void komendy(PlayerCommandPreprocessEvent ev) {
-		if (ev.getMessage().startsWith("/opuśćMinigre"))
+		if (ev.getMessage().toLowerCase().startsWith("/opuśćminigre"))
 			return;
 		Player p = ev.getPlayer();
 		if (p.hasMetadata(getMetaId())) {
@@ -521,8 +708,10 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 	@EventHandler
 	public void opuszczenieGry(PlayerQuitEvent ev) {
-		Arena arena = arena(ev.getPlayer());
-		Func.wykonajDlaNieNull(arena, a -> a.opuść(ev.getPlayer()));
+		if (!Main.pluginWyłączany) {
+			Arena arena = arena(ev.getPlayer());
+			Func.wykonajDlaNieNull(arena, a -> a.opuść(ev.getPlayer()));
+		}
 	}
 	
 	@EventHandler
@@ -546,6 +735,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	@Override
 	public void przeładuj() {
 		configDane.przeładuj();
+		wczytajTopki();
 		
 		rangi = new Config("configi/minigry/Rangi").wczytajLubDomyślna(this.getClass().getSimpleName(), () -> Func.utwórz(Statystyki.Rangi.class));
 
@@ -553,7 +743,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		
 		dozwoloneKomendy.clear();
 		for (String komenda : Main.ust.wczytajListe("Minigry.Dozwolone komendy"))
-			dozwoloneKomendy.add(komenda.startsWith("/") ? "/" + komenda : komenda);
+			dozwoloneKomendy.add(komenda.startsWith("/") ? komenda : "/" + komenda);
 
 		Config configAreny = getConfigAreny();
 		configAreny.przeładuj();
@@ -615,10 +805,21 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		if (args[1].equalsIgnoreCase("staty"))
 			return staty(sender, args);
 		
-		switch (args[1]) {
+		switch (args[1].toLowerCase()) {
+		case "r":
 		case "rangi":
-		case "stopnie": return rangi.rozpisz(sender, getClass().getSimpleName());
-		case "staty":	return staty(sender, args);
+		case "stopnie":
+			return rangi.rozpisz(sender, getClass().getSimpleName());
+		case "s":
+		case "staty":
+			return staty(sender, args);
+		case "t":
+		case "top":
+		case "topka":
+		case "najlepsi":
+			if (args.length >= 3)
+				return top(sender, args[2]);
+			return top(sender, "punkty");
 		}
 				
 		if (!(sender instanceof Player))
@@ -665,11 +866,18 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		}
 		
 		Gracz g = Gracz.wczytaj(nick);
-		return staty(sender, g.nick, g.staty.get(Arena.class.getName()));
+		return staty(sender, g.nick, g.staty.get(this.getClass().getName()));
 	} 
 	private boolean staty(CommandSender sender, String nick, Statystyki staty) {
 		return Func.powiadom(getPrefix(), sender, "Staty %s\n\n%s",
-				nick, staty == null ? nick + " §6Nigdy nie grał w " + getClass().getSimpleName() : staty.rozpisz(this));
+				nick, staty == null ? nick + " §6Nigdy nie grał w " + this.getClass().getSimpleName() : staty.rozpisz(this));
+	}
+	
+	protected boolean top(CommandSender sender, String pole) {
+		Func.wykonajDlaNieNull(topki.get(pole), topka -> {
+			
+		}, () -> sender.sendMessage(getPrefix() + Func.msg("Niepoprawna Kategoria: %s", pole)));
+		return true;
 	}
 }
 
