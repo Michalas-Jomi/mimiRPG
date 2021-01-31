@@ -1,0 +1,17 @@
+# Exp za Bloki/moby nieuwzględnione w skekcji Bloki/Moby
+domyślne:
+  Bloki: 1
+  Moby: 3
+  
+# exp za wykopane Bloki
+Bloki:
+  Stone: 0.1
+  CobbleStone: 0.1
+  Diamond_Ore: 20
+
+# exp za zabite Moby
+Moby:
+  Spider: 5
+  Villager: -20
+  Vindicator: 30
+  
