@@ -5,18 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.attribute.AttributeModifier.Operation;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_16_R2.util.CraftNamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,23 +16,20 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.google.common.collect.Lists;
-
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.RPG.ItemyRPG.Rozwój;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Funkcje.TriConsumer;
+import me.jomi.mimiRPG.util.KomendaZMapowanymiItemami;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -50,64 +39,11 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 // TODO handlarz narkotykami
 
 @Moduł
-public class ItemyRPG extends Komenda implements Listener, Przeładowalny {
+public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements Listener, Przeładowalny {
 	public static class Rozwój extends Mapowany {
-		public static class Lvl extends Mapowany {
-			static abstract class Bonus extends Mapowany {
-				public abstract void dodajDoItemu(ItemMeta meta);
-			}
-			public static class BonusAttr extends Bonus {
-				@Mapowane Attribute atrybut;
-				@Mapowane double atrybutWartość;
-				@Mapowane Operation sposóbDodania;
-				
-				@Override
-				public void dodajDoItemu(ItemMeta meta) {
-					meta.addAttributeModifier(atrybut, new AttributeModifier("mimi" + atrybut + atrybutWartość + sposóbDodania, atrybutWartość, sposóbDodania));
-				}
-				
-			}
-			public static class BonusEnch extends Bonus {
-				public Enchantment ench;
-				@Mapowane private String enchant;
-				@Mapowane int enchantLvl = 1;
-				
-				
-				@Override
-				protected void Init() {
-					if (enchant != null)
-						ench = Enchantment.getByKey(CraftNamespacedKey.fromString(enchant));
-				}
-				
-				@Override
-				public void dodajDoItemu(ItemMeta meta) {
-					meta.addEnchant(ench, enchantLvl, false);
-				}
-			}
-			
+		public static class Lvl extends Bonusy {
 			@Mapowane double potrzebnyExp; // na następny lvl
-			@Mapowane List<BonusAttr> bonusyAttr;
-			@Mapowane List<BonusEnch> bonusyEnch;
-			@Mapowane List<ItemFlag> flagi;
-			@Mapowane Integer customModelData;
-			@Mapowane String nazwa;
-			@Mapowane Boolean unbreakable;
-			@Mapowane(nieTwórz = true) Material nowyTyp;
-			
-			public void dodajDoItemu(ItemStack item) {
-				ItemMeta meta = item.getItemMeta();
-				bonusyEnch.forEach(bonus -> bonus.dodajDoItemu(meta));
-				bonusyAttr.forEach(bonus -> bonus.dodajDoItemu(meta));
-				if (nazwa != null)
-					meta.setDisplayName(Func.koloruj(nazwa));
-				flagi.forEach(meta::addItemFlags);
-				Func.wykonajDlaNieNull(unbreakable, meta::setUnbreakable);
-				Func.wykonajDlaNieNull(customModelData, meta::setCustomModelData);
-				Func.wykonajDlaNieNull(nowyTyp, item::setType);
-				item.setItemMeta(meta);
-			}
 		}
-
 		
 		public ItemStack stwórzNowy() {
 			net.minecraft.server.v1_16_R2.ItemStack item = CraftItemStack.asNMSCopy(podstawowyItem);
@@ -141,19 +77,20 @@ public class ItemyRPG extends Komenda implements Listener, Przeładowalny {
 	public static final String permEdytor = Func.permisja("itemrpg.edytor");
 	
 	public ItemyRPG() {
-		super("itemrpg", "/itemrpg <itemrpg> (gracz)");
-		Main.dodajPermisje(permEdytor);
+		super("itemrpg", new Config("configi/ItemyRPG"), Rozwój.class);
+		
+		edytor.zarejestrujOnZatwierdz((rozwój, ścieżka) -> rozwój.id = ścieżka);
+		edytor.zarejestrójWyjątek("/itemrpg edytor id", (rozwój, ścieżka) -> null);
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void zabijanie(EntityDeathEvent ev) {
-		Func.wykonajDlaNieNull(ev.getEntity().getKiller(), p -> {
-			p.getInventory().getItemInMainHand();
-		});
+		Func.wykonajDlaNieNull(ev.getEntity().getKiller(), p -> podexp(p, p.getInventory().getItemInMainHand(), () -> exp(ev.getEntity().getType())));
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void kopanie(BlockBreakEvent ev) throws Throwable {
-		podexp(ev.getPlayer(), ev.getPlayer().getInventory().getItemInMainHand(), () -> 2d);
+		if (!ev.isCancelled())
+			podexp(ev.getPlayer(), ev.getPlayer().getInventory().getItemInMainHand(), () -> exp(ev.getBlock().getType()));
 	}
 	
 	//{mimiItemRPG:{rozwoj: String, lvl: int, exp: double}}
@@ -210,7 +147,7 @@ public class ItemyRPG extends Komenda implements Listener, Przeładowalny {
 				if (!tag.isEmpty()) {
 					double ile = supIle.get();
 					if (ile != 0) {
-						Func.wykonajDlaNieNull(configRozwoje.wczytaj(tag.getString("rozwoj")), Rozwój.class, rozwoj -> {
+						Func.wykonajDlaNieNull(config.wczytaj(tag.getString("rozwoj")), Rozwój.class, rozwoj -> {
 							int ilvl = tag.getInt("lvl");
 							if (ilvl == -1)
 								return;
@@ -257,13 +194,11 @@ public class ItemyRPG extends Komenda implements Listener, Przeładowalny {
 		}
 	}
 
-	final static Config configRozwoje = new Config("configi/ItemyRPG");
-	
 	private final static Krotka<Map<Material,   Double>, Double> expZBloków = new Krotka<>(new HashMap<>(), 0d);
 	private final static Krotka<Map<EntityType, Double>, Double> expZMobów  = new Krotka<>(new HashMap<>(), 0d);
 	@Override
 	public void przeładuj() {
-		configRozwoje.przeładuj();
+		super.przeładuj();
 		
 		Config config = new Config("ItemyRPG exp");
 		expZMobów.b  = config.wczytajDouble("domyślne.Moby");
@@ -283,64 +218,7 @@ public class ItemyRPG extends Komenda implements Listener, Przeładowalny {
 	public double exp(EntityType mob) {
 		return expZMobów.a.getOrDefault(mob, expZMobów.b);
 	}
-	@Override
-	public Krotka<String, Object> raport() {
-		return Func.r("Wczytane Rozwoje itemów RPG", configRozwoje.klucze(false).size());
-	}
 	
-	EdytorOgólny<Rozwój> edytor = new EdytorOgólny<>("itemrpg", Rozwój.class);
-	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		switch (args.length) {
-		case 0:
-		case 1:
-			List<String> lista = Lists.newArrayList(configRozwoje.klucze(false));
-			if (sender.hasPermission(permEdytor))
-				lista.add("edytor");
-			return utab(args, lista);
-		case 2:
-			if (args[0].equalsIgnoreCase("edytor") && sender.hasPermission(permEdytor))
-				return utab(args, "-t", "-u");
-			break;
-		case 3:
-			if (args[0].equalsIgnoreCase("edytor") && sender.hasPermission(permEdytor))
-				return utab(args, configRozwoje.klucze(false));
-		}
-		return null;
-	}
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length < 1)
-			return false;
-		if (args[0].equalsIgnoreCase("edytor") && sender.hasPermission(permEdytor)) {
-			if (args.length <= 2 && !edytor.maEdytor(sender))
-				return Func.powiadom(sender, prefix + "/itemrpg edytor -t <itemrpg>");
-			else if (args.length >= 2 && args[1].equals("-t"))
-				args[2] = "configi/ItemyRPG|" + args[2];
-			return edytor.onCommand(sender, "itemrpg", args);
-		}
-		
-		Player p = null;
-		
-		if (sender instanceof Player)
-			p = (Player) sender;
-		
-		if (args.length >= 2)
-			try {
-				p = (Player) Bukkit.selectEntities(sender, args[1]).get(0);
-			} catch (Throwable e) {
-				return Func.powiadom(sender, prefix + "Niepoprawny gracz %s", args[1]);
-			}
-		
-		if (p == null)
-			return Func.powiadom(sender, prefix + "/" + label + " <itemrpg> <nick>");
-		
-		Player gracz = p;
-		Func.wykonajDlaNieNull(configRozwoje.wczytaj(args[0]), Rozwój.class,
-				rozwój -> Func.dajItem(gracz, rozwój.stwórzNowy()),
-				() -> sender.sendMessage(prefix + "Nieprawidłowy itemrpg: " + args[0])
-				);
-		
-		return true;
-	}
+	@Override public ItemStack	getItem(Rozwój rozwój)	{ return rozwój.stwórzNowy(); }
+	@Override public String		getPrefix()				{ return prefix; }
 }

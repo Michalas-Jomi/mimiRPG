@@ -30,8 +30,8 @@ import me.jomi.mimiRPG.util.Napis;
 
 
 public class EdytorOgólny<T> {
-	String komenda;
-	Class<T> clazz;
+	public final String komenda;
+	public final Class<T> clazz;
 	
 	@SuppressWarnings("serial")
 	public static class DomyślnyWyjątekException extends Error {}
