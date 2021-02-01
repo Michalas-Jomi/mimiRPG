@@ -109,7 +109,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			
 			
 			if (sekcja.contains("drop")) {
-				drop = Lists.newArrayList(); // TODO dopisać w szablonie
+				drop = Lists.newArrayList();
 				for (Map<String, Object> mapa : (List<Map<String, Object>>) sekcja.get("drop"))
 					drop.add(new Krotka<>((double) mapa.get("szansa"), Config.item(mapa.get("item"))));
 			}
@@ -117,17 +117,14 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			
 			szansa = sekcja.getDouble("Szansa", 1);
 
-			// TODO dopisać w szablonie
 			atakujGraczy = sekcja.getBoolean("atakujGraczy", false);
 			
-			// TODO dopisać w szablonie
 			blokujTransformacje = sekcja.getBoolean("blokujTransformacje", false);
 			
 
 			if (sekcja.contains("Rumak"))
 				rumak = new Mob(sekcja.getConfigurationSection("Rumak"));
 		
-			// TODO dopisać w szablonie
 			exp = (Integer) sekcja.get("exp", null);
 		}
 		

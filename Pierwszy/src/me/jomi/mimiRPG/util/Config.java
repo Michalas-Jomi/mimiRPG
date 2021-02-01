@@ -28,7 +28,7 @@ public class Config {
 	private String sciezka;
 	
 	public Config(String nazwa) {
-		this.sciezka = Main.path + nazwa;
+		this.sciezka = Main.path + nazwa.replace('\\', '/');
 			if (!nazwa.endsWith(".yml"))
 				this.sciezka += ".yml";
 		this.sciezkaJarDomyślny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
@@ -97,7 +97,9 @@ public class Config {
 	public Map<String, Object> mapa(boolean pełna) {
 		return plik.getValues(pełna);
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public <T> T   wczytajPewny  (String sciezka) {return (T) plik.get(sciezka);}
 	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}
 	public int 	   wczytajInt	 (String sciezka) {return plik.getInt(sciezka);}
 	public boolean wczytajBoolean(String sciezka) {return plik.getBoolean(sciezka);}

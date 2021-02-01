@@ -212,9 +212,9 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		@Override
 		protected void Init() {
 			if (nazwa == null)
-				nazwa = Func.losujZnaki(10, 20, "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890");
-			else if (nazwa.contains(":") || nazwa.contains("."))
-				throw new Error("Nazwa kryterium osiągnięcia nie może zawierać znaków \":\" i \".\""); // TODO tylko \w
+				nazwa = Func.losujZnaki(10, 20, "qwertyuiopasdfghjklzxcvbnm");
+			else if (!Pattern.compile("[0-9a-z]+").matcher(nazwa).matches())
+				throw new Error("Nazwa kryterium osiągnięcia musi zawierać jedynie miałe znaki alfabetu łacińskiego i cyfry");
 			
 			if (typ.wymaganaLista) {
 				co = Lists.newArrayList();

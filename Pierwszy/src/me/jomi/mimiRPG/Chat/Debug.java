@@ -97,14 +97,8 @@ public class Debug extends Komenda {
 			if (obj == null)
 				return Func.powiadom(sender, "null");
 			
-			// TODO napisać rekurencyjnie
-			if (obj.getClass().isArray()) {
-				sender.sendMessage("[");
-				for (Object o : ((Object[]) obj))
-					sender.sendMessage(o.toString());
-				sender.sendMessage("]");
-			} else
-				sender.sendMessage(obj.toString());
+			if (obj.getClass().isArray())
+				sender.sendMessage(Func.arrayToString((Object[]) obj));
 		} catch (Throwable e) {
 			sender.sendMessage("§cNiepowodzenie " + e.getClass().getSimpleName() + " " + e.getMessage());
 			e.printStackTrace();
@@ -117,7 +111,7 @@ public class Debug extends Komenda {
 			if (parametry.size() == 1 && parametry.get(0).isEmpty())
 				parametry.clear();
 			Object[] args = new Object[parametry.size()];
-			for (Method met : Func.głębokiSkanKlasyM(klasa))
+			for (Method met : Func.dajMetody(klasa))
 				if (met.getName().equals(co))
 					try {
 						for (int i=0; i < args.length; i++)

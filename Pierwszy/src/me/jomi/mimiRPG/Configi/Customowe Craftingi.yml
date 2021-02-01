@@ -1,9 +1,11 @@
 # <nazwa itemu>:
 #   item: <item>
+#   grupa: <nazwa grupy> # opcjonalne # craftingi z tą samą grupą będą w księdze receptór współdzielić okienko, ppm na okienko pokazuje pojedyńcze craftingi z grupy
+#   typ: shaped # opcjonalne domyślnie shaped # określa rodzaj craftingu
 #   układ: <lista paternów>
 #   <rozpisaka paternów> (tzn patern: materiał)
 #
-# Przykłady:
+## Przykłady:
 #
 # Moneta:
 #   item:
@@ -23,12 +25,25 @@
 #   - 'ABA'
 #   - 'BCB'
 #   - 'ABA'
-#   A: Air
+#   A: Air # typ itemu lub Tag z sekcji Tagi
 #   B: Gold_Ingot
 #   C: Iron_Ingot
+#
 # LootbagRzadki:
 #   item: lootbagRzadki (z Customowe Itemy.yml)
 #   układ:
 #   - 'SS'
 #   - 'SS'
 #   S: LIME_SHULKER_BOX
+
+# reszta kluczy to nazwy craftingów
+Tagi:
+  # nazwa tagu
+  przykładowyTag:
+  # akceptowalne materiały
+  - Stone
+  - Cobblestone
+  - Andensite
+  
+  
+  

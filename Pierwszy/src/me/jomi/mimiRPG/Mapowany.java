@@ -57,11 +57,6 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 		return w;
 	}
 	
-	@Override
-	public String toString() {
-		return String.format("%s(%s)", this.getClass().getSimpleName(), mapowane());
-	}
-	
 	private HashMap<String, Object> mapowane() {
 		HashMap<String, Object> mapa = new HashMap<>();
 		

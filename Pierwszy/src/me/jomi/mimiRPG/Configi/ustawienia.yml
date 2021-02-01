@@ -348,7 +348,38 @@ Antylog:
     - '/w'
     - '/t'
     - '/me'
-    
+
+
+#################
+### KompasPvP ###
+
+KompasPvP:
+  # limit użyć kompasu
+  # jeśli nie jest równe -1 kompasy zamiast odświeżać się co jakiś czas są odświeżane jedynie przy ich uzyciu (ppm)
+  limit odświeżania: -1 # opcjonalne domyślnie -1
+  # czas w tickach co ile sie ma odświeżać kompass
+  odświeżanie ticki: 20 # opcjonalne domyślnie 20
+  # gracze odświeżani na raz co "odświeżanie ticki"
+  odświeżanie gracze na raz: 10 # opcjonalne domyślnie 10
+
+#############################
+### CustomowyDropŁowienie ###
+
+Customowy Drop Łowienie:
+  #drop:# <Drop>
+
+
+######################  
+### LepszeEnchanty ###
+
+# Księga lepszegoEnchantu polega na tym że w ekwipunku (nie gamemode creative)
+# można nałożyć enchant na itemek poprzez branie książki na kursor
+# i klikanie ppm na itemek do zenchantowania
+LepszeEnchanty:
+  # jeśli na true książkami Lepszych Enchantów będą tylko te z flagą HIDE_ENCHANTS
+  # w innym przypadku będą to wszystkie enchantowane książki
+  wymagana Flaga enchantów: true # opcjonalne domyślnie true
+
 
 ###############
 ### Minigry ###

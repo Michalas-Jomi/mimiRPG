@@ -46,8 +46,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
-// TODO szablonowy config
-
 @Moduł
 public class Karabiny implements Listener, Przeładowalny {
 	public static class Karabin extends Mapowany {

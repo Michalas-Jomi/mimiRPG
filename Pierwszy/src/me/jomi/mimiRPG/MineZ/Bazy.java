@@ -555,7 +555,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		int idTasku;
 		void atak() {
 			if (atakowana)
-				Bukkit.getScheduler().cancelTask(idTasku); // TODO uzupełnić szablon
+				Bukkit.getScheduler().cancelTask(idTasku);
 			else
 				for (String nick : region.getOwners().getPlayers())
 					Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(prefix + "Twoja baza jest §cAtakowana!"));
@@ -722,7 +722,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		World w = ev.getEntity().getWorld();
 		for (int i=0; i<ile; i++) {
 			Snowball s = (Snowball) w.spawnEntity(loc, EntityType.SNOWBALL);
-			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5)); // TODO większy multiply
+			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5));
 			Func.ustawMetadate(s, "mimiC4Sniezka", explozja);
 		}
 		

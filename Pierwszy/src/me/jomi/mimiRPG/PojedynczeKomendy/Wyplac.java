@@ -21,6 +21,7 @@ import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
+
 import net.milkbowl.vault.economy.EconomyResponse;
 
 @Moduł
@@ -51,7 +52,7 @@ public class Wyplac extends Komenda implements Listener {
 		return true;
 	}
 	private static ItemStack dajBanknot(double kwota, int ile) {
-		ItemStack item = Func.stwórzItem(Material.PAPER, ile, "&9&lBanknot§2", Arrays.asList("&bUżyj prawym przyciskiem myszy", "&bWartość:&a " + Func.DoubleToString(kwota)));
+		ItemStack item = Func.stwórzItem(Material.PAPER, ile, "§9§lBanknot§2", Arrays.asList("&bUżyj prawym przyciskiem myszy", "&bWartość:&a " + Func.DoubleToString(kwota)));
 		return Func.ukryj(Func.enchantuj(item, Enchantment.ARROW_INFINITE, 1), ItemFlag.HIDE_ENCHANTS);
 	}
 	
@@ -135,6 +136,4 @@ public class Wyplac extends Komenda implements Listener {
 		p.getInventory().addItem(dajBanknot(kwota, ile));
 		return Func.powiadom(p, prefix + "Utworzono banknot o wartości:§e " + Func.DoubleToString(kwota) + "§6 w ilości §e" + ile);
 	}
-	
-	
 }

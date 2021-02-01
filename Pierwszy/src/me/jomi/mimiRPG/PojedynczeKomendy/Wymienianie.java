@@ -75,8 +75,13 @@ public class Wymienianie implements Listener{
 	private static void wyłączHandel(Player p1, Player p2) {
 		handlujący.remove(p1.getName());
 		handlujący.remove(p2.getName());
+		
 		prozby.remove(p1.getName());
 		prozby.remove(p2.getName());
+
+		Func.dajItem(p1, p1.getItemOnCursor()); p1.setItemOnCursor(null);
+		Func.dajItem(p2, p2.getItemOnCursor()); p2.setItemOnCursor(null);
+		
 		p1.closeInventory();
 		p2.closeInventory();
 	}
@@ -135,7 +140,8 @@ public class Wymienianie implements Listener{
 			p.sendMessage(prefix  + "Wysłano propozycję handlu do gracza §e"   + nick2);
 			p2.sendMessage(prefix + "Otrzymano propozycję handlu od gracza §e" + nick1);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-			    public void run() {
+			    @Override
+				public void run() {
 			    	if (nick2.equals(prozby.get(nick1)) && !handlujący.contains(nick1)) {
 			    		prozby.remove(nick1);
 			    		p.sendMessage(prefix  + "Propozycja handlu z graczem §e" + nick2 + "§6 wygasła");

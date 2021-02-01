@@ -6,6 +6,17 @@ public abstract class MimiObject {
 	public abstract String[] dajSprawdzanePola();
 
 	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		for (String pole : dajSprawdzanePola())
+			try {
+				str.append(", ").append(pole).append('=').append(Func.dajField(this.getClass(), pole).get(this));
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		return String.format("%s(%s)", this.getClass().getSimpleName(), str.isEmpty() ? "" : str.substring(2));
+	}
+	@Override
 	public int hashCode() {
 		String[] nazwy = dajSprawdzanePola();
 		
@@ -24,8 +35,6 @@ public abstract class MimiObject {
 		
 		return w;
 	}
-	
-	
 	@Override
 	public boolean equals(Object obj) {
 		String[] sprawdzanePola = dajSprawdzanePola();

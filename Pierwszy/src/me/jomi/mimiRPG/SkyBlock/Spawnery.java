@@ -506,7 +506,6 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		// TODO raport spawnerów
 		int x = 0;
 		try {
 			x = Main.ust.sekcja("Spawnery.ulepszenia").getKeys(false).size();

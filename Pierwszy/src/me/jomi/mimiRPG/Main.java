@@ -140,6 +140,9 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	@Override
 	public void onEnable() {
+		boolean wl = getServer().hasWhitelist();
+		getServer().setWhitelist(true);
+		
 		włączVault();
 		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
 		
@@ -158,6 +161,8 @@ public class Main extends JavaPlugin implements Listener {
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
+
+		getServer().setWhitelist(wl);
 		
 		pluginEnabled = true;
 		przeładowywanaBukkitData = false;
@@ -277,8 +282,11 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	static final List<Przeładowalny> doPrzeładowywaniaBukkitData = Lists.newArrayList();
 	public static void reloadBukkitData() {
+		boolean wl = plugin.getServer().hasWhitelist();
+		plugin.getServer().setWhitelist(true);
+		
 		przeładowywanaBukkitData = true;
-		for (Przeładowalny p : doPrzeładowywaniaBukkitData)
+		for (Przeładowalny p : Przeładowalny.przeładowalne.values())
 			if (Main.włączonyModół(p.getClass()))
 				p.preReloadBukkitData();
 		Bukkit.getServer().reloadData();
@@ -286,6 +294,8 @@ public class Main extends JavaPlugin implements Listener {
 			if (Main.włączonyModół(p.getClass()))
 				Przeładuj.przeładuj(Bukkit.getConsoleSender(), p.getClass().getSimpleName());
 		przeładowywanaBukkitData = false;
+		
+		plugin.getServer().setWhitelist(wl);
 	}
 	
 	
@@ -327,7 +337,6 @@ public class Main extends JavaPlugin implements Listener {
 	public void zamykanieEqtaknie(InventoryCloseEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), PanelTakNieHolder.class, holder -> Func.wykonajDlaNieNull(holder.nie, Runnable::run));
 	}
-	
 	
 	public static void chwilowyGodMode(Entity p, int sekundy) {
 		if (p.isInvulnerable()) return;

@@ -75,7 +75,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 			break;
 		case "craftingulepszenia":
 		case "craftingulepszenie":
-		case "cu": // TODO uzupełnić szablon
+		case "cu":
 			rec = CustomoweCraftingiUlepszanie.wczytaj(config, nms, klucz);
 			break;
 		default:

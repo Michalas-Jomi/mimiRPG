@@ -38,7 +38,7 @@ public class CustomowyDropŁowienie implements Listener, Przeładowalny {
 	
 	@Override
 	public void przeładuj() {
-		drop = Main.ust.wczytajDrop("Customowy Drop Łowienie.drop"); //TODO dodać szablon w configu
+		drop = Main.ust.wczytajDrop("Customowy Drop Łowienie.drop");
 	}
 	@Override
 	public Krotka<String, Object> raport() {

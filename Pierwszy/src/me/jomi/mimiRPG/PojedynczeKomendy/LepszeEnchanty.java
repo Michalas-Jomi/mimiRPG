@@ -65,7 +65,7 @@ public class LepszeEnchanty implements Listener, Przeładowalny {
 			ev.getCursor().setItemMeta(ksiazka);
 	}
 
-	boolean wymaganaFlaga() { // TODO dodać w szablonie
+	boolean wymaganaFlaga() {
 		return Main.ust.wczytajLubDomyślna("LepszeEnchanty.wymagana Flaga enchantów", true);
 	}
 	

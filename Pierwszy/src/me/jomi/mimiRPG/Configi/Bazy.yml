@@ -4,7 +4,18 @@ ustawienia:
   prority baz: 3
   msg wejścia: '§6Wszedłeś na teren bazy gracza {gracz}'
   msg wyjścia: '§6Wyszedłeś z terenu bazy gracza {gracz}'
+  długość rajdów: 120 # opcjonalne domyślnie 120 # sekundy przez które nie można budować w bazie gdy jest ona atakowana
 
+  śnieżki w C4: 50 # opcjonalne domyślnie 50 # śnieżki respione przy wybuchu C4
+  ticki snieżek c4: 10 # opcjonalne domyślnie 10 # ticki przez które śnieżki się rozlatują po wybuchu C4 zanim zostaną usunięte
+  
+  # określają w jakich godzinach nie można rajdować baz
+  godzinyRajdów:
+    min godz safe: 0 # opcjonalne domyślnie 0
+    max godz safe: 0 # opcjonalne domyślnie 0
+  
+max osób w gildi: 4 # opcjonalne domyślnie 4 # oznacza maksymalną ilość osób w gildi
+  
 # Ustawnienia c4
 # Bloki nieuwzględnione zamieniają sie w AIR
 c4:

@@ -390,7 +390,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		public int policzPunkty(Minigra minigra) {
 			Box<Integer> punkty = new Box<>(0);
 
-			Func.głębokiSkanKlasy(getClass()).forEach(field -> {
+			Func.dajFields(getClass()).forEach(field -> {
 				if (field.isAnnotationPresent(Mapowane.class)) {
 					try {
 						punkty.a += field.getInt(this) * Main.ust.wczytajLubDomyślna("Minigry." + minigra.getClass().getSimpleName() + ".punktacja." + field.getName(), 0);
@@ -443,8 +443,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				format = format.replace("%nick%", p.getName());
 				format = format.replace("%displayname%", p.getDisplayName());
 				if (Main.chat != null) {
-					format = format.replace("%prefix%", Main.chat.getPlayerPrefix(p));
-					format = format.replace("%suffix%", Main.chat.getPlayerSuffix(p));
+					format = format.replace("%prefix%", Func.koloruj(Main.chat.getPlayerPrefix(p)));
+					format = format.replace("%suffix%", Func.koloruj(Main.chat.getPlayerSuffix(p)));
 				}
 				TriKrotka<String, Integer, String> krotka = new TriKrotka<>(p.getName(), akt, Func.koloruj(format));
 				int index = Func.insort(krotka, topka, k -> (double) -k.b);
@@ -529,7 +529,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			});
 			topki.put(pole, topka);
 		};
-		Func.głębokiSkanKlasy(noweStaty().get().getClass()).forEach(field -> {
+		Func.dajFields(noweStaty().get().getClass()).forEach(field -> {
 			if (field.isAnnotationPresent(Mapowane.class))
 				wczytaj.accept(field.getName());
 		});

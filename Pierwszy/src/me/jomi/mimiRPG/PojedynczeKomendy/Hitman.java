@@ -201,7 +201,6 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 		});
 	}
 	
-	
 	final HashMap<String, Player> wyznaczający = new HashMap<>();
 	void wyznaczNagrode(Player p, Player kogo) {
 		wyznaczający.put(p.getName(), kogo);

@@ -16,6 +16,8 @@ szansa zrespawnowania w nocy: .3
 #   Imie zawsze widoczne: <true / false> # opcjonalne domyślnie false
 #   NBT: <nbt> # nbttag dla moba # opcjonalne
 #   Szansa: <szansa> # opcjonalne # szansa na zrespienie moba
+#   atakujGraczy: <true / false> # opcjonalne domyślnie false # jeśli true AI moba zostanie zresetowana i będzie on atakować tylko graczy
+#   blokujTransformacje: <true / false> # opcjonalne domyślnie false # jeśli true mob nie będzie mógł się przemienić (np z zombie w drowena)
 #   Atrybuty:
 #     <nazwa atrybutu>: <wartość>
 #   Itemki: # brak tej opcji spowoduje randomowy ekwipunek
@@ -25,6 +27,13 @@ szansa zrespawnowania w nocy: .3
 #     Buty: <item> # opcjonalne
 #     Ręka: <item> # opcjonalne
 #     Lewa Ręka: <item> # opcjonalne
+#   exp: <ilość> # opcjonalne # exp z moba
+#   drop:
+#   - item: <item1>
+#     szansa: <szansa1>
+#   - item: <item2>
+#     szansa: <szansa2>
+#   - ...
 #   Bloki: <lista bloków na których może sie zrespić> # opcjonalne
 #   Rumak: _mob_
 #

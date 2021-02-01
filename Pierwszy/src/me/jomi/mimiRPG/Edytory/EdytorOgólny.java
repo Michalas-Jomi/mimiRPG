@@ -287,7 +287,7 @@ public class EdytorOgólny<T> {
 			if (objekt instanceof ConfigurationSerializable && !objekt.getClass().getName().startsWith("org.bukkit")) {
 				pref += "-";
 				Napis n = new Napis((wLiście ? "\n" : "")).dodaj(new Napis(pref, "§bKliknij aby ustawić null\n§3" + nazwa, scieżka + ">> null")).dodaj("§9" + nazwa);
-				for (Field field : Func.głębokiSkanKlasy(objekt.getClass())) {
+				for (Field field : Func.dajFields(objekt.getClass())) {
 					field.setAccessible(true);
 					if (field.isAnnotationPresent(Mapowane.class)) {
 						n.dodaj("\n");

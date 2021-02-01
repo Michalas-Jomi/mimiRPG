@@ -66,7 +66,7 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 			Func.multiTry(
 					() -> k.a = mob.getKiller().getName(),
 					() -> k.a = mob.getCustomName(),
-					() -> k.a = ((Player) mob.getKiller()).getDisplayName()
+					() -> k.a = mob.getKiller().getDisplayName()
 			);
 			if (k.a == null)
 				p.sendMessage(prefix + "Twój wilk umarł!");
@@ -133,17 +133,6 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Wilczki są dla graczy ziom");
 		Player p = (Player) sender;
-		// systematyczny, dobrze ubrany, w średnim wieku, muskularny, chudy, suchy, ranny ptaszek, bezrobotny, zaczytany, zachłanny kolekcjoner, zagubiony, rządny przygód
-		// cogite ergo sum myślę więc jestem TODO usunąć
-		// pascal
-		// wiara to droga do szczęścia
-		// zródłem wiary jest serce a nie rozum
-		// zakład pascala / 129
-
-		// warto wierzyuć, bo gdy bóg jest zyskujemy życie wieczne inaczej nic nie tracimy
-		
-		// człowiek jest tylko trzciną najwątlejszą w przyrodzie, ale trzciną myslącą
-		// człowiek jest elastyczny, ale myślący
 		
 		Supplier<Consumer<Wilk>> dajCons = () -> {
 			if (args.length >= 1) 

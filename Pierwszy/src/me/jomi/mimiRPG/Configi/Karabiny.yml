@@ -1,0 +1,99 @@
+Przykładowy Karabin:
+  ==: me.jomi.mimiRPG.Mapowany
+  =mimi=: me.jomi.mimiRPG.MineZ.Karabiny$Karabin
+  
+  # Wymagane musi zgadzać się z kluczem powyżej
+  nazwa: Przykładowy Karabin
+  
+  # opcjonalne domyślnie 1
+  # poziom sloowners przy przybliżaniu
+  przybliżenie: 250 
+  
+
+  ## Dzwięki
+  
+  # opcjonalne domyślnie 2.0
+  # wysokość dzwięku strzału
+  dzwiękPitch: 1.0 
+  
+  # opcjonalne domyślnie ENTITY_WITHER_SHOOT
+  # dzwięk odtwarzany przy strzale
+  dzwiękStrzału: ENTITY_CHICKEN_HURT
+  
+  # opcjonalne domyślnie 1.0
+  głośność: 1.0
+
+  
+  ## Pociski
+  
+  # opcjonalne domyślnie 1
+  # ilość pocisków wystrzeliwanych na raz
+  pociski: 1
+  
+  # opcjonalne domyślnie 0
+  # cooldown między pociskami
+  cooldownPocisków: 0
+  
+  # opcjonalne domyślnie ARROW
+  # rodzaj pocisku wystrzeliwany z karabinu
+  typPocisku: SNOWBALL
+  
+  # opcjonalne domyślnie 0.0
+  # określa nieprecyzyjność strzałów
+  rozrzucenie: 0.0
+  
+  # opcjonalne domyślnie 0.0
+  # w sekundach czas przeładowywania karabinu
+  attackCooldown: 10.0
+  
+  # opcjonalne domyślnie 3.0
+  # określa jak daleko i jak szybko leci pocisk
+  siłaStrzału: 4.0
+  
+  
+  ## Obrażenia
+  
+  # opcjonalne domyślne 2.0
+  # dmg strzału karabinu
+  dmg: 27.0
+  
+  # opcjonalne domyślnie 0.0
+  # siła rażenia sktrzału
+  mocWybuchu: 0.0
+  
+  
+  ## Itemy
+  
+  # opcjonalne
+  # amunicja do karabinu
+  ammo:
+    ==: org.bukkit.inventory.ItemStack
+    v: 2580
+    type: FLINT
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: §6Amunicja 12,7mm
+      custom-model-data: 2
+  
+  # item karabinu
+  item:
+    ==: org.bukkit.inventory.ItemStack
+    v: 2580
+    type: CROSSBOW
+    meta:
+      ==: ItemMeta
+      meta-type: CROSSBOW
+      display-name: §7§lPrzykładowy Karabin
+      lore:
+      - §7Wyobrażasz sobie kogoś zabić jednym strzałem?
+      custom-model-data: 2
+      ItemFlags:
+      - HIDE_UNBREAKABLE
+      - HIDE_POTION_EFFECTS
+      Unbreakable: true
+      charged: true
+      charged-projectiles:
+      - ==: org.bukkit.inventory.ItemStack
+        v: 2580
+        type: ARROW

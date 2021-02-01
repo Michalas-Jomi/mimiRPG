@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -243,6 +245,21 @@ public abstract class Func {
 	}
 	public static String locBlockToString(Location loc) {
 		return String.format("%sx %sy %sz", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	}
+	public static String arrayToString(Object[] array) {
+		return arrayToStringBuffer(array).toString();
+	}
+	private static StringBuffer arrayToStringBuffer(Object[] array) {
+		StringBuffer strB = new StringBuffer('[');
+		for (int i=0; i < array.length; i++) {
+			if (array[i] == null)
+				strB.append("null");
+			else if (array[i].getClass().isArray())
+				strB.append(arrayToStringBuffer((Object[]) array[i]));
+			else
+				strB.append(array[i]);
+		}
+		return strB.append(']');
 	}
 	
 	public static String odkoloruj(String text) {
@@ -1234,7 +1251,7 @@ public abstract class Func {
 			}
 
 		try {
-			for (Field field : głębokiSkanKlasy(clazz)) {
+			for (Field field : dajFields(clazz)) {
 				field.setAccessible(true);
 				if (field.isAnnotationPresent(Mapowane.class) && !field.getDeclaredAnnotation(Mapowane.class).nieTwórz() && field.get(obj) == null) {
 					if (List.class.isAssignableFrom(field.getType()))
@@ -1256,7 +1273,7 @@ public abstract class Func {
 	public static Map<String, Object> zmapuj(Object obj) {
 		Map<String, Object> mapa = new HashMap<String, Object>();
 		Class<?> clazz = obj.getClass();
-		for (Field field : głębokiSkanKlasy(clazz))
+		for (Field field : dajFields(clazz))
 			try {
 				if (!field.isAnnotationPresent(Mapowane.class)) continue;
 				field.setAccessible(true);
@@ -1466,52 +1483,56 @@ public abstract class Func {
 		
 	}
 
-	public static List<Field> głębokiSkanKlasy(Class<?> clazz) {
-		return głębokiSkanKlasy(clazz, Sets.newConcurrentHashSet());
-	}
-	private static List<Field> głębokiSkanKlasy(Class<?> clazz, Set<String> nazwyfieldsów) {
-		List<Field> lista = Lists.newArrayList();
-		if (clazz == null || clazz.getName().equals(Object.class.getName()))
-			return lista;
-		// TODO połączyć głębokiSkanKlasy i głębokiSkanKlasyM bo mają wiele wspólnego
-		for (Field field : clazz.getDeclaredFields())
-			if (nazwyfieldsów.add(field.getName())) {
-				field.setAccessible(true);
-				lista.add(field);
-			}
-		
-		for (Field field : głębokiSkanKlasy(clazz.getSuperclass(), nazwyfieldsów))
-			lista.add(field);
-		
-		return lista;
-	}
 	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
-		Field field = _dajField(clazz, nazwa);
-		field.setAccessible(true);
-		return field;
-	}
-	private static Field _dajField(Class<?> clazz, String nazwa) throws Throwable {
-		if (clazz.getName().equals(Object.class.getName()))
-			throw new NoSuchFieldException();
-		try {
-			return clazz.getDeclaredField(nazwa);
-		} catch (NoSuchFieldException e) {
-			return dajField(clazz.getSuperclass(), nazwa);
-		}
+		return dajZKlasy(clazz, NoSuchFieldException.class, klasa -> klasa.getDeclaredField(nazwa));
 	}
 	public static Method dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
-		Method met = _dajMetode(clazz, nazwa, klasy);
-		met.setAccessible(true);
-		return met;
+		return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getDeclaredMethod(nazwa, klasy));
 	}
-	private static Method _dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
-		if (clazz.getName().equals(Object.class.getName()))
-			throw new NoSuchMethodException();
+	@SuppressWarnings("unchecked")
+	public static <T> Constructor<T> dajKonstruktor(Class<T> clazz, Class<?>... klasy) throws Throwable {
+		return (Constructor<T>) dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getDeclaredConstructor(klasy));
+	}
+	private static interface dajZKlasyInterface<R> {
+		R call(Class<?> clazz) throws Throwable;
+	}
+	private static <T extends AccessibleObject> T dajZKlasy(Class<?> clazz, Class<?> error, dajZKlasyInterface<T> getDeclared) throws Throwable {
 		try {
-			return clazz.getDeclaredMethod(nazwa, klasy);
-		} catch (NoSuchMethodException e) {
-			return dajMetode(clazz.getSuperclass(), nazwa);
+			T obj = getDeclared.call(clazz);
+			obj.setAccessible(true);
+			return obj;
+		} catch (Throwable e) {
+			if (e.getClass().isAssignableFrom(error))
+				if (clazz.getName().equals(Object.class.getName()))
+					throw e;
+				else
+					return dajZKlasy(clazz.getSuperclass(), error, getDeclared);
+			throw e;
 		}	
+	}
+	public static List<Field> dajFields(Class<?> clazz) {
+		return dajZKlasy(clazz, Sets.newConcurrentHashSet(), Class::getDeclaredFields, Field::getName);
+	}
+	public static List<Method> dajMetody(Class<?> clazz) {
+		return dajZKlasy(clazz, Sets.newConcurrentHashSet(), Class::getDeclaredMethods, Method::getName);
+	}
+	private static <T extends AccessibleObject> List<T> dajZKlasy(Class<?> clazz, Set<String> nazwy, Function<Class<?>, T[]> getDeclared, Function<T, String> name) {
+		List<T> lista = Lists.newArrayList();
+		
+		if (clazz == null)
+			return lista;
+		
+		for (T obj : getDeclared.apply(clazz))
+			if (nazwy.add(name.apply(obj))) {
+				obj.setAccessible(true);
+				lista.add(obj);
+			}
+
+		if (!clazz.getName().equals(Object.class.getName()))
+			for (T obj : dajZKlasy(clazz.getSuperclass(), nazwy, getDeclared, name))
+				lista.add(obj);
+		
+		return lista;
 	}
 	public static List<Class<?>> dajKlasy(Class<?> clazz) {
 		List<Class<?>> lista = Lists.newArrayList(clazz);
@@ -1525,25 +1546,6 @@ public abstract class Func {
 			if (clazz.isAssignableFrom(Character.class))lista.add(char.class);
 			lista.add(clazz = clazz.getSuperclass());
 		}
-		
-		return lista;
-	}
-	public static List<Method> głębokiSkanKlasyM(Class<?> clazz) {
-		return głębokiSkanKlasyM(clazz, Sets.newConcurrentHashSet());
-	}
-	private static List<Method> głębokiSkanKlasyM(Class<?> clazz, Set<String> nazwyMethod) {
-		List<Method> lista = Lists.newArrayList();
-		if (clazz == null || clazz.getName().equals(Object.class.getName()))
-			return lista;
-		
-		for (Method met : clazz.getDeclaredMethods())
-			if (nazwyMethod.add(met.getName())) {
-				met.setAccessible(true);
-				lista.add(met);
-			}
-		
-		for (Method met : głębokiSkanKlasyM(clazz.getSuperclass(), nazwyMethod))
-			lista.add(met);
 		
 		return lista;
 	}

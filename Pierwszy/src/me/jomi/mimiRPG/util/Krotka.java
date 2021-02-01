@@ -57,7 +57,7 @@ public class Krotka<T1, T2> extends Mapowany {
 	}
 	
 	protected final Object[] dajWartości() {
-		List<Field> pola = Func.głębokiSkanKlasy(this.getClass());
+		List<Field> pola = Func.dajFields(this.getClass());
 		Object[] wartości = new Object[pola.size()];
 		
 		try {

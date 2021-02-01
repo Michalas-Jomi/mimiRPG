@@ -2764,16 +2764,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		wc.generator(Main.plugin.getName() + ":skyblock");
 		wc.generator(generatorChunków);
 		wc.generateStructures(false);
-		wc.type(WorldType.FLAT);
+		wc.type(WorldType.NORMAL);
 		wc.environment(env);
 		World w = wc.createWorld();
 
 		if (Bukkit.getPluginManager().getPlugin("Multiverse-Core") != null)
 			Bukkit.getScheduler().runTask(Main.plugin, () -> {
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-						"mv import " + nazwa + " " + env + " -g " + Main.plugin.getName() + ":skyblock");
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-						"mv modify set generator " + Main.plugin.getName() + ":skyblock " + nazwa);
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mv import " + nazwa + " " + env + " -g " + Main.plugin.getName() + ":skyblock");
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mv modify set generator " + Main.plugin.getName() + ":skyblock " + nazwa);
 			});
 
 		return w;
@@ -2848,15 +2846,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		boolean dp = gracz.test(ev.getDamager());
 		boolean ep = gracz.test(ev.getEntity());
 		
-		Player p;
-		if (dp)
-			p = (Player) (ev.getDamager() instanceof Player ? ev.getDamager() : ((Projectile) ev.getDamager()).getShooter());
-		else
-			p = (Player) ev.getEntity();
-		
 		if ((dp || ep) && !(dp && ep))
 			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getDamager().getLocation()), wyspa -> {
-				if (!wyspa.permisje(p).bicie_mobów)
+				if (!wyspa.permisje(
+						dp ?
+						((Player) (ev.getDamager() instanceof Player ? ev.getDamager() : ((Projectile) ev.getDamager()).getShooter()))
+						:
+						(Player) ev.getEntity()).bicie_mobów
+						)
 					ev.setCancelled(true);
 			});
 	}

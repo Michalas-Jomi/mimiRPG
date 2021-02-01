@@ -296,7 +296,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		switch (args.length) {
 		case 0:
 		case 1:
-			return utab(args, "edytuj", "klucz", "skrzynka", "edytor"); // TODO rozbudować
+			return utab(args, "edytuj", "klucz", "skrzynka", "nowa");
 		case 2:
 			return utab(args, config.klucze(false));
 		}

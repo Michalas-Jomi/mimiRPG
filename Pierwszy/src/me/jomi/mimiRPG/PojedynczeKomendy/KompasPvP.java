@@ -20,13 +20,14 @@ import org.bukkit.inventory.PlayerInventory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Zegar;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 
 @Moduł
 public class KompasPvP implements Zegar, Listener {
@@ -93,7 +94,6 @@ public class KompasPvP implements Zegar, Listener {
 		});
 	}
 	
-	// TODO szablon w configu
 	@Override
 	public int czas() {
 		if (getOdświeżanie() != -1)
