@@ -146,6 +146,8 @@ public class Main extends JavaPlugin implements Listener {
 		włączVault();
 		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
 		
+		
+		
 		zarejestruj(this);
 		zarejestruj(new Baza());
 		new Mimi();

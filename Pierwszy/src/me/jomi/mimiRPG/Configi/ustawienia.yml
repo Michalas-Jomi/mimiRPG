@@ -381,6 +381,22 @@ LepszeEnchanty:
   wymagana Flaga enchantów: true # opcjonalne domyślnie true
 
 
+#########################
+### SiadanieNaBlokach ###
+
+# Pozwala usiąść na bloku przy pomocy siodła
+SiadanieNaBlokach:
+  # <blok>: wysokość bloku
+  # $<kawałekId podobnych bloków>: wysokość bloków
+  Grass_Block: 1
+  Hay Block: 1
+  Bedrock: 1
+  Beacon: 1
+  $stairs: .5
+  $slab: .5
+  $Nylium: 1
+  $Leaves: 1
+
 ###############
 ### Minigry ###
 

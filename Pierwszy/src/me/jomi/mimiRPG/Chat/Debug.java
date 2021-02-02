@@ -42,6 +42,10 @@ public class Debug extends Komenda {
 			StringBuilder strB = new StringBuilder();
 			List<String> parametry = null;
 			for (char znak : Func.listToString(args, 1).toCharArray()) {
+				if (wStringu && znak != '"') {
+					strB.append(znak);
+					continue;
+				}
 				switch (znak) {
 				case '.':
 					if (wNawiasie != 0 || wStringu)
@@ -54,8 +58,6 @@ public class Debug extends Komenda {
 					}
 					break;
 				case '(':
-					if (wStringu)
-						break;
 					if (wNawiasie == 0) {
 						parametry = Lists.newArrayList();
 						metoda = strB.toString();
@@ -64,8 +66,6 @@ public class Debug extends Komenda {
 					wNawiasie++;
 					break;
 				case ')':
-					if (wStringu)
-						break;
 					wNawiasie--;
 					if (wNawiasie == 0) {
 						parametry.add(strB.toString());
@@ -74,12 +74,10 @@ public class Debug extends Komenda {
 						throw new Error("Za dużo nawiasów \")\"");
 					break;
 				case ',':
-					if (wStringu)
-						break;
 					parametry.add(strB.toString());
 					strB = new StringBuilder();
 					break;
-				case '\"':
+				case '"':
 					wStringu = !wStringu;
 					strB.append(znak);
 					break;
@@ -96,9 +94,10 @@ public class Debug extends Komenda {
 			
 			if (obj == null)
 				return Func.powiadom(sender, "null");
-			
 			if (obj.getClass().isArray())
 				sender.sendMessage(Func.arrayToString((Object[]) obj));
+			else
+				sender.sendMessage(obj.toString());
 		} catch (Throwable e) {
 			sender.sendMessage("§cNiepowodzenie " + e.getClass().getSimpleName() + " " + e.getMessage());
 			e.printStackTrace();

@@ -244,6 +244,7 @@ class ChatGrupowyInst {
 		m.setClickEvent(new ClickEvent(Action.RUN_COMMAND, "/cg wbijDo " + zapraszający.getName()));
 		msg.addExtra(m);
 		
+		
 		p.spigot().sendMessage(msg);
 	}
 	public void opuść(CommandSender p, boolean komunikat) {
