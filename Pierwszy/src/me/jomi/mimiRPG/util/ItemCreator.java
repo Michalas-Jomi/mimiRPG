@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG.util;
 
+import java.util.function.Consumer;
+
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -11,53 +13,63 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.google.common.collect.Lists;
 
 public class ItemCreator {
-	public static class Creator {
+	public static class Creator<T extends ItemMeta> {
 		ItemStack item;
-		ItemMeta meta;
+		T meta;
 		
-		public Creator typ(Material mat) {
+		@SuppressWarnings("unchecked")
+		public Creator(ItemStack item, Class<T> clazz) {
+			this.item = item;
+			this.meta = (T) item.getItemMeta();
+		}
+		
+		public Creator<T> typ(Material mat) {
 			item.setType(mat);
 			return this;
 		}
-		public Creator nazwa(String nazwa) {
+		public Creator<T> nazwa(String nazwa) {
 			meta.setDisplayName(Func.koloruj(nazwa));
 			return this;
 		}
-		public Creator lore(String... lore) {
+		public Creator<T> lore(String... lore) {
 			meta.setLore(Func.koloruj(Lists.newArrayList(lore)));
 			return this;
 		}
-		public Creator customModelData(int model) {
+		public Creator<T> customModelData(int model) {
 			meta.setCustomModelData(model);
 			return this;
 		}
-		public Creator enchant(Enchantment ench, int lvl) {
+		public Creator<T> enchant(Enchantment ench, int lvl) {
 			meta.addEnchant(ench, lvl, true);
 			return this;
 		}
-		public Creator flaga(ItemFlag... flagi) {
+		public Creator<T> flaga(ItemFlag... flagi) {
 			for (ItemFlag flaga : flagi)
 				meta.addItemFlags(flaga);
 			return this;
 		}
-		public Creator unbreakable(boolean unbreakable) {
+		public Creator<T> unbreakable(boolean unbreakable) {
 			meta.setUnbreakable(unbreakable);
 			return this;
 		}
-		public Creator unbreakable() {
+		public Creator<T> unbreakable() {
 			meta.setUnbreakable(true);
 			return this;
 		}
-		public Creator localizedName(String nazwa) {
+		public Creator<T> localizedName(String nazwa) {
 			meta.setLocalizedName(nazwa);
 			return this;
 		}
-		public Creator modifire(Attribute attr, AttributeModifier attrmodifier) {
+		public Creator<T> modifire(Attribute attr, AttributeModifier attrmodifier) {
 			meta.addAttributeModifier(attr, attrmodifier);
 			return this;
 		}
-		public Creator ilość(int ilość) {
+		public Creator<T> ilość(int ilość) {
 			item.setAmount(ilość);
+			return this;
+		}
+		public Creator<T> custom(Consumer<T> ustaw) {
+			ustaw.accept(meta);
 			return this;
 		}
 		public ItemStack stwórz() {
@@ -66,16 +78,14 @@ public class ItemCreator {
 		}
 		
 	}
-	public static Creator nowy(Material mat) {
-		Creator c = new Creator();
-		c.item = new ItemStack(mat);
-		c.meta = c.item.getItemMeta();
-		return c;
+	public static Creator<?> nowy(Material mat) {
+		return nowy(new ItemStack(mat));
 	}
-	public static Creator nowy(ItemStack item) {
-		Creator c = new Creator();
-		c.item = item;
-		c.meta = c.item.getItemMeta();
-		return c;
+	public static Creator<?> nowy(ItemStack item) {
+		return nowy(item, item.getItemMeta());
+	}
+	@SuppressWarnings("unchecked")
+	public static <T extends ItemMeta> Creator<T> nowy(ItemStack item, T meta) {
+		return new Creator<>(item, (Class<T>) meta.getClass());
 	}
 }

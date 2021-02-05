@@ -7,8 +7,10 @@ import java.util.function.Predicate;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,19 +37,23 @@ public class SiadanieNaBlokach implements Listener, Przeładowalny {
 	
 	@EventHandler
 	public void klikanieBloki(PlayerInteractEvent ev) {
-		if (ev.getPlayer().hasPermission(perm) && ev.getAction() == Action.RIGHT_CLICK_BLOCK && ev.getPlayer().getInventory().getItemInMainHand().getType() == Material.SADDLE)
+		if (	ev.getPlayer().hasPermission(perm) &&
+				ev.getBlockFace() == BlockFace.UP &&
+				ev.getAction() == Action.RIGHT_CLICK_BLOCK &&
+				ev.getPlayer().getInventory().getItemInMainHand().getType() == Material.SADDLE
+				)
 			Func.wykonajDlaNieNull(mapaWysokości.get(ev.getClickedBlock().getType()), wysokość -> {
 				Predicate<Integer> wolny = plus -> ev.getClickedBlock().getLocation().add(0, plus, 0).getBlock().getType().isAir();
 				if (!wolny.test(1) || !wolny.test(2))
 					return;
 				ev.getPlayer().leaveVehicle();
-				Pig pojazd = zrespPojazd(ev.getClickedBlock().getLocation().add(.5, wysokość - .6, .5));
+				Entity pojazd = zrespPojazd(ev.getClickedBlock().getLocation().add(.5, wysokość - 1, .5));
 				pojazd.addPassenger(ev.getPlayer());
 				tick(ev.getPlayer(), pojazd);
 			});
 	}
 	
-	private void tick(Player p, Pig pojazd) {
+	private void tick(Player p, Entity pojazd) {
 		if (p.getVehicle() == null || !pojazd.getUniqueId().equals(p.getVehicle().getUniqueId()))
 			pojazd.remove();
 		else {
@@ -56,13 +62,14 @@ public class SiadanieNaBlokach implements Listener, Przeładowalny {
 		}
 	}
 	
-	Pig zrespPojazd(Location loc) {
-		Pig pojazd = (Pig) loc.getWorld().spawnEntity(loc, EntityType.PIG);
+	Entity zrespPojazd(Location loc) {
+		ArmorStand pojazd = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
 		
-		pojazd.setBaby();
 		pojazd.setAI(false);
+		pojazd.setSmall(true);
 		pojazd.setSilent(true);
 		pojazd.setGravity(false);
+		pojazd.setVisible(false);
 		pojazd.setInvulnerable(true);
 		pojazd.setRemoveWhenFarAway(true);
 		pojazd.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(0);
@@ -70,10 +77,10 @@ public class SiadanieNaBlokach implements Listener, Przeładowalny {
 		
 		Func.ustawMetadate(pojazd, tagPojazdu, true);
 		
+		pojazd.teleport(loc);
+		
 		return pojazd;
 	}
-	
-	
 	
 	@Override
 	public void przeładuj() {

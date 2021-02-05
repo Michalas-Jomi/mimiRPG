@@ -32,6 +32,7 @@ import com.sk89q.worldguard.protection.flags.Flags;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -198,7 +199,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	
 	@EventHandler
 	public void chodzenie(PlayerMoveEvent ev) {
-		if (Main.rg != null && czasy.containsKey(ev.getPlayer().getName()) &&
+		if (Baza.rg != null && czasy.containsKey(ev.getPlayer().getName()) &&
 				!Func.regiony(ev.getTo().getWorld()).getApplicableRegions(Func.locToVec3(ev.getTo())).testState(WorldGuardPlugin.inst().wrapPlayer(ev.getPlayer()), Flags.PVP)) {
 			ev.setCancelled(true);
 			ev.getPlayer().sendMessage(prefix + "Nie możesz tam wejść w trakcie walki!");

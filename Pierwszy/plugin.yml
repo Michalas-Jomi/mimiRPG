@@ -2,6 +2,7 @@ name: mimiRPG
 version: 1.0
 author: Michalas
 api-version: 1.16
-softdepend: [Vault, WorldGuard, WorldEdit, IridiumSkyblock]
+depend: [WorldGuard, WorldEdit]
+softdepend: [Vault, IridiumSkyblock]
 loadbefore: [Multiverse-Core]
 main: me.jomi.mimiRPG.Main

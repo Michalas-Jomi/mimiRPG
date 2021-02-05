@@ -14,8 +14,6 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
-// TODO rzucanie blokami z lewej ręgi z wyrzutni
-
 @Moduł
 public class Minigry extends Komenda {
 	static final String permCmdBypass = Func.permisja("minigry.bypasskomendy");

@@ -82,7 +82,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 	}
 	static ItemStack przetwórz(ItemStack item, String kod) {
 		Krotka<Material, Integer> krotka = odkoduj(kod);
-		Creator ic = ItemCreator.nowy(
+		Creator<?> ic = ItemCreator.nowy(
 				item)
 				.typ(krotka.a)
 				.customModelData(krotka.b);

@@ -831,7 +831,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		switch (Func.odpolszcz(args[1])) {
 		case "dolacz":
 			List<String> patterny = Lists.newArrayList();
-			for (int i=2; i < args.length; i++)// TODO jakić TabCompleter np z nazwami aren
+			for (int i=2; i < args.length; i++)// TODO jakiś TabCompleter np z nazwami aren
 				patterny.add(args[i]);
 			
 			arena = zaczynanaArena(patterny);

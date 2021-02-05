@@ -45,6 +45,7 @@ import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
 import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.MineZ.Bazy;
@@ -222,7 +223,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		}
 	}
 	public static boolean warunekModułu() {
-		return Main.rg != null;
+		return Baza.rg != null;
 	}
 
 	int max_odległość_od_gracza;
@@ -365,7 +366,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	
 		String _flagi = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld()))
 				.getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()))
-				.queryValue(null, Main.flagaCustomoweMoby);
+				.queryValue(null, me.jomi.mimiRPG.Baza.flagaCustomoweMoby);
 		if (_flagi == null) return;
 		String[] flagi = _flagi.split(",");
 		Ciąg<Mob> moby = mapaFlag.get(flagi[Func.losuj(0, flagi.length-1)]);

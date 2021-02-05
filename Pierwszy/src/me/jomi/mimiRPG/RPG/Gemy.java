@@ -121,7 +121,6 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 						}))));
 	}
 
-	
 	@Override public ItemStack	getItem(Gem gem) { return gem.dajGem(); }
 	@Override public String		getPrefix()		 { return prefix; }
 

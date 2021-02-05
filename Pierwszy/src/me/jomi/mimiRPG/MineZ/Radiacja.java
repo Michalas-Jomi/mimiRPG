@@ -21,6 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.Sets;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
@@ -32,7 +33,7 @@ import me.jomi.mimiRPG.util.Zegar;
 public class Radiacja implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Radiacja");
 	public static boolean warunekModułu() {
-		return Main.rg != null;
+		return Baza.rg != null;
 	}
 
 	
@@ -91,7 +92,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	
 	void sprawdzRadiacjeZTerenu(Player p) {
 		if (Func.regiony(p.getWorld()).getApplicableRegions(Func.locToVec3(p.getLocation()))
-				.testState(Main.rg.wrapPlayer(p), Main.flagaRadiacja)) {
+				.testState(Baza.rg.wrapPlayer(p), Baza.flagaRadiacja)) {
 			nałóżEfekt(p);
 		}
 	}
@@ -116,7 +117,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 		Player p = (Player) ev.getEntity();
 		
 		if (Func.regiony(p.getWorld()).getApplicableRegions(Func.locToVec3(p.getLocation()))
-					.testState(Main.rg.wrapPlayer(p), Main.flagaRadiacja))
+					.testState(Baza.rg.wrapPlayer(p), Baza.flagaRadiacja))
 			nałóżMobEfekt(p);
 	}
 	

@@ -2,8 +2,6 @@ package me.jomi.mimiRPG.util;
 
 import java.util.HashMap;
 
-// TODO sprawdzić
-
 public class Cooldown {
 	private final HashMap<String, Long> mapa = new HashMap<>();
 	

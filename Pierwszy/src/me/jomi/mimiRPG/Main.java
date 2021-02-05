@@ -25,17 +25,10 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.StringFlag;
 
 import me.jomi.mimiRPG.Chat.Mimi;
 import me.jomi.mimiRPG.Chat.Raport;
@@ -62,64 +55,13 @@ public class Main extends JavaPlugin implements Listener {
 	public static Permission perms;
     public static Economy econ;
     public static Chat chat;
-	// Api WorldGuard
-	public static WorldGuardPlugin rg;
-    public static StringFlag flagaCustomoweMoby;
-	public static StateFlag flagaStawianieBaz;
-	public static StateFlag flagaC4;
-	public static StateFlag flagaUżywanieWiadra;
-	public static StateFlag flagaRadiacja;
-	// Api WorldEdit
-	public static WorldEdit we;
 	// Api Essentials
 	public static Essentials essentials;
-
 	
 	public static JavaPlugin plugin;
 	public static Config ust;
 	public static String path;	
 	public static ClassLoader classLoader;
-	
-	private void brakPluginu(String plugin) {
-		error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
-	}
-	private void włączWorldGuard() {
-		try {
-			rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-			
-			for (Flag<?> flaga : new Flag<?>[]{
-				flagaUżywanieWiadra = new StateFlag("NapelnianieWiadra", true),
-				flagaStawianieBaz = new StateFlag("StawianieBaz", true),
-				flagaRadiacja = new StateFlag("Radiacja", false),
-				flagaC4 = new StateFlag("C4", false),
-				flagaCustomoweMoby = new StringFlag("CustomoweMoby")
-			})
-				WorldGuard.getInstance().getFlagRegistry().register(flaga);
-		} catch (NoClassDefFoundError e) {
-			brakPluginu("WorldGuard");
-		}
-	}
-	private void włączWorldEdit() {
-		try {
-			we = WorldEdit.getInstance();
-		} catch (NoClassDefFoundError e) {
-			brakPluginu("WorldEdit");
-		}
-	}
-	private void włączVault() {
-        try {
-	        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-		        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-		        econ  = rsp.getProvider();
-		        chat  = getServer().getServicesManager().getRegistration(Chat.class).getProvider();
-		        perms = getServer().getServicesManager().getRegistration(Permission.class).getProvider();
-	        }
-	    } catch(NullPointerException e) {}
-        ekonomia = econ != null;
-        if (!ekonomia)
-			brakPluginu("Vault");
-	}
-
 	
 	@Override
 	@SuppressWarnings("unchecked")
@@ -135,15 +77,15 @@ public class Main extends JavaPlugin implements Listener {
 		
 		ust = new Config("ustawienia");
 		
-		włączWorldGuard();
-		włączWorldEdit();
+		Baza.APIs.włączWorldGuard();
+		Baza.APIs.włączWorldEdit();
 	}
 	@Override
 	public void onEnable() {
 		boolean wl = getServer().hasWhitelist();
 		getServer().setWhitelist(true);
 		
-		włączVault();
+		Baza.APIs.włączVault();
 		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
 		
 		
@@ -211,7 +153,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	static boolean pluginEnabled = false;
 	static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
-	static void zarejestruj(Object obj) {
+	public static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
 		if (obj instanceof Zegar)
@@ -232,7 +174,7 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 	}
-	static void wyrejestruj(Object obj) {
+	public static void wyrejestruj(Object obj) {
 		if (obj instanceof Listener)
 			HandlerList.unregisterAll((Listener) obj);
 		if (obj instanceof Zegar)
@@ -348,8 +290,8 @@ public class Main extends JavaPlugin implements Listener {
 	
 	@EventHandler
 	public void pobieranieWody(PlayerBucketFillEvent ev) {
-		if (Main.rg != null && !Func.regiony(ev.getBlock().getWorld()).getApplicableRegions(Func.locToVec3(ev.getBlock().getLocation()))
-				.testState(Main.rg.wrapPlayer(ev.getPlayer()), Main.flagaUżywanieWiadra))
+		if (Baza.rg != null && !Func.regiony(ev.getBlock().getWorld()).getApplicableRegions(Func.locToVec3(ev.getBlock().getLocation()))
+				.testState(Baza.rg.wrapPlayer(ev.getPlayer()), Baza.flagaUżywanieWiadra))
 			ev.setCancelled(true);
 	}
 	

@@ -41,6 +41,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -167,6 +168,10 @@ public abstract class Func {
 		}
 	}
 	
+	public static String nazwaItemku(ItemStack item) {
+		ItemMeta meta = item.getItemMeta();
+		return meta.hasDisplayName() ? meta.getDisplayName() : Func.enumToString(item.getType());
+	}
 	public static String enumToString(Enum<?> en) {
 		return en.toString().toLowerCase().replace("_", " ");
 	}
@@ -1731,5 +1736,13 @@ public abstract class Func {
 	}
 	public static BlockVector3 locToVec3(Location loc) {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
+	}
+	
+	
+	public static void particle(World world, Particle particle, Location loc, int ilość, double dx, double dy, double dz, double prędkość) {
+		world.spawnParticle(particle, loc, ilość, dx, dy, dz, prędkość);
+	}
+	public static void particle(World world, Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
+		world.spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
 	}
 }

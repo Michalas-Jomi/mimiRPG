@@ -68,6 +68,16 @@ public class Moduły implements Przeładowalny {
 		return Func.r("Włączone Moduły", włączone + "/" + klasy.size());
 	}
 	
+	public static String moduły() {
+		StringBuilder strB1 = new StringBuilder();
+		StringBuilder strB2 = new StringBuilder();
+		
+		mapa.values().forEach(klasa -> (klasa.włączony ? strB1 : strB2).append("§r, §").append(klasa.włączony ? 'a' : 'c').append(klasa.klasa.getSimpleName()));
+		
+		return  "§6Wyłączone Moduły§8: " + (strB2.isEmpty() ? "§4Brak" : strB2.substring(4)) + "\n" +
+				"§6Włączone Moduły§8: "  + (strB1.isEmpty() ? "§4Brak" : strB1.substring(4));
+	}
+	
 	void włączModuł(Class<?> klasa) {
 		String nazwa = klasa.getSimpleName();
 		if (!mapa.containsKey(nazwa))

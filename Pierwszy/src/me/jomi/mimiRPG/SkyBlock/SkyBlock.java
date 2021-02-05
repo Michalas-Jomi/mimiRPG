@@ -101,6 +101,7 @@ import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.OpuszczanieWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.TworzenieWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.UsuwanieWyspyEvent;
+import me.jomi.mimiRPG.util.Cena;
 import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Cooldown;
@@ -112,7 +113,6 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is booster /is fly 
 //TODO /is tempban
-//TODO /is coop /is uncoop
 //TODO przycisk back w menu wyspy
 
 @Moduł(priorytet = Moduł.Priorytet.NAJWYŻSZY)
@@ -252,7 +252,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 
 		private void wklejSchemat(Field schemat, String nazwaPodstawowa, Location loc) throws Throwable {
-			if (Main.we != null) {
+			if (Baza.we != null) {
 				if (Func.wklejSchemat((String) schemat.get(this), loc))
 					return;
 				for (TypWyspy typ : mapa.values())
@@ -344,13 +344,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	}
 	static class Ulepszenia {
 		public static class Ulepszenie {
-			public Ulepszenie(int wartość, double cena) {
+			public Ulepszenie(int wartość, Cena cena) {
 				this.wartość = wartość;
 				this.cena = cena;
 			}
 
 			public final int wartość;
-			public final double cena;
+			public final Cena cena;
 		}
 
 		public static Ulepszenie[] limityBloków;
@@ -530,7 +530,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			typ.wklejSchematy(locŚrodek.getBlockX(), locŚrodek.getBlockY(), locŚrodek.getBlockZ());
 
-			policzWartość(null, null);
+			policzWartość(p, null);
 			sprawdzTop();
 
 			zapiszNatychmiast();
@@ -572,7 +572,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return g.wyspa == -1 ? null : wczytaj(g.wyspa);
 		}
 		// id: wyspa
-		//static final WeakHashMap<Integer, Wyspa> mapaWysp = new WeakHashMap<>();
 		static final HashMap<Integer, WeakReference<Wyspa>> mapaWysp = new HashMap<>();
 		public static Wyspa wczytaj(int id) {
 			if (id == -1)
@@ -900,6 +899,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				zamknijPanele(TypInv.DROP_NETHER, permisja);
 				return TypInv.DROP;
 			}
+			
 			return null;
 		}
 		private void zamknijPanele(TypInv typ, String permisja) {
@@ -1234,6 +1234,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (coop.remove((Integer) wyspa.id)) {
 				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", this .infoCzłonkowie());
 				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", wyspa.infoCzłonkowie());
+				zapisz();
 				return false;
 			} else
 				return Func.powiadom(p, prefix + Func.msg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", kogoP.getDisplayName()));
@@ -1340,8 +1341,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return inv;
 		}
 		public void odświeżGenerator() {
-			Lists.newArrayList(invDropOverworld.getViewers()).forEach(p -> Func.wykonajDlaNieNull(p, __ -> p.closeInventory()));
-			Lists.newArrayList(invDropNether.getViewers()).forEach(p -> Func.wykonajDlaNieNull(p, __ -> p.closeInventory()));
+			Consumer<Inventory> zamknij = inv -> {
+				if (inv != null)
+					Lists.newArrayList(inv.getViewers()).forEach(p -> Func.wykonajDlaNieNull(p, HumanEntity::closeInventory));
+			};
+
+			zamknij.accept(invDropOverworld);
+			zamknij.accept(invDropNether);
 
 			invDropOverworld = null;
 			invDropNether = null;
@@ -1641,11 +1647,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is value
 
+		private static final Set<Material> pkt_omijane = Sets.newConcurrentHashSet();
+		private Runnable pkt_taskNaKoniec;
+		private int oczekujące;
+		private double pkt_policzone;
+		private Player pkt_p;
+		private long pkt_start;
 		@Mapowane double pkt;
 		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
 		public boolean wartość(Player p) {
 			if (!permisje(p).liczenie_wartości_wyspy)
 				return Func.powiadom(p, prefix + "Nie masz uprawnień do przeliczania wartości wyspy");
+			if (oczekujące > 0)
+				return Func.powiadom(p, prefix + "Wartość jest aktualnie liczona");
 
 			String strId = String.valueOf(id);
 
@@ -1667,45 +1681,89 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		}
 		public void policzWartość(Player p, Runnable taskNaKoniec) {
-			double ile = 0;
-			Set<Material> omijane = Sets.newConcurrentHashSet();
+			int dostępne = Runtime.getRuntime().availableProcessors();
+			
+			final int overworld, nether;
+			
+			if (Światy.dozwolonyNether) {
+				int pół = dostępne / 2;
+				nether = Math.max(1, pół);
+				overworld = dostępne - pół;
+			} else {
+				nether = 0;
+				overworld = dostępne;
+			}
+			
+			pkt_p = p;
+			pkt_policzone = 0;
+			pkt_taskNaKoniec = taskNaKoniec;
+			oczekujące = nether + overworld;
+			
+			pkt_start = System.currentTimeMillis();
+			Main.log(prefix + "Liczenie wartości wyspy (id: " + id + ") przeliczanej przez " + p.getDisplayName() + " na " + dostępne + " wątkach");
 
+			policz(Światy.nether, nether);
+			policz(Światy.overworld, overworld);
+		}
+		private void policz(World świat, int wątki) {
+			if (wątki <= 0)
+				return;
+			
 			Krotka<Location, Location> rogi = rogi();
+			Location min = rogi.a;
+			Location max = rogi.b;
 
-			Supplier<Integer> policz = () -> {
-				int punkty = 0;
-				for (Block blok : Func.bloki(rogi.a, rogi.b)) {
+			min.setWorld(świat);
+			max.setWorld(świat);
+			
+			int y = rogi.b.getBlockY() - rogi.a.getBlockY();
+			
+			int sy = y / wątki;
+			
+			while (wątki-- > 1) {
+				Location smin = min.clone();
+				Location smax = max.clone();
+				
+				smax.setY(smin.getY() + sy);
+				min.setY(smax.getY() + 1);
+				
+				policz(smin, smax);
+			}
+			policz(min, max);
+		}
+		private void policz(Location róg1, Location róg2) {
+			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+				for (Block blok : Func.bloki(róg1, róg2)) {
 					Material mat = blok.getType();
-					if (omijane.contains(mat))
+					if (pkt_omijane.contains(mat))
 						continue;
 					double pkt = punktacja.getOrDefault(mat, 0d);
 					if (pkt == 0)
-						omijane.add(mat);
+						pkt_omijane.add(mat);
 					else
-						punkty += pkt;
+						pkt_policzone += pkt;
 				}
-				return punkty;
-			};
-			
-			ile += policz.get();
-			
-			if (Światy.dozwolonyNether) {
-				rogi.a.setWorld(Światy.nether);
-				rogi.b.setWorld(Światy.nether);
-				ile += policz.get();
-			}
-
-			double _ile = ile;
-			Bukkit.getScheduler().runTask(Main.plugin, () -> {
-				double nowe = new PrzeliczaniePunktówWyspyEvent(this, p, this.pkt, _ile).pktPo;
-				if (nowe != this.pkt) {
-					this.pkt = nowe;
-					sprawdzTop();
-					zapisz();
-				}
-				Func.wykonajDlaNieNull(taskNaKoniec, Runnable::run);
+				
+				skończoneLiczenieWątku();
 			});
 		}
+		// Async
+		private void skończoneLiczenieWątku() {
+			if (--oczekujące <= 0)
+				Bukkit.getScheduler().runTask(Main.plugin, () -> {
+					double nowe = new PrzeliczaniePunktówWyspyEvent(this, pkt_p, this.pkt, pkt_policzone).pktPo;
+					if (nowe != this.pkt) {
+						this.pkt = nowe;
+						sprawdzTop();
+						zapisz();
+					}
+					Main.log(prefix + "Policzono wartość wyspy id: " + id + " w czasie " + ((System.currentTimeMillis() - pkt_start) / 1000d) + " sekund");
+					Func.wykonajDlaNieNull(pkt_taskNaKoniec, Runnable::run);
+					pkt_taskNaKoniec = null;
+					pkt_p = null;
+				});
+		}
+		
 		public double getPkt() {
 			return pkt;
 		}
@@ -2073,9 +2131,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						.getDeclaredField(nazwaPola).get(null);
 				ItemStack item = Func.stwórzItem(mat, "&9&l" + nazwa, "", "&a" + krótkiOpis,
 						"&a" + akt.apply(ulepszenia[poziom].wartość));
-				if (ulepszenia.length > poziom + 1)
+				if (ulepszenia.length > poziom + 1) {
 					Func.dodajLore(Func.dodajLore(item, "&a" + następny.apply(ulepszenia[poziom + 1].wartość)),
 							"&aCena ulepszenia: &e" + ulepszenia[poziom + 1].cena + "$");
+					if (ulepszenia[poziom + 1].cena.walutaPremium > 0)
+						Func.dodajLore(item, "&aPotrzebne " + Func.nazwaItemku(Baza.walutaPremium) + "&a: &e" + ulepszenia[poziom + 1].cena.walutaPremium);
+				}
 				return item;
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -2087,18 +2148,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return Func.powiadom(p, prefix + "Nie masz uprawnień do kupowania ulepszeń wyspy");
 
 			Func.wykonajDlaNieNull(((Supplier<String>) () -> {
-				if (slot == 12)
-					return "członkowie";
-				else if (slot == 13)
-					return "wielkość";
-				else if (slot == 14)
-					return "generator";
-				else if (slot == 21)
-					return "limityBloków";
-				else if (slot == 22)
-					return "magazyn";
-				else if (slot == 23)
-					return "warpy";
+				if (slot == 12) 		return "członkowie";
+				else if (slot == 13) 	return "wielkość";
+				else if (slot == 14) 	return "generator";
+				else if (slot == 21) 	return "limityBloków";
+				else if (slot == 22) 	return "magazyn";
+				else if (slot == 23) 	return "warpy";
 				return null;
 			}).get(), nazwaPola -> {
 				try {
@@ -2107,7 +2162,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 					if (pole.getInt(poziomy) + 1 >= ulepszenia.length)
 						return;
-					double cena = ulepszenia[pole.getInt(poziomy) + 1].cena;
+					double cena = ulepszenia[pole.getInt(poziomy) + 1].cena.kasa;
 
 					double fundusz = Math.max(0, kasa);
 					if (Main.econ != null) {
@@ -2120,6 +2175,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						p.sendMessage(prefix + "Nie posiadasz wystarczająco dużo pieniędzy");
 						return;
 					}
+					
+					if (!ulepszenia[pole.getInt(poziomy) + 1].cena.zabierzPremium(p)) {
+						p.sendMessage(prefix + "Nie posiadasz wystarczająco dużo " + 
+								(Baza.walutaPremium.getItemMeta().hasDisplayName() ?
+										Baza.walutaPremium.getItemMeta().getDisplayName() : Func.enumToString(Baza.walutaPremium.getType())));
+						return;
+					}
+					
+					
 
 					kasa -= cena;
 					if (kasa < 0) {
@@ -2139,6 +2203,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						odświeżMagazyn();
 
 					powiadomCzłonków("%s zakupił ulepszenie %s", p.getDisplayName(), nazwaPola);
+					
+					Bukkit.getOnlinePlayers().forEach(gracz ->
+						Func.wykonajDlaNieNull(gracz.getOpenInventory().getTopInventory().getHolder(),  Holder.class, holder -> {
+							if (holder.typ == TypInv.ULEPSZENIA && holder.wyspa.equals(this))
+								otwórzUlepszenia(gracz);
+						}));
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
@@ -2660,6 +2730,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			throw new Error("Permisja " + perm + " nie została odnaleziona");
 		}
 
+		// (min, max)
 		public Krotka<Location, Location> rogi() {
 			double a1 = Ulepszenia.wielkość[poziomy.wielkość].wartość / 2.0;
 			// double a2 = odstęp % 2 != 0 ? a1 - 1 : a1;
@@ -3196,6 +3267,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		// Punktacja
 		punktacja.clear();
+		Wyspa.pkt_omijane.clear();
 		Func.wykonajDlaNieNull(config.sekcja("punktacja"), sekcja -> sekcja.getValues(false).forEach((klucz, obj) -> {
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			double pkt = Func.DoubleObj(obj);
@@ -3309,8 +3381,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				Ulepszenia.Ulepszenie[] tab = new Ulepszenia.Ulepszenie[linie.size()];
 
 				for (int i = 0; i < tab.length; i++) {
-					List<String> połówki = Func.tnij(linie.get(i), " ");
-					tab[i] = new Ulepszenia.Ulepszenie(Func.Int(połówki.get(0)), Func.Double(połówki.get(1)));
+					List<String> części = Func.tnij(linie.get(i), " ");
+					tab[i] = new Ulepszenia.Ulepszenie(Func.Int(części.get(0)), new Cena(Func.Double(części.get(1)), null, części.size() >= 3 ? Func.Int(części.get(2)) : null));
 				}
 
 				field.set(null, tab);
@@ -3320,6 +3392,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				Main.warn("Nieprawidłowe Skyblock.yml \"ulepszenia." + field.getName() + "\"");
 			}
 		Ulepszenia.sprawdzSyntax();
+		
 		poprawnieWczytany = true;
 	}
 	@Override

@@ -50,7 +50,7 @@ import me.jomi.mimiRPG.util.Napis;
 @Moduł
 public class BedWarsAlaZiga extends MinigraDrużynowa {
 	public static boolean warunekModułu() {
-		return Main.rg != null;
+		return Baza.rg != null;
 	}
 	public static final String prefix = Func.prefix("Bedwars ala Ziga");
 	public static class PustyHolder implements InventoryHolder {

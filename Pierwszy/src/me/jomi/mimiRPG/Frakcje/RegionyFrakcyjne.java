@@ -16,8 +16,8 @@ import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion.CircularInheritanceException;
 
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -25,7 +25,7 @@ import me.jomi.mimiRPG.util.Func;
 public class RegionyFrakcyjne extends Komenda {
 	public static final String prefix = Func.prefix("Regiony Frakcyjne");
 	public static boolean warunekModułu() {
-		return Main.rg != null;
+		return Baza.rg != null;
 	}
 
 	public RegionyFrakcyjne() {

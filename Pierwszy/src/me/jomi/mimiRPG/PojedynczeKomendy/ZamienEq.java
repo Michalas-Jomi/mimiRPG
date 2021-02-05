@@ -5,18 +5,19 @@ import java.io.IOException;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.google.common.collect.Lists;
+import net.minecraft.server.v1_16_R2.NBTBase;
+import net.minecraft.server.v1_16_R2.NBTCompressedStreamTools;
+import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
-// TODO naprawić
+
 @Moduł
 public class ZamienEq extends Komenda{
 	public static final String prefix = Func.prefix("Zamiana eq");
@@ -27,13 +28,7 @@ public class ZamienEq extends Komenda{
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		List<String> gracze = Lists.newArrayList();
-		for (OfflinePlayer gracz : Bukkit.getOfflinePlayers()) {
-			String imie = gracz.getName();
-			if (imie.startsWith(args.length <= 0 ? "" : args[args.length-1]))
-				gracze.add(imie);
-		}
-		return gracze;
+		return null;
 	}
 
 	@Override
@@ -57,56 +52,66 @@ public class ZamienEq extends Komenda{
 			return;
 		}
 
-		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick1), Player::saveData);
-		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2), Player::saveData);
-		
-		String u1 = Func.graczOffline(nick1).getUniqueId().toString();
-		String u2 = Func.graczOffline(nick2).getUniqueId().toString();
+		Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+			String u1 = Func.graczOffline(nick1).getUniqueId().toString();
+			String u2 = Func.graczOffline(nick2).getUniqueId().toString();
 
-		if (new File(sc("aaaSWITCH", false)).delete() || new File(sc("aaaSWITCH", true)).delete())
-			Main.warn(prefix + "Wykryto starego switcha, usuwanie go");
-		
-		// u1 -> switch
-		przenieś(sc(u1, false), sc("aaaSWITCH", false));
-		przenieś(sc(u1, true),  sc("aaaSWITCH", true));
-		
-		// u2 -> u1
-		przenieś(sc(u2, false), sc(u1, false));
-		przenieś(sc(u2, true),  sc(u1, true));
-		
-		// switch -> u2
-		przenieś(sc("aaaSWITCH", false), sc(u2, false));
-		przenieś(sc("aaaSWITCH", true),  sc(u2, true));
-		
-		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick1), Player::loadData);
-		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2), Player::loadData);
-		
-		Main.log("Zamieniono eq, ec i exp graczy", nick1, nick2);
-	}
-	private void przenieś(String co, String gdzie) {
-		File f = new File(co);
-		if (!f.exists())
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		f.renameTo(new File(gdzie));
-	}
-	private String sc(String uuid, boolean old) {
-		return "world/playerdata/" + uuid + ".dat" + (old ? "_old" : "");
+			Bukkit.getScheduler().runTask(Main.plugin, () -> {
+				try {
+					Player p1, p2;
+					p1 = Bukkit.getPlayer(nick1);
+					p2 = Bukkit.getPlayer(nick2);
+					Func.wykonajDlaNieNull(p1, Player::saveData);
+					Func.wykonajDlaNieNull(p2, Player::saveData);
+
+					File f1 = new File("world/playerdata/" + u1 + ".dat");
+					File f2 = new File("world/playerdata/" + u2 + ".dat");
+
+					NBTTagCompound tag1 = NBTCompressedStreamTools.a(f1);
+					NBTTagCompound tag2 = NBTCompressedStreamTools.a(f2);
+					
+					f1.delete(); f1.createNewFile();
+					f2.delete(); f2.createNewFile();
+
+					NBTBase UUID1 = tag1.get("UUID");
+					NBTBase UUID2 = tag2.get("UUID");
+					tag1.set("UUID", UUID2);
+					tag2.set("UUID", UUID1);
+					
+					NBTTagCompound nbtbukkit1 = tag1.getCompound("bukkit");
+					NBTTagCompound nbtbukkit2 = tag2.getCompound("bukkit");
+					String pNick1 = nbtbukkit1.getString("lastKnownName");
+					String pNick2 = nbtbukkit2.getString("lastKnownName");
+					nbtbukkit1.setString("lastKnownName", pNick2);
+					nbtbukkit2.setString("lastKnownName", pNick1);
+					tag1.set("bukkit", nbtbukkit1);
+					tag2.set("bukkit", nbtbukkit2);
+					
+					NBTCompressedStreamTools.a(tag1, f2);
+					NBTCompressedStreamTools.a(tag2, f1);
+					
+					Func.wykonajDlaNieNull(p1, Player::loadData);
+					Func.wykonajDlaNieNull(p2, Player::loadData);
+					
+					Main.log(prefix + "Zamieniono eq, ec i exp graczy", nick1, nick2);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			});
+		});
 	}
 	private boolean istnieje(CommandSender p, String nick) {
 		if (Func.graczOffline(nick) != null)
 			return true;
-		p.sendMessage("Gracz " + nick + " nigdy nie był online!");
+		p.sendMessage(prefix + "Gracz " + nick + " nigdy nie był online!");
 		return false;
 	}
 	
 
 	/*
 	NBTTagCompound tag(String uuid) {
-		return ((CraftServer) Bukkit.getServer()).getHandle()..playerFileData.getPlayerData(uuid);
+		return ((CraftServer) Bukkit.getServer()).getHandle().playerFileData.getPlayerData(uuid);
 	}
 	Map<Integer, ItemStack> wczytajEc (NBTTagCompound tag) { return wczytajItemy(tag, "EnderItems"); }
 	Map<Integer, ItemStack> wczytajInv(NBTTagCompound tag) { return wczytajItemy(tag, "Inventory"); }
