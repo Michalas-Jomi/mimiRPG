@@ -37,13 +37,11 @@ public class Cena extends Mapowany {
 			 	 (kasa != null && 			Main.econ.getBalance(p) < kasa));
 	}
 	
-	
 	public boolean zabierz(Player p) {
 		return	zabierzExp(p) &&
 				zabierzKase(p) &&
 				zabierzPremium(p);
 	}
-	
 	
 	public boolean zabierzPremium(Player p) {
 		if (walutaPremium != null) {
@@ -84,4 +82,17 @@ public class Cena extends Mapowany {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		if (kasa != null)
+			str.append(Func.DoubleToString(kasa)).append('$');
+		if (exp != null)
+			str.append(' ').append(Func.IntToString(exp)).append(" expa");
+		if (walutaPremium != null)
+			str.append(' ').append(Func.IntToString(walutaPremium)).append("x ").append(Func.nazwaItemku(Baza.walutaPremium));
+		
+		return str.toString();
+	}
 }

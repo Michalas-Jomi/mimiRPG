@@ -127,10 +127,14 @@ public class Config {
 		return lista;
 	}
 	@SuppressWarnings("unchecked")
-	public List<Map<String, Object>> wczytajListeMap(Object... sciezka){
+	public List<LepszaMapa<String>> wczytajListeMap(Object... sciezka){
 		List<Map<String, Object>> lista = (List<Map<String, Object>>) plik.getList(sc(sciezka));
 		if (lista == null) lista = Lists.newArrayList();
-		return lista;
+		
+		List<LepszaMapa<String>> końcowaLista = Lists.newArrayList();
+		lista.forEach(mapa -> końcowaLista.add(new LepszaMapa<>(mapa)));
+		
+		return końcowaLista;
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -16,6 +16,7 @@ import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.NBTTagList;
 import net.minecraft.server.v1_16_R2.NBTTagString;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.RPG.Gemy.Gem;
@@ -86,12 +87,15 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 		}
 		
 		public static String gemId(ItemStack item) {
+			if (item == null || item.getType() == Material.AIR)
+				return null;
 			try {
-				return ((net.minecraft.server.v1_16_R2.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item)).getOrCreateTag().getString("mimiGem");
+				return ((net.minecraft.server.v1_16_R2.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item)).getTag().getString("mimiGem");
+			} catch (NullPointerException e) {
 			} catch (Throwable e) {
 				e.printStackTrace();
-				return null;
 			}
+			return null;
 		}
 	}
 	
@@ -106,19 +110,21 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (!ev.isCancelled() && ev.getClick() == ClickType.RIGHT)
-			Func.wykonajDlaNieNull(ev.getWhoClicked().getItemOnCursor(), cursor ->
-				Func.wykonajDlaNieNull(ev.getCurrentItem(), klikanyItem ->
-					Func.wykonajDlaNieNull(Gem.gemId(cursor), gemId ->
-						Func.wykonajDlaNieNull(config.wczytaj(gemId), Gem.class, gem -> {
-							if (gem.możnaNałożyć(klikanyItem)) {
-								gem.dodajDoItemu(klikanyItem);
-								ev.setCurrentItem(klikanyItem);
-								cursor.setAmount(cursor.getAmount() - 1);
-								ev.getWhoClicked().setItemOnCursor(cursor.getAmount() <= 0 ? null : cursor);
-								ev.setCancelled(true);
-							}
-						}))));
+		if (!ev.isCancelled() && ev.getClick() == ClickType.RIGHT) {
+			ItemStack cursor = ev.getWhoClicked().getItemOnCursor();
+			Func.wykonajDlaNieNull(ev.getCurrentItem(), klikanyItem ->
+				Func.wykonajDlaNieNull(Gem.gemId(cursor), gemId ->
+					Func.wykonajDlaNieNull(config.wczytaj(gemId), Gem.class, gem -> {
+						Main.log(gem);
+						if (gem.możnaNałożyć(klikanyItem)) {
+							gem.dodajDoItemu(klikanyItem);
+							ev.setCurrentItem(klikanyItem);
+							cursor.setAmount(cursor.getAmount() - 1);
+							ev.getWhoClicked().setItemOnCursor(cursor.getAmount() <= 0 ? null : cursor);
+							ev.setCancelled(true);
+						}
+					})));
+		}
 	}
 
 	@Override public ItemStack	getItem(Gem gem) { return gem.dajGem(); }

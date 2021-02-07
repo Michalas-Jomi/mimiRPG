@@ -1,0 +1,52 @@
+# 1 sekunda = 20 ticków
+
+# W tym configu znajdują się
+# Drzewka ulepszeń Maszyn
+
+Sprzedajnik:
+  # ilość itemków sprzedawanych na raz
+  ilość:
+    - cena:
+        kasa: 0.0
+      ilość: 2
+    - cena:
+        kasa: 100.0
+      ilość: 3
+    - cena:
+        kasa: 500.0
+      ilość: 5
+    - cena:
+        kasa: 2000.0
+      ilość: 10
+  # prędkość sprzedawania
+  prędkość:
+    - cena:
+        kasa: 0.0
+      ticki: 100
+    - cena:
+        kasa: 100.0
+      ticki: 80
+    - cena:
+        kasa: 500.0
+      ticki: 60
+    - cena:
+        kasa: 2000.0
+      ticki: 40
+      
+
+AutoCrafting:
+  # prędkość sprzedawania
+  prędkość:
+    - cena:
+        kasa: 0.0
+      ticki: 100
+    - cena:
+        kasa: 100.0
+      ticki: 80
+    - cena:
+        kasa: 500.0
+      ticki: 60
+    - cena:
+        kasa: 2000.0
+      ticki: 40
+  

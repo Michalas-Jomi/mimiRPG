@@ -13,13 +13,13 @@ import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+@SuppressWarnings("unchecked")
 public class LepszaMapa<K> {
 	private final Map<K, Object> mapa;
 	public LepszaMapa(Map<K, Object> mapa) {
 		this.mapa = mapa;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> Collection<T> values	(Class<T> clazz)									{ return (Collection<T>) mapa.values(); }
 	public boolean			 containsValue	(Object obj)								{ return mapa.containsValue(obj); }
 	public boolean			 containsKey	(K klucz)									{ return mapa.containsKey(klucz); }
@@ -36,7 +36,6 @@ public class LepszaMapa<K> {
 	public final <T,V>	Map<T, V>	 getMap (K klucz) { return getD(klucz); }
 	public final <T> 	LepszaMapa<T>getLMap(K klucz) { return new LepszaMapa<>(getMap(klucz)); }
 	
-	@SuppressWarnings("unchecked")
 	public final <T> T		getD(K klucz) 						{ return (T) get(klucz); }
 	public final <T> T 		getD(K klucz, Class<T> typ) 		{ return getD(klucz); }
 	public final <T> T		get	(K klucz, T domyślna) 			{ return Func.domyślna(getD(klucz), domyślna); }

@@ -13,6 +13,22 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MimiObject;
 
 public abstract class Mapowany extends MimiObject implements ConfigurationSerializable, Cloneable {
+	/**
+	 * zamienia mape na obiekt
+	 * @param mapa do zdemapowania
+	 * @param clazz klasa do demapowania
+	 * @return zdemapowany objekt
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Mapowany> T deserialize(Map<String, Object> mapa, Class<T> clazz) {
+		mapa.put("=mimi=", clazz.getName());
+		return (T) deserialize(mapa);
+	}
+	/**
+	 * zamienia mape na obiekt
+	 * @param mapa z elementem "=mimi=" wskazującym demapowaną klasę {@code Class.getName()}
+	 * @return zdemapowany obiekt
+	 */
 	public static Mapowany deserialize(Map<String, Object> mapa) {
 		Mapowany obj = null;
 		String klasa = (String) mapa.get("=mimi=");

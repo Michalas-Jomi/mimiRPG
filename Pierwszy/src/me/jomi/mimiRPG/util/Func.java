@@ -547,7 +547,7 @@ public abstract class Func {
 		ItemStack item;
 		ItemMeta meta;
 		
-		item = new ItemStack(materiał, ilość);
+		item = new ItemStack(materiał, ilość > 64 ? 1 : Math.max(1, ilość));
 		meta = item.getItemMeta();
 		
 		// Nazwa
@@ -1252,7 +1252,6 @@ public abstract class Func {
 				
 			} catch (Throwable e) {
 				Main.warn("Nieprawidłowa nazwa pola \"" + en.getKey() + "\" przy demapowaniu klasy " + clazz.getName());
-				e.printStackTrace();
 			}
 
 		try {

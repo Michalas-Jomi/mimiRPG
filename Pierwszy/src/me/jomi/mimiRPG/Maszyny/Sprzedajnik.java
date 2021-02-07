@@ -1,6 +1,8 @@
 package me.jomi.mimiRPG.Maszyny;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -21,7 +23,10 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Sklep;
+import me.jomi.mimiRPG.util.Cena;
+import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Krotka;
 
 @Moduł(priorytet = Moduł.Priorytet.NISKI)
 public class Sprzedajnik extends ModułMaszyny {
@@ -30,7 +35,7 @@ public class Sprzedajnik extends ModułMaszyny {
 	}
 	
 	public static class Maszyna extends ModułMaszyny.Maszyna {
-		@Mapowane int ileNaRaz = 8;
+		@Mapowane int lvlIlość;
 		@Mapowane String właściciel;
 		
 		@Mapowane String uuidNapis;
@@ -46,7 +51,7 @@ public class Sprzedajnik extends ModułMaszyny {
 			Container shulker = (Container) locShulker.getBlock().getState();
 			
 			double zarobione = 0;
-			int ile = ileNaRaz;
+			int ile = inst.ulepszeniaIlości.get(lvlIlość).b;
 			
 			for (int i=0; i < shulker.getInventory().getSize(); i++) {
 				ItemStack item = shulker.getInventory().getItem(i);
@@ -84,10 +89,34 @@ public class Sprzedajnik extends ModułMaszyny {
 		inst = this;
 	}
 	
+
+	List<Krotka<Cena, Integer>> ulepszeniaIlości = new ArrayList<>();
 	
-	private static final Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> funkcjePanelu = new HashMap<>();
 	@Override
-	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu() {
+	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu(ModułMaszyny.Maszyna m) {
+		Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> funkcjePanelu = new HashMap<>();
+
+		funkcjePanelu.put(
+				super.standardowyItemFunckjiPrędkości(m),
+				super::standardowaFunckjaPrędkości
+				);
+		
+		funkcjePanelu.put(
+				super.fabrykatorItemów(
+						Material.PRISMARINE_CRYSTALS,
+						"Sprzedajność",
+						((Maszyna) m).lvlIlość,
+						ulepszeniaIlości,
+						ile -> ile + " na raz"
+						),
+				super.fabrykatorFunkcji(
+						ulepszeniaIlości,
+						maszyna -> ((Maszyna) maszyna).lvlIlość,
+						maszyna -> ((Maszyna) maszyna).lvlIlość++
+						)
+		);
+		
+		
 		return funkcjePanelu;
 	}
 	@Override
@@ -113,5 +142,17 @@ public class Sprzedajnik extends ModułMaszyny {
 		maszyna.uuidNapis = armorStand.getUniqueId().toString();
 		
 		return maszyna;
+	}
+	@Override
+	public void przeładuj() {
+		super.przeładuj();
+		Config config = new Config("Maszyny");
+		ulepszeniaIlości.clear();
+		Func.wykonajDlaNieNull(config.wczytajListeMap(this.getClass().getSimpleName() + ".ilość"), lista -> 
+			lista.forEach(mapa -> 
+				ulepszeniaIlości.add(new Krotka<>(
+					Cena.deserialize(mapa.getMap("cena"), Cena.class),
+					mapa.getInt("ilość")
+				))));
 	}
 }

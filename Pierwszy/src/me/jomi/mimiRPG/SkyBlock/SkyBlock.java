@@ -2133,9 +2133,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						"&a" + akt.apply(ulepszenia[poziom].wartość));
 				if (ulepszenia.length > poziom + 1) {
 					Func.dodajLore(Func.dodajLore(item, "&a" + następny.apply(ulepszenia[poziom + 1].wartość)),
-							"&aCena ulepszenia: &e" + ulepszenia[poziom + 1].cena + "$");
-					if (ulepszenia[poziom + 1].cena.walutaPremium > 0)
-						Func.dodajLore(item, "&aPotrzebne " + Func.nazwaItemku(Baza.walutaPremium) + "&a: &e" + ulepszenia[poziom + 1].cena.walutaPremium);
+							"&aCena ulepszenia: &e" + Func.DoubleToString(ulepszenia[poziom + 1].cena.kasa) + "$");
+					if (ulepszenia[poziom + 1].cena.walutaPremium != null && ulepszenia[poziom + 1].cena.walutaPremium > 0)
+						Func.dodajLore(item, "§aPotrzebne " + Func.nazwaItemku(Baza.walutaPremium) + "§a: §e" + ulepszenia[poziom + 1].cena.walutaPremium);
 				}
 				return item;
 			} catch (Throwable e) {

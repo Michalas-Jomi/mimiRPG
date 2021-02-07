@@ -205,15 +205,19 @@ public class AutoCrafting extends ModułMaszyny {
 	}
 	
 	
-	private static final Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> funkcjePanelu = new HashMap<>();
-	static {
+	@Override
+	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu(ModułMaszyny.Maszyna m) {
+		Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> funkcjePanelu = new HashMap<>();
+
+		funkcjePanelu.put(
+				super.standardowyItemFunckjiPrędkości(m),
+				super::standardowaFunckjaPrędkości
+				);
 		funkcjePanelu.put(
 				Func.stwórzItem(Material.CRAFTING_TABLE, "&6Wybierz recepture", "&aKliknij aby zmienić recepture craftingu"),
 				(p, maszyna) -> ((Maszyna) maszyna).wybierzRecepte(p)
 				);
-	}
-	@Override
-	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu() {
+		
 		return funkcjePanelu;
 	}
 }

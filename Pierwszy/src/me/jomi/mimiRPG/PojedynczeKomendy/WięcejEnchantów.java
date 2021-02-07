@@ -2,14 +2,16 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -23,7 +25,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł
-public class WięcejEnchanment implements Listener {
+public class WięcejEnchantów implements Listener {
 	public static class Timber {
 		static final String tag = "mimiBlokEnchantTimber";
 		
@@ -40,6 +42,7 @@ public class WięcejEnchanment implements Listener {
 			switch (mat) {
 			case NETHER_WART_BLOCK:
 			case WARPED_WART_BLOCK:
+			case SHROOMLIGHT:
 				return true;
 			default:
 				return mat.toString().endsWith("_LEAVES");
@@ -47,9 +50,8 @@ public class WięcejEnchanment implements Listener {
 		}
 		static void zetnijDrzewo(Location loc) {
 			if (jestDrzewem(loc.getBlock().getType())) {
-				Vector vel = new Vector(Func.losuj(-1, 1), 0, Func.losuj(-1,  1)).multiply(.1);
 				List<FallingBlock> bloki = new ArrayList<>();
-				zetnij(loc.getBlockX(), loc.getBlockZ(), loc, vel, bloki);
+				zetnij(loc.getBlockX(), loc.getBlockZ(), loc, Func.losujWZasięgu(360), 0, bloki);
 				tick(bloki);
 			}
 		}
@@ -63,35 +65,36 @@ public class WięcejEnchanment implements Listener {
 					bloki.remove(i--);
 				else {
 					Vector vel = blok.getVelocity();
-					blok.setVelocity(new Vector(vel.getX(), vel.getY() - .02, vel.getZ()));
+					blok.setVelocity(new Vector(vel.getX(), (vel.getY() - .02) * 1.05, vel.getZ()));
 					blok.setTicksLived(1);
 				}
 			}
 			
 			Func.opóznij(3, () -> tick(bloki));
 		}
-		private static void zetnij(int startX, int startZ, Location loc, Vector vel, List<FallingBlock> bloki) {
+		private static void zetnij(int startX, int startZ, Location loc, int rotacja, int moc, List<FallingBlock> bloki) {
 			if (	Math.abs(loc.getBlockX() - startX) > 5 ||
 					Math.abs(loc.getBlockZ() - startZ) > 5)
 				return;
 			Material mat = loc.getBlock().getType();
 			if (jestDrzewem(mat) || jestLiśćmi(mat)) {
 				loc.getBlock().setType(Material.AIR);
-				bloki.add(zresp(loc, mat, vel));
+				bloki.add(zresp(loc, mat, rotacja, moc));
 
-				UnaryOperator<Double> plus = x -> x + .03 * ( x > 0 ? 1 : -1);
-				zetnij(startX, startZ, loc.clone().add(0, 1, 0),  new Vector(plus.apply(vel.getX()), vel.getY(), plus.apply(vel.getZ())), bloki);
-				zetnij(startX, startZ, loc.clone().add(1, 0, 0),  vel, bloki);
-				zetnij(startX, startZ, loc.clone().add(0, 0, 1),  vel, bloki);
-				zetnij(startX, startZ, loc.clone().add(-1, 0, 0), vel, bloki);
-				zetnij(startX, startZ, loc.clone().add(0, 0, -1), vel, bloki);
+				zetnij(startX, startZ, loc.clone().add(0, 1, 0),  rotacja, moc + 1, bloki);
+				zetnij(startX, startZ, loc.clone().add(1, 0, 0),  rotacja, moc, 	bloki);
+				zetnij(startX, startZ, loc.clone().add(0, 0, 1),  rotacja, moc, 	bloki);
+				zetnij(startX, startZ, loc.clone().add(-1, 0, 0), rotacja, moc, 	bloki);
+				zetnij(startX, startZ, loc.clone().add(0, 0, -1), rotacja, moc, 	bloki);
 			}
 		}
-		private static FallingBlock zresp(Location loc, Material mat, Vector vel) {
+		private static FallingBlock zresp(Location loc, Material mat, int rotacja, int moc) {
 			FallingBlock fb = loc.getWorld().spawnFallingBlock(loc, Bukkit.createBlockData(mat));
 			fb.setGravity(false);
 			fb.setDropItem(true);
-			fb.setVelocity(vel);
+			fb.setRotation(rotacja, 0);
+			Vector vel = fb.getLocation().getDirection().multiply(.1);
+			fb.setVelocity(vel.add(vel.clone().multiply(.5).multiply(moc)));
 			fb.addScoreboardTag(tag);
 			return fb;
 		}
@@ -101,8 +104,8 @@ public class WięcejEnchanment implements Listener {
 	public void niszczenieBloku(BlockBreakEvent ev) {
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		// TODO napisać jako enchant
-		if (!ev.isCancelled() && item.getItemMeta().getLore().contains("§7Timber")) {
-			Timber.zetnijDrzewo(ev.getBlock().getLocation());
+		if (!ev.isCancelled() && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("§7Timber")) {
+			Timber.zetnijDrzewo(ev.getBlock().getLocation().add(.5, 0, .5));
 			ev.setDropItems(false);
 		}
 	}
@@ -123,6 +126,11 @@ public class WięcejEnchanment implements Listener {
 	private void timberDrop(Location loc, Material mat) {
 		FallingBlock bloczek = loc.getWorld().spawnFallingBlock(loc, Bukkit.createBlockData(mat));
 		bloczek.setGravity(false);
+
+		Func.particle(loc.getWorld(), Particle.CLOUD, loc, 5, .5, .5, .5, .1);
+		loc.getWorld().playSound(loc, Timber.jestDrzewem(mat) ? Sound.BLOCK_WOOD_BREAK : Sound.BLOCK_GRASS_BREAK, (float) Func.losuj(.1, .5), (float) Func.losuj(.5, 1.5));
+
+		loc.getWorld().getNearbyEntities(loc, 1, 1, 1, e -> e instanceof LivingEntity).forEach(e -> ((LivingEntity) e).damage(1, bloczek));
 
 		Func.opóznij(50, () -> {
 			bloczek.remove();

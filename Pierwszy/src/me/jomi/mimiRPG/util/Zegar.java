@@ -31,7 +31,7 @@ public interface Zegar {
 
 class _Zegar {
 	int timer = 0;
-	int maxTimer = 1;
+	int maxTimer = 2;
 	Zegar zegar;
 	
 	_Zegar(Zegar zegar) {

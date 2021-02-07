@@ -1,10 +1,14 @@
 package me.jomi.mimiRPG.Maszyny;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -12,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Container;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,15 +29,19 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.google.common.collect.Lists;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa;
+import me.jomi.mimiRPG.util.Cena;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
@@ -41,10 +50,9 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 	
 	public abstract static class Maszyna extends Mapowany {
 		@Mapowane Location locShulker;
-		@Mapowane int potrzebneTicki = 100;
+		@Mapowane int lvlTicki;
 		
 		Holder holder;
-		
 		
 		protected void postaw() {
 			locShulker.getBlock().setType(getModuł().getShulkerType());
@@ -62,7 +70,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 
 		private int wykonaneTicki = 0;
  		public boolean włącz() {
-			if (++wykonaneTicki >= potrzebneTicki) {
+			if (++wykonaneTicki >= getModuł().ulepszeniaPrędkości.get(lvlTicki).b) {
 				if (locShulker.getBlock().getType() != getModuł().getShulkerType())
 					return false;
 				wykonaj();
@@ -85,6 +93,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		}
 	}
 	
+	final Panel panel = new Panel(true);
 	final String permBypass = Func.permisja(this.getClass() + ".bypass");
 	protected final Map<Location, Maszyna> mapaMaszyn = new HashMap<>();
 	
@@ -161,10 +170,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 						wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn
 					)) {
 				ev.setCancelled(true);
-				if (maszyna.holder != null)
-					ev.getPlayer().openInventory(maszyna.holder.getInventory());
-				else if (!getFunkcjePanelu().isEmpty())
-					ev.getPlayer().openInventory(new Holder(3, "&1Konfiguracja " + this.getClass().getSimpleName(), getFunkcjePanelu(), maszyna).getInventory());
+				otwórzPanelMaszyny(ev.getPlayer(), maszyna);
 			}
 		});
 	}
@@ -184,12 +190,69 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		}));
 	}
 
-	protected abstract Map<ItemStack, BiConsumer<Player, Maszyna>> getFunkcjePanelu();
+	public static void otwórzPanelMaszyny(Player p, Maszyna maszyna) {
+		if (maszyna.holder != null)
+			p.openInventory(maszyna.holder.getInventory());
+		else if (!maszyna.getModuł().getFunkcjePanelu(maszyna).isEmpty())
+			p.openInventory(maszyna.getModuł().new Holder(3, "&1Konfiguracja " + maszyna.getModuł().getClass().getSimpleName(),
+					maszyna.getModuł().getFunkcjePanelu(maszyna), maszyna).getInventory());
+	}
+	
+	protected abstract Map<ItemStack, BiConsumer<Player, Maszyna>> getFunkcjePanelu(Maszyna m);
 	public abstract Material getShulkerType();
 	public final Config getConfig() {
 		return new Config("configi/Maszyny/" + this.getClass().getSimpleName());
 	};
 	public abstract Maszyna postawMaszyne(Player p, Location loc);
+	
+	
+	protected static ItemStack fabrykatorItemów(Material mat, String nazwa, int lvl, List<Krotka<Cena, Integer>> ceny, Function<Integer, String> poziomStr) {
+		Krotka<Cena, Integer> upgr = ceny.get(lvl);
+		ItemStack item = Func.stwórzItem(mat, "&9" + nazwa, "&aAktualny poziom: &e" + poziomStr.apply(upgr.b));
+		Func.wykonajDlaNieNull((ceny.size() > lvl + 1) ? ceny.get(lvl + 1) : null, nast -> {
+			Func.dodajLore(item, "&aNastępny poziom: &e" + poziomStr.apply(nast.b));
+			Func.dodajLore(item, "&aCena: &e" + nast.a);
+		});
+		return item;
+	}
+	protected static BiConsumer<Player, Maszyna> fabrykatorFunkcji(List<Krotka<Cena, Integer>> ulepszenia,
+			Function<Maszyna, Integer> lvl, Consumer<Maszyna> ulepsz) {
+		return (p, m) -> 
+			Func.wykonajDlaNieNull((ulepszenia.size() > lvl.apply(m) + 1) ? ulepszenia.get(lvl.apply(m) + 1).a : null, cena -> {
+				if (!cena.staćGo(p))
+					p.sendMessage(prefix + "Nie stać cię na to");
+				else {
+					cena.zabierz(p);
+					ulepsz.accept(m);
+					m.zapisz();
+					p.closeInventory();
+					if (m.holder != null) {
+						ArrayList<HumanEntity> kopia = Lists.newArrayList(m.holder.getInventory().getViewers());
+						kopia.forEach(e -> Func.wykonajDlaNieNull(e, HumanEntity::closeInventory));
+						m.holder = null;
+						kopia.forEach(e -> otwórzPanelMaszyny((Player) e, m));
+					} else
+						otwórzPanelMaszyny(p, m);
+				}
+			});
+		
+	}
+	protected ItemStack standardowyItemFunckjiPrędkości(Maszyna m) {
+		return fabrykatorItemów(
+				Material.SUGAR,
+				"Prędkość",
+				m.lvlTicki,
+				ulepszeniaPrędkości,
+				ile -> Func.DoubleToString(ile / 20d) + " sek"
+				);
+	}
+	protected void standardowaFunckjaPrędkości(Player p, Maszyna maszyna) {
+		fabrykatorFunkcji(
+				ulepszeniaPrędkości,
+				m -> m.lvlTicki,
+				m -> m.lvlTicki++
+				).accept(p, maszyna);
+	}
 	
 	ItemStack itemMaszyny;
 	
@@ -199,9 +262,22 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		return 1;
 	}
 
+	List<Krotka<Cena, Integer>> ulepszeniaPrędkości = new ArrayList<>();
+	
 	@Override
 	public void przeładuj() {
-		Config config = getConfig();
+		Config config;
+		
+		config = new Config("Maszyny");
+		ulepszeniaPrędkości.clear();
+		Func.wykonajDlaNieNull(config.wczytajListeMap(this.getClass().getSimpleName() + ".prędkość"), lista ->
+			lista.forEach(mapa ->
+				ulepszeniaPrędkości.add(new Krotka<>(
+					Cena.deserialize(mapa.getMap("cena"), Cena.class),
+					mapa.getInt("ticki")
+				))));
+		
+		config = getConfig();
 		config.przeładuj();
 		
 		odświeżMaszyny(config.wartości(Maszyna.class));
