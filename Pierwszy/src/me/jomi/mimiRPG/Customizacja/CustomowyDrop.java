@@ -7,12 +7,14 @@ import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -29,12 +31,14 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	static class Drop {
 		List<Item> itemy = Lists.newArrayList();
 		boolean wyłączPierwotny;
+		boolean blokuj;
 		ItemStack itemNaGłowie;
 		String imie;
 		
-		public Drop(boolean wyłączPierwotny, ItemStack itemNaGłowie, String imie) {
+		public Drop(boolean wyłączPierwotny, boolean blokuj, ItemStack itemNaGłowie, String imie) {
 			this.wyłączPierwotny = wyłączPierwotny;
 			this.itemNaGłowie = itemNaGłowie;
+			this.blokuj = blokuj;
 			if (imie != null)
 				imie = Func.koloruj(imie);
 			this.imie = imie;
@@ -57,6 +61,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 				item.upuść(loc, lvl);
 		}
 
+		@Override
 		public String toString() {
 			return String.format("§rDrop(imie=%s)", Func.odkoloruj(imie));
 		}
@@ -91,6 +96,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	
 	private static int _bloki;
 	private static int _moby;
+	@Override
 	public void przeładuj() {
 		mapa.clear();
 		
@@ -105,6 +111,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			wszystko += lista.size();
 		_moby = wszystko - _bloki;
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r(
 				Raport.raport(Func.r("Customowe Dropy z bloków", _bloki)) + "\n" 
@@ -122,6 +129,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			LinkedHashMap<String, Object> _mapa = (LinkedHashMap<String, Object>) lista.get(0);
 			Drop drop = new Drop(
 					!(boolean)  _mapa.getOrDefault("pierwotnyDrop", true),
+					 (boolean)  _mapa.getOrDefault("blokuj", false),
 					Config.item(_mapa.get("glowa")),
 					(String) 	_mapa.get("imie"));
 			for (int i=1; i<lista.size(); )
@@ -133,15 +141,41 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
+	public void spadającyBlok(EntityDropItemEvent ev) {
+		if (ev.isCancelled()) return;
+		if (ev.getEntity() instanceof FallingBlock)
+			Func.wykonajDlaNieNull(mapa.get(((FallingBlock) ev.getEntity()).getBlockData().getMaterial().toString()), dropy -> {
+				for (Drop drop : dropy)
+					if (drop.blokuj) {
+						ev.setCancelled(true);
+						return;
+					}
+				dropy.forEach(drop -> {
+					if (drop.wyłączPierwotny)
+						ev.setCancelled(true);
+					drop.dropnij(ev.getEntity().getLocation(), 0);
+				});
+			});
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenieBloku(BlockBreakEvent ev) {
 		if (ev.isCancelled()) return;
 		if (ev.getPlayer().getGameMode().equals(GameMode.CREATIVE)) return;
 		String mat = ev.getBlock().getType().toString();
 		if (!mapa.containsKey(mat)) return;
+		
+		for (Drop drop : mapa.get(mat))
+			if (drop.blokuj) {
+				ev.setDropItems(false);
+				ev.setExpToDrop(0);
+				return;
+			}
+		
 		ItemStack narzędzie = ev.getPlayer().getInventory().getItemInMainHand();
 		if (narzędzie != null && narzędzie.hasItemMeta() && narzędzie.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)) return;
 		if (ev.isDropItems()) {
 			Location loc = ev.getBlock().getLocation();
+			
 			for (Drop drop : mapa.get(mat)) {
 				drop.dropnij(loc, narzędzie.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS));
 				if (drop.wyłączPierwotny)

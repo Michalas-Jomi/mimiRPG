@@ -1243,7 +1243,6 @@ public abstract class Func {
 				if (en.getKey().equals("=mimi=")) continue;
 				
 				Field field = dajField(clazz, en.getKey());
-				field.setAccessible(true);
 				
 				if (!field.isAnnotationPresent(Mapowane.class))
 					throw new Throwable();
@@ -1308,6 +1307,10 @@ public abstract class Func {
 			Class<?> clazz = (Class<?>) type;
 			if (clazz.isEnum())
 				return Func.StringToEnum(clazz, (String) obj);
+			
+			if (clazz.getName().equals(Object.class.getName()))
+				return obj;
+			
 			if (clazz.isAssignableFrom(ItemStack.class))
 				return Config.item(obj);
 			if (clazz.isAssignableFrom(Drop.class))

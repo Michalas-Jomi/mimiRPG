@@ -13,6 +13,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
 
@@ -40,11 +41,16 @@ public class Panel {
 		public Object dane;
 		
 		public Holder(Object dane, int rzędy, String nazwa) {
+			this(dane, rzędy, nazwa, null);
+		}
+		public Holder(Object dane, int rzędy, String nazwa, ItemStack pustySlot) {
 			super(rzędy, nazwa);
 			
 			this.dane = dane;
 			
-			if (blokujKlikanie)
+			if (pustySlot != null)
+				Func.ustawPuste(inv, pustySlot);
+			else if (blokujKlikanie)
 				Func.ustawPuste(inv);
 		}
 		
@@ -77,7 +83,10 @@ public class Panel {
 	}
 	
 	public Inventory stwórz(Object dane, int rzędy, String nazwa) {
-		return new Holder(dane, rzędy, nazwa).getInventory();
+		return stwórz(dane, rzędy, nazwa, null);
+	}
+	public Inventory stwórz(Object dane, int rzędy, String nazwa, ItemStack pustySlot) {
+		return new Holder(dane, rzędy, nazwa, pustySlot).getInventory();
 	}
 	
 	public void ustawOpen(Consumer<InventoryOpenEvent> open) {

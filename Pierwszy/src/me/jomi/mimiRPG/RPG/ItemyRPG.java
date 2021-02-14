@@ -43,11 +43,6 @@ import me.jomi.mimiRPG.util.Krotki.TriKrotka;
 import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
-// TODO bedrock useless
-// TODO flint useless
-
-// TODO handlarz narkotykami
-
 @Moduł
 public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements Listener, Przeładowalny {
 	public static class Rozwój extends Mapowany {
@@ -112,18 +107,16 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 		panel.ustawClick(ev -> {
 			ItemStack item = ev.getInventory().getItem(slotItemuWPanelu);
 			ItemStack klikany = ev.getCurrentItem();
-			if (ev.getRawSlot() >= slotPierwszyEnchantów) {
-				if (!klikany.isSimilar(Baza.pustySlot)) {
+			if (ev.getRawSlot() >= slotPierwszyEnchantów && !klikany.isSimilar(Baza.pustySlotCzarny)) {
 					int punkty = dajPunkty(item);
 					if (punkty >= klikany.getItemMeta().getCustomModelData()) {
-						Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(klikany.getItemMeta().getDisplayName().substring(2)));
+						Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(klikany.getItemMeta().getDisplayName().substring(2).replace(' ', '_')));
 						Func.enchantuj(item, ench, item.getEnchantmentLevel(ench) + 1);
 						ustawPunkty(item, punkty - klikany.getItemMeta().getCustomModelData());
 						ev.getWhoClicked().addScoreboardTag(tempTagNieOddawaniaItemku);
 						otwórzPanel((Player) ev.getWhoClicked(), item);
 						ev.getWhoClicked().removeScoreboardTag(tempTagNieOddawaniaItemku);
 					}
-				}
 			}
 		});
 	}
@@ -132,12 +125,11 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 	static final int slotItemuWPanelu = 13;
 	static final int slotPktewWPanelu = 10;
 	void otwórzPanel(Player p, ItemStack item) {
-		Inventory inv = panel.stwórz(null, 5, "&4&lUlepsz Item");
+		Inventory inv = panel.stwórz(null, 5, "&4&lUlepsz Item", Baza.pustySlotCzarny);
 		
 		NBTTagCompound tag = nmsItem(item).getOrCreateTag().getCompound("mimiItemRPG");
 		int punkty = tag.getInt("punkty");
 		String rozwój = tag.getString("rozwoj");
-		
 		
 		
 		inv.setItem(slotItemuWPanelu, item);
@@ -160,12 +152,14 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 			});
 		});
 		
+		
+		
 		Iterator<TriKrotka<Enchantment, Integer, Integer>> it = enchanty.iterator();
 		for (int slot : Func.sloty(enchanty.size(), enchanty.size() > 7 ? 2 : 1)) {
 			slot += slotPierwszyEnchantów;
 			
 			TriKrotka<Enchantment, Integer, Integer> krotka = it.next();
-			ItemStack ikona = Func.stwórzItem(Material.ENCHANTED_BOOK,
+			ItemStack ikona = Func.stwórzItem(krotka.b == 0 ? Material.STRUCTURE_VOID : ikona(krotka.a),
 					"&c" + krotka.a.getKey().getKey().replace('_', ' '), krotka.b,
 					"&aAktualny poziom&8: &e" + krotka.b);
 			
@@ -179,44 +173,6 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 
 		p.openInventory(inv);
 	}
-/*
-aqua_affinity: turtle_helmet
-bane_of_arthropods: spider_eye
-blast_protection: tnt
-channeling: arrow
-depth_strider: sea_grass
-efficiency: sugar
-feather_falling: feather
-fire_aspect: fire
-fire_protection: fire
-flame: fire
-fortune: diamond
-frost_walker: packed_ice
-impaling: blaze_rod
-infinity: end_crystal
-knockback: netherite_ingot
-looting: bone
-loyalty: bone
-luck_of_the_sea: sea_heart
-lure: cocoa_beans
-mending: experience_bottle
-multishot: tripped_arrow
-piercing: arrow
-power: blaze_powder
-projectile_protection: arrow
-protection: shield
-punch: cod
-quick_charge: sugar
-respiration: potion
-riptide: elytra
-sharpness: iron_sword
-silk_touch: white_wool
-smite: zombie_head
-soul_speed: soul_sand
-sweeping: diamond_sword
-thorns: weeping_vines
-unbreaking: anvil
- */
 	
 	private static Field fieldHandle = null; 
 	static {
@@ -252,6 +208,47 @@ unbreaking: anvil
 			}
 	}
 	
+	static Material ikona(Enchantment ench) {
+		switch (ench.getKey().getKey()) {
+		case "aqua_affinity":		 return Material.TURTLE_HELMET;
+		case "bane_of_arthropods":	 return Material.SPIDER_EYE;
+		case "blast_protection":	 return Material.TNT;
+		case "channeling":			 return Material.ARROW;
+		case "depth_strider":		 return Material.SEAGRASS;
+		case "efficiency":			 return Material.SUGAR;
+		case "feather_falling":		 return Material.FEATHER;
+		case "fire_aspect":			 return Material.FIRE_CHARGE;
+		case "fire_protection":		 return Material.FIRE_CHARGE;
+		case "flame":				 return Material.FIRE_CHARGE;
+		case "fortune":				 return Material.DIAMOND;
+		case "frost_walker":		 return Material.PACKED_ICE;
+		case "impaling":			 return Material.BLAZE_ROD;
+		case "infinity":			 return Material.END_CRYSTAL;
+		case "knockback":			 return Material.NETHERITE_INGOT;
+		case "looting":				 return Material.BONE;
+		case "loyalty":				 return Material.BONE;
+		case "luck_of_the_sea":		 return Material.HEART_OF_THE_SEA;
+		case "lure":				 return Material.COCOA_BEANS;
+		case "mending":				 return Material.EXPERIENCE_BOTTLE;
+		case "multishot":			 return Material.TIPPED_ARROW;
+		case "piercing":			 return Material.ARROW;
+		case "power":				 return Material.BLAZE_POWDER;
+		case "projectile_protection":return Material.ARROW;
+		case "protection":			 return Material.SHIELD;
+		case "punch":				 return Material.COD;
+		case "quick_charge":		 return Material.SUGAR;
+		case "respiration":			 return Material.POTION;
+		case "riptide":				 return Material.ELYTRA;
+		case "sharpness":			 return Material.IRON_SWORD;
+		case "silk_touch":			 return Material.WHITE_WOOL;
+		case "smite":				 return Material.ZOMBIE_HEAD;
+		case "soul_speed":			 return Material.SOUL_SAND;
+		case "sweeping":			 return Material.DIAMOND_SWORD;
+		case "thorns":				 return Material.WEEPING_VINES;
+		case "unbreaking":			 return Material.ANVIL;
+		default: 					 return Material.ENCHANTED_BOOK;
+		}
+	}
 	
 	static int dajPunkty(ItemStack item) {
 		return nmsItem(item).getTag().getCompound("mimiItemRPG").getInt("punkty");
@@ -377,7 +374,7 @@ unbreaking: anvil
 	private final static Krotka<Map<Material,   Double>, Double> expZBloków = new Krotka<>(new HashMap<>(), 0d);
 	private final static Krotka<Map<EntityType, Double>, Double> expZMobów  = new Krotka<>(new HashMap<>(), 0d);
 	
-	Config configUst = new Config("ItemyRPG exp");
+	Config configUst = new Config("ItemyRPG");
 	@Override
 	public void przeładuj() {
 		super.przeładuj();

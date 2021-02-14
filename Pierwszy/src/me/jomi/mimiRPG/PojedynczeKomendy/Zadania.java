@@ -66,19 +66,24 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		@Mapowane Object czego;
 		@Mapowane int ile = 1;
 		
+		private Object czegoObj;
+		public <T> T getCzego() {
+			return Func.pewnyCast(czegoObj);
+		}
+		
 		@Override
 		public void Init() {
 			try {
 				switch (rodzaj) {
 				case ZDOBĄDZ:
 				case DOSTARCZ:
-					czego = Config.item(czego);
+					czegoObj = Config.item(czego);
 					break;
 				case WYKOP:
-					czego = Func.StringToEnum(Material.class, (String) czego);
+					czegoObj = Func.StringToEnum(Material.class, (String) czego);
 					break;
 				case ZABIJ:
-					czego = Func.StringToEnum(EntityType.class, (String) czego);
+					czegoObj = Func.StringToEnum(EntityType.class, (String) czego);
 					break;
 				}
 			} catch (Throwable e) {
@@ -295,17 +300,17 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			case ZDOBĄDZ:
 			case DOSTARCZ:
 				return new Napis("§6item§8: ")
-						.dodaj((k.czego instanceof ItemStack ? Napis.item((ItemStack) k.czego) : new Napis("§enull"))
+						.dodaj((k.getCzego() instanceof ItemStack ? Napis.item((ItemStack) k.getCzego()) : new Napis("§enull"))
 								.clickEvent(Action.RUN_COMMAND, ścieżka + "() org.bukkit.inventory.ItemStack >>"));
 			case WYKOP:
 				return new Napis("§6blok§8: ").dodaj(new Napis(
-						"§e" + (k.czego instanceof Material ? k.czego : "null"),
+						"§e" + (k.getCzego() instanceof Material ? k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.Material >> "
 						));
 			case ZABIJ:
 				return new Napis("§6mob§8: ").dodaj(new Napis(
-						"§e" + (k.czego instanceof EntityType ? k.czego : "null"),
+						"§e" + (k.getCzego() instanceof EntityType ? k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.entity.EntityType >> "
 						));
@@ -342,7 +347,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 				Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
 					Kryterium k;
 					for (int i=0; i < zadanie.kryteria.size(); i++)
-						if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && k.ile > aktywneZadanie.getPostęp(i) && pred.test((E) k.czego)) {
+						if ((k = zadanie.kryteria.get(i)).rodzaj == rodzaj && k.ile > aktywneZadanie.getPostęp(i) && pred.test((E) k.getCzego())) {
 							aktywneZadanie.zwiększ(p, i, ile.apply(k));
 							g.zapisz();
 							if (zadanie.autoObieranie && aktywneZadanie.spełnione())
@@ -472,8 +477,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 					int i=0;
 					for (Kryterium kryterium : zadanie.kryteria)
 						n.dodaj("\n§6" + Func.enumToString(kryterium.rodzaj) + " ")
-						 .dodaj(kryterium.czego instanceof ItemStack ?
-								 Napis.item((ItemStack) kryterium.czego) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.czego)))
+						 .dodaj(kryterium.getCzego() instanceof ItemStack ?
+								 Napis.item((ItemStack) kryterium.getCzego()) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.getCzego())))
 						 .dodaj(String.format(" §e%s§6/§e%s\n", aktywneZadanie.postępKryteriow.get(i++), kryterium.ile));
 				});
 	
@@ -497,8 +502,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 						int i=0;
 						for (Kryterium kryterium : zadanie.kryteria)
 							n.dodaj("§6" + Func.enumToString(kryterium.rodzaj) + " ")
-							 .dodaj(kryterium.czego instanceof ItemStack ?
-									 Napis.item((ItemStack) kryterium.czego) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.czego)))
+							 .dodaj(kryterium.getCzego() instanceof ItemStack ?
+									 Napis.item((ItemStack) kryterium.getCzego()) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.getCzego())))
 							 .dodaj(String.format(" §e%s§6/§e%s\n", aktywneZadanie.postępKryteriow.get(i++), kryterium.ile));
 						
 						n.wyświetl(sender);

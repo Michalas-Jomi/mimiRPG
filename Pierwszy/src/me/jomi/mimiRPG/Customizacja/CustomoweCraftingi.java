@@ -78,6 +78,11 @@ public class CustomoweCraftingi implements Przeładowalny {
 		case "cu":
 			rec = CustomoweCraftingiUlepszanie.wczytaj(config, nms, klucz);
 			break;
+		case "ilościowe":
+		case "craftingilościowy":
+		case "ile":
+			rec = CustomoweCraftingiIlościowe.wczytaj(config, nms, klucz);
+			break;
 		default:
 			return;
 		}
@@ -103,6 +108,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 			
 			mapaTagów.clear();
 			CustomoweCraftingiUlepszanie.reset();
+			CustomoweCraftingiIlościowe.reset();
 			
 			Func.wykonajDlaNieNull(config.sekcja("Tagi"), sekcja -> {
 				for (String klucz : sekcja.getKeys(false))

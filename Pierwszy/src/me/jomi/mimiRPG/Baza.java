@@ -30,12 +30,12 @@ import net.milkbowl.vault.permission.Permission;
 public class Baza implements Listener {
 	public static final ItemStack pustySlot		  = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&1&l ");
 	public static final ItemStack pustySlotCzarny = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, "&1&l ");
-	public static final Config config = new Config("configi/Baza");
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static final HashMap<String, SelektorItemów> selektoryItemów = new HashMap<>();
 	public static final HashMap<String, Drop> dropy = new HashMap<>();
 	public static ConfigurationSection grupy;
 	public static ItemStack walutaPremium;
+	public static Config config;
 	
 
 	// Api WorldGuard
@@ -50,6 +50,7 @@ public class Baza implements Listener {
 	
 	
 	public Baza() {	
+		config = new Config("configi/Baza");
 		przeładuj();
 	}
 	public static void przeładuj() {
