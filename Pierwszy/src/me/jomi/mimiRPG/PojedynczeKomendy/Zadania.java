@@ -285,6 +285,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	}
 	
 	
+	public static final String permInfo = Func.permisja("zadania.czyjeś");
+	
 	static Zadanie wczytaj(String nazwa) {
 		return mapaZadań.get(nazwa);
 	}
@@ -293,6 +295,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		super("zadania");
 		ustawKomende("zadaniaadmin", null, null);
 
+		Main.dodajPermisje(permInfo);
+		
 		edytor.zarejestrójWyjątek("/zadaniaadmin edytor kryteria <int> czego", (zadanie, ścieżka) -> {
 			int index = Func.Int(Func.tnij(ścieżka, " ").get(3));
 			Kryterium k = zadanie.kryteria.get(index);
@@ -445,7 +449,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		Player p = null;
 		if (sender instanceof Player)
 			p = (Player) sender;
-		if (args.length >= 2 && sender.hasPermission("mimirpg.zadaniaadmin"))
+		if (args.length >= 2 && sender.hasPermission(permInfo))
 			p = Bukkit.getPlayer(args[1]);
 		if (p == null)
 			return Func.powiadom(sender, prefix + "/zadania (zadanie) (nick)");
@@ -453,7 +457,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		Gracz g = Gracz.wczytaj(p);
 		
 		
-		if (args.length == 0 || (args.length >= 2 && sender.hasPermission("mimirpg.zadaniaadmin"))) {
+		if (args.length == 0 || (args.length >= 2 && sender.hasPermission(permInfo))) {
 			Napis n = new Napis("\n\n\n\n\n§aUkończone Zadania: ");
 			
 			Iterator<String> it = g.zadania.ukończone.iterator();

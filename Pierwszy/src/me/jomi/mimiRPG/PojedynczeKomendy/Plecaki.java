@@ -116,7 +116,15 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			if (!holder.item.equals(ev.getPlayer().getInventory().getItemInMainHand()))
 				return;
 			
-			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(ev.getPlayer().getInventory().getItemInMainHand());
+			ItemStack itemWRęce = ev.getPlayer().getInventory().getItemInMainHand();
+			ItemStack itemDoRzucenia = null;
+			if (itemWRęce.getAmount() > 1) {
+				itemDoRzucenia = itemWRęce.clone();
+				itemDoRzucenia.setAmount(itemWRęce.getAmount() - 1);
+				itemWRęce.setAmount(1);
+			}
+			
+			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemWRęce);
 			NBTTagCompound nmstag = nmsItem.getOrCreateTag();
 			
 			int maxSlot = -1;
@@ -147,6 +155,8 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			
 			nmsItem.setTag(nmstag);
 			ev.getPlayer().getInventory().setItemInMainHand(CraftItemStack.asBukkitCopy(nmsItem));
+			if (itemDoRzucenia != null)
+				Func.dajItem((Player) ev.getPlayer(), itemDoRzucenia);
 		});
 	}
 
