@@ -141,7 +141,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				Inventory _inv = Func.CloneInv(inv, nazwaInv);
 				double pkt = 0;
 				if (Main.włączonyModół(SkyBlock.class))
-					pkt = SkyBlock.Wyspa.wczytaj(p).getPkt();
+					pkt = Func.domyślnaTry(() -> SkyBlock.Wyspa.wczytaj(p).getPkt(), 0d);
 				
 				for (SklepItem item : specjalneItemy)
 					if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))

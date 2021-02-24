@@ -52,6 +52,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public Zadania.ZadaniaGracza zadania = Func.utwórz(Zadania.ZadaniaGracza.class);
 
 	@Mapowane public int wyspa = -1;
+	@Mapowane public List<Integer> ulubioneWyspy;
+	@Mapowane public List<Integer> polubioneWyspy;
 	
 	public Wilczek.Wilk wilk;
 	

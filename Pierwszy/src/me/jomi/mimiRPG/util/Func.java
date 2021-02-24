@@ -1092,7 +1092,13 @@ public abstract class Func {
 		if (sekundy != 0) 	w.append(sekundy) .append(" sekund").append(odmiana.apply(sekundy)).append(' ');
 		return w.length() == 0 ? "0 sekund" : w.substring(0, w.length()-1);
 	}
-	public static int czas(String str) {
+	/**
+	 * 
+	 * @param str string z czasem
+	 * @return sekundy
+	 * @throws NumberFormatException gdy format str jest niepoprawny
+	 */
+	public static int czas(String str) throws NumberFormatException {
 		str = str.replace("", "");
 		
 		int w = 0;

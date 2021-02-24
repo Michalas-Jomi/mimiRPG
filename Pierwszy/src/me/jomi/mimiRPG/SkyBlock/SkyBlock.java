@@ -222,13 +222,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public final Biome biomNether;
 		public final Material ikona;
 		public final List<String> opis;
+		public final double pkt;
 		public final double dx; // przesunięcie wyspa.locHome od wyspa.locŚrodek
 		public final double dy;
 		public final double dz;
 		private static int _id = 0;
 		private final int id;
 
-		public TypWyspy(String schematOverworld, String schematNether, double dx, double dy, double dz,
+		public TypWyspy(String schematOverworld, String schematNether, double pkt, double dx, double dy, double dz,
 				Biome biomOverworld, Biome biomNether, Material ikona, List<String> opis) {
 			this.schematOverworld = schematOverworld;
 			this.schematNether = schematNether;
@@ -236,6 +237,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			this.biomNether = biomNether;
 			this.ikona = ikona;
 			this.opis = opis;
+			this.pkt = pkt;
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
@@ -272,7 +274,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Func.wyjmijPlik("Configi/wyspaZwyczajna.schem", Main.path + "wyspaZwyczajna.schem");
 			Func.wyjmijPlik("Configi/wyspaNether.schem", Main.path + "wyspaNether.schem");
 			mapa.put("zwyczajna",
-					new TypWyspy(Main.path + "wyspaZwyczajna.schem", Main.path + "wyspaNether.schem", -2, 0, 0,
+					new TypWyspy(Main.path + "wyspaZwyczajna.schem", Main.path + "wyspaNether.schem", 0, -2, 0, 0,
 							Biome.PLAINS, Biome.NETHER_WASTES, Material.GRASS_BLOCK,
 							Func.koloruj(Lists.newArrayList(new String[] { "&8Zwyczajna wyspa" }))));
 		}
@@ -509,6 +511,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			locHome = locŚrodek.clone().add(typ.dx, typ.dy, typ.dz);
 
+			dodatkowe_pkt = typ.pkt;
+			
 			for (Entry<String, TypWyspy> en : TypWyspy.mapa.entrySet())
 				if (en.getValue().equals(typ)) {
 					this.typ = en.getKey();
@@ -529,7 +533,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return;
 
 			typ.wklejSchematy(locŚrodek.getBlockX(), locŚrodek.getBlockY(), locŚrodek.getBlockZ());
-
+			
 			policzWartość(p, null);
 			sprawdzTop();
 
@@ -1594,7 +1598,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			});
 		}
 
-		
 		// /is sethome
 
 		@Mapowane Location locHome;
@@ -1653,6 +1656,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		private double pkt_policzone;
 		private Player pkt_p;
 		private long pkt_start;
+		@Mapowane double dodatkowe_pkt;
 		@Mapowane double pkt;
 		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
 		public boolean wartość(Player p) {
@@ -1751,7 +1755,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		private void skończoneLiczenieWątku() {
 			if (--oczekujące <= 0)
 				Bukkit.getScheduler().runTask(Main.plugin, () -> {
-					double nowe = new PrzeliczaniePunktówWyspyEvent(this, pkt_p, this.pkt, pkt_policzone).pktPo;
+					double nowe = new PrzeliczaniePunktówWyspyEvent(this, pkt_p, this.pkt, pkt_policzone + dodatkowe_pkt).pktPo;
 					if (nowe != this.pkt) {
 						this.pkt = nowe;
 						sprawdzTop();
@@ -1852,6 +1856,44 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Func.tpSpawn(p);
 		}
 
+		
+		// /is fav
+		
+		public void uwielb(Player p) {
+			Gracz gracz = Gracz.wczytaj(p);
+			
+			if (gracz.ulubioneWyspy.remove((Integer) id)) {
+				Func.powiadom(p, prefix + "Usunięto wyspę %s z ulubionych", nazwa);
+			} else {
+				gracz.ulubioneWyspy.add(id);
+				Func.powiadom(p, prefix + "Dodano wyspę %s do ulubionych", nazwa);
+			}
+			
+			gracz.zapisz();
+		}
+		
+		// /is like
+		
+		@Mapowane List<String> lubiący;
+		public void polub(Player p) {
+			Gracz gracz = Gracz.wczytaj(p);
+			
+			if (lubiący.remove(p.getName())) {
+				gracz.polubioneWyspy.remove(id);
+				Func.powiadom(p, prefix + "Już nie lubisz wyspy %s", nazwa);
+				powiadomCzłonków("%s przestał lubić twoją wyspę! masz teraz %s polubień", p.getDisplayName(), lubiący.size());
+			} else {
+				lubiący.add(p.getName());
+				gracz.polubioneWyspy.add(id);
+			}
+			
+			Func.powiadom(p, prefix + "Polubiłeś wyspę %s", nazwa);
+			this.powiadomCzłonków("%s polubił twoją wyspę! Masz już %s polubień!", p.getDisplayName(), lubiący.size());
+
+			gracz.zapisz();
+			zapisz();
+		}
+		
 		
 		// /is visit
 
@@ -3332,7 +3374,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		// Typy wysp
 		TypWyspy.mapa.clear();
-		// <nazwa typu>: scieżkaDoSchematickaOverworld scieżkaDoSchematickaNether dx dy
+		// <nazwa typu>: scieżkaDoSchematickaOverworld scieżkaDoSchematickaNether dx dy +pkt
 		// dz biomOverworld biomNether ikona opis
 		Func.wykonajDlaNieNull(config.sekcja("typy wysp"), sekcja -> sekcja.getValues(false).forEach((typ, obj) -> {
 			String części[] = ((String) obj).split(" ");
@@ -3341,9 +3383,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Material ikona = Material.GRASS_BLOCK;
 			List<String> opis = Lists.newArrayList(new String[] { "&8Zwyczajna wyspa" });
 			double x = 0, y = 0, z = 0;
+			double pkt = 0;
 			switch (części.length) {
 			default:
-				opis = Func.tnij(Func.listToString(części, 8), "\\n");
+				opis = Func.tnij(Func.listToString(części, 9), "\\n");
+			case 9:
+				pkt = Func.Double(części[8]);
 			case 8:
 				ikona = Material.valueOf(części[7].toUpperCase());
 			case 7:
@@ -3359,7 +3404,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			case 2:
 			}
 			TypWyspy.mapa.put(typ,
-					new TypWyspy(części[0], części[1], x, y, z, biomOverworld, biomNether, ikona, Func.koloruj(opis)));
+					new TypWyspy(części[0], części[1], pkt, x, y, z, biomOverworld, biomNether, ikona, Func.koloruj(opis)));
 		}));
 		if (TypWyspy.mapa.isEmpty())
 			TypWyspy.wrzućDomyślneSchematicki();
@@ -3430,6 +3475,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		lista.add("info");
 		lista.add("top");
+		lista.add("like");
+		lista.add("fav");
 		lista.add(pl ? "odwiedz" : "visit");
 		if (p.hasPermission(permBypass)) {
 			lista.add("bypass");
@@ -3485,7 +3532,23 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// gracz nie musi mieć wyspy
 		try {
 			if (args.length > 0)
-				switch (args[0]) {
+				switch (args[0].toLowerCase()) {
+				case "fav":
+					if (args.length < 2)
+						return Func.powiadom(sender, prefix + "/is fav <nick>");
+					g2 = Gracz.wczytaj(args[1]);
+					if (g2.wyspa == -1)
+						return Func.powiadom(sender, prefix + Func.msg("%s nie posiada wyspy", g2.nick));
+					Wyspa.wczytaj(g2).uwielb(p);
+					return true;
+				case "like":
+					if (args.length < 2)
+						return Func.powiadom(sender, prefix + "/is like <nick>");
+					g2 = Gracz.wczytaj(args[1]);
+					if (g2.wyspa == -1)
+						return Func.powiadom(sender, prefix + Func.msg("%s nie posiada wyspy", g2.nick));
+					Wyspa.wczytaj(g2).polub(p);
+					return true;
 				case "visit":
 				case "odwiedz":
 					if (args.length < 2)
