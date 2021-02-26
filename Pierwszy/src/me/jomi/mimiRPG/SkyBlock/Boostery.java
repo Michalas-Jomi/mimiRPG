@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 
 import me.jomi.mimiRPG.Komenda;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -29,7 +31,7 @@ public class Boostery extends Komenda implements Listener {
 	@EventHandler
 	public void zmianaFly(PlayerToggleFlightEvent ev) {
 		if (latający.contains(ev.getPlayer().getName()) && !ev.isFlying())
-			ev.setCancelled(true);
+			Bukkit.getScheduler().runTask(Main.plugin, () -> ev.getPlayer().setAllowFlight(true));
 	}
 	
 	@Override

@@ -60,6 +60,7 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.SkyBlock.DailyAdv;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.Spawnery.API.PlayerEwoluowałSpawnerEvent;
@@ -251,30 +252,31 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	}
 	public static class Osiągnięcie extends Mapowany {
 		final static Map<NamespacedKey, Osiągnięcie> mapa = new HashMap<>();
-		@Mapowane String tło;
-		@Mapowane String parent;
-		@Mapowane String namespacedKey;
-		@Mapowane List<Kryterium> kryteria;
+		@Mapowane public String tło;
+		@Mapowane public String parent;
+		@Mapowane public String namespacedKey;
+		@Mapowane public List<Kryterium> kryteria;
 
-		@Mapowane AdvancementFrameType ramka = AdvancementFrameType.TASK;
-		@Mapowane boolean show_toast = true;
-		@Mapowane boolean announce_to_chat = true;
-		@Mapowane boolean hidden = false;
+		@Mapowane public AdvancementFrameType ramka = AdvancementFrameType.TASK;
+		@Mapowane public boolean show_toast = true;
+		@Mapowane public boolean announce_to_chat = true;
+		@Mapowane public boolean hidden = false;
 		
-		@Mapowane ItemStack ikona;
-		@Mapowane String nazwa = "Osiągnięcie";
-		@Mapowane String opis = "Zwyczajne osiągnięcie\nco więcej potrzeba?";
+		@Mapowane public ItemStack ikona;
+		@Mapowane public String nazwa = "Osiągnięcie";
+		@Mapowane public String opis = "Zwyczajne osiągnięcie\nco więcej potrzeba?";
 		
-		@Mapowane List<ItemStack> nagroda;
-		@Mapowane double nagrodaKasa = 0d;
-		@Mapowane int nagrodaWalutaPremium = 0;
-		@Mapowane int exp;
+		@Mapowane public List<ItemStack> nagroda;
+		@Mapowane public double nagrodaKasa = 0d;
+		@Mapowane public int nagrodaWalutaPremium = 0;
+		@Mapowane public int exp;
 		
-		@Mapowane float x;
-		@Mapowane float y;
+		@Mapowane public float x;
+		@Mapowane public float y;
+		public boolean zapisywać = true;
 
 		
-		NamespacedKey klucz;
+		public NamespacedKey klucz;
 		org.bukkit.advancement.Advancement adv;
 
 		
@@ -285,6 +287,13 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 					parent = Main.plugin.getName() + ":" + parent;
 				parent = parent.toLowerCase();
 			}
+			
+			nagrodaWalutaPremium = Math.max(0, nagrodaWalutaPremium);
+			nagrodaKasa = Math.max(0, nagrodaKasa);
+			
+			nazwa = Func.koloruj(nazwa);
+			opis = Func.koloruj(opis);
+			
 			if (namespacedKey != null) {
 				if (!namespacedKey.contains(":"))
 					namespacedKey = Main.plugin.getName() + ":" + namespacedKey;
@@ -294,17 +303,12 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			
 			klucz = CraftNamespacedKey.fromString(namespacedKey);
 			
-			nagrodaWalutaPremium = Math.max(0, nagrodaWalutaPremium);
-			nagrodaKasa = Math.max(0, nagrodaKasa);
-			
 			Set<String> nazwy = Sets.newConcurrentHashSet();
 			kryteria.forEach(k -> {
 				if (!nazwy.add(k.nazwa))
 					throw new NiepoprawneDemapowanieException("Nazwy kryteriów w osiągnięciach nie mogą sie powtarzać");
 			});
 			
-			nazwa = Func.koloruj(nazwa);
-			opis = Func.koloruj(opis);
 		}
 
 		private boolean stworzone = false;
@@ -611,14 +615,42 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			preReload.put(p.getName(), mapa);
 		});
 	}
+	/**
+	 * Dodaje osiągiągnięcie adv do listy osiągnięć
+	 * Musi być wykonywane tylko i wyłącznie w przeładowaniu
+	 * @param adv osiągnięcie
+	 */
+	public static void dodajAdv(Osiągnięcie adv) {
+		if (!jestPrzeładowywany())
+			throw new Error("Dodawanie Adv w nieodpowiednim czasie, adv: " + adv.klucz);
+		Osiągnięcie.mapa.put(adv.klucz, adv);
+	}
+	public static boolean jestPrzeładowywany() {
+		return przeładowywany;
+	}
+	static boolean przeładowywany = false;
+	
+	
 	@Override
 	public void przeładuj() {
 		Config config = new Config(configPlik);
 		
 		Osiągnięcie.mapa.clear();
+		przeładowywany = true;
 		
-		config.wartości(Osiągnięcie.class).forEach(adv -> Osiągnięcie.mapa.put(adv.klucz, adv));
-
+		config.wartości(Osiągnięcie.class).forEach(CustomoweOsiągnięcia::dodajAdv);
+		
+		try {
+			if (Main.włączonyModół(DailyAdv.class))
+				DailyAdv.przeładuj();
+		} catch (Throwable e) {
+			Main.warn("Probem z DailyAdv");
+			e.printStackTrace();
+		}
+		
+		
+		przeładowywany = false;
+		
 		Kryterium.Typ.STATYSTYKA.mapaStatystyk.clear();
 		for (Kryterium.Typ typ : Kryterium.Typ.values())
 			Func.wykonajDlaNieNull(typ.mapa(), Map::clear);
@@ -745,7 +777,10 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		config.klucze(false).forEach(klucz -> config.ustaw(klucz, null));
 		
-		Osiągnięcie.mapa.values().forEach(adv -> config.ustaw(adv.namespacedKey, adv));
+		Osiągnięcie.mapa.values().forEach(adv -> {
+			if (adv.zapisywać)
+				config.ustaw(adv.namespacedKey, adv);
+		});
 		
 		config.zapisz();
 		

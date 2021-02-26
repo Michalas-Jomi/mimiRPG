@@ -273,8 +273,8 @@ public abstract class Func {
 	}
 	public static String koloruj(String text) {
 		if (text == null) return null;
-		if (text.contains("§"))
-			return text;
+		//if (text.contains("§"))
+		//	return text;
 		text = kolorkiRGB(przejścia(text));
 		return text.replace("&", "§").replace("§§", "&");
 	}
@@ -1140,7 +1140,7 @@ public abstract class Func {
 			}
 		}
 		
-		if (!liczba.isEmpty())
+		if (!liczba.toString().isEmpty())
 			w += Func.Int(liczba.toString());
 		
 		return w;

@@ -74,8 +74,8 @@ public class Moduły implements Przeładowalny {
 		
 		mapa.values().forEach(klasa -> (klasa.włączony ? strB1 : strB2).append("§r, §").append(klasa.włączony ? 'a' : 'c').append(klasa.klasa.getSimpleName()));
 		
-		return  "§6Wyłączone Moduły§8: " + (strB2.isEmpty() ? "§4Brak" : strB2.substring(4)) + "\n" +
-				"§6Włączone Moduły§8: "  + (strB1.isEmpty() ? "§4Brak" : strB1.substring(4));
+		return  "§6Wyłączone Moduły§8: " + (strB2.toString().isEmpty() ? "§4Brak" : strB2.substring(4)) + "\n" +
+				"§6Włączone Moduły§8: "  + (strB1.toString().isEmpty() ? "§4Brak" : strB1.substring(4));
 	}
 	
 	void włączModuł(Class<?> klasa) {

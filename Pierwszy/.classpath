@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsX-2.18.1.13.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsXSpawn-2.18.1.13.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/spigot-1.16.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/Shopkeepers-2.11.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -111,7 +111,6 @@ import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
-//TODO /is booster /is fly 
 //TODO /is tempban
 //TODO przycisk back w menu wyspy
 
@@ -283,12 +282,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			TypWyspy typ = mapa.get(nazwa);
 			if (typ == null || !typ.istniejąSchematy())
 				typ = mapa.get("zwyczajna");
-			if (typ == null || !typ.istniejąSchematy())
+			if (typ == null || !typ.istniejąSchematy()) {
 				for (TypWyspy _typ : mapa.values())
 					if (_typ.istniejąSchematy())
 						return _typ;
-			wrzućDomyślneSchematicki();
-			return mapa.get("zwyczajna");
+				wrzućDomyślneSchematicki();
+				return mapa.get("zwyczajna");
+			}
+			return typ;
 		}
 
 		public boolean istniejąSchematy() {
@@ -584,6 +585,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (wyspa == null || wyspa.get() == null)
 				mapaWysp.put(id, wyspa = new WeakReference<>((Wyspa) getConfig(id).wczytaj("wyspa")));
 			return wyspa.get();
+		}
+		static Wyspa wczytajzid(int id) {
+			return wczytaj(id);
 		}
 		static Config getConfig(int id) {
 			return new Config("configi/Wyspy/" + id);
@@ -2514,8 +2518,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 
 			int potrzebne = Func.potrzebneRzędy(lista.size());
-			Inventory inv = new Holder(null, TypInv.TWORZENIE_WYSPY, potrzebne <= 4 ? potrzebne + 2 : potrzebne)
-					.getInventory();
+			Inventory inv = new Holder(null, TypInv.TWORZENIE_WYSPY, potrzebne <= 4 ? potrzebne + 2 : potrzebne).getInventory();
 
 			for (int i : Func.sloty(TypWyspy.mapa.size(), potrzebne)) {
 				Entry<String, TypWyspy> en = lista.remove(0);
@@ -2532,8 +2535,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 		static void utwórzWyspę(Player p, TypWyspy typ) {
 			if (!maBypass(p) && !cooldownTworzenia.minąłToUstaw(p.getName())) {
-				Func.powiadom(p, prefix + "Musisz poczekać jeszcze " + cooldownTworzenia.czas(p.getName())
-						+ " zanim stworzysz kojeną wyspę");
+				Func.powiadom(p, prefix + "Musisz poczekać jeszcze %s zanim stworzysz kojeną wyspę", cooldownTworzenia.czas(p.getName()));
 				return;
 			}
 			p.closeInventory();

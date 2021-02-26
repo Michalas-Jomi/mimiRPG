@@ -23,6 +23,8 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
+import com.nisovin.shopkeepers.SKShopkeepersPlugin;
+import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
 
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -35,6 +37,11 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Sklep extends Komenda implements Listener, Przeładowalny {
+	public static enum Typ {
+		ZWYKŁY,
+		SHOPKEEPER;// z api shopkeepersów
+	}
+	
 	static boolean warunekModułu() {
 		return Main.ekonomia;
 	}
@@ -63,13 +70,33 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		Inventory inv;
 		String nazwaInv;
 		List<SklepItem> specjalneItemy = Lists.newArrayList();
+		AbstractShopkeeper npc;
+		Typ typ;
 		
 		boolean bezpośrednia = true;
 		public Strona(Config config) {
 			nazwa = config.f.getName();
 			nazwa = nazwa.substring(0, nazwa.lastIndexOf('.'));
-			int sloty = config.wczytajLubDomyślna("rzędy", 6);
 			nazwaInv = Func.koloruj(config.wczytajLubDomyślna("nazwa", "§1§lSklep"));
+			typ = Func.StringToEnum(Typ.class, config.wczytajLubDomyślna("typ", "ZWYKŁY"));
+			
+			if (typ == Typ.ZWYKŁY) {
+				wczytajZwykłą(config);
+			} else if (typ == Typ.SHOPKEEPER) {
+				wczytajWymienną(config);
+			}
+			
+			
+			Sklep.inst.strony.put(nazwa, this);
+		}
+		private void wczytajWymienną(Config config) {
+			SKShopkeepersPlugin sp = SKShopkeepersPlugin.getInstance();
+			npc = sp.getShopkeeperRegistry().getShopkeeperById(config.wczytajInt("id"));
+			if (npc == null)
+				Main.warn("Nie odnaleziono shopkeepera id:", config.wczytajInt("id"), config.f.getAbsoluteFile());
+		}
+		private void wczytajZwykłą(Config config) {
+			int sloty = config.wczytajLubDomyślna("rzędy", 6);
 			
 			inv = Bukkit.createInventory(null, sloty*9, nazwaInv);
 			for (int i=0; i<inv.getSize(); i++)
@@ -78,7 +105,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			for (String _slot : config.klucze(false)) {
 				int slot = Func.Int(_slot.replace("_", ""), -1);
 				if (slot == -1 || slot > inv.getSize()) {
-					if (Func.multiEquals(_slot, "rzędy", "nazwa", "stały lore")) continue;
+					if (Func.multiEquals(_slot, "rzędy", "nazwa", "stały lore", "typ")) continue;
 					Main.warn("Niepoprawny nr slotu (" + _slot + ") w pliku: " + config.f.getAbsolutePath());
 					continue;
 				}
@@ -131,25 +158,31 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				if (ustaw)
 					inv.setItem(slot, item);
 			}
-			Sklep.inst.strony.put(nazwa, this);
 		}
 		
 		void otwórz(Player p) {
-			if (bezpośrednia || !Main.włączonyModół(Sklep.class))
-				p.openInventory(inv);
-			else {
-				Inventory _inv = Func.CloneInv(inv, nazwaInv);
-				double pkt = 0;
-				if (Main.włączonyModół(SkyBlock.class))
-					pkt = Func.domyślnaTry(() -> SkyBlock.Wyspa.wczytaj(p).getPkt(), 0d);
+			switch(typ) {
+			case SHOPKEEPER:
+				npc.openTradingWindow(p);
+				break;
+			case ZWYKŁY:
+				if (bezpośrednia || !Main.włączonyModół(Sklep.class))
+					p.openInventory(inv);
+				else {
+					Inventory _inv = Func.CloneInv(inv, nazwaInv);
+					double pkt = 0;
+					if (Main.włączonyModół(SkyBlock.class))
+						pkt = Func.domyślnaTry(() -> SkyBlock.Wyspa.wczytaj(p).getPkt(), 0d);
+					
+					for (SklepItem item : specjalneItemy)
+						if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))
+							_inv.setItem(item.slot, item.item);
+					
+					p.openInventory(_inv);
+				}
+				Sklep.inst.otwarte.put(p.getName(), this);
 				
-				for (SklepItem item : specjalneItemy)
-					if (item.strona == null && (pkt >= item.pkt_min && (item.pkt_max == -1 || pkt < item.pkt_max)))
-						_inv.setItem(item.slot, item.item);
-				
-				p.openInventory(_inv);
 			}
-			Sklep.inst.otwarte.put(p.getName(), this);
 		}
 		
 		void kliknięty(Player p, int slot, ClickType typ, ItemStack klikanyItem) {
