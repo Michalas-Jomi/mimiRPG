@@ -194,7 +194,216 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 					}
 		}
 	}
-	
+	public static class EventEdytor {
+		static final String prefix = Func.prefix("Edytor AutoEventów");
+		Player p;
+
+		final String wybierz = "§8Wybierz";
+		final String ustaw = "§bKliknij aby ustawić";
+		final String cmd = "/autoevent -e ";
+		
+		public String nazwa;
+		public RodzajEventu rodzaj;
+		public GameMode gamemode = GameMode.ADVENTURE;
+		public int czas = 10;
+		public int zbiórka = 5;
+		public double nagroda = 100;
+		public int min_gracze = 2;
+		public int max_gracze = 10;
+		public Location loc_start;
+		public Location loc_zbiórka;
+		public Location loc_meta1;
+		public Location loc_meta2;
+		public List<ItemStack> itemy = Lists.newArrayList();
+		
+		
+		EventEdytor(Player p, String nazwa) {
+			this.nazwa = nazwa;
+			this.p = p;
+			boolean b = AutoEventy.inst.dajEventy().contains(nazwa);
+			if (b) {
+				ConfigurationSection sekcja = AutoEventy.inst.config.sekcja("eventy." + nazwa);
+				
+				czas = sekcja.getInt("czas gry");
+				nagroda = sekcja.getDouble("nagroda");
+				zbiórka = sekcja.getInt("czas zbiórki");
+				loc_start = sekcja.getLocation("start");
+				min_gracze = sekcja.getInt("min gracze");
+				max_gracze = sekcja.getInt("max gracze");
+				loc_zbiórka = sekcja.getLocation("zbiórka");
+				loc_meta1 = sekcja.getLocation("róg mety 1");
+				loc_meta2 = sekcja.getLocation("róg mety 2");
+				rodzaj = RodzajEventu.valueOf(sekcja.getString("rodzaj"));
+				itemy = Config.itemy(Func.nieNull(sekcja.getList("itemy")));
+				gamemode  = GameMode.valueOf(sekcja.getString("gamemode").toUpperCase());
+				
+			}
+			info();
+			if (b) p.sendMessage(prefix + "Edytujesz już istniejący event");
+		}
+		
+		void info() {
+			Function<Location, String> locString = loc -> {
+				if (loc == null) return wybierz;
+				StringBuilder w = new StringBuilder();
+				
+				w.append(loc.getBlockX()).append("x ")
+					.append(loc.getBlockY()).append("y ")
+					.append(loc.getBlockZ()).append("z ")
+					.append(Func.zaokrąglij(loc.getPitch(), 2))
+					.append('/')
+					.append(Func.zaokrąglij(loc.getYaw(), 2));
+				
+				return w.toString();
+			};
+			
+			Napis n = new Napis("\n\n\n\n\n\n\n§1§lEvent ");
+			n.dodajEnd(
+					new Napis("§9§l§o" + nazwa,
+							ustaw, cmd + "nazwa >> "),
+					new Napis("\n"),
+					new Napis("§6Typ: §e" 						+ (rodzaj != null ? rodzaj : wybierz),
+							ustaw, cmd + "typ"),
+					new Napis("§6Gamemode: §e" 					+ (gamemode != null ? gamemode : wybierz),
+							ustaw, cmd + "gamemode"),
+					new Napis("§6Czas gry: §e" 					+ (czas > 0 ? czas : wybierz) + "§e minut",
+							ustaw, cmd + "-p czas >> "),
+					new Napis("§6Czas zbiórki: §e" 				+ (zbiórka > 0 ? zbiórka : wybierz) + "§e minut",
+							ustaw, cmd + "-p zbiórka >> "),
+					new Napis("§6Nagroda: §e" 					+ (nagroda >= 0 ? nagroda : wybierz) + "§e$",
+							ustaw, cmd + "-p nagroda >> "),
+					new Napis("§6Wymagana Ilość Graczy: §e" 	+ (min_gracze > 0 ? min_gracze : wybierz),
+							ustaw, cmd + "-p min_gracze >> "),
+					new Napis("§6Maksymalna Ilość Graczy: §e" 	+ (max_gracze > 0 && max_gracze >= min_gracze ? max_gracze : wybierz),
+							ustaw, cmd + "-p max_gracze >> "),
+					new Napis("§6Pozycja Startu: §e" 			+ locString.apply(loc_start),
+							ustaw, cmd + "-loc start"),
+					new Napis("§6Pozycja Zbiórki: §e" 			+ locString.apply(loc_zbiórka),
+							ustaw, cmd + "-loc zbiórka")
+					); 
+			if (RodzajEventu.PierwszyNaMecie.equals(rodzaj)) {
+				n.dodajEnd(
+						new Napis("§61 Róg mety: §e" + locString.apply(loc_meta1),
+								ustaw, cmd + "-loc meta1"),
+						new Napis("§62 Róg mety: §e" + locString.apply(loc_meta2),
+								ustaw, cmd + "-loc meta2")
+						);
+			}
+			n.dodaj(new Napis("§6Itemy graczy: §e", "§bKlikając item, usuwasz go z listy"));
+			for (int i=0; i<itemy.size(); i++)
+				n.dodaj(Napis.item(itemy.get(i)).clickEvent(Action.RUN_COMMAND, cmd + "-item usuń " + i)).dodaj(" ");
+			n.dodajEnd(new Napis("§a[dodaj]", "§aKliknij aby dodać", cmd + "-item dodaj"));
+		
+			n.dodajEnd(new Napis("§a[Zatwierdz]", "§bKliknij aby " + 
+						(AutoEventy.inst.dajEventy().contains(nazwa) ? "przeedytować" : "stworzyć") + " Event", cmd + "zatwierdz"));
+			
+			n.wyświetl(p);
+		}
+		
+		void onCommand(Player p, String[] args) throws Throwable {
+			if (this.p.getName() != p.getName()) return;
+			if (!args[0].equals("-e")) return;
+			switch (args[1]) {
+			case "-loc":
+				this.getClass().getField("loc_" + args[2]).set(this, p.getLocation());
+				break;
+			case "-p":
+				if (args.length >= 4) {
+					Field f = this.getClass().getField(args[2]);
+					if (args[2].equals("nagroda"))
+						f.set(this, Func.Double(args[4], -1));
+					else
+						f.set(this, Func.Int(args[4], -1));
+				}
+				break;
+			case "-item":
+				if 		(args[2].equals("dodaj"))
+					itemy.add(p.getInventory().getItemInMainHand().clone());
+				else if (args[2].equals("usuń"))
+					itemy.remove(Func.Int(args[3], -1));
+				break;
+			case "typ":
+			case "gamemode":
+				Napis typ = new Napis("\n\n\n\n§6Rodzaj Eventu: ");
+				Enum<?>[] tab = args[1].equals("typ") ? RodzajEventu.values() : GameMode.values();
+				int i=tab.length;
+				for (Enum<?> r : tab)
+					typ.dodaj(new Napis("§e" + r.toString(), "§9Kliknij aby wybrać", cmd + "enum" + args[1] + " " + r.name()))
+						.dodaj(--i > 0 ? "§6, " : "");
+				typ.wyświetl(p);
+				return;
+			case "enumtyp":
+				rodzaj = RodzajEventu.valueOf(args[2]);
+				break;
+			case "enumgamemode":
+				gamemode = GameMode.valueOf(args[2]);
+				break;
+			case "nazwa":
+				if (args.length >= 4 && !args[3].isEmpty()) {
+					if (AutoEventy.inst.dajEventy().contains(args[3]))
+						Func.opóznij(1, () 
+								-> p.sendMessage(prefix + "§cUWAGA §6Event o tej nazwie już istnieje, zapis spowoduje utracenie go!"));
+					this.nazwa = args[3];
+				}
+				break;
+			case "zatwierdz":
+				zapisz();
+				return;
+			default:
+				throw new Throwable();
+			}
+			info();
+		}
+		
+		void zapisz() {
+			if (!sprawdz()) {
+				p.sendMessage(prefix + "§cNie wszystko zostało poprawnie ustawione");
+				return;
+			}
+			
+			Config config = AutoEventy.inst.config;
+			String sc = "eventy." + nazwa + ".";
+			
+			config.ustaw(sc + "rodzaj", rodzaj.name());
+			config.ustaw(sc + "gamemode", gamemode.name());
+			config.ustaw(sc + "nagroda", nagroda);
+			config.ustaw(sc + "min gracze", min_gracze);
+			config.ustaw(sc + "max gracze", max_gracze);
+			config.ustaw(sc + "czas zbiórki", zbiórka * 60);
+			config.ustaw(sc + "czas gry", czas * 60);
+			config.ustaw(sc + "start", loc_start);
+			config.ustaw(sc + "zbiórka", loc_zbiórka);
+			if (!itemy.isEmpty())
+				config.ustaw(sc + "itemy", itemy);
+			if (RodzajEventu.PierwszyNaMecie.equals(rodzaj)) {
+				config.ustaw(sc + "róg mety 1", loc_meta1);
+				config.ustaw(sc + "róg mety 2", loc_meta2);
+			}
+			
+			config.zapisz();
+			p.sendMessage(prefix + "Zapisano AutoEvent §e" + nazwa);
+			AutoEventy.inst.mapaEdytorów.remove(p.getName());
+		}
+		
+		boolean sprawdz() {
+			return 	!nazwa.isEmpty() &&
+					rodzaj != null &&
+					gamemode != null &&
+					czas > 0 &&
+					zbiórka > 0 &&
+					nagroda >= 0 &&
+					min_gracze > 0 &&
+					max_gracze >= min_gracze &&
+					loc_start != null &&
+					loc_zbiórka != null &&
+					(!RodzajEventu.PierwszyNaMecie.equals(rodzaj) || (loc_meta1 != null && loc_meta2 != null))
+					;
+		}
+	}
+	public static enum RodzajEventu {
+		OstatniNaArenie,
+		PierwszyNaMecie;
+	}
 	
 	public static final String prefix = Func.prefix("Event");
 	
@@ -366,216 +575,8 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 
 
 
-enum RodzajEventu {
-	OstatniNaArenie,
-	PierwszyNaMecie;
-}
 
-class EventEdytor {
-	static final String prefix = Func.prefix("Edytor AutoEventów");
-	Player p;
 
-	final String wybierz = "§8Wybierz";
-	final String ustaw = "§bKliknij aby ustawić";
-	final String cmd = "/autoevent -e ";
-	
-	public String nazwa;
-	public RodzajEventu rodzaj;
-	public GameMode gamemode = GameMode.ADVENTURE;
-	public int czas = 10;
-	public int zbiórka = 5;
-	public double nagroda = 100;
-	public int min_gracze = 2;
-	public int max_gracze = 10;
-	public Location loc_start;
-	public Location loc_zbiórka;
-	public Location loc_meta1;
-	public Location loc_meta2;
-	public List<ItemStack> itemy = Lists.newArrayList();
-	
-	
-	EventEdytor(Player p, String nazwa) {
-		this.nazwa = nazwa;
-		this.p = p;
-		boolean b = AutoEventy.inst.dajEventy().contains(nazwa);
-		if (b) {
-			ConfigurationSection sekcja = AutoEventy.inst.config.sekcja("eventy." + nazwa);
-			
-			czas = sekcja.getInt("czas gry");
-			nagroda = sekcja.getDouble("nagroda");
-			zbiórka = sekcja.getInt("czas zbiórki");
-			loc_start = sekcja.getLocation("start");
-			min_gracze = sekcja.getInt("min gracze");
-			max_gracze = sekcja.getInt("max gracze");
-			loc_zbiórka = sekcja.getLocation("zbiórka");
-			loc_meta1 = sekcja.getLocation("róg mety 1");
-			loc_meta2 = sekcja.getLocation("róg mety 2");
-			rodzaj = RodzajEventu.valueOf(sekcja.getString("rodzaj"));
-			itemy = Config.itemy(Func.nieNull(sekcja.getList("itemy")));
-			gamemode  = GameMode.valueOf(sekcja.getString("gamemode").toUpperCase());
-			
-		}
-		info();
-		if (b) p.sendMessage(prefix + "Edytujesz już istniejący event");
-	}
-	
-	void info() {
-		Function<Location, String> locString = loc -> {
-			if (loc == null) return wybierz;
-			StringBuilder w = new StringBuilder();
-			
-			w.append(loc.getBlockX()).append("x ")
-				.append(loc.getBlockY()).append("y ")
-				.append(loc.getBlockZ()).append("z ")
-				.append(Func.zaokrąglij(loc.getPitch(), 2))
-				.append('/')
-				.append(Func.zaokrąglij(loc.getYaw(), 2));
-			
-			return w.toString();
-		};
-		
-		Napis n = new Napis("\n\n\n\n\n\n\n§1§lEvent ");
-		n.dodajEnd(
-				new Napis("§9§l§o" + nazwa,
-						ustaw, cmd + "nazwa >> "),
-				new Napis("\n"),
-				new Napis("§6Typ: §e" 						+ (rodzaj != null ? rodzaj : wybierz),
-						ustaw, cmd + "typ"),
-				new Napis("§6Gamemode: §e" 					+ (gamemode != null ? gamemode : wybierz),
-						ustaw, cmd + "gamemode"),
-				new Napis("§6Czas gry: §e" 					+ (czas > 0 ? czas : wybierz) + "§e minut",
-						ustaw, cmd + "-p czas >> "),
-				new Napis("§6Czas zbiórki: §e" 				+ (zbiórka > 0 ? zbiórka : wybierz) + "§e minut",
-						ustaw, cmd + "-p zbiórka >> "),
-				new Napis("§6Nagroda: §e" 					+ (nagroda >= 0 ? nagroda : wybierz) + "§e$",
-						ustaw, cmd + "-p nagroda >> "),
-				new Napis("§6Wymagana Ilość Graczy: §e" 	+ (min_gracze > 0 ? min_gracze : wybierz),
-						ustaw, cmd + "-p min_gracze >> "),
-				new Napis("§6Maksymalna Ilość Graczy: §e" 	+ (max_gracze > 0 && max_gracze >= min_gracze ? max_gracze : wybierz),
-						ustaw, cmd + "-p max_gracze >> "),
-				new Napis("§6Pozycja Startu: §e" 			+ locString.apply(loc_start),
-						ustaw, cmd + "-loc start"),
-				new Napis("§6Pozycja Zbiórki: §e" 			+ locString.apply(loc_zbiórka),
-						ustaw, cmd + "-loc zbiórka")
-				); 
-		if (RodzajEventu.PierwszyNaMecie.equals(rodzaj)) {
-			n.dodajEnd(
-					new Napis("§61 Róg mety: §e" + locString.apply(loc_meta1),
-							ustaw, cmd + "-loc meta1"),
-					new Napis("§62 Róg mety: §e" + locString.apply(loc_meta2),
-							ustaw, cmd + "-loc meta2")
-					);
-		}
-		n.dodaj(new Napis("§6Itemy graczy: §e", "§bKlikając item, usuwasz go z listy"));
-		for (int i=0; i<itemy.size(); i++)
-			n.dodaj(Napis.item(itemy.get(i)).clickEvent(Action.RUN_COMMAND, cmd + "-item usuń " + i)).dodaj(" ");
-		n.dodajEnd(new Napis("§a[dodaj]", "§aKliknij aby dodać", cmd + "-item dodaj"));
-	
-		n.dodajEnd(new Napis("§a[Zatwierdz]", "§bKliknij aby " + 
-					(AutoEventy.inst.dajEventy().contains(nazwa) ? "przeedytować" : "stworzyć") + " Event", cmd + "zatwierdz"));
-		
-		n.wyświetl(p);
-	}
-	
-	void onCommand(Player p, String[] args) throws Throwable {
-		if (this.p.getName() != p.getName()) return;
-		if (!args[0].equals("-e")) return;
-		switch (args[1]) {
-		case "-loc":
-			this.getClass().getField("loc_" + args[2]).set(this, p.getLocation());
-			break;
-		case "-p":
-			if (args.length >= 4) {
-				Field f = this.getClass().getField(args[2]);
-				if (args[2].equals("nagroda"))
-					f.set(this, Func.Double(args[4], -1));
-				else
-					f.set(this, Func.Int(args[4], -1));
-			}
-			break;
-		case "-item":
-			if 		(args[2].equals("dodaj"))
-				itemy.add(p.getInventory().getItemInMainHand().clone());
-			else if (args[2].equals("usuń"))
-				itemy.remove(Func.Int(args[3], -1));
-			break;
-		case "typ":
-		case "gamemode":
-			Napis typ = new Napis("\n\n\n\n§6Rodzaj Eventu: ");
-			Enum<?>[] tab = args[1].equals("typ") ? RodzajEventu.values() : GameMode.values();
-			int i=tab.length;
-			for (Enum<?> r : tab)
-				typ.dodaj(new Napis("§e" + r.toString(), "§9Kliknij aby wybrać", cmd + "enum" + args[1] + " " + r.name()))
-					.dodaj(--i > 0 ? "§6, " : "");
-			typ.wyświetl(p);
-			return;
-		case "enumtyp":
-			rodzaj = RodzajEventu.valueOf(args[2]);
-			break;
-		case "enumgamemode":
-			gamemode = GameMode.valueOf(args[2]);
-			break;
-		case "nazwa":
-			if (args.length >= 4 && !args[3].isEmpty()) {
-				if (AutoEventy.inst.dajEventy().contains(args[3]))
-					Func.opóznij(1, () 
-							-> p.sendMessage(prefix + "§cUWAGA §6Event o tej nazwie już istnieje, zapis spowoduje utracenie go!"));
-				this.nazwa = args[3];
-			}
-			break;
-		case "zatwierdz":
-			zapisz();
-			return;
-		default:
-			throw new Throwable();
-		}
-		info();
-	}
-	
-	void zapisz() {
-		if (!sprawdz()) {
-			p.sendMessage(prefix + "§cNie wszystko zostało poprawnie ustawione");
-			return;
-		}
-		
-		Config config = AutoEventy.inst.config;
-		String sc = "eventy." + nazwa + ".";
-		
-		config.ustaw(sc + "rodzaj", rodzaj.name());
-		config.ustaw(sc + "gamemode", gamemode.name());
-		config.ustaw(sc + "nagroda", nagroda);
-		config.ustaw(sc + "min gracze", min_gracze);
-		config.ustaw(sc + "max gracze", max_gracze);
-		config.ustaw(sc + "czas zbiórki", zbiórka * 60);
-		config.ustaw(sc + "czas gry", czas * 60);
-		config.ustaw(sc + "start", loc_start);
-		config.ustaw(sc + "zbiórka", loc_zbiórka);
-		if (!itemy.isEmpty())
-			config.ustaw(sc + "itemy", itemy);
-		if (RodzajEventu.PierwszyNaMecie.equals(rodzaj)) {
-			config.ustaw(sc + "róg mety 1", loc_meta1);
-			config.ustaw(sc + "róg mety 2", loc_meta2);
-		}
-		
-		config.zapisz();
-		p.sendMessage(prefix + "Zapisano AutoEvent §e" + nazwa);
-		AutoEventy.inst.mapaEdytorów.remove(p.getName());
-	}
-	
-	boolean sprawdz() {
-		return 	!nazwa.isEmpty() &&
-				rodzaj != null &&
-				gamemode != null &&
-				czas > 0 &&
-				zbiórka > 0 &&
-				nagroda >= 0 &&
-				min_gracze > 0 &&
-				max_gracze >= min_gracze &&
-				loc_start != null &&
-				loc_zbiórka != null &&
-				(!RodzajEventu.PierwszyNaMecie.equals(rodzaj) || (loc_meta1 != null && loc_meta2 != null))
-				;
-	}
-}
+
 
 

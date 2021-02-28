@@ -106,13 +106,18 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		public void otwórz(Player p) {
-			for (ItemStack item : losuj())
+			Napis n = new Napis();
+			n.dodaj("§cWylosowałeś ");
+			for (ItemStack item : losuj()) {
 				Func.dajItem(p, item);
+				n.dodaj(Napis.item(item)).dodaj(" ");
+			}
 			ItemStack itemWRęce = p.getInventory().getItemInMainHand();
 			itemWRęce.setAmount(itemWRęce.getAmount()-1);
 			p.getWorld().spawnParticle(Particle.TOTEM, p.getLocation(), 50, .3, .5, .3);
 			p.getWorld().playSound(p.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, .6f, .6f);
 			if (broadcast) Bukkit.broadcastMessage(prefix+"§e"+p.getDisplayName()+"§6 otworzył lootbag "+nazwa+"§6!");
+			n.dodaj("§6z " + nazwa).wyświetl(p);
 		}
 		
 		@Override

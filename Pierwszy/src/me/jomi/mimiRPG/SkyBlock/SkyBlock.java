@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1450,7 +1451,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				n.dodaj(new Napis(Func.koloruj("&e" + en.getKey()), Func.koloruj("&b" + en.getValue())));
 				if (it.hasNext()) {
 					dł += en.getKey().length();
-					if (dł <= Main.ust.wczytajLubDomyślna("opt.lore.znaki na linie", 25)) {
+					if (dł <= Main.ust.wczytajLubDomyślna("opt.lore.znaki na linie", 50)) {
 						n.dodaj("\n");
 						dł = 0;
 					}
@@ -2445,7 +2446,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					break;
 				}
 			top.idWyspy = id;
-			top.opis = Func.koloruj(Arrays.asList("&aPunkty: &e" + Func.IntToString((int) pkt) + "pkt", "", infoCzłonkowie().toString()));
+			List<String> opis = new ArrayList<>();
+			opis.add("&aPunkty: &e" + Func.IntToString((int) pkt) + "pkt");
+			opis.add("");
+			String info = infoCzłonkowie().toString();
+			Func.tnij(info, "\n").forEach(opis::add);
+			top.opis = Func.koloruj(opis);
 			return top;
 		}
 		void odświeżTopJeśliZawiera() {

@@ -3,7 +3,6 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -32,6 +31,7 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Funkcje.TriFunction;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -142,15 +142,15 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				if (!strona.isEmpty()) {
 					specjalneItemy.add(new SklepItem(item, slot, strona));
 				} else {
-					BinaryOperator<String> cena = (czynność, skrót) -> {
+					TriFunction<String, String, String, String> cena = (czynność, wyśtlane, skrót) -> {
 						int _cena = config.wczytajLubDomyślna(_slot + ".cena " + czynność, 0);
-						return _cena == 0 ? "§cBrak możliwości " + czynność : "§8" + skrót + " §6Cena " + czynność + ":§e " + _cena;
+						return _cena == 0 ? "§cBrak możliwości " + czynność : "§8" + skrót + " §6Cena " + wyśtlane + ":§e " + _cena;
 					};
 					
 					ItemMeta meta = item.getItemMeta();
 					List<String> lore = Func.nieNull(meta.getLore());
-					lore.add(0, cena.apply("sprzedarzy", "LPM"));
-					lore.add(0, cena.apply("kupna", "PPM"));
+					lore.add(0, cena.apply("sprzedarzy", "sprzedaży", "LPM"));
+					lore.add(0, cena.apply("kupna", "kupna", "PPM"));
 					meta.setLore(lore);
 					item.setItemMeta(meta);
 				}

@@ -61,6 +61,9 @@ public class WięcejEnchantów implements Listener {
 			
 			for (int i=0; i < bloki.size(); i++) {
 				FallingBlock blok = bloki.get(i);
+				if (blok.getLocation().getY() < 0)
+					blok.remove();
+				
 				if (blok.isDead())
 					bloki.remove(i--);
 				else {
