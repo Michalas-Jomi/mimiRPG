@@ -99,13 +99,13 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			WYCRAFTOWANE_ITEMY	(Rodzaj.ZAKRES, Statistic.CRAFT_ITEM,	Material.class),
 			ZABITE_MOBY			(Rodzaj.ZAKRES, Statistic.KILL_ENTITY,		EntityType.class),
 			ZABITY_PRZEZ_MOBY	(Rodzaj.ZAKRES, Statistic.ENTITY_KILLED_BY,	EntityType.class),
-
+			
 			SKYBLOCK_PUNKTY_WYSPY(Rodzaj.INNE, null, null, false), // api SkyBlock
 			ZEBRANE_ITEMY(Rodzaj.INNE, null, null, SelektorItemów.class, true), // selektor itemów
 			EWOLUOWOCJA_SPAWNERA(Rodzaj.INNE, null, null, EntityType.class, true), // ewoluowane spawnery
 			
 			STATYSTYKA(Rodzaj.INNE, null, null, Statistic.class, true);
-
+			
 			public static enum Rodzaj {
 				WSKAZANE,
 				ZAKRES,
@@ -233,21 +233,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 						throw new Error("Nieprzewidzana Klasa konkretu w CustomoweOsiągnięcia.Typ: " + clazz);
 				});
 			}
-			
-			if (konkrety != null)
-				konkrety.forEach(el -> 
-					Func.multiTry(IllegalArgumentException.class,
-							() -> co.add(Func.StringToEnum(EntityType.class, el)),
-							() -> co.add(Func.StringToEnum(Material.class, el)),
-							() -> co.add(Func.StringToEnum(Statistic.class, el)),
-							() -> {
-								SelektorItemów selektor = Config.selektorItemów(el);
-								if (selektor == null)
-									Main.warn("Customowe Osiągnięcia - Niepopwane kryterium  " + nazwa + " \"" + el + "\"");
-								else
-									co.add(selektor);
-							}
-							));
 		}
 	}
 	public static class Osiągnięcie extends Mapowany {
@@ -449,7 +434,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			return p.getStatistic(stat, (Material) konkret);
 		else
 			return p.getStatistic(stat, (EntityType) konkret);
-		
 	}
 	void sprawdzKryterium(Player p, Osiągnięcie adv, int index) {
 		Kryterium kryterium = adv.kryteria.get(index);
@@ -489,7 +473,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void podnoszenieStatystyk(PlayerStatisticIncrementEvent ev) {
 		if (ev.isCancelled()) return;
-
+		
 		Player p = ev.getPlayer();
 		Consumer<List<Krotka<Osiągnięcie, Integer>>> cons = lista -> {
 			if (lista != null)
@@ -498,7 +482,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		
 		Func.wykonajDlaNieNull(Kryterium.Typ.STATYSTYKA.mapaStatystyk.get(ev.getStatistic()), cons::accept);
-				
+		
 		if (ev.getStatistic().isSubstatistic())
 			for (Kryterium.Typ typ : Kryterium.Typ.values())
 				if (ev.getStatistic() == typ.stat)

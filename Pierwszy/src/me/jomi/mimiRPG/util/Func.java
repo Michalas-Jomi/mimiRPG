@@ -148,7 +148,7 @@ public abstract class Func {
 		return data(System.currentTimeMillis());
 	}
 	public static String data(long miliSekundy) {
-		return data(miliSekundy, "MMM dd,yyyy HH:mm");
+		return data(miliSekundy, "dd.MM.yyyy HH:mm");
 	}
 	public static String data(long miliSekundy, String format) {
 		return new SimpleDateFormat(format).format(new Date(miliSekundy));
@@ -572,6 +572,16 @@ public abstract class Func {
 		return dajGłówkę(nazwa, url, null);
 	}
 	public static ItemStack dajGłówkę(String nazwa, String url, List<String> lore) {
+		Config config = new Config("configi/głowy uuid");
+		
+		UUID uuid;
+		String uuidstr = config.wczytajStr(url);
+		if (uuidstr == null) {
+			uuid = UUID.randomUUID();
+			config.ustaw_zapisz(url, uuid.toString());
+		} else
+			uuid = UUID.fromString(uuidstr);
+		
 		ItemStack item;
 		SkullMeta meta;
 		
@@ -581,7 +591,7 @@ public abstract class Func {
 		if (nazwa != null)	meta.setDisplayName(koloruj(nazwa));
 		if (lore != null)	meta.setLore(koloruj(lore));
 		
-		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+		GameProfile profile = new GameProfile(uuid, null);
         profile.getProperties().put("textures", new Property("textures", url));
         try {
             Field profileField = meta.getClass().getDeclaredField("profile");
@@ -1747,10 +1757,10 @@ public abstract class Func {
 	}
 	
 	
-	public static void particle(World world, Particle particle, Location loc, int ilość, double dx, double dy, double dz, double prędkość) {
-		world.spawnParticle(particle, loc, ilość, dx, dy, dz, prędkość);
+	public static void particle(Particle particle, Location loc, int ilość, double dx, double dy, double dz, double prędkość) {
+		loc.getWorld().spawnParticle(particle, loc, ilość, dx, dy, dz, prędkość);
 	}
-	public static void particle(World world, Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
-		world.spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
+	public static void particle(Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
+		loc.getWorld().spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
 	}
 }

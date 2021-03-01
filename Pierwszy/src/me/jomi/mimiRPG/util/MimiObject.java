@@ -14,7 +14,7 @@ public abstract class MimiObject {
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
-		return String.format("%s(%s)", this.getClass().getSimpleName(), str.isEmpty() ? "" : str.substring(2));
+		return String.format("%s(%s)", this.getClass().getSimpleName(), str.toString().isEmpty() ? "" : str.substring(2));
 	}
 	@Override
 	public int hashCode() {

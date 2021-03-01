@@ -19,6 +19,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.util.Vector;
 
 import me.jomi.mimiRPG.Moduł;
@@ -130,7 +131,7 @@ public class WięcejEnchantów implements Listener {
 		FallingBlock bloczek = loc.getWorld().spawnFallingBlock(loc, Bukkit.createBlockData(mat));
 		bloczek.setGravity(false);
 
-		Func.particle(loc.getWorld(), Particle.CLOUD, loc, 5, .5, .5, .5, .1);
+		Func.particle(Particle.CLOUD, loc, 5, .5, .5, .5, .1);
 		loc.getWorld().playSound(loc, Timber.jestDrzewem(mat) ? Sound.BLOCK_WOOD_BREAK : Sound.BLOCK_GRASS_BREAK, (float) Func.losuj(.1, .5), (float) Func.losuj(.5, 1.5));
 
 		loc.getWorld().getNearbyEntities(loc, 1, 1, 1, e -> e instanceof LivingEntity).forEach(e -> ((LivingEntity) e).damage(1, bloczek));
@@ -148,5 +149,20 @@ public class WięcejEnchantów implements Listener {
 			blok.setType(stare, false);
 			blok.setBlockData(data);
 		});
+	}
+
+	
+	// Zaciśnięte więzi
+	@EventHandler
+	public void niszczenieItemku(BlockBreakEvent ev) {
+		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
+		if (!item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
+		if (!item.getItemMeta().getLore().contains("§7Zaciśnięte więzi")) return;
+		if (!(item.getItemMeta() instanceof Damageable)) return;
+		Damageable meta = (Damageable) item.getItemMeta();
+		if (meta.getDamage() + 1 >= item.getType().getMaxDurability()) {
+			ev.setCancelled(true);
+			ev.getPlayer().sendMessage(Func.prefix("Zaciśnięte więzi") + "twoje narzędzie jest już na wykończeniu, uważaj na nie!");
+		}
 	}
 }
