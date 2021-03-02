@@ -35,7 +35,17 @@ public class SprawdzanieIP extends Komenda implements Listener {
 	@EventHandler
 	public void dołączanie(PlayerJoinEvent ev) {
 		Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
-			MonoKrotka<List<String>> krotka = sprawdz(ev.getPlayer().getName(), ev.getPlayer().getAddress().getAddress().getHostAddress());
+			String ip = ev.getPlayer().getAddress().getAddress().getHostAddress();
+			String nick = ev.getPlayer().getName();
+			
+			boolean zapis = false;
+			List<String> lista;
+			lista = getNicki(ip);  if (!lista.contains(nick))	{ zapis = true; lista.add(nick); ustawNicki(ip, lista); }
+			lista = getIpki(nick); if (!lista.contains(ip))		{ zapis = true; lista.add(ip);	 ustawIpki(nick, lista); }
+			if (zapis) config.zapisz();
+			
+			
+			MonoKrotka<List<String>> krotka = sprawdz(nick, ip);
 			
 			if (krotka.a.size() >= 3) {
 				String msg = Func.msg(prefix + "Wykryto u %s posiadanie %s kont %s (%s adresów ip)", ev.getPlayer().getName(), krotka.a.size(), krotka.a, krotka.b.size());
@@ -59,12 +69,10 @@ public class SprawdzanieIP extends Komenda implements Listener {
 		if (nick != null && !listaNicków.contains(nick)) {
 			zapis = true;
 			listaNicków.add(nick);
-			if (ip != null) ustawNicki(ip, listaNicków);
 		}
 		if (ip != null && !listaIp.contains(ip)) {
 			zapis = true;
 			listaIp.add(ip);
-			if (nick != null) ustawIpki(nick, listaIp);
 		}
 		
 		listaIp.forEach(subip -> sprawdzIp(subip, listaNicków, listaIp));
@@ -77,10 +85,6 @@ public class SprawdzanieIP extends Komenda implements Listener {
 		getNicki(ip).forEach(nick -> {
 			if (!nicki.contains(nick)) {
 				nicki.add(nick);
-				
-				zapis = true;
-				ipki.forEach(subip -> ustawNicki(subip, nicki));
-				
 				sprawdzNick(nick, nicki, ipki);
 			}
 		});
@@ -89,10 +93,6 @@ public class SprawdzanieIP extends Komenda implements Listener {
 		getIpki(nick).forEach(ip -> {
 			if (!ipki.contains(ip)) {
 				ipki.add(ip);
-				
-				zapis = true;
-				nicki.forEach(subnick -> ustawIpki(subnick, ipki));
-				
 				sprawdzIp(ip, nicki, ipki);
 			}
 		});

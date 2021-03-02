@@ -1378,12 +1378,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				zapisz();
 		}
 		public void generator(Material typ, BlockBreakEvent ev) {
-			if (!ev.isDropItems() || (typ != Material.COBBLESTONE && typ != Material.STONE))
+			if (!ev.isDropItems())
 				return;
 
-			List<String> wyłączoneDropy = ev.getBlock().getWorld().getName().equals(Światy.nazwaOverworld)
-					? wyłączoneDropyOverworld
-					: wyłączoneDropyNether;
+			List<String> wyłączoneDropy = ev.getBlock().getWorld().getName().equals(Światy.nazwaOverworld) ? wyłączoneDropyOverworld : wyłączoneDropyNether;
 
 			if (wyłączoneDropy.contains(typ.toString()))
 				ev.setDropItems(false);
