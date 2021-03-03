@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.Frakcje;
 
 import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,7 +27,7 @@ public class Efekty implements Listener, Przeładowalny {
     String[] arrayOfString;
     for (i = (arrayOfString = Main.perms.getPlayerGroups(p)).length, b = 0; b < i; ) {
       String grupa = arrayOfString[b];
-      for (String efekt : Main.ust.wczytajListe(new Object[] { "Efekty." + p.getWorld().getName() + "." + grupa })) {
+      for (String efekt : Main.ust.wczytajListe("Efekty." + p.getWorld().getName() + "." + grupa)) {
         int stopień = 0;
         List<String> części = Func.tnij(efekt, " ");
         efekt = części.get(0);

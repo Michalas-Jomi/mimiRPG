@@ -59,12 +59,11 @@ public class SprawdzanieIP extends Komenda implements Listener {
 	}
 	
 	// ([nicki], [ipki])
-	boolean zapis;
 	public MonoKrotka<List<String>> sprawdz(String nick, String ip) {
 		List<String> listaNicków = getNicki(ip);
 		List<String> listaIp = getIpki(nick);
 		
-		zapis = false;
+		boolean zapis = false;
 		
 		if (nick != null && !listaNicków.contains(nick)) {
 			zapis = true;
@@ -75,7 +74,11 @@ public class SprawdzanieIP extends Komenda implements Listener {
 			listaIp.add(ip);
 		}
 		
-		listaIp.forEach(subip -> sprawdzIp(subip, listaNicków, listaIp));
+		listaIp.forEach(subip -> {
+			if (subip != null)
+				sprawdzIp(subip, listaNicków, listaIp);
+		});
+		
 		if (zapis) config.zapisz();
 		
 		

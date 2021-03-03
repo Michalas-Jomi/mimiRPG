@@ -9,6 +9,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
@@ -17,7 +19,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class Przyjaciele extends Komenda implements Przeładowalny {
@@ -44,7 +45,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 	}
 	private Napis wczytaj(String sciezka) {
 		Napis napis = new Napis();
-		for (Napis n : Main.ust.wczytajListeNapisów("Przyjaciele", sciezka)) {
+		for (Napis n : Main.ust.wczytajListeNapisów("Przyjaciele." + sciezka)) {
 			napis.dodaj(n);
 			ilość++;
 		}

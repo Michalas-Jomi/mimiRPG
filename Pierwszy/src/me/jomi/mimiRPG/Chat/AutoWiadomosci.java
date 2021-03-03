@@ -33,7 +33,7 @@ public class AutoWiadomosci implements Przeładowalny, Zegar, Listener {
 	public void przeładuj() { 
 		wiadomości.clear();
 		doWysłania.clear();
-		wiadomości = Main.ust.wczytajListeNapisów("AutoWiadomosci", "wiadomości");
+		wiadomości = Main.ust.wczytajListeNapisów("AutoWiadomosci.wiadomości");
 		doWysłania = Lists.newArrayList(wiadomości);
 		timer = Main.ust.wczytajInt("AutoWiadomosci.czas") * 20;
 	}

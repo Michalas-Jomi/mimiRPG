@@ -1,6 +1,8 @@
 package me.jomi.mimiRPG.util;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -85,6 +88,7 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
+import me.jomi.mimiRPG.util.Funkcje.FunctionN;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {
@@ -949,28 +953,53 @@ public abstract class Func {
 		return (min == null || min <= x) && (max == null || x <=max);
 	}
 	
-	@SuppressWarnings("resource")
 	public static boolean wyjmijPlik(String co, String gdzie) {
+		try {
+			return wezZJara(co, in -> {
+					int read;
+					byte[] bytes = new byte[1024];
+					try (OutputStream out = new FileOutputStream(new File(gdzie))) {
+						while ((read = in.read(bytes)) != -1)
+							out.write(bytes, 0, read);
+					}
+					return true;
+			});
+		} catch (NullPointerException e) {
+			return false;
+		}
+	}
+	public static String wczytajZJara(String co) {
+		return wezZJara(co, in -> {
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+	        DataOutputStream out = new DataOutputStream(b); 
+			
+			int read;
+            byte[] bytes = new byte[1024];
+        	while ((read = in.read(bytes)) != -1)
+				out.write(bytes, 0, read);
+            
+            return b.toString("utf-8");
+		});
+	}
+	@SuppressWarnings("resource")
+	private static <T> T wezZJara(String co, FunctionN<InputStream, T> func) {
 		String nazwaPluginu = Main.plugin.getName();
 		try {
 			JarFile jar = new JarFile("plugins/" + nazwaPluginu + ".jar");
 			JarEntry plik = jar.getJarEntry("me/jomi/" + nazwaPluginu + "/" + co);
 			if (plik == null)
-				return false;
-			InputStream inputStream = jar.getInputStream(plik);
-			
-			int read;
-            byte[] bytes = new byte[1024];
-            try (FileOutputStream outputStream = new FileOutputStream(new File(gdzie))) {
-            	while ((read = inputStream.read(bytes)) != -1)
-            		outputStream.write(bytes, 0, read);
-            }
-            return true;
+				return null;
+			try (InputStream in = jar.getInputStream(plik)) {
+				return func.apply(in);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
+		return null;
 	}
+	
 	public static boolean przenieśPlik(String co, String gdzie) {
 		return new File(co).renameTo(new File(gdzie));
 	}

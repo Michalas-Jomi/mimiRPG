@@ -71,10 +71,10 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		public static Lootbag wczytaj(Config config, String nazwa) {
 			Lootbag lootbag = new Lootbag(nazwa);
 			
-			lootbag.wygrane = config.wczytajItemy(nazwa, "wygrane");
+			lootbag.wygrane = config.wczytajItemy(nazwa + ".wygrane");
 			if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
 			
-			lootbag.item = config.wczytajItem(nazwa, "item");
+			lootbag.item = config.wczytajItem(nazwa + ".item");
 			lootbag.broadcast = config.wczytajLubDomyślna(nazwa + ".broadcast", false);
 			lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
 			

@@ -21,23 +21,37 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 
 public class Config {
-	private YamlConfiguration plik;
 	public File f;
+	private YamlConfiguration plik;
+	private final YamlConfiguration domyślne;
 	
-	private String sciezkaJarDomyślny = null;
-	private String sciezka;
+	private final String sciezkaJarDomyślny;
+	private final String sciezka;
 	
 	public Config(String nazwa) {
-		this.sciezka = Main.path + nazwa.replace('\\', '/');
-			if (!nazwa.endsWith(".yml"))
-				this.sciezka += ".yml";
-		this.sciezkaJarDomyślny = "Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml";
+		this(Main.path + nazwa.replace('\\', '/') + (nazwa.endsWith(".yml") ? "" : ".yml"),
+				"Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml");
 		przeładuj();
 	}
 	public Config(File plik) {
-		this.sciezka = plik.getPath().replace('\\', '/');
+		this(plik.getPath().replace('\\', '/'), null);
 		przeładuj();
 	}
+	private Config(String sciezka, String sciezkaJarDomyślny) {
+		this.sciezkaJarDomyślny = sciezkaJarDomyślny;
+		this.sciezka = sciezka;
+		
+		domyślne = new YamlConfiguration();
+		if (sciezkaJarDomyślny != null)
+			try {
+				String str = Func.wczytajZJara(sciezkaJarDomyślny);
+				if (str != null)
+					domyślne.loadFromString(str);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+	}
+	
 	
 	public void ustaw(String sciezka, Object obj) {
 		plik.set(sciezka, _item(obj));
@@ -87,8 +101,8 @@ public class Config {
 	public Set<String> klucze(boolean wszystkie){
 		return plik.getKeys(wszystkie);
 	}
-	public ConfigurationSection sekcja(Object... sciezka) {
-		return plik.getConfigurationSection(sc(sciezka));
+	public ConfigurationSection sekcja(String sciezka) {
+		return plik.getConfigurationSection(sciezka);
 	}
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> wartości(Class<T> clazz) {
@@ -121,14 +135,23 @@ public class Config {
 		return (T) obj;
 	}
 	
-	public List<String> wczytajListe(Object... sciezka){
-		List<String> lista = plik.getStringList(sc(sciezka));
+	public Object wczytajD(String ścieżka) {
+		Object wynik = plik.get(ścieżka);
+		return (wynik != null || domyślne == null) ? wynik : domyślne.get(ścieżka);
+	}
+	@SuppressWarnings("unchecked")
+	public <T> T wczytajPewnyD(String ścieżka) {
+		return (T) wczytajD(ścieżka);
+	}
+	
+	public List<String> wczytajListe(String sciezka){
+		List<String> lista = plik.getStringList(sciezka);
 		if (lista == null) lista = Lists.newArrayList();
 		return lista;
 	}
 	@SuppressWarnings("unchecked")
-	public List<LepszaMapa<String>> wczytajListeMap(Object... sciezka){
-		List<Map<String, Object>> lista = (List<Map<String, Object>>) plik.getList(sc(sciezka));
+	public List<LepszaMapa<String>> wczytajListeMap(String sciezka){
+		List<Map<String, Object>> lista = (List<Map<String, Object>>) plik.getList(sciezka);
 		if (lista == null) lista = Lists.newArrayList();
 		
 		List<LepszaMapa<String>> końcowaLista = Lists.newArrayList();
@@ -138,16 +161,16 @@ public class Config {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<ItemStack> wczytajItemy(Object... sciezka) {
+	public List<ItemStack> wczytajItemy(String sciezka) {
 		List<ItemStack> lista = Lists.newArrayList();
-		Object objListy = wczytaj(sc(sciezka));
+		Object objListy = wczytaj(sciezka);
 		if (objListy == null) return lista;
 		for (Object obj : (List<Object>) objListy)
 			lista.add(item(obj));
 		return lista;
 	}
-	public ItemStack wczytajItem(Object... sciezka) {
-		return item(wczytaj(sc(sciezka)));
+	public ItemStack wczytajItem(String sciezka) {
+		return item(wczytaj(sciezka));
 	}
 	@SuppressWarnings("unchecked")
 	public static ItemStack item(Object item) {
@@ -194,16 +217,16 @@ public class Config {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<Drop> wczytajDropy(Object... scieżka) {
+	public List<Drop> wczytajDropy(String scieżka) {
 		List<Drop> lista = Lists.newArrayList();
-		Object objListy = wczytaj(sc(scieżka));
+		Object objListy = wczytaj(scieżka);
 		for (Object obj : (List<Object>) objListy)
 			lista.add(drop(obj));
 		return lista;
 		
 	}
-	public Drop wczytajDrop(Object... scieżka) {
-		return drop(wczytaj(sc(scieżka)));
+	public Drop wczytajDrop(String scieżka) {
+		return drop(wczytaj(scieżka));
 	}
 	@SuppressWarnings("unchecked")
 	public static Drop drop(Object drop) {
@@ -269,12 +292,12 @@ public class Config {
 		return selektor;
 	}
 	
-	public Napis wczytajNapis(Object... sciezka) {
-		return _napis(wczytaj(sc(sciezka)));
+	public Napis wczytajNapis(String sciezka) {
+		return _napis(wczytaj(sciezka));
 	}
-	public List<Napis> wczytajListeNapisów(Object... sciezka){
+	public List<Napis> wczytajListeNapisów(String sciezka){
 		List<Napis> lista = Lists.newArrayList();
-		Object obj = wczytaj(sc(sciezka));
+		Object obj = wczytaj(sciezka);
 		if (obj != null)
 			if (obj instanceof List)
 				for (Object napis : (List<?>) obj)
@@ -321,10 +344,6 @@ public class Config {
 	public void przeładuj() {
 		stwórz();
 		plik = YamlConfiguration.loadConfiguration(f);
-	}
-	
-	private String sc(Object[] sciezka) {
-		return Func.listToString(sciezka, 0, ".");
 	}
 
 	public String path() {

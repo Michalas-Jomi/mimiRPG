@@ -1653,12 +1653,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is value
 
-		private static final Set<Material> pkt_omijane = Sets.newConcurrentHashSet();
 		private Runnable pkt_taskNaKoniec;
 		private int oczekujące;
-		private double pkt_policzone;
 		private Player pkt_p;
 		private long pkt_start;
+		private double pkt_policzone;
 		@Mapowane double dodatkowe_pkt;
 		@Mapowane double pkt;
 		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
@@ -1738,19 +1737,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			}
 			policz(min, max);
 		}
+
 		private void policz(Location róg1, Location róg2) {
 			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
-				for (Block blok : Func.bloki(róg1, róg2)) {
-					Material mat = blok.getType();
-					if (pkt_omijane.contains(mat))
-						continue;
-					double pkt = punktacja.getOrDefault(mat, 0d);
-					if (pkt == 0)
-						pkt_omijane.add(mat);
-					else
-						pkt_policzone += pkt;
-				}
-				
+				double pkt = 0;
+				for (Block blok : Func.bloki(róg1, róg2))
+					pkt += punktacja.getOrDefault(blok.getType(), 0d);
+				pkt_policzone += pkt;
 				skończoneLiczenieWątku();
 			});
 		}
@@ -2853,7 +2846,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Override
 		public ChunkData generateChunkData(World world, Random random, int cx, int cz, BiomeGrid biomeGrid) {
 			ChunkData chunkData = createChunkData(world);
-
+			
 			Biome biom;
 			if (world.getName().equals(Światy.nazwaOverworld))
 				biom = Biome.PLAINS;
@@ -3315,7 +3308,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		// Punktacja
 		punktacja.clear();
-		Wyspa.pkt_omijane.clear();
 		Func.wykonajDlaNieNull(config.sekcja("punktacja"), sekcja -> sekcja.getValues(false).forEach((klucz, obj) -> {
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			double pkt = Func.DoubleObj(obj);
