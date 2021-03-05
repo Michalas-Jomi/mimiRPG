@@ -234,6 +234,9 @@ public abstract class Func {
 	public static String listToString(Object[] lista, int start, String wstawka) {
 		return listToString(Lists.newArrayList(lista), start, wstawka);
 	}
+	public static String listToString(Iterable<?> lista) {
+		return listToString(lista, 0, " ");
+	}
 	public static String listToString(Iterable<?> lista, int start) {
 		return listToString(lista, start, " ");
 	}
@@ -259,7 +262,8 @@ public abstract class Func {
 		return arrayToStringBuffer(array).toString();
 	}
 	private static StringBuffer arrayToStringBuffer(Object[] array) {
-		StringBuffer strB = new StringBuffer('[');
+		StringBuffer strB = new StringBuffer();
+		strB.append(']');
 		for (int i=0; i < array.length; i++) {
 			if (array[i] == null)
 				strB.append("null");
@@ -268,7 +272,7 @@ public abstract class Func {
 			else
 				strB.append(array[i]);
 		}
-		return strB.append(']');
+		return strB.append("] len = ").append(array.length);
 	}
 	
 	public static String odkoloruj(String text) {
@@ -969,17 +973,7 @@ public abstract class Func {
 		}
 	}
 	public static String wczytajZJara(String co) {
-		return wezZJara(co, in -> {
-			ByteArrayOutputStream b = new ByteArrayOutputStream();
-	        DataOutputStream out = new DataOutputStream(b); 
-			
-			int read;
-            byte[] bytes = new byte[1024];
-        	while ((read = in.read(bytes)) != -1)
-				out.write(bytes, 0, read);
-            
-            return b.toString("utf-8");
-		});
+		return wezZJara(co, Func::readFullString);
 	}
 	@SuppressWarnings("resource")
 	private static <T> T wezZJara(String co, FunctionN<InputStream, T> func) {
@@ -998,6 +992,18 @@ public abstract class Func {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static String readFullString(InputStream in) throws IOException {
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(b); 
+		
+		int read;
+        byte[] bytes = new byte[1024];
+    	while ((read = in.read(bytes)) != -1)
+			out.write(bytes, 0, read);
+        
+        return b.toString("utf-8");
 	}
 	
 	public static boolean przenieśPlik(String co, String gdzie) {
@@ -1668,7 +1674,7 @@ public abstract class Func {
 	public static interface FunctionXYZ<T> {
 		public T wykonaj(int x, int y, int z);
 	}
-	static class IteratorBloków<T> implements Iterator<T> {
+	public static class IteratorBloków<T> implements Iterator<T> {
 		Krotka<Integer, Integer> kx;
 		Krotka<Integer, Integer> ky;
 		Krotka<Integer, Integer> kz;
@@ -1679,7 +1685,7 @@ public abstract class Func {
 		
 		FunctionXYZ<T> func;
 		
-		IteratorBloków(Location róg1, Location róg2, FunctionXYZ<T> funkcja) {
+		public IteratorBloków(Location róg1, Location róg2, FunctionXYZ<T> funkcja) {
 			Function<Function<Location, Integer>, Krotka<Integer, Integer>> krotka = 
 					func -> Func.minMax(func.apply(róg1), func.apply(róg2), Math::min, Math::max);
 			kx = krotka.apply(Location::getBlockX); x = kx.a;

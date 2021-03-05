@@ -9,6 +9,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -3229,7 +3230,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 	// [ ((overworld cobl, overworld stone), (nether cobl, nether stone)), ][lvl -1]
 	static final List<MonoKrotka<MonoKrotka<Ciąg<Material>>>> generator = Lists.newArrayList();
-	static final HashMap<Material, Double> punktacja = new HashMap<>();
+	static final Map<Material, Double> punktacja = new EnumMap<>(Material.class);
 	static final List<Biom> biomy = Lists.newArrayList();
 	static List<Integer> slotyTopki;
 	static List<TopInfo> topInfo;

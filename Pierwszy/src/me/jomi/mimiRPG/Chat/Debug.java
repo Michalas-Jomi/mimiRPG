@@ -21,7 +21,7 @@ import me.jomi.mimiRPG.util.Func;
 @Moduł
 public class Debug extends Komenda {
 	public Debug() {
-		super("mdebug", "/debug <klasa> <odwołania>", "mimidebug");
+		super("mdebug", "/debug <klasa> <odwołania>", "mimidebug", "mdebugrozpisz");
 	}
 
 	@Override
@@ -30,9 +30,14 @@ public class Debug extends Komenda {
 	}
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length < 2) return false;
+		if (args.length < 1) return false;
 		try {
 			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Main.classLoader);
+
+			if (label.equalsIgnoreCase("mdebugrozpisz"))
+				return Func.powiadom(sender, infoSimple(klasa));
+
+			if (args.length < 2) return false;
 			
 			Object obj = null;
 			

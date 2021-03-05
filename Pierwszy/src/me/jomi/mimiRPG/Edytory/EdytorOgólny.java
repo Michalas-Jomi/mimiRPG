@@ -74,6 +74,14 @@ public class EdytorOgólny<T> {
 		return mapa.containsKey(sender.getName());
 	}
 	
+	public boolean wymuśConfig_onCommand(String prefix, String config, CommandSender sender, String label, String args[]) {
+		if (args.length <= 2 && !maEdytor(sender))
+			return Func.powiadom(sender, prefix + "/" + label + " edytor -t <nazwa>");
+		else if (args.length >= 2 && args[1].equals("-t"))
+			args[2] = config + "|" + args[2];
+		return onCommand(sender, label, args);
+		
+	}
 	public boolean onCommand(CommandSender sender, String label, String args[]) {
 		EdytorOgólnyInst edytor = mapa.get(sender.getName());
 		

@@ -3,6 +3,6 @@ version: 1.0
 author: Michalas
 api-version: 1.16
 depend: [WorldGuard, WorldEdit]
-softdepend: [Vault, IridiumSkyblock, Shopkeepers]
+softdepend: [Vault, IridiumSkyblock, Shopkeepers, MythicMobs]
 loadbefore: [Multiverse-Core]
 main: me.jomi.mimiRPG.Main

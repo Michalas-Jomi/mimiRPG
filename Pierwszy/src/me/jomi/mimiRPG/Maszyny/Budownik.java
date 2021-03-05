@@ -54,6 +54,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 		for (String klucz : config.klucze(false))
 			budowniki.add(_Budownik.wczytaj(config, klucz));
 	}
+	@Override
 	public int czas() {
 		for (_Budownik budownik : budowniki)
 			budownik.particle();
@@ -144,6 +145,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 			}
 			for (int i=0; i<budowniki.size(); i++)
 				if (budowniki.get(i).skrzynia.equals(loc)) {
+					budowniki.get(i).usuńZConfigu(config);
 					budowniki.remove(i);
 					return;
 				}
@@ -239,12 +241,17 @@ class _Budownik {
 				akt.getWorld().playSound(akt, Sound.BLOCK_STONE_PLACE, .6f, 1);
 				następna();
 				Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-		            public void run() {
+		            @Override
+					public void run() {
 						buduj();
 		            }
 		        }, 1);
 				return;
 			}
+	}
+	
+	void usuńZConfigu(Config config) {
+		config.ustaw(id, null);
 	}
 	
 	void particle() {

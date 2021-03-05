@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -63,6 +65,30 @@ public class Main extends JavaPlugin implements Listener {
 	public static String path;	
 	public static ClassLoader classLoader;
 	
+	public static class MultiOutputStream extends OutputStream {
+		OutputStream[] nasłuchujące;
+		public MultiOutputStream(OutputStream... nasłuchujące) {
+			this.nasłuchujące = nasłuchujące;
+		}
+		
+		@Override
+		public void write(int b) throws IOException {
+			for (OutputStream out : nasłuchujące)
+				out.write(b);
+		}
+		
+		@Override
+		public void flush() throws IOException {
+			for (OutputStream out : nasłuchujące)
+				out.flush();
+		}
+		@Override
+		public void close() throws IOException {
+			for (OutputStream out : nasłuchujące)
+				out.close();
+		}
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public void onLoad() {
@@ -87,8 +113,6 @@ public class Main extends JavaPlugin implements Listener {
 		
 		Baza.APIs.włączVault();
 		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-		
-		
 		
 		zarejestruj(this);
 		zarejestruj(new Baza());
@@ -116,6 +140,7 @@ public class Main extends JavaPlugin implements Listener {
 	@Override
 	public void onDisable() {
 		pluginWyłączany = true;
+		
 		for (Player p : Bukkit.getOnlinePlayers())
 			p.closeInventory();
 		if (włączonyModół(Miniony.class))

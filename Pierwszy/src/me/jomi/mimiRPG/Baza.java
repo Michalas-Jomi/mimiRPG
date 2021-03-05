@@ -37,6 +37,12 @@ public class Baza implements Listener {
 	public static ItemStack walutaPremium;
 	public static Config config;
 	
+	// TODO: wczytywać
+	public static class BudowanieAren {
+		public static int maxBloki = 20000;
+		public static int tickiPrzerw = 3;
+	}
+	
 
 	// Api WorldGuard
 	public static WorldGuardPlugin rg;
