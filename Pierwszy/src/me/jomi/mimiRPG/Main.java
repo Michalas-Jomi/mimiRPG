@@ -24,6 +24,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
@@ -341,6 +342,15 @@ public class Main extends JavaPlugin implements Listener {
 	public void otiweranieEq(InventoryOpenEvent ev) {
 		if (ev.getPlayer().removeScoreboardTag(tagBlokOtwarciaJednorazowy))
 			ev.setCancelled(true);
+	}
+
+	public static final String tagBlokowanieKomendy = "mimiBlokowanieKomend";
+	@EventHandler
+	public void komendy(PlayerCommandPreprocessEvent ev) {
+		if (ev.getPlayer().getScoreboardTags().contains(tagBlokowanieKomendy) && !Baza.bezpieczna(ev.getMessage())) {
+			ev.getPlayer().sendMessage(Func.prefix("Blokada") + "Nie możesz teraz używać komend");
+			ev.setCancelled(true);
+		}
 	}
 }
 

@@ -3254,18 +3254,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		boolean r = false;
 
 		switch (next.faza) {
-		case 0:
-			if (r = (--next.y < -next.mx))
-				next.y++;
-			break;
-		case 1:
-			if (r = (--next.x < -next.mx))
-				next.x++;
-			break;
-		case 2:
-			if (r = (++next.y > next.mx))
-				next.y--;
-			break;
+		case 0: if (r = (--next.y < -next.mx)) next.y++; break;
+		case 1: if (r = (--next.x < -next.mx)) next.x++; break;
+		case 2: if (r = (++next.y >  next.mx)) next.y--; break;
 		case 3:
 			if (r = (++next.x > next.mx)) {
 				next.x = next.y = ++next.mx;

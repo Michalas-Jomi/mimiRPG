@@ -37,8 +37,13 @@ public class Panel {
 			}
 		}
 	}
+	
+	private static int panelIdLicznik = 0;
+	private int panelId = panelIdLicznik++;
 	public class Holder extends Func.abstractHolder {
 		public Object dane;
+		
+		private int Id = panelId;
 		
 		public Holder(Object dane, int rzędy, String nazwa) {
 			this(dane, rzędy, nazwa, null);
@@ -79,7 +84,7 @@ public class Panel {
 	}
 
 	public boolean jestPanelem(Inventory inv) {
-		return inv.getHolder() != null && inv.getHolder() instanceof Holder;
+		return inv.getHolder() != null && inv.getHolder() instanceof Holder && ((Holder) inv.getHolder()).Id == panelId;
 	}
 	
 	public Inventory stwórz(Object dane, int rzędy, String nazwa) {

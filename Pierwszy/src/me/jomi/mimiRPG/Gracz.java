@@ -56,6 +56,9 @@ public class Gracz extends Mapowany {
 	@Mapowane public int wyspa = -1;
 	@Mapowane public List<Integer> ulubioneWyspy;
 	@Mapowane public List<Integer> polubioneWyspy;
+
+	@Mapowane public HashMap<String, Long> bossyCooldown = new HashMap<>();
+	@Mapowane public HashMap<String, Integer> bossyLicznik = new HashMap<>();
 	
 	public Wilczek.Wilk wilk;
 	

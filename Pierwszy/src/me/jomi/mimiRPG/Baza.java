@@ -1,6 +1,8 @@
 package me.jomi.mimiRPG;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,6 +35,7 @@ public class Baza implements Listener {
 	public static final HashMap<String, ItemStack> itemy = new HashMap<>();
 	public static final HashMap<String, SelektorItemów> selektoryItemów = new HashMap<>();
 	public static final HashMap<String, Drop> dropy = new HashMap<>();
+	public static List<String> bezpieczneKomendy = new ArrayList<>(); // TODO wczytywać
 	public static ConfigurationSection grupy;
 	public static ItemStack walutaPremium;
 	public static Config config;
@@ -41,6 +44,14 @@ public class Baza implements Listener {
 	public static class BudowanieAren {
 		public static int maxBloki = 20000;
 		public static int tickiPrzerw = 3;
+	}
+	
+	public static boolean bezpieczna(String cmd) {
+		cmd = cmd.toLowerCase();
+		for (String bezpieczna : bezpieczneKomendy)
+			if (cmd.startsWith(bezpieczna.toLowerCase()))
+				return true;
+		return false;
 	}
 	
 

@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.util;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import org.bukkit.Material;
@@ -33,6 +34,12 @@ public class ItemCreator {
 		}
 		public Creator<T> lore(String... lore) {
 			meta.setLore(Func.koloruj(Lists.newArrayList(lore)));
+			return this;
+		}
+		public Creator<T> dodajLore(String linia) {
+			if (!meta.hasLore())
+				meta.setLore(new ArrayList<>());
+			meta.getLore().add(Func.koloruj(linia));
 			return this;
 		}
 		public Creator<T> customModelData(int model) {

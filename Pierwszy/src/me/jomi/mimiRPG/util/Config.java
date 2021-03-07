@@ -120,19 +120,14 @@ public class Config {
 	public String  wczytajStr	 (String sciezka) {return Func.koloruj(plik.getString(sciezka));}
 	public double  wczytajDouble (String sciezka) {return Func.Double("" + wczytaj(sciezka), 0);}
 
-	@SuppressWarnings("unchecked")
 	public <T> T wczytajLubDomyślna(String sciezka, T domyślna) {
-		Object obj = wczytaj(sciezka);
-		if (obj == null)
-			return domyślna;
-		return (T) obj;
+		return wczytajLubDomyślna(sciezka, () -> domyślna);
 	}
-	@SuppressWarnings("unchecked")
 	public <T> T wczytajLubDomyślna(String sciezka, Supplier<T> domyślna) {
 		Object obj = wczytaj(sciezka);
 		if (obj == null)
 			return domyślna.get();
-		return (T) obj;
+		return Func.pewnyCast(obj);
 	}
 	
 	public Object wczytajD(String ścieżka) {
