@@ -23,7 +23,7 @@ public class Czapka extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, "Pokaż mi swoją głowę to ci to założe");
 		Player p = (Player) sender;

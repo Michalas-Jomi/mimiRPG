@@ -14,11 +14,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import net.md_5.bungee.api.chat.ClickEvent.Action;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
 
 @Moduł
 public class EdytorTabliczek extends Komenda implements Listener{
@@ -73,7 +74,7 @@ public class EdytorTabliczek extends Komenda implements Listener{
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Gracz w świecie, Konsole we wszechświecie, jesteś zbyt potężny SORY");
 		Player p = (Player) sender;

@@ -439,7 +439,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		return utab(args, lista);
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equals("zadaniaadmin"))
 			return komendaZadaniaadmin(sender, args);
 		return komendaZadania(sender, args);

@@ -38,7 +38,7 @@ public class RegionyFrakcyjne extends Komenda {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().contains("regionyfrakcyjne")) {
 			RegionManager regiony = Func.regiony(Bukkit.getWorld(args[0]));
 			ProtectedRegion region = regiony.getRegion(args[1]);

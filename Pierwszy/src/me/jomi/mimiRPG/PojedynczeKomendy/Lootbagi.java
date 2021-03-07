@@ -247,7 +247,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		return uzupełnijTabComplete(ost, lista);
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1 && (args[0].equalsIgnoreCase("lista") || args[0].equalsIgnoreCase("l"))) {
 			sender.sendMessage("§6Lootbagi: §a" + (lootbagi.keySet().isEmpty() ? "§ebrak" : Func.listToString(Lists.newArrayList(lootbagi.keySet()), 0, "§f, §a")));
 			return true;

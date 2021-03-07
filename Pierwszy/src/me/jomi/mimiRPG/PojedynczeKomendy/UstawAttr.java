@@ -54,7 +54,7 @@ public class UstawAttr extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length < 1)
 			return false;
 

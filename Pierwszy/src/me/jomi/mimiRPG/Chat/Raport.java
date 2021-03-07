@@ -42,7 +42,7 @@ public class Raport extends Komenda {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1) {
 			if (args[0].equalsIgnoreCase("handlery")) {
 				Plugin plugin;

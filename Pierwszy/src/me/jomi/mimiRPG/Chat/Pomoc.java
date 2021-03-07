@@ -27,7 +27,7 @@ public class Pomoc extends Komenda implements Przeładowalny{
 		return utab(args, config.klucze(false));
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Predicate<String> pomoc = s -> {
 			if (!config.klucze(false).contains(s))
 				return false;

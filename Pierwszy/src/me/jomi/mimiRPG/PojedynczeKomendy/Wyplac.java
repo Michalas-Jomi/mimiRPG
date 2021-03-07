@@ -105,7 +105,7 @@ public class Wyplac extends Komenda implements Listener {
 		return Lists.newArrayList();
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Konsole ma wszystko i nic. Kasa to akurat te \"nic\"");
 		Player p = (Player) sender;

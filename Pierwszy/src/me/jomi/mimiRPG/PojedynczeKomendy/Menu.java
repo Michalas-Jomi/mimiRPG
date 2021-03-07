@@ -304,7 +304,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
 			dajMenu((Player) sender, "Skyblock");
 		else

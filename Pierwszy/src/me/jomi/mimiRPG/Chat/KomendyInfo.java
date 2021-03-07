@@ -32,7 +32,7 @@ public class KomendyInfo extends Komenda implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length >= 1) {
 			if (args[0].equals("lista")) {
 				p.sendMessage(prefix + "Gracze którzy wykrywają komendy: ");

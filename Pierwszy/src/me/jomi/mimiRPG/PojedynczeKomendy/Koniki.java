@@ -16,9 +16,9 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -266,6 +266,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 				this.styl = styl;
 				this.mat = mat;
 			}
+			@Override
 			public String toString() {
 				return this.name().replace("_", " ");
 			}
@@ -285,6 +286,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 				this.kolor = kolor;
 				this.mat = mat;
 			}
+			@Override
 			public String toString() {
 				return this.name().replace("_", " ");
 			}
@@ -322,7 +324,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (sekcja != null)
 			for (Entry<String, Object> en : sekcja.getValues(false).entrySet())
 				mapa.put(Material.valueOf(en.getKey().toUpperCase()), (int) en.getValue()*60);
-		maxCzas = (int) Main.ust.wczytajLubDomyślna("Koniki.maxCzas", 3) * 60;
+		maxCzas = Main.ust.wczytajLubDomyślna("Koniki.maxCzas", 3) * 60;
 		usuńWszystkie();
 	}
 	@Override
@@ -350,7 +352,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
 			przywołaj(Gracz.wczytaj(sender.getName()));
 		else

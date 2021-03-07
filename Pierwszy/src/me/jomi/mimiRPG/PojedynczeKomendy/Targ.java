@@ -24,6 +24,7 @@ import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
+
 import net.milkbowl.vault.economy.EconomyResponse;
 
 @Moduł
@@ -282,7 +283,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		return Lists.newArrayList();
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Targ to nie miejsce dla ciebie");
 		Player p = (Player) sender;

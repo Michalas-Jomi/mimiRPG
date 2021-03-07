@@ -43,6 +43,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		super("kosz");
 	}
 	
+	@Override
 	public int czas() {
 		if (maxTimer <= -1) return 20;
 		if (Bukkit.getOnlinePlayers().size() <= 0) return 20;
@@ -77,6 +78,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public void przeładuj() {
 		maxTimer = Main.ust.wczytajInt("Kosz.timer");
@@ -87,6 +89,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 		ostrzerzenia = (List<Integer>) Main.ust.wczytaj("Kosz.ostrzerzenia");
 		omijaneŚwiaty = Main.ust.wczytajListe("Kosz.omijane Światy");
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Kosz", (maxTimer != -1 ? (maxTimer + "s §6 między czyszczeniami") : "§cWyłaczony"));
 	}
@@ -97,7 +100,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, "Jesteś zbyt ważny by grzebać się w śmieciach");
 		Player p = (Player) sender;

@@ -53,7 +53,7 @@ public class EdytorSelektorówItemów extends Komenda {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1 && args[0].equalsIgnoreCase("edytor")) {
 			if (args.length <= 2 && !edytor.maEdytor(sender))
 				return Func.powiadom(sender, "/edytujselektoritemów edytor -t <nazwa selektora>");

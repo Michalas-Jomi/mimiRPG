@@ -44,7 +44,8 @@ public class Patrzeq extends Komenda implements Listener {
 		if (ignorujWstrzymanie) wstrzymane++;
 		if (co == null || gdzie == null) return false;
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
         		if (wstrzymane > 0 && !ignorujWstrzymanie) return;
             	for (int i=0; i<4*9+5; i++)
         			gdzie.setItem(i, co.getItem(i));
@@ -60,7 +61,7 @@ public class Patrzeq extends Komenda implements Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0) return false;
 		if (!(sender instanceof Player)) return Func.powiadom(sender, "Musisz być graczem żeby tego użyć");
 		Player p = Bukkit.getPlayer(args[0]);
@@ -119,7 +120,8 @@ public class Patrzeq extends Komenda implements Listener {
 	void odświeżCałe(Player p) {
 		if (!przepisz(p.getInventory(), mapa.get(p.getName()))) return;
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
             	odświeżCałe(p);
             }
         }, 1);

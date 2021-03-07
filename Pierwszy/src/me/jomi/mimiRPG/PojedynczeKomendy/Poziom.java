@@ -78,7 +78,7 @@ public class Poziom extends Komenda implements Listener{
 	}
 	public static int policzExp(int lvl) {
 		// Liczy potrezbny exp na podany lvl
-		if (lvl <= 15)      return (int)(lvl*lvl + 6*lvl);
+		if (lvl <= 15)      return lvl*lvl + 6*lvl;
 		else if (lvl <= 31) return (int)(2.5*lvl*lvl - 40.5*lvl + 360);
 		else                return (int)(4.5*lvl*lvl - 162.5*lvl + 2220);
 	}
@@ -100,7 +100,7 @@ public class Poziom extends Komenda implements Listener{
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Konsola bez expa, Konsola bez /poziom");
 		Player p = (Player) sender;

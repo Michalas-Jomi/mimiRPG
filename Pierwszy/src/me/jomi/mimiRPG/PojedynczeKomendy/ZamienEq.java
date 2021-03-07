@@ -32,7 +32,7 @@ public class ZamienEq extends Komenda{
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		if (istnieje(sender, args[0]))
 			if (args.length >= 2 && istnieje(sender, args[1]))

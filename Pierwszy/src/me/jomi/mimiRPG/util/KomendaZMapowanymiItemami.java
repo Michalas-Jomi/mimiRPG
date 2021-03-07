@@ -44,7 +44,7 @@ public abstract class KomendaZMapowanymiItemami<T extends Mapowany> extends Kome
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1)
 			return false;
 		

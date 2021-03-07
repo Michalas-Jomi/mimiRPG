@@ -74,7 +74,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		ItemStack item;
 		if (cmd.getName().equals("budownik"))
 			item = itemSkrzynia;

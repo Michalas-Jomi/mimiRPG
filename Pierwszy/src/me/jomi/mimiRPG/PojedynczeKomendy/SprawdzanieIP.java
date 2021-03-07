@@ -111,7 +111,7 @@ public class SprawdzanieIP extends Komenda implements Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
 			MonoKrotka<List<String>> krotka = sprawdz(args[0], null);
 			

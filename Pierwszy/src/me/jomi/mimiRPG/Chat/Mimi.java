@@ -21,7 +21,7 @@ public class Mimi extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		p.sendMessage("§b>─────────{ §c§l◄§6mimiRPG§c§l► §b}─────────<");
 		p.sendMessage("");
 		p.sendMessage("§2ⓜⓘⓜⓘⓇⓅⒼ");

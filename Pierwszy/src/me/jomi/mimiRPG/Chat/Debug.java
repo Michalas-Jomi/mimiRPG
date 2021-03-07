@@ -29,7 +29,7 @@ public class Debug extends Komenda {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		try {
 			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Main.classLoader);

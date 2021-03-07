@@ -38,7 +38,7 @@ public class SuperItem extends Komenda implements Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command __cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command __cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "To tylko dla graczy jest");
 		Player p = (Player) sender;

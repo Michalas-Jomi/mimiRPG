@@ -75,7 +75,7 @@ public class Plecak extends Komenda implements Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
 			otwórz((Player) sender);
 		else

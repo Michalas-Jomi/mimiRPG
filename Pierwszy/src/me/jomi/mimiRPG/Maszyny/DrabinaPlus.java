@@ -32,7 +32,7 @@ public class DrabinaPlus extends Komenda implements Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p = null;
 		if (args.length >= 1)
 			p = Bukkit.getPlayer(args[0]);

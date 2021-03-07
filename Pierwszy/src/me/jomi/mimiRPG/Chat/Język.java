@@ -26,7 +26,7 @@ public class Język extends Komenda {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 2 && args[0].equalsIgnoreCase("-p"))
 			Func.wykonajDlaNieNull(Bukkit.getPlayer(args[1]),
 					p  -> sender.sendMessage(prefix + Func.msg("Język gracza %s %s", p.getDisplayName(), Func.enumToString(Gracz.wczytaj(p).język))),

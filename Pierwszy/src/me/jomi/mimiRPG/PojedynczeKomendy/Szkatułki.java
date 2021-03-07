@@ -303,7 +303,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 2)
 			return false;
 		Player p = null;

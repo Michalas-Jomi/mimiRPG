@@ -114,7 +114,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		ConfigurationSection sekcja = Main.ust.sekcja("RangiWysp");
 		if (sekcja == null)
 			return Func.powiadom(sender, "Nie ma żadnych rang wysp");

@@ -61,7 +61,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 	
 	private static void zegar() {
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-		    public void run() {
+		    @Override
+			public void run() {
 		    	zegar();
 		    	for (Minion minion : Minion.mapa.values())
 		    		minion._mimiTick(odświeżanieMinionówTicki);
@@ -244,7 +245,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		switch(args[0]) {
 		case "włącz":

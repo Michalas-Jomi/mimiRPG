@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG.Customizacja;
 
 import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -30,7 +31,7 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equals("customowekomendy")) {
 			sender.sendMessage(prefix + "Ta komenda nie ma ciała, jest bo jest nie wnikaj");
 		} else {

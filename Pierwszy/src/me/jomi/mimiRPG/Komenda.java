@@ -17,6 +17,14 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.util.Func;
 
 public abstract class Komenda implements TabExecutor {
+	@SuppressWarnings("serial")
+	public static class MsgCmdError extends Error {
+		public MsgCmdError(String msg) {
+			super(msg);
+		}
+	}
+	
+	
 	protected List<PluginCommand> _komendy = Lists.newArrayList();
 	boolean _zarejestrowane_komendy = true;
 	public Komenda(String komenda) {
@@ -99,8 +107,28 @@ public abstract class Komenda implements TabExecutor {
 	 * sender zobaczy cmd.getPermissionMessage();
 	 */
 	@Override
-	public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
-
+	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		try {
+			return wykonajKomende(sender, cmd, label, args);
+		} catch (MsgCmdError e) {
+			return Func.powiadom(sender, e.getMessage());
+		}
+	}
+	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args);
+	
+	protected void throwMsg(String format, Object... args) throws MsgCmdError {
+		String prefix = "";
+		try {
+			prefix = (String) Func.dajField(this.getClass(), "prefix").get(null);
+		} catch (NoSuchFieldException e) {
+			prefix = Func.prefix(this.getClass().getSimpleName());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		
+		throw new MsgCmdError(prefix + Func.msg(format, args));
+	}
+	
 	protected List<String> utab(String[] wpisane, String... Podpowiedzi) {
 		return uzupełnijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
 	}

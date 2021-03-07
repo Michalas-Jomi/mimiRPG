@@ -130,7 +130,7 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Wilczki są dla graczy ziom");
 		Player p = (Player) sender;
 		

@@ -470,7 +470,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 1 && args[0].equalsIgnoreCase("edytor") && sender.hasPermission(permEdytor))
 			return edytor.wymuśConfig_onCommand(prefix, "configi/Bossy", sender, label, args);
 		

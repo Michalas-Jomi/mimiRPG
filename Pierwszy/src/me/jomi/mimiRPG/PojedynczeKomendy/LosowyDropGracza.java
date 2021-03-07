@@ -103,7 +103,7 @@ public class LosowyDropGracza extends Komenda implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		return komenda(sender, args, cmd.getName().equalsIgnoreCase("ustawdropwzwyz"));
 	}
 	

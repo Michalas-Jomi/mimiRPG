@@ -73,6 +73,7 @@ public class Glosowanie extends Komenda implements Zegar {
 				}
 			}
 		}
+		@Override
 		public String toString() {
 			return nazwa + "§6 zostało jeszcze §e" + _czas() + " §6" + głosujący.size() + "/" + potrzebneGłosy;
 		}
@@ -97,7 +98,7 @@ public class Glosowanie extends Komenda implements Zegar {
 		return uzupełnijTabComplete(Func.listToString(args, 0), Lists.newArrayList(mapa.keySet()));
 	}
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length < 1) {
 			p.sendMessage("/vote <nazwa>");
 			return true;

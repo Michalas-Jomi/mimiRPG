@@ -43,6 +43,7 @@ public class RTP extends Komenda implements Przeładowalny {
 				mapa.put(klucz, lista);
 			}
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Filtry rtp", mapa.size());
 	}
@@ -62,7 +63,7 @@ public class RTP extends Komenda implements Przeładowalny {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		int zasięg = 1;
 		Entity teleportowany = null;

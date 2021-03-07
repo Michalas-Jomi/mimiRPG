@@ -104,7 +104,7 @@ public class ChatGrupowy extends Komenda implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length < 1) return info(p);
 		CommandSender gracz;
 		switch(args[0]) {

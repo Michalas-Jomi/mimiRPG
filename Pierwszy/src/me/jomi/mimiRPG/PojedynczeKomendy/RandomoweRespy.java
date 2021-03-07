@@ -63,7 +63,7 @@ public class RandomoweRespy extends Komenda implements Przeładowalny, Listener 
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) {
 			wyświetlRespy(sender);
 			return true;

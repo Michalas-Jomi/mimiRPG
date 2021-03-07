@@ -45,7 +45,7 @@ public class Ujezdzaj extends Komenda {
 		return true;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (info(sender, args.length)) return true;
 		
 		Entity p2 = byt(sender, args[0]);
@@ -93,7 +93,7 @@ public class Ujezdzaj extends Komenda {
 		}
 		double odległość = kto.getLocation().distance(naKim.getLocation());
 		if (!p.hasPermission("mimiRPG.ujezdzaj.ominzasieg")) {
-			if (odległość > (double) Main.ust.wczytajLubDomyślna("ujezdzanie.maxOdległość", 5.0)) {
+			if (odległość > Main.ust.wczytajLubDomyślna("ujezdzanie.maxOdległość", 5.0)) {
 				p.sendMessage(prefix + "Nie można ujeżdzać graczy na tak daleki dystans");
 				return;
 			}

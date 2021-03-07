@@ -22,7 +22,7 @@ public class Przeładuj extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0)
 			przeładuj(sender);
 		else if (Przeładowalny.przeładowalne.containsKey(args[0]))

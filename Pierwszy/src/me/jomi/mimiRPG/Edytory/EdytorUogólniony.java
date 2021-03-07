@@ -33,7 +33,7 @@ public class EdytorUogólniony extends Komenda {
 		return Lists.newArrayList();
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		switch(args[0].toLowerCase()) {
 		case "edytor":

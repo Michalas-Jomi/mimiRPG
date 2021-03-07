@@ -32,7 +32,7 @@ public class Funkcje extends Komenda implements Przeładowalny {
 		return uzupełnijTabComplete(args.length == 1 ? args[0] : "Ala ma kota", Lists.newArrayList(mapa.keySet()));
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0) return Func.powiadom(sender, prefix + "/funkcja <nazwa> [parametry]");
 		String nazwa = args[0];
 		Funkcja func = mapa.get(nazwa);
@@ -46,6 +46,7 @@ public class Funkcje extends Komenda implements Przeładowalny {
 		return true;
 	}
 
+	@Override
 	public void przeładuj() {
 		mapa.clear();
 		File folder = new File("plugins/"+Main.plugin.getName()+"/funkcje");
@@ -53,6 +54,7 @@ public class Funkcje extends Komenda implements Przeładowalny {
 			folder.mkdirs();
 		skanuj(folder);
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Funkcje", mapa.size());
 	}
@@ -100,7 +102,8 @@ class Funkcja {
 			komenda = komenda.replace("%"+i+"%", parametry[i]);
 		if (komenda.startsWith(">czekaj")) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-	            public void run() {
+	            @Override
+				public void run() {
 	                następna(p, nr+1, parametry);
 	            }
 	        }, Func.Int(komenda.split(" ")[1], 0));

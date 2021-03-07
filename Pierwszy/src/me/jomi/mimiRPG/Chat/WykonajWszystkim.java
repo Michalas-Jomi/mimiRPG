@@ -25,7 +25,7 @@ public class WykonajWszystkim extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 0)
 			return Func.powiadom(sender, Func.prefix("Wykonaj Wszystkim") + "/wykonajwszystkim <komenda>\n§aWykona komende z konsoli dla każdego gracza osobno podmieniając {gracz} na nick gracza");
 		String komenda = Func.listToString(args, 0);

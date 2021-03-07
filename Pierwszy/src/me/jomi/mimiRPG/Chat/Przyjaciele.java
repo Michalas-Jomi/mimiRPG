@@ -134,7 +134,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {	
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {	
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Każdy jest przyjacielem konsoli!");
 		Player p = (Player) sender;

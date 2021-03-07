@@ -236,7 +236,7 @@ public class połączoneEq extends Komenda implements Listener {
 
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p = null;
 		if (sender instanceof Player)
 			p = (Player) sender;

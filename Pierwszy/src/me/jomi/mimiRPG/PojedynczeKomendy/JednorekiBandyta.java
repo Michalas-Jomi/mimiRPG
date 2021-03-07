@@ -21,6 +21,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import com.google.common.collect.Lists;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
@@ -29,7 +31,6 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
-import net.md_5.bungee.api.chat.ClickEvent;
 
 @Moduł
 public class JednorekiBandyta extends Komenda implements Listener, Przeładowalny {
@@ -44,6 +45,7 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 	}
 	
 	private static final List<Automat> automaty = Lists.newArrayList();
+	@Override
 	public void przeładuj() {
 		Automat.przeładuj();
 		config.przeładuj();
@@ -60,6 +62,7 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 		if (ost != null)
 			ost.wczytany();
 	}
+	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Automaty Jednorękiego Bandyty", automaty.size());
 	}
@@ -100,7 +103,7 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, prefix + "Hazard to złooo, nawet nie próbuj ziom");
 		Player p = (Player) sender;
@@ -268,7 +271,8 @@ class Automat {
 	private void zakręćWszystkie(int licznik) {
 		zakręćKilka(spiny.size());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-		    public void run() {
+		    @Override
+			public void run() {
 		    	if (licznik <= 0)
 		    		_zakręćWszystkie(czekanieMin);
 		    	else
@@ -281,7 +285,8 @@ class Automat {
 		zakręćKilka(spiny.size());
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-		    public void run() {
+		    @Override
+			public void run() {
 		    	if (czekanie >= czekanieMax)
 		    		zakręć(spiny.size(), czekanie, licznikMax);
 		    	else
@@ -299,7 +304,8 @@ class Automat {
 		
 		zakręćKilka(ile);
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-		    public void run() {
+		    @Override
+			public void run() {
 		    	if (licznik <= 0) {
 		    		gracz.getWorld().playSound(gracz.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 1);
 			    	zakręć(ile - 1, czekanie, licznikMax);
@@ -494,6 +500,7 @@ class Wygrana {
 		this.wygrana = wygrana;
 	}
 
+	@Override
 	public String toString() {
 		return blok.toString().toLowerCase() + " " + szansa + "% " + wygrana + "$";
 	}

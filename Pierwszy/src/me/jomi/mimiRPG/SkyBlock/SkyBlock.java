@@ -3512,7 +3512,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		return utab(args, lista);
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p2;
 		Gracz g2;
 

@@ -309,7 +309,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Predicate<Player> dajItem = p -> {
 			Func.dajItem(p, itemRespienia);
 			return Func.powiadom(prefix, sender, "%s otrzymał item respienia AirDropu", p.getDisplayName());

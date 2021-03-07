@@ -37,7 +37,7 @@ public class Minigry extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equals("opuśćMinigre")) {
 			if (!(sender instanceof Player))
 				return Func.powiadom(sender, "Tylko Gracz może brać udział w minigrach");

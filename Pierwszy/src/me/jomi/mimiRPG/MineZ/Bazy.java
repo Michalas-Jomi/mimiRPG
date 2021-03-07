@@ -1334,7 +1334,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, "Ta komenda jest zarezerwowana tylko dla graczy");
 		Player p = (Player) sender;
 		switch (cmd.getName()) {

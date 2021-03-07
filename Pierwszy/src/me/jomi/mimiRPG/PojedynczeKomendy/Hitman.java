@@ -229,8 +229,8 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	}
 	
 	
-	@Override public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) { return null; }
-	@Override public boolean 	  onCommand	   (CommandSender sender, Command cmd, String label, String[] args) {
+	@Override public List<String> onTabComplete  (CommandSender sender, Command cmd, String label, String[] args) { return null; }
+	@Override public boolean 	  wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p = (Player) sender;
 		
 		if (cmd.getName().equals("hitman"))

@@ -465,7 +465,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Tylko gracz może korzystać z autoeventów");
 		Player p = (Player) sender;
 		if (args.length >= 1 && p.hasPermission(permEdytuj))

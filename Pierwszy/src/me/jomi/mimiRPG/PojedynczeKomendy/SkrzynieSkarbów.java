@@ -294,7 +294,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p = sender instanceof Player ? (Player) sender : null;
 		Edytor edytor = Edytor.mapa.get(sender.getName());
 		String[] minmax;

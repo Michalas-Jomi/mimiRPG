@@ -8,10 +8,13 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -22,10 +25,6 @@ import com.mojang.authlib.properties.Property;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
-
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
 
 @Moduł
 public class Menurpg extends Komenda implements Listener {
@@ -183,7 +182,7 @@ public class Menurpg extends Komenda implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (sender instanceof Player)
 			dajInv((Player) sender);
 		else

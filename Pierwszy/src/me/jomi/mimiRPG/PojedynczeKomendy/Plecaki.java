@@ -179,7 +179,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 		return utab(args, Plecak.mapa.keySet());
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1)
 			return false;
 		if (!Plecak.mapa.containsKey(args[0]))

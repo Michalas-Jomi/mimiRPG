@@ -200,7 +200,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, "Dostępne tylko dla Graczy");
 		otwórzPanel((Player) sender);

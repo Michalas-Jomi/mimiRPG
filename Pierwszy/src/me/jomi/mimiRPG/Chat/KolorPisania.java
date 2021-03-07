@@ -64,7 +64,7 @@ public class KolorPisania extends Komenda implements Listener {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender p, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender p, Command cmd, String label, String[] args) {
 		if (args.length < 2)
 			return false;
 		if (Bukkit.getPlayer(args[0]) == null) {

@@ -443,7 +443,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		return null;
 	}
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		
 		Player p;

@@ -25,7 +25,7 @@ public class Mi extends Komenda {
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof ConsoleCommandSender)) 
 			return Func.powiadom(sender, "Tej komendy można używać tylko z konsoli");
 		if (args.length < 1) return false;

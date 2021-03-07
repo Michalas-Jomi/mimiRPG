@@ -102,7 +102,7 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 	}
 
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return Func.powiadom(sender, "Tylko gracz może zabezpieczyć gracza");
 		Player p = (Player) sender;
