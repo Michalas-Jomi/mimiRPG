@@ -1655,10 +1655,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// /is value
 
 		private Runnable pkt_taskNaKoniec;
-		private int oczekujące;
 		private Player pkt_p;
 		private long pkt_start;
-		private double pkt_policzone;
+		private volatile int oczekujące;
+		private volatile double pkt_policzone;
 		@Mapowane double dodatkowe_pkt;
 		@Mapowane double pkt;
 		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
@@ -1743,7 +1743,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
 				double pkt = 0;
 				for (Block blok : Func.bloki(róg1, róg2))
-					pkt += punktacja.getOrDefault(blok.getType(), 0d);
+					pkt += blok.getType() == Material.AIR ? punktacja_AIR : punktacja.getOrDefault(blok.getType(), 0d);
 				pkt_policzone += pkt;
 				skończoneLiczenieWątku();
 			});
@@ -3210,7 +3210,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				ev.setCancelled(false);
 			}, () -> ev.setCancelled(true));
 	}
-
+	@EventHandler
+	public void teleportowanie(PlayerTeleportEvent ev) {
+		if (!maBypass(ev.getPlayer()))
+			Func.wykonajDlaNieNull(Wyspa.wczytaj(ev.getTo()), wyspa -> {
+				if (wyspa.zbanowani.contains(ev.getPlayer().getName()) && !wyspa.członkowie.containsKey(ev.getPlayer().getName()))
+					ev.setCancelled(true);
+			});
+	}
 	
 	
 	
@@ -3231,6 +3238,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	// [ ((overworld cobl, overworld stone), (nether cobl, nether stone)), ][lvl -1]
 	static final List<MonoKrotka<MonoKrotka<Ciąg<Material>>>> generator = Lists.newArrayList();
 	static final Map<Material, Double> punktacja = new EnumMap<>(Material.class);
+	static double punktacja_AIR;
 	static final List<Biom> biomy = Lists.newArrayList();
 	static List<Integer> slotyTopki;
 	static List<TopInfo> topInfo;
@@ -3303,8 +3311,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		Func.wykonajDlaNieNull(config.sekcja("punktacja"), sekcja -> sekcja.getValues(false).forEach((klucz, obj) -> {
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			double pkt = Func.DoubleObj(obj);
-			punktacja.put(mat, pkt);
+			if (pkt != 0)
+				punktacja.put(mat, pkt);
 		}));
+		punktacja_AIR = punktacja.getOrDefault(Material.AIR, 0d);
 
 		// Generator
 		generator.clear();

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
@@ -23,8 +24,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -43,6 +46,8 @@ import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Chat.Party;
 import me.jomi.mimiRPG.Chat.Party.API.OpuszczaniePartyEvent;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.PojedynczeKomendy.Bossy.API.PrzegranaBossArenaEvent;
+import me.jomi.mimiRPG.PojedynczeKomendy.Bossy.API.WygranaBossArenaEvent;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -62,6 +67,37 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 	public static boolean warunekModułu() {
 		return Bukkit.getPluginManager().getPlugin("MythicMobs") != null;
 	}
+	
+	public static class API {
+		public static abstract class BossArenaEvent extends Event {
+			public final Arena arena;
+			public final String nazwaBossa;
+			
+			public BossArenaEvent(Arena arena) {
+				this.arena = arena;
+				this.nazwaBossa = arena.arenaDane.nazwaBossa;
+			}
+		}
+		public static class WygranaBossArenaEvent extends BossArenaEvent {
+			public WygranaBossArenaEvent(Arena arena) {
+				super(arena);
+			}
+			
+			private static final HandlerList handlers = new HandlerList();
+			public static HandlerList getHandlerList() { return handlers; }
+			@Override public HandlerList getHandlers() { return handlers; }
+		}
+		public static class PrzegranaBossArenaEvent extends BossArenaEvent {
+			public PrzegranaBossArenaEvent(Arena arena) {
+				super(arena);
+			}
+			
+			private static final HandlerList handlers = new HandlerList();
+			public static HandlerList getHandlerList() { return handlers; }
+			@Override public HandlerList getHandlers() { return handlers; }
+		}
+	}
+	
 	public static class ArenaDane extends Mapowany {
 		@Mapowane Location róg1;
 		@Mapowane Location róg2;
@@ -100,7 +136,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		public int getPrzesunięcieAren() {
-			return Math.abs(róg1.getBlockX() - róg2.getBlockX()) + 25;
+			return Math.abs(róg1.getBlockX() - róg2.getBlockX()) + 50;
 		}
 		
 		public boolean wczytajZ(ArenaDane dane) {
@@ -240,7 +276,8 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			while (it.hasNext() && licz < Baza.BudowanieAren.maxBloki) {
 				Krotka<Block, Block> krotka = it.next();
 				if (krotka.a.getType() != krotka.b.getType()) {
-					krotka.b.setType(krotka.a.getType(), false);
+					//krotka.b.setType(krotka.a.getType(), false);
+					krotka.b.setBlockData(krotka.a.getBlockData(), false);
 					licz++;
 				}
 			}
@@ -280,12 +317,14 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 				g.bossyLicznik.put(arenaDane.nazwaBossa, g.bossyLicznik.getOrDefault(arenaDane.nazwaBossa, 0) + 1);
 				g.zapisz();
 			});
-			zakończ();
+			Bukkit.getPluginManager().callEvent(new WygranaBossArenaEvent(this));
+			Func.opóznij(20 * 20, this::zakończ);
 		}
 		public void porażka() {
 			if (arenaDane.broadcastPorażki)
 				Bukkit.broadcastMessage(prefix + Func.msg("Drużyna szaleńców %s poległa na polu chwały przeciwko Bossowi %s",
 						graczeStr, boss.getDisplayName()));
+			Bukkit.getPluginManager().callEvent(new PrzegranaBossArenaEvent(this));
 			zakończ();
 		}
 		public void zakończ() {
@@ -337,6 +376,10 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			return loc.clone().add(przesunięcieLoc, 0, 0);
 		}
 		
+		public void wykonajGraczom(Consumer<? super Player> cons) {
+			gracze.forEach(cons);
+		}
+		
 		public boolean powiadomGraczy(String format, Object... args) {
 			String msg = prefix + Func.msg(format, args);
 			gracze.forEach(p -> p.sendMessage(msg));
@@ -366,6 +409,9 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		Main.dodajPermisje(permEdytor);
 		
 		edytor.zarejestrujPoZatwierdz((dane1, dane2) -> przeładuj());
+		edytor.zarejestrujOnInit((dane, ścieżka) -> dane.nazwaBossa = ścieżka);
+		edytor.zarejestrujOnZatwierdzZEdytorem((dane, edytor) -> edytor.ścieżka = dane.nazwaBossa);
+		
 		
 		panel.ustawClick(ev -> {
 			if (ev.getCurrentItem().isSimilar(Baza.pustySlotCzarny))
@@ -439,14 +485,19 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		
 		int[] slot = new int[] {0};
 		dostępne.forEach(krotka -> {
-			ItemStack item = krotka.b.ikona;
+			ItemStack item = krotka.b.ikona.clone();
+			
+			int zabito = Gracz.wczytaj(p).bossyLicznik.getOrDefault(krotka.b.nazwaBossa, 0);
+			Func.dodajLore(item, "&aZabito &e" + zabito + "&a razy");
+			
 			Func.nazwij(item, "&6" + krotka.b.nazwaBossa);
+			
 			if (!krotka.b.minąłCooldown(krotka.c)) {
-				item = item.clone();
 				Func.dodajLore(item, "&cNiedostępne do &e" + Func.data(krotka.c + krotka.b.minutyCooldownu * 60 * 1000L));
 				Func.typ(item, Material.YELLOW_STAINED_GLASS_PANE);
 				Func.customModelData(item, 441441);
 			}
+			
 			inv.setItem(slot[0]++, item);
 		});
 		
@@ -475,7 +526,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			return edytor.wymuśConfig_onCommand(prefix, "configi/Bossy", sender, label, args);
 		
 		if (!(sender instanceof Player))
-			return Func.powiadom(sender, prefix + "Tylko gracz może tego użyć");
+			throwMsg("Tylko gracz może tego użyć");
 
 		otwórzPanel((Player) sender);
 		

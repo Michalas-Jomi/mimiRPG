@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.Customizacja;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.PojedynczeKomendy.Bossy.API.WygranaBossArenaEvent;
 import me.jomi.mimiRPG.SkyBlock.DailyAdv;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
@@ -100,6 +102,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			ZABITE_MOBY			(Rodzaj.ZAKRES, Statistic.KILL_ENTITY,		EntityType.class),
 			ZABITY_PRZEZ_MOBY	(Rodzaj.ZAKRES, Statistic.ENTITY_KILLED_BY,	EntityType.class),
 			
+			WYGRANA_BOSSARENA(Rodzaj.INNE, null, null, false), // api Bossy // nazwa kryterium == nazwa Bossa, aby nie wprowadzać konkretów
 			SKYBLOCK_PUNKTY_WYSPY(Rodzaj.INNE, null, null, false), // api SkyBlock
 			ZEBRANE_ITEMY(Rodzaj.INNE, null, null, SelektorItemów.class, true), // selektor itemów
 			EWOLUOWOCJA_SPAWNERA(Rodzaj.INNE, null, null, EntityType.class, true), // ewoluowane spawnery
@@ -427,7 +430,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	static final List<Krotka<SelektorItemów, Krotka<Osiągnięcie, Integer>>> listaSelektorów = Lists.newArrayList();
 	static final List<Krotka<Osiągnięcie, Integer>> listaEwolucjiSpawnera = Lists.newArrayList();
 	static final List<Krotka<Osiągnięcie, Integer>> listaPunktówWyspy = Lists.newArrayList();
-	
+	static final Map<String, List<Krotka<Osiągnięcie, Integer>>> mapaBossAren = new HashMap<>();
 	
 	int staty(Player p, Statistic stat, Object konkret) {
 		if (konkret instanceof Material)
@@ -563,6 +566,13 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				krotka.a.odznacz(ev.getPlayer(), krotka.b);
 		});
 	}
+	@EventHandler
+	public void wygyrwanieBossAreny(WygranaBossArenaEvent ev) {
+		Func.wykonajDlaNieNull(mapaBossAren.get(ev.nazwaBossa), lista ->
+			lista.forEach(krotka ->
+				ev.arena.wykonajGraczom(p ->
+					krotka.a.odznacz(p, krotka.b))));
+	}
 	
 	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {
@@ -639,6 +649,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		for (Kryterium.Typ typ : Kryterium.Typ.values())
 			Func.wykonajDlaNieNull(typ.mapa(), Map::clear);
 		
+		mapaBossAren.clear();
 		listaSelektorów.clear();
 		listaPunktówWyspy.clear();
 		listaEwolucjiSpawnera.clear();
@@ -677,6 +688,11 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 						break;
 					case EWOLUOWOCJA_SPAWNERA:
 						listaEwolucjiSpawnera.add(krotka);
+						break;
+					case WYGRANA_BOSSARENA:
+						List<Krotka<Osiągnięcie, Integer>> lista = mapaBossAren.getOrDefault(kryterium.nazwa, new ArrayList<>());
+						lista.add(krotka);
+						mapaBossAren.put(kryterium.nazwa, lista);
 						break;
 					default:
 						break;

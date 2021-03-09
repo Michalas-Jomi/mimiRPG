@@ -1660,17 +1660,6 @@ public abstract class Func {
 		return lista;
 	}
 	
-	static class IterableBloków implements Iterable<Block> {
-		Iterator<Block> iterator;
-		IterableBloków(Iterator<Block> iterator) {
-			this.iterator = iterator;
-		}
-		@Override
-		public Iterator<Block> iterator() {
-			return iterator;
-		}
-		
-	}
 	public static interface FunctionXYZ<T> {
 		public T wykonaj(int x, int y, int z);
 	}
@@ -1712,7 +1701,8 @@ public abstract class Func {
 		}
 	}
 	public static Iterable<Block> bloki(Location róg1, Location róg2) {
-		return new IterableBloków(blokiIterator(róg1, róg2));
+		Iterator<Block> iterator = blokiIterator(róg1, róg2);
+		return () -> iterator;
 	}
 	public static Iterator<Block> blokiIterator(Location róg1, Location róg2) {
 		World świat = róg1.getWorld();

@@ -125,6 +125,8 @@ public class Main extends JavaPlugin implements Listener {
 		new Przeładuj();
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
+        
+        Main.dodajPermisje(permBlokowanieKomend);
 
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
         
@@ -344,12 +346,17 @@ public class Main extends JavaPlugin implements Listener {
 			ev.setCancelled(true);
 	}
 
+	static final String permBlokowanieKomend = "mimirpg.blokadakomend.bypass";
 	public static final String tagBlokowanieKomendy = "mimiBlokowanieKomend";
 	@EventHandler
 	public void komendy(PlayerCommandPreprocessEvent ev) {
 		if (ev.getPlayer().getScoreboardTags().contains(tagBlokowanieKomendy) && !Baza.bezpieczna(ev.getMessage())) {
-			ev.getPlayer().sendMessage(Func.prefix("Blokada") + "Nie możesz teraz używać komend");
-			ev.setCancelled(true);
+			if (ev.getPlayer().hasPermission(permBlokowanieKomend)) {
+				ev.getPlayer().sendMessage(Func.prefix("Blokada") + "Ta komenda dla zwykłych graczy jest zablokowana");
+			} else {
+				ev.getPlayer().sendMessage(Func.prefix("Blokada") + "Nie możesz teraz używać komend");
+				ev.setCancelled(true);
+			}
 		}
 	}
 }

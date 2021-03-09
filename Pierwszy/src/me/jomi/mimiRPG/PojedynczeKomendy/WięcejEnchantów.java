@@ -19,7 +19,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.util.Vector;
 
 import me.jomi.mimiRPG.Moduł;
@@ -27,8 +26,41 @@ import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class WięcejEnchantów implements Listener {
+	public static class MimiEnchant {
+		public final String nazwa;
+
+		public MimiEnchant(String nazwa) {
+			this.nazwa = nazwa;
+		}
+		
+		public boolean posiadaEnchant(ItemStack item) {
+			return item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("§7" + nazwa);
+		}
+		public boolean dodajEnchant(ItemStack item) {
+			if (posiadaEnchant(item))
+				return false;
+			
+			Func.dodajLore(item, "§7" + nazwa);
+			return true;
+		}
+		public boolean usuńEnchant(ItemStack item) {
+			if (!posiadaEnchant(item) || !item.getItemMeta().hasLore())
+				return false;
+			
+			List<String> lore = item.getItemMeta().getLore();
+			while (lore.contains("§7" + nazwa))
+				lore.remove("§7" + nazwa);
+			
+			Func.ustawLore(item, lore);
+			
+			return true;
+		}
+	}
+	
+	
 	public static class Timber {
 		static final String tag = "mimiBlokEnchantTimber";
+		public static final MimiEnchant enchant = new MimiEnchant("Timber");
 		
 		private static boolean jestDrzewem(Material typ) {
 			switch (typ) {
@@ -104,11 +136,12 @@ public class WięcejEnchantów implements Listener {
 		}
 	}
 	
+	
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void niszczenieBloku(BlockBreakEvent ev) {
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
-		// TODO napisać jako enchant
-		if (!ev.isCancelled() && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("§7Timber")) {
+		if (!ev.isCancelled() && Timber.enchant.posiadaEnchant(item)) {
 			Timber.zetnijDrzewo(ev.getBlock().getLocation().add(.5, 0, .5));
 			ev.setDropItems(false);
 		}
@@ -150,19 +183,7 @@ public class WięcejEnchantów implements Listener {
 			blok.setBlockData(data);
 		});
 	}
-
 	
-	// Zaciśnięte więzi
-	@EventHandler
-	public void niszczenieItemku(BlockBreakEvent ev) {
-		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
-		if (!item.hasItemMeta() || !item.getItemMeta().hasLore()) return;
-		if (!item.getItemMeta().getLore().contains("§7Zaciśnięte więzi")) return;
-		if (!(item.getItemMeta() instanceof Damageable)) return;
-		Damageable meta = (Damageable) item.getItemMeta();
-		if (meta.getDamage() + 1 >= item.getType().getMaxDurability()) {
-			ev.setCancelled(true);
-			ev.getPlayer().sendMessage(Func.prefix("Zaciśnięte więzi") + "twoje narzędzie jest już na wykończeniu, uważaj na nie!");
-		}
-	}
+	
+	
 }

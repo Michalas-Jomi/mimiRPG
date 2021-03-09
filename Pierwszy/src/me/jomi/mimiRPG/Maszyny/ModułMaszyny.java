@@ -85,6 +85,9 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		public String getConfigSc() {
 			return Func.locBlockToString(locShulker);
 		}
+		public Container getContainer() {
+			return (Container) locShulker.getBlock().getState();
+		}
 		
 		public abstract ModułMaszyny getModuł();
 		
@@ -264,20 +267,22 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 
 	List<Krotka<Cena, Integer>> ulepszeniaPrędkości = new ArrayList<>();
 	
-	@Override
-	public void przeładuj() {
-		Config config;
-		
-		config = new Config("Maszyny");
-		ulepszeniaPrędkości.clear();
-		Func.wykonajDlaNieNull(config.wczytajListeMap(this.getClass().getSimpleName() + ".prędkość"), lista ->
+	
+	protected void wczytajUlepszeniaStandardowo(List<Krotka<Cena, Integer>> ulepszenia, String nazwa) {
+		ulepszenia.clear();
+		Func.wykonajDlaNieNull(new Config("Maszyny").wczytajListeMap(this.getClass().getSimpleName() + "." + nazwa), lista ->
 			lista.forEach(mapa ->
-				ulepszeniaPrędkości.add(new Krotka<>(
+				ulepszenia.add(new Krotka<>(
 					Cena.deserialize(mapa.getMap("cena"), Cena.class),
-					mapa.getInt("ticki")
+					mapa.getInt(nazwa)
 				))));
 		
-		config = getConfig();
+	}
+	@Override
+	public void przeładuj() {
+		wczytajUlepszeniaStandardowo(ulepszeniaPrędkości, "prędkość");
+		
+		Config config = getConfig();
 		config.przeładuj();
 		
 		odświeżMaszyny(config.wartości(Maszyna.class));

@@ -24,7 +24,6 @@ import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Sklep;
 import me.jomi.mimiRPG.util.Cena;
-import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 
@@ -116,7 +115,6 @@ public class Sprzedajnik extends ModułMaszyny {
 						)
 		);
 		
-		
 		return funkcjePanelu;
 	}
 	@Override
@@ -146,13 +144,6 @@ public class Sprzedajnik extends ModułMaszyny {
 	@Override
 	public void przeładuj() {
 		super.przeładuj();
-		Config config = new Config("Maszyny");
-		ulepszeniaIlości.clear();
-		Func.wykonajDlaNieNull(config.wczytajListeMap(this.getClass().getSimpleName() + ".ilość"), lista -> 
-			lista.forEach(mapa -> 
-				ulepszeniaIlości.add(new Krotka<>(
-					Cena.deserialize(mapa.getMap("cena"), Cena.class),
-					mapa.getInt("ilość")
-				))));
+		wczytajUlepszeniaStandardowo(ulepszeniaIlości, "ilość");
 	}
 }

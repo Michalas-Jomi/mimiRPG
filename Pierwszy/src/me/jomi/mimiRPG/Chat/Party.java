@@ -315,7 +315,7 @@ public class Party extends Komenda implements Listener {
 			przyciskDodaj = party.przywódca.getName().equals(p.getName());
 			
 			party.gracze.forEach(gracz -> {
-				n.dodaj("§e§l- §" + (gracz.getName().equals(party.przywódca.getName()) ? "6" : "a") + gracz.getName() + " ");
+				n.dodaj("\n§e§l- §" + (gracz.getName().equals(party.przywódca.getName()) ? "6" : "a") + gracz.getName() + " ");
 				if (p.getName().equals(party.przywódca.getName()) && !p.getName().equals(gracz.getName()))
 					n.dodaj(
 							new Napis(
@@ -333,8 +333,13 @@ public class Party extends Komenda implements Listener {
 		} else
 			n.dodaj("§6Jesteś sam w party");
 		
+		n.dodaj("\n");
+		
 		if (przyciskDodaj)
-			n.dodaj("\n").dodaj(new Napis("§a[dodaj]", "§bKliknij aby zaprosić gracza do party", "/party zaproś ", ClickEvent.Action.SUGGEST_COMMAND));
+			n.dodaj("\n").dodaj(new Napis("§a[dodaj]", "§bKliknij aby zaprosić gracza do party", "/party zaproś ", ClickEvent.Action.SUGGEST_COMMAND)).dodaj(" ");
+		
+		if (party != null)
+			n.dodaj(new Napis("§c[opuść]", "§bKliknij aby opuścić party", "/party opuść"));
 		
 		n.dodaj("\n").wyświetl(p);
 	}

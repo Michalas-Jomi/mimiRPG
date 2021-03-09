@@ -64,7 +64,7 @@ public class AutoCrafting extends ModułMaszyny {
 				if (result == null)
 					return;
 			}
-			Container shulker = (Container) locShulker.getBlock().getState();
+			Container shulker = getContainer();
 			
 			Inventory inv = shulker.getInventory();
 			List<ItemStack> wchłonięte = Lists.newArrayList();

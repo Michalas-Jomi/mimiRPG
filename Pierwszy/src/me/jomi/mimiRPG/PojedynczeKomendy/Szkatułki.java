@@ -24,6 +24,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -175,6 +176,11 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	}
 	
 	
+	@EventHandler
+	public void podnoszenieItemów(EntityPickupItemEvent ev) {
+		if (otwarteOtwieranie.containsKey(ev.getEntity().getName()))
+			ev.setCancelled(true);
+	}
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
 		if (otwarteOtwieranie.containsKey(ev.getWhoClicked().getName()))
