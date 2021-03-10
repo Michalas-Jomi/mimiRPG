@@ -107,8 +107,8 @@ public class ZabezpieczGracza extends Komenda implements Listener{
 			return Func.powiadom(sender, "Tylko gracz może zabezpieczyć gracza");
 		Player p = (Player) sender;
 		if (args.length < 1) {
-			if (ZabezpieczGracza.gracze.size() == 0) 
-				{p.sendMessage(ZabezpieczGracza.prefix + "Żaden gracz nie jest zabezpieczony"); return true;}
+			if (ZabezpieczGracza.gracze.size() == 0)
+				throwFormatMsg("Żaden gracz nie jest zabezpieczony");
 			p.sendMessage(ZabezpieczGracza.prefix + "Zabezpieczeni gracze:");
 			for (Player gracz : ZabezpieczGracza.gracze)
 				p.sendMessage("§6- §e" + gracz.getName());

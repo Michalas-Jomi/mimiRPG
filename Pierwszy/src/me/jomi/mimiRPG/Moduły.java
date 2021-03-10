@@ -103,7 +103,6 @@ public class Moduły implements Przeładowalny {
 	}
 	public void włącz(ConfigurationSection sekcja) {
 		włączone = 0;
-		boolean przeładować = false;
 		for (Class<?> klasa : klasy) {
 			String nazwa = klasa.getSimpleName();
 			if (!mapa.containsKey(nazwa))
@@ -112,8 +111,6 @@ public class Moduły implements Przeładowalny {
 			boolean w = _klasa.włączony;
 			if (sekcja.getBoolean(nazwa)) {
 				włączModuł(klasa);
-				if (!w && _klasa.włączony && _klasa.inst instanceof Komenda)
-					przeładować = true;
 				if (!w && _klasa.włączony && Main.pluginEnabled)
 					Main.log("§aWłączono Moduł: " + nazwa);
 			} else {
@@ -122,8 +119,6 @@ public class Moduły implements Przeładowalny {
 					Main.log("§cWyłączono Moduł: " + nazwa);
 			}
 		}
-		if (przeładować && Main.pluginEnabled)
-			Main.reloadBukkitData();
 	}
 
 	public static boolean włączony(String moduł) {

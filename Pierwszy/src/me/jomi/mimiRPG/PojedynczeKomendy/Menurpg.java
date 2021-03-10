@@ -186,8 +186,8 @@ public class Menurpg extends Komenda implements Listener {
 		if (sender instanceof Player)
 			dajInv((Player) sender);
 		else
-			sender.sendMessage("Tylko Gracz może z tego korzystać");
-		return false;
+			throwMsg("tylkoGracz");
+		return true;
 	}
 }
 

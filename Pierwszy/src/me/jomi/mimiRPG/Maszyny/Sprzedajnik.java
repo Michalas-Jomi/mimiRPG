@@ -144,6 +144,6 @@ public class Sprzedajnik extends ModułMaszyny {
 	@Override
 	public void przeładuj() {
 		super.przeładuj();
-		wczytajUlepszeniaStandardowo(ulepszeniaIlości, "ilość");
+		wczytajUlepszeniaStandardowo(ulepszeniaIlości, "ilość", "ilość");
 	}
 }

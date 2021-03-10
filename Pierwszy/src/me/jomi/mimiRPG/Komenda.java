@@ -1,8 +1,8 @@
 package me.jomi.mimiRPG;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.util.Func;
 
+@SuppressWarnings("unchecked")
 public abstract class Komenda implements TabExecutor {
 	@SuppressWarnings("serial")
 	public static class MsgCmdError extends Error {
@@ -26,17 +27,38 @@ public abstract class Komenda implements TabExecutor {
 	
 	
 	protected List<PluginCommand> _komendy = Lists.newArrayList();
-	boolean _zarejestrowane_komendy = true;
 	public Komenda(String komenda) {
-		ustawKomende(komenda, null, null);
+		this(komenda, null);
 	}
 	public Komenda(String komenda, String użycie) {
-		ustawKomende(komenda, użycie, null);
+		this(komenda, użycie, new String[0]);
 	}
 	public Komenda(String komenda, String użycie, String... aliasy) {
 		ustawKomende(komenda, użycie, Lists.newArrayList(aliasy));
 	}
-	
+
+	static final CommandMap commandMap;
+	static final Map<String, Command> mapaKomend;
+	static {
+		CommandMap cmdMap = null;
+		Map<String, Command> mapa = null;
+		try {
+			cmdMap = (CommandMap) Func.dajField(Bukkit.getServer().getClass(), "commandMap").get(Bukkit.getServer());
+			mapa = (Map<String, Command>) Func.dajField(cmdMap.getClass(), "knownCommands").get(cmdMap);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		
+		commandMap = cmdMap;
+		mapaKomend = mapa;
+	}
+	static void syncCommands() {
+		try {
+			Func.dajMetode(Bukkit.getServer().getClass(), "syncCommands").invoke(Bukkit.getServer());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Tworzy komendę i ustawia jej executora na ten Objekt
 	 * 
@@ -50,14 +72,11 @@ public abstract class Komenda implements TabExecutor {
 			użycie = "/" + komenda;
 		try {
 			PluginCommand cmd = komenda(komenda, użycie, aliasy);
-	    	Field fCommandMap = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
-	        fCommandMap.setAccessible(true);
-	        CommandMap commandMap = (CommandMap) fCommandMap.get(Bukkit.getPluginManager());
-	        commandMap.register(Main.plugin.getName(), cmd);
+			commandMap.register(Main.plugin.getName(), cmd);
 			cmd.setTabCompleter(this);
 			cmd.setExecutor(this);
 			return cmd;
-	    } catch (Exception e) {
+	    } catch (Throwable e) {
 	    	Main.error("Nie udało sie Stworzyć komendy " + komenda);
 	    	return null;
 	    }
@@ -116,17 +135,11 @@ public abstract class Komenda implements TabExecutor {
 	}
 	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args);
 	
-	protected void throwMsg(String format, Object... args) throws MsgCmdError {
-		String prefix = "";
-		try {
-			prefix = (String) Func.dajField(this.getClass(), "prefix").get(null);
-		} catch (NoSuchFieldException e) {
-			prefix = Func.prefix(this.getClass().getSimpleName());
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		
-		throw new MsgCmdError(prefix + Func.msg(format, args));
+	protected void throwMsg(String lokalizacja, Object... args) throws MsgCmdError {
+		throw new MsgCmdError(Baza.msg(Func.prefix(this.getClass()), lokalizacja, args));
+	}
+	protected void throwFormatMsg(String format, Object... args) throws MsgCmdError {
+		throw new MsgCmdError(Func.prefix(this.getClass()) + Func.msg(format, args));
 	}
 	
 	protected List<String> utab(String[] wpisane, String... Podpowiedzi) {

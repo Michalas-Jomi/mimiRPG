@@ -122,7 +122,7 @@ public class Kolektor extends ModułMaszyny {
 	@Override
 	public void przeładuj() {
 		super.przeładuj();
-		wczytajUlepszeniaStandardowo(ulepszeniaZasięgu, "zasięg");
+		wczytajUlepszeniaStandardowo(ulepszeniaZasięgu, "zasięg", "zasięg");
 	}
 }
 

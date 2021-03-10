@@ -94,6 +94,19 @@ public abstract class Func {
 	public static String prefix(String nazwa) {
 		return koloruj("§2[§a" + nazwa + "§2]§6 ");
 	}
+	public static String prefix(Class<?> clazz) {
+		try {
+			String prefix = (String) Func.dajField(clazz, "prefix").get(null);
+			if (prefix == null)
+				throw new NoSuchFieldException();
+			return prefix;
+		} catch (NoSuchFieldException e) {
+			return Func.prefix(clazz.getSimpleName());
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
 	public static String msg(String tekst, Object... uzupełnienia) {
 		for (Object u : uzupełnienia)
 			tekst = tekst.replaceFirst("%s", "§e" + u + "§6");
@@ -263,7 +276,7 @@ public abstract class Func {
 	}
 	private static StringBuffer arrayToStringBuffer(Object[] array) {
 		StringBuffer strB = new StringBuffer();
-		strB.append(']');
+		strB.append('[');
 		for (int i=0; i < array.length; i++) {
 			if (array[i] == null)
 				strB.append("null");

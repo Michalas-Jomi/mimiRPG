@@ -5,12 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import com.sk89q.worldedit.WorldEdit;
@@ -39,6 +43,7 @@ public class Baza implements Listener {
 	public static ConfigurationSection grupy;
 	public static ItemStack walutaPremium;
 	public static Config config;
+	private static Config configWiadomości;
 	
 	// TODO: wczytywać
 	public static class BudowanieAren {
@@ -67,12 +72,14 @@ public class Baza implements Listener {
 	
 	
 	public Baza() {	
+		configWiadomości = new Config("Wiadomości");
 		config = new Config("configi/Baza");
 		przeładuj();
 	}
 	public static void przeładuj() {
 		Main.ust.przeładuj();
 
+		configWiadomości.przeładuj();
 		config.przeładuj();
 		
 		walutaPremium = config.wczytajItem("Waluta Premium");
@@ -85,6 +92,97 @@ public class Baza implements Listener {
 		itemy.put("WalutaPremium", walutaPremium);
 	}
 
+	static class Formater {
+		final String placeholder;
+		final Object obj;
+		
+		Formater(String placeholder, Object obj) {
+			this.placeholder = placeholder;
+			this.obj = obj;
+		}
+		
+		String formatuj(String msg) {
+			String format = msg_format(obj);
+			msg = msg.replaceAll("<" + placeholder + ">", format);
+			msg = msg.replaceAll("<" + placeholder + ".lower>", format.toLowerCase());
+			msg = msg.replaceAll("<" + placeholder + ".upper>", format.toUpperCase());
+			if (obj instanceof Player) {
+				Player p = (Player) obj;
+				msg = new Formater(placeholder + ".nick", p.getName()).formatuj(msg);
+				msg = new Formater(placeholder + ".displayname", p.getDisplayName()).formatuj(msg);
+				msg = new Formater(placeholder + ".loc", p.getLocation()).formatuj(msg);
+				msg = new Formater(placeholder + ".inv", p.getInventory()).formatuj(msg);
+			}
+			if (obj instanceof PlayerInventory) {
+				PlayerInventory inv = (PlayerInventory) obj;
+				msg = new Formater(placeholder + ".hand", inv.getItemInMainHand()).formatuj(msg);
+				msg = new Formater(placeholder + ".offhand", inv.getItemInOffHand()).formatuj(msg);
+				msg = new Formater(placeholder + ".head", inv.getHelmet()).formatuj(msg);
+				msg = new Formater(placeholder + ".chest", inv.getChestplate()).formatuj(msg);
+				msg = new Formater(placeholder + ".legs", inv.getLeggings()).formatuj(msg);
+				msg = new Formater(placeholder + ".feet", inv.getBoots()).formatuj(msg);
+			}
+			if (obj instanceof ItemStack) {
+				ItemStack item = (ItemStack) obj;
+				msg = new Formater(placeholder + ".type", item.getType()).formatuj(msg);
+				msg = new Formater(placeholder + ".amount", item.getAmount()).formatuj(msg);
+			}
+			if (obj instanceof Location) {
+				Location loc = (Location) obj;
+				msg = new Formater(placeholder + ".x", loc.getX()).formatuj(msg);
+				msg = new Formater(placeholder + ".y", loc.getY()).formatuj(msg);
+				msg = new Formater(placeholder + ".z", loc.getZ()).formatuj(msg);
+				msg = new Formater(placeholder + ".cx", loc.getBlockX()).formatuj(msg);
+				msg = new Formater(placeholder + ".cy", loc.getBlockY()).formatuj(msg);
+				msg = new Formater(placeholder + ".cz", loc.getBlockZ()).formatuj(msg);
+				msg = new Formater(placeholder + ".yaw", loc.getYaw()).formatuj(msg);
+				msg = new Formater(placeholder + ".pitch", loc.getPitch()).formatuj(msg);
+				msg = new Formater(placeholder + ".world", loc.getWorld()).formatuj(msg);
+			}
+			if (obj instanceof World) {
+				World world = (World) obj;
+				msg = new Formater(placeholder + ".name", world.getName()).formatuj(msg);
+				msg = new Formater(placeholder + ".difficulty", world.getDifficulty().toString().toLowerCase()).formatuj(msg);
+			}
+			
+			return msg;
+		}
+	}
+	public static String msg(String prefix, String lokalizacja, Object... args) {
+		String format = configWiadomości.wczytajPewnyD(lokalizacja);
+		
+		for (int i=0; i < args.length; i += 2)
+			format = new Formater((String) args[i], args[i+1]).formatuj(format);
+		
+		return prefix + Func.koloruj(format);
+	}
+	private static String msg_format(Object obj) {
+		if (obj == null)
+			return "null";
+		if (obj instanceof Double)
+			return Func.DoubleToString((double) obj);
+		if (obj instanceof Float)
+			return Func.DoubleToString((float) obj);
+		if (obj instanceof Integer)
+			return Func.IntToString((int) obj);
+		if (obj instanceof Short)
+			return Func.IntToString((short) obj);
+		if (obj instanceof Long)
+			return Func.IntToString((int) (long) obj);
+		if (obj instanceof Character)
+			return String.valueOf((char) obj);
+		if (obj instanceof String)
+			return (String) obj;
+		if (obj instanceof Player)
+			return ((Player) obj).getName();
+		if (obj instanceof ItemStack)
+			return ((ItemStack) obj).getItemMeta().hasDisplayName() ? ((ItemStack) obj).getItemMeta().getDisplayName() : Func.enumToString(((ItemStack) obj).getType());
+		if (obj.getClass().isEnum())
+			return Func.enumToString(Func.pewnyCast(obj));
+			
+		return obj.toString();
+	}
+	
 	public static Grupa grupa(String nazwa) {
 		Object obj = grupy.get(nazwa);
 		if (obj == null)

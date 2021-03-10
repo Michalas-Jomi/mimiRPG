@@ -268,19 +268,19 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 	List<Krotka<Cena, Integer>> ulepszeniaPrędkości = new ArrayList<>();
 	
 	
-	protected void wczytajUlepszeniaStandardowo(List<Krotka<Cena, Integer>> ulepszenia, String nazwa) {
+	protected void wczytajUlepszeniaStandardowo(List<Krotka<Cena, Integer>> ulepszenia, String nazwa, String kryterium) {
 		ulepszenia.clear();
 		Func.wykonajDlaNieNull(new Config("Maszyny").wczytajListeMap(this.getClass().getSimpleName() + "." + nazwa), lista ->
 			lista.forEach(mapa ->
 				ulepszenia.add(new Krotka<>(
 					Cena.deserialize(mapa.getMap("cena"), Cena.class),
-					mapa.getInt(nazwa)
+					mapa.getInt(kryterium)
 				))));
 		
 	}
 	@Override
 	public void przeładuj() {
-		wczytajUlepszeniaStandardowo(ulepszeniaPrędkości, "prędkość");
+		wczytajUlepszeniaStandardowo(ulepszeniaPrędkości, "prędkość", "ticki");
 		
 		Config config = getConfig();
 		config.przeładuj();

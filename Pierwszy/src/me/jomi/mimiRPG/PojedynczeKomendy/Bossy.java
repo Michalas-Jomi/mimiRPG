@@ -526,7 +526,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			return edytor.wymuśConfig_onCommand(prefix, "configi/Bossy", sender, label, args);
 		
 		if (!(sender instanceof Player))
-			throwMsg("Tylko gracz może tego użyć");
+			throwMsg("tylkoGracz");
 
 		otwórzPanel((Player) sender);
 		

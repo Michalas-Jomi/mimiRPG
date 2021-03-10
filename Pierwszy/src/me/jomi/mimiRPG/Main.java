@@ -3,14 +3,12 @@ package me.jomi.mimiRPG;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Entity;
@@ -180,7 +178,6 @@ public class Main extends JavaPlugin implements Listener {
 	
 	
 	static boolean pluginEnabled = false;
-	static final WyłączonyExecutor wyłączonyExecutor = new WyłączonyExecutor();
 	public static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
@@ -194,13 +191,12 @@ public class Main extends JavaPlugin implements Listener {
 			p.preReloadBukkitData();
 			p.przeładuj();
 		}
-		if (obj instanceof Komenda && !((Komenda) obj)._zarejestrowane_komendy) {
-			for (PluginCommand cmd : ((Komenda) obj)._komendy) {
-				cmd.setTabCompleter((Komenda) obj);
-				cmd.setExecutor((Komenda) obj);
-				((Komenda) obj)._zarejestrowane_komendy = true;
-			}
-		}
+		if (obj instanceof Komenda)
+			((Komenda) obj)._komendy.forEach(cmd -> {
+				Komenda.commandMap.register(plugin.getName(), cmd);
+				if (pluginEnabled)
+					Komenda.syncCommands();
+			});
 	}
 	public static void wyrejestruj(Object obj) {
 		if (obj instanceof Listener)
@@ -209,12 +205,21 @@ public class Main extends JavaPlugin implements Listener {
 			Zegar.wyrejestruj((Zegar) obj);
 		if (obj instanceof Przeładowalny)
 			Przeładowalny.przeładowalne.remove(obj.getClass().getSimpleName());
-		if (obj instanceof Komenda && ((Komenda) obj)._zarejestrowane_komendy)
-			for (PluginCommand cmd : ((Komenda) obj)._komendy) {
-				cmd.setTabCompleter(wyłączonyExecutor);
-				cmd.setExecutor(wyłączonyExecutor);
-				((Komenda) obj)._zarejestrowane_komendy = false;
-			}
+		if (obj instanceof Komenda)
+			((Komenda) obj)._komendy.forEach(cmd -> {
+				Consumer<String> usuń = alias -> {
+					Command usuwana = Komenda.mapaKomend.remove((cmd.getPlugin().getName() + ":" + alias).toLowerCase());
+					if (Komenda.mapaKomend.get(alias) == usuwana)
+						Komenda.mapaKomend.remove(alias);
+				};
+				
+				usuń.accept(cmd.getName());
+				cmd.getAliases().forEach(usuń::accept);
+			
+				cmd.unregister(Komenda.commandMap);
+				
+				Komenda.syncCommands();
+			});
 	}
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");
@@ -359,18 +364,4 @@ public class Main extends JavaPlugin implements Listener {
 			}
 		}
 	}
-}
-
-
-class WyłączonyExecutor implements TabExecutor {
-	@Override
-	public boolean onCommand(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
-		arg0.sendMessage("§cTa komenda jest aktualnie wyłączona");
-		return true;
-	}
-	@Override
-	public List<String> onTabComplete(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
-		return null;
-	}
-	
 }
