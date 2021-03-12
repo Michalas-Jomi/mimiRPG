@@ -1725,12 +1725,12 @@ public abstract class Func {
 		wykonajNaBlokach(blokiIterator(róg1, róg2), cons);
 	}
 	private static void wykonajNaBlokach(Iterator<Block> it, Predicate<Block> cons) {
-		int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000);
+		int mx = Baza.BudowanieAren.maxBloki;
 		int licz = 0;
 		
 		while (it.hasNext())
 			if (cons.test(it.next()) && ++licz >= mx) {
-				Func.opóznij(Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1), () -> wykonajNaBlokach(it, cons));
+				Func.opóznij(Baza.BudowanieAren.tickiPrzerw, () -> wykonajNaBlokach(it, cons));
 				return;
 			}
 	}
@@ -1738,12 +1738,14 @@ public abstract class Func {
 		wykonajNaBlokach(new IteratorBloków<>(róg1, róg2, cons));
 	}
 	private static void wykonajNaBlokach(Iterator<Boolean> it) {
-		int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000);
+		//int mx = Main.ust.wczytajLubDomyślna("Budowanie Aren.Max Bloki", 50_000); TODO wczytywać w bazie
+		//Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1)
+		int mx = Baza.BudowanieAren.maxBloki;
 		int licz = 0;
 		
 		while (it.hasNext())
 			if (it.next() && ++licz >= mx) {
-				Func.opóznij(Main.ust.wczytajLubDomyślna("Budowanie Aren.Ticki Przerw", 1), () -> wykonajNaBlokach(it));
+				Func.opóznij(Baza.BudowanieAren.tickiPrzerw, () -> wykonajNaBlokach(it));
 				return;
 			}
 	}

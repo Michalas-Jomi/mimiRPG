@@ -7,7 +7,9 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -102,16 +104,28 @@ public class Baza implements Listener {
 		}
 		
 		String formatuj(String msg) {
-			String format = msg_format(obj);
+			if (!msg.contains(placeholder))
+				return msg;
+			
+			String format = "§e" + msg_format(obj) + "§6";
 			msg = msg.replaceAll("<" + placeholder + ">", format);
 			msg = msg.replaceAll("<" + placeholder + ".lower>", format.toLowerCase());
 			msg = msg.replaceAll("<" + placeholder + ".upper>", format.toUpperCase());
 			if (obj instanceof Player) {
 				Player p = (Player) obj;
-				msg = new Formater(placeholder + ".nick", p.getName()).formatuj(msg);
-				msg = new Formater(placeholder + ".displayname", p.getDisplayName()).formatuj(msg);
 				msg = new Formater(placeholder + ".loc", p.getLocation()).formatuj(msg);
 				msg = new Formater(placeholder + ".inv", p.getInventory()).formatuj(msg);
+				msg = new Formater(placeholder + ".displayname", p.getDisplayName()).formatuj(msg);
+			}
+			if (obj instanceof OfflinePlayer) {
+				OfflinePlayer p = (OfflinePlayer) obj;
+				msg = new Formater(placeholder + ".nick", p.getName()).formatuj(msg);
+				msg = new Formater(placeholder + ".displayname", p.getName()).formatuj(msg);
+			}
+			if (obj instanceof CommandSender) {
+				CommandSender sender = (CommandSender) obj;
+				msg = new Formater(placeholder + ".nick", sender.getName()).formatuj(msg);
+				msg = new Formater(placeholder + ".displayname", sender.getName()).formatuj(msg);
 			}
 			if (obj instanceof PlayerInventory) {
 				PlayerInventory inv = (PlayerInventory) obj;
@@ -176,7 +190,7 @@ public class Baza implements Listener {
 		if (obj instanceof Player)
 			return ((Player) obj).getName();
 		if (obj instanceof ItemStack)
-			return ((ItemStack) obj).getItemMeta().hasDisplayName() ? ((ItemStack) obj).getItemMeta().getDisplayName() : Func.enumToString(((ItemStack) obj).getType());
+			return (((ItemStack) obj).hasItemMeta() && ((ItemStack) obj).getItemMeta().hasDisplayName()) ? ((ItemStack) obj).getItemMeta().getDisplayName() : Func.enumToString(((ItemStack) obj).getType());
 		if (obj.getClass().isEnum())
 			return Func.enumToString(Func.pewnyCast(obj));
 			

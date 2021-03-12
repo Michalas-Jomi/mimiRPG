@@ -1,0 +1,38 @@
+Wither I:
+  item: kamień_witherI
+  mechanika:
+    typ: efekt # ogólne
+    szansa: 0.05 # ogólne
+    
+    efekt: wither # efekt
+    poziom: 0 # efekt
+
+AutoSmelt:
+  item: kamień_autSmelt
+  mechanika:
+    typ: zmianaDropu
+    szansa: 1.0
+    
+    zmiany:
+      bloki:
+        iron_ore: iron_ingot
+        gold_ore: golden_ingot
+      moby:
+        creeper: cookie
+
+Gilotyna:
+  item: kamień_gilotyna
+  mechanika:
+    typ: dodatkowyDrop
+    szansa: 0.1
+    
+    dodatki:
+      bloki:
+        # blok: drop
+        stone: stone_drop
+        cobblestone: iron_ingot 0.2
+      moby:
+        # Mob: drop
+        skeleton: skeleton_skull 0.2
+        creeper: creeper_head 0.2
+

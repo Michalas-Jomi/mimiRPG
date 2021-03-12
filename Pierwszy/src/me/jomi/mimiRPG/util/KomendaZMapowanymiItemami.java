@@ -56,7 +56,7 @@ public abstract class KomendaZMapowanymiItemami<T extends Mapowany> extends Kome
 			return edytor.onCommand(sender, "itemrpg", args);
 		}
 		
-		return super.onCommand(sender, cmd, label, args);
+		return super.wykonajKomende(sender, cmd, label, args);
 	}
 	
 	@Override

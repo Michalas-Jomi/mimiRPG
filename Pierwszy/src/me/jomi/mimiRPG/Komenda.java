@@ -133,10 +133,18 @@ public abstract class Komenda implements TabExecutor {
 			return Func.powiadom(sender, e.getMessage());
 		}
 	}
-	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args);
+	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError;
 	
+	protected String preThrowMsg(String lokalizacja, Object... args) {
+		return Baza.msg(Func.prefix(this.getClass()), lokalizacja, args);
+	}
+	protected void broadcastMsg(String lokalizacja, Object... args) {
+		String msg = preThrowMsg(lokalizacja, args);
+		if (!msg.isEmpty())
+			Bukkit.broadcastMessage(msg);
+	}
 	protected void throwMsg(String lokalizacja, Object... args) throws MsgCmdError {
-		throw new MsgCmdError(Baza.msg(Func.prefix(this.getClass()), lokalizacja, args));
+		throw new MsgCmdError(preThrowMsg(lokalizacja, args));
 	}
 	protected void throwFormatMsg(String format, Object... args) throws MsgCmdError {
 		throw new MsgCmdError(Func.prefix(this.getClass()) + Func.msg(format, args));

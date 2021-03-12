@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.Chat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class SprawdzanieIP extends Komenda implements Listener {
 			listaIp.add(ip);
 		}
 		
-		listaIp.forEach(subip -> {
+		new ArrayList<>(listaIp).forEach(subip -> {
 			if (subip != null)
 				sprawdzIp(subip, listaNicków, listaIp);
 		});

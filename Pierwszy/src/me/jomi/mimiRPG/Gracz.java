@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -60,6 +60,8 @@ public class Gracz extends Mapowany {
 	@Mapowane public HashMap<String, Long> bossyCooldown = new HashMap<>();
 	@Mapowane public HashMap<String, Integer> bossyLicznik = new HashMap<>();
 	
+	@Mapowane public int nasilanymute_licznik;
+	
 	public Wilczek.Wilk wilk;
 	
  	public void zapisz() {
@@ -91,7 +93,7 @@ public class Gracz extends Mapowany {
 		else
 			return new Gracz(nick);
 	}
-	public static Gracz wczytaj(Player p) {
+	public static Gracz wczytaj(OfflinePlayer p) {
 		return wczytaj(p.getName());
 	}
 }

@@ -1,1 +1,7 @@
 tylkoGracz: 'Tylko gracz może tego użyć'
+NasilanyMute:
+  niepoprawnyGracz: 'Gracz <nick> nie istnieje'
+  zmutowano:
+   dla uprawnionych: '<mutujący.displayname> zmutował <mutowany.displayname> na <czas> za <powód>'
+   dla zmutowanego: 'Zostałeś uciszony na <czas> za <powód>'
+   broadcast: '<mutujący.displayname> zmutował <mutowany.displayname> na <czas> za <powód>'
