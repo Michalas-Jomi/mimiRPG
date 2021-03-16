@@ -542,8 +542,10 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		config.mapa(false).forEach((__, obj) -> {
 			ArenaDane dane = (ArenaDane) obj;
 			Func.wykonajDlaNieNull(stare.remove(dane.nazwaBossa), stary -> {
-				if (!stary.wczytajZ(dane))
+				if (!stary.wczytajZ(dane)) {
+					mapaArenDanych.put(dane.nazwaBossa, stary);
 					stare.put(dane.nazwaBossa, stary);
+				}
 			}, () -> mapaArenDanych.put(dane.nazwaBossa, dane));
 			
 			if (dane.dajTypBossa() == null)

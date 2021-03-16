@@ -4,5 +4,5 @@ import me.jomi.mimiRPG.Moduł;
 
 @Moduł
 public class KamienieDusz {
-
+	// TODO kamienie Dusz
 }
