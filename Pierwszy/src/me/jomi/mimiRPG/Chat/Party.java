@@ -234,9 +234,8 @@ public class Party extends Komenda implements Listener {
 					
 				kod = gracz.getName() + " " + p.getName();
 				
-				
 				if (zaproszenia.remove(kod))
-					Func.wykonajDlaNieNull(dajParty(p),
+					Func.wykonajDlaNieNull(dajParty(gracz),
 							party -> party.dołącz(p),
 							() -> new Ekipa(gracz, p));
 				else

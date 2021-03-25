@@ -22,6 +22,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -30,6 +31,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -259,6 +261,8 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 				if (arenaDane.minutyWalki > 0)
 					timer();
 			});
+			
+			arenaDane.zajęte.add(przesunięcieLoc);
 		}
 		private void timerMove() {
 			if (wystartowana)
@@ -332,6 +336,10 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			zakończona = true;
 			areny.remove(boss);
 			boss.setDespawned();
+			Func.wykonajDlaNieNull(boss.getEntity(), e -> {
+				e.remove();
+				Func.wykonajDlaNieNull(e.getBukkitEntity(), Entity::remove);
+			});
 			gracze.forEach(p -> zapomnij(p, false));
 			arenaDane.zajęte.remove(przesunięcieLoc);
 		}
@@ -436,6 +444,10 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 	public void opuszczanieParty(OpuszczaniePartyEvent ev) {
 		Func.wykonajDlaNieNull(Arena.get(ev.getPlayer()), arena -> arena.odpada(ev.getPlayer()));
 	}
+	@EventHandler
+	public void opuszczanieGry(PlayerQuitEvent ev) {
+		Func.wykonajDlaNieNull(Arena.get(ev.getPlayer()), arena -> arena.odpada(ev.getPlayer()));
+	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void śmierćGracza(PlayerDeathEvent ev) {
 		Func.wykonajDlaNieNull(Arena.get(ev.getEntity()), arena -> {
@@ -444,7 +456,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			ev.setKeepLevel(keepinv);
 		});
 	}
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void respawn(PlayerRespawnEvent ev) {
 		Func.wykonajDlaNieNull(Arena.get(ev.getPlayer()), arena -> ev.setRespawnLocation(arena.respawn(ev.getPlayer())));
 	}

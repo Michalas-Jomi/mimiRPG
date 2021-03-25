@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,6 +21,8 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowane;
+import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
@@ -27,13 +30,21 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class Wilczek extends Komenda implements Listener, Przeładowalny {
-	public static class Wilk {
+	public static class Wilk extends Mapowany {
 		Player p;
 		Wolf mob;
-		long czas = -1;
+		@Mapowane long czas = -1;
+		@Mapowane String nickGracza;
+		
+		public Wilk() {}
+		@Override
+		protected void Init() {
+			p = Bukkit.getPlayer(nickGracza);
+		}
 		
 		Wilk(Player p) {
 			this.p = p;
+			nickGracza = p.getName();
 		}
 		void przywołaj() {
 			if (teleport()) return;
@@ -77,12 +88,15 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 			ustawCzas(wczytaj("czas po zabiciu", 15) * 60);
 		}
 		void odwołaj() {
-			Func.wykonajDlaNieNull(mob, Wolf::remove);
-			mob = null;
-			ustawCzas(wczytaj("czas po odwołaniu", 5) * 60);
+			if (mob != null) {
+				mob.remove();
+				mob = null;
+				ustawCzas(wczytaj("czas po odwołaniu", 5) * 60);
+			}
 		}
 		void ustawCzas(int sekundy) {
 			czas = System.currentTimeMillis() + sekundy * 1000;
+			Gracz.wczytaj(p).zapisz();
 		}
 		boolean minąłCzas() {
 			return czas == -1 || System.currentTimeMillis() >= czas;
@@ -99,9 +113,12 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 	}
 	void wykonaj(Player p, Consumer<Wilk> cons) {
 		Gracz gracz = Gracz.wczytaj(p);
-		if (gracz.wilk == null)
+		if (gracz.wilk == null) {
 			gracz.wilk = new Wilk(p);
+			gracz.zapisz();
+		}
 		cons.accept(gracz.wilk);
+		
 	}
 	
 	@EventHandler

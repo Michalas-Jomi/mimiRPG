@@ -1,6 +1,7 @@
 package me.jomi.mimiRPG;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -62,7 +63,9 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public int nasilanymute_licznik;
 	
-	public Wilczek.Wilk wilk;
+	@Mapowane public List<String> zbierankiZebrane = new ArrayList<>();
+	
+	@Mapowane public Wilczek.Wilk wilk;
 	
  	public void zapisz() {
 		config(nick).ustaw_zapisz("gracz", this);
