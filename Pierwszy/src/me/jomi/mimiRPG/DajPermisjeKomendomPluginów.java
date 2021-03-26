@@ -154,7 +154,7 @@ public class DajPermisjeKomendomPluginów {
 		String perm;
 		if (cmd instanceof PluginCommand) {
 			PluginCommand pcmd = (PluginCommand) cmd;
-			perm = pcmd.getPlugin() + "." + pcmd.getName();
+			perm = pcmd.getPlugin().getName() + "." + pcmd.getName();
 		} else {
 			if (cmd.getPermission() == null) {
 				perm = "command." + cmd.getName();

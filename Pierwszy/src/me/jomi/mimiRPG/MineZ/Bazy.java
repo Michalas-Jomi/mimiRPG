@@ -125,6 +125,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			for (String klucz : config.klucze(false))
 				if (klucz.equalsIgnoreCase(nazwa))
 					return true;
+			
 			return false;
 		}
 		static boolean istniejeTag(String tag) {
