@@ -74,6 +74,6 @@ public abstract class KomendaZMapowanymiItemami<T extends Mapowany> extends Kome
 	}
 	@Override
 	public Collection<String> getItemy() {
-		return config.klucze(false);
+		return config.klucze();
 	}
 }

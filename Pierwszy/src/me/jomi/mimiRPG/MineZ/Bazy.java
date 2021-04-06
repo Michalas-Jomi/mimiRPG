@@ -122,14 +122,14 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 			
 		static boolean istnieje(String nazwa) {
-			for (String klucz : config.klucze(false))
+			for (String klucz : config.klucze())
 				if (klucz.equalsIgnoreCase(nazwa))
 					return true;
 			
 			return false;
 		}
 		static boolean istniejeTag(String tag) {
-			for (String klucz : config.klucze(false)) {
+			for (String klucz : config.klucze()) {
 				try {
 					Gildia g = (Gildia) config.wczytaj(klucz);
 					if (tag.equals(g.tag))
@@ -159,7 +159,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		String tag() {
 			if (tag == null)
 				return "";
-			return Func.koloruj(Main.ust.wczytajLubDomyślna("Gildie.tag", "§0[§2<tag>§0]").replace("<tag>", tag));
+			return Func.koloruj(Main.ust.wczytaj("Gildie.tag", "§0[§2<tag>§0]").replace("<tag>", tag));
 		}
 		
 		// wymagane używanie asynchroniczne
@@ -178,7 +178,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return;
 			}
 			new Thread(() -> {
-				for (String nazwa : config.klucze(false))
+				for (String nazwa : config.klucze())
 					try {
 						Gildia g = (Gildia) config.wczytaj(nazwa);
 						g.odświeżTag();
@@ -308,7 +308,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		
 		static int getMinY() {
-			return Bazy.config.wczytajLubDomyślna("ustawienia.najniższyh poziom bazy", 50);
+			return Bazy.config.wczytaj("ustawienia.najniższyh poziom bazy", 50);
 		}
 		
 		static int odświeżConfigiGraczy() {
@@ -322,7 +322,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 							Baza baza = new Baza();
 							baza.nazwa = region.getId();
 							baza.nazwaŚwiata = world.getName();
-							baza.poziom = config.wczytajLubDomyślna("Naprawa.p" + (region.getMaximumPoint().getBlockX() - region.getMinimumPoint().getBlockX()), -12345);
+							baza.poziom = config.wczytaj("Naprawa.p" + (region.getMaximumPoint().getBlockX() - region.getMinimumPoint().getBlockX()), -12345);
 							if (baza.poziom == -12345)
 								Main.error("Brak odpowiednika dla " + region.getMaximumPoint().getBlockX() + " - " + region.getMinimumPoint().getBlockX() + " id:" + region.getId());
 							for (String owner : region.getOwners().getPlayers()) {
@@ -369,7 +369,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region = new ProtectedCuboidRegion(
 					nazwaBazy,
 					BlockVector3.at(x+dx, y+dy, z+dz),
-					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytajLubDomyślna("ustawienia.kraki w dół baz", 1)), z-dz)
+					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytaj("ustawienia.kraki w dół baz", 1)), z-dz)
 					);
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
 			DefaultDomain owners = new DefaultDomain();
@@ -379,9 +379,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			region.setFlag(me.jomi.mimiRPG.Baza.flagaCustomoweMoby, "brak");
 			region.setFlag(me.jomi.mimiRPG.Baza.flagaStawianieBaz, StateFlag.State.DENY);
 			region.setFlag(me.jomi.mimiRPG.Baza.flagaC4, 		   StateFlag.State.ALLOW);
-			String msgWejścia = config.wczytajLubDomyślna("ustawienia.msg wejścia", "§6Wszedłeś na teren bazy gracza {gracz}");
+			String msgWejścia = config.wczytaj("ustawienia.msg wejścia", "§6Wszedłeś na teren bazy gracza {gracz}");
 			region.setFlag(Flags.GREET_MESSAGE, Func.koloruj(msgWejścia.replace("{gracz}", p.getName())));
-			String msgWyjścia = config.wczytajLubDomyślna("ustawienia.msg wyjścia", "§6Wyszedłeś z terenu bazy gracza {gracz}");
+			String msgWyjścia = config.wczytaj("ustawienia.msg wyjścia", "§6Wyszedłeś z terenu bazy gracza {gracz}");
 			region.setFlag(Flags.FAREWELL_MESSAGE, Func.koloruj(msgWyjścia.replace("{gracz}", p.getName())));
 			
 			
@@ -413,7 +413,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				return null;
 			}
 			if (!bypass.contains(p.getName())) {
-				int czas = Main.ust.wczytajLubDomyślna("Bazy.deley stawiania baz", 12*60*60);
+				int czas = Main.ust.wczytaj("Bazy.deley stawiania baz", 12*60*60);
 				czas = czas - (int) ((System.currentTimeMillis() / 1000) - g.BazaOstatnieStawianie);
 				if (czas > 0) {
 					Func.powiadom(p, prefix + "Musisz poczekać jeszcze " + Func.czas(czas) + " zanim postawisz następną bazę");
@@ -485,7 +485,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				zrajdowana(ev, baza);
 			else {
 				Func.opóznij(1, () -> ev.getBlock().setType(Material.SOUL_CAMPFIRE));
-				mapaRaidów.put(nazwa, Func.opóznij(config.wczytajLubDomyślna("czas rajdowania", 5) * 20 + 1, () -> {
+				mapaRaidów.put(nazwa, Func.opóznij(config.wczytaj("czas rajdowania", 5) * 20 + 1, () -> {
 					mapaRaidów.remove(nazwa);
 					ev.getBlock().setType(Material.CAMPFIRE);
 				}));
@@ -561,7 +561,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				for (String nick : region.getOwners().getPlayers())
 					Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(prefix + "Twoja baza jest §cAtakowana!"));
 			
-			idTasku = Func.opóznij(config.wczytajLubDomyślna("ustawienia.długość rajdów", 120) * 20, () -> {
+			idTasku = Func.opóznij(config.wczytaj("ustawienia.długość rajdów", 120) * 20, () -> {
 					atakowana = false;
 					for (String nick : region.getOwners().getPlayers())
 						Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> p.sendMessage(prefix + "Atak na twoją bazę §aminął"));
@@ -595,7 +595,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		final List<Block> bloki = Lists.newArrayList();
 		final List<Krotka<Block, Material>> kolejka = Lists.newArrayList();
 		final List<String> niezniszczalne = config.wczytajListe("c4.niezniszczalne");
-		final double zasięg = config.wczytajLubDomyślna("ustawienia.zaiśieg c4", 5d);
+		final double zasięg = config.wczytaj("ustawienia.zaiśieg c4", 5d);
 		final Location loc;
 		Explozja(Location loc) {
 			id = _id++;
@@ -715,7 +715,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		uderz.accept(zasięg/3*2.5f, 8d);
 		uderz.accept(zasięg/3, 		8d);
 		
-		int ile = config.wczytajLubDomyślna("ustawienia.śnieżki w C4", 50);
+		int ile = config.wczytaj("ustawienia.śnieżki w C4", 50);
 		
 		Supplier<Double> los = () -> Math.random() * (Func.losuj(.5) ? 1 : -1);
 		
@@ -727,7 +727,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			Func.ustawMetadate(s, "mimiC4Sniezka", explozja);
 		}
 		
-		Func.opóznij(config.wczytajLubDomyślna("ustawienia.ticki snieżek c4", 10), explozja::zakończ);
+		Func.opóznij(config.wczytaj("ustawienia.ticki snieżek c4", 10), explozja::zakończ);
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -786,7 +786,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		int y = ev.getBlock().getY();
 		int z = ev.getBlock().getZ();
 		
-		if (config.klucze(false).contains("bazy"))
+		if (config.klucze().contains("bazy"))
 			for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 				Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
 				if (Func.porównaj(Config.item(mapa.get("item")), item)) {
@@ -952,7 +952,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			}
 			ItemStack item = ev.getItem();
 			if (item == null) return;
-			if (config.klucze(false).contains("bazy"))
+			if (config.klucze().contains("bazy"))
 				for (Entry<String, Object> en : config.sekcja("bazy").getValues(false).entrySet()) {
 					Map<String, Object> mapa = ((ConfigurationSection) en.getValue()).getValues(false);
 					if (Func.porównaj(Config.item(mapa.get("item")), item)) {
@@ -1012,7 +1012,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!przywódca.getAsBoolean()) break;
 			if (mapaZaproszeń.containsKey(sender.getName()))
 				return Func.powiadom(sender, Gildia.prefix + "Poczekaj aż minie poprzednie zaproszenie zanim wyślesz kolejne");
-			if (gildia.gracze.size() >= config.wczytajLubDomyślna("max osób w gildi", 4))
+			if (gildia.gracze.size() >= config.wczytaj("max osób w gildi", 4))
 				return Func.powiadom(sender, Gildia.prefix + "Osiągnięto już limit członków gildi");
 			
 			Player p = Bukkit.getPlayer(args[1]);
@@ -1022,7 +1022,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!(zaproszony.gildia == null || zaproszony.gildia.isEmpty()))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("%s nalezy już do gildi %s", args[1], zaproszony.gildia));
 
-			if (gildia.gracze.size() >= Main.ust.wczytajLubDomyślna("Gildie.max członkowie", 8))
+			if (gildia.gracze.size() >= Main.ust.wczytaj("Gildie.max członkowie", 8))
 				return Func.powiadom(sender, Gildia.prefix + "Twoja gildia jest już przepełniona, nie możesz zaprosić więcej osób");
 			
 			mapaZaproszeń.put(sender.getName(), new Krotka<>(p.getName(), czasZaproszeń));
@@ -1065,7 +1065,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (args.length < 3)
 				return Func.powiadom(sender, Gildia.prefix + "/gildia stwórz <nazwa> <tag>");
 			
-			if (args[1].length() > Main.ust.wczytajLubDomyślna("Gildia.nazwa.maksymalna długość", 30))
+			if (args[1].length() > Main.ust.wczytaj("Gildia.nazwa.maksymalna długość", 30))
 				return Func.powiadom(sender, Gildia.prefix + "Za długa nazwa gildi");
 			
 			if (Gildia.istnieje(args[1]))
@@ -1074,7 +1074,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (Gildia.istniejeTag(args[2]))
 				return Func.powiadom(prefix, sender, "Tag %s jest już zajęty", args[2]);
 			
-			if (args[2].length() > Main.ust.wczytajLubDomyślna("Gildia.tag.maksymalna długość", 4))
+			if (args[2].length() > Main.ust.wczytaj("Gildia.tag.maksymalna długość", 4))
 				return Func.powiadom(sender, Gildia.prefix + "Ten tag jest za długi");
 			
 			Gildia.stwórz(args[1], args[2], sender);
@@ -1096,7 +1096,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			String tag = args[1];
 			
-			if (tag.length() > Main.ust.wczytajLubDomyślna("Gildia.tag.maksymalna długość", 4))
+			if (tag.length() > Main.ust.wczytaj("Gildia.tag.maksymalna długość", 4))
 				return Func.powiadom(sender, Gildia.prefix + "Ten tag jest za długi");
 			
 			gildia.ustawTag(sender, tag);
@@ -1126,7 +1126,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				Gildia _gildia = Gildia.wczytaj(nazwaGildi);
 				if (_gildia == null)
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia już nie istnieje");
-				if (_gildia.gracze.size() >= Main.ust.wczytajLubDomyślna("Gildie.max członkowie", 8))
+				if (_gildia.gracze.size() >= Main.ust.wczytaj("Gildie.max członkowie", 8))
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia jest już pełna");
 				_gildia.dołącz(sender);
 				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", nazwaGildi, zapraszający, sender.getName()));
@@ -1264,7 +1264,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				ev.setRespawnLocation(resp);
 				Func.opóznij(1, () -> ev.getPlayer().teleport(resp));
 				setUmierających.add(ev.getPlayer().getName());
-				Func.opóznij(20 * 60 * config.wczytajLubDomyślna("łóżkoCooldownRespuMinuty", 5), () -> setUmierających.remove(ev.getPlayer().getName()));
+				Func.opóznij(20 * 60 * config.wczytaj("łóżkoCooldownRespuMinuty", 5), () -> setUmierających.remove(ev.getPlayer().getName()));
 			} else {
 				g.łóżkoBazowe = null;
 				g.zapisz();

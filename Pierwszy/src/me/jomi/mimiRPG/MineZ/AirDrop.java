@@ -396,9 +396,9 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		dropySkrzyń   = (Dropy) config.wczytaj("dropy na skrzynie");
 		dropyAirDropu = (Dropy) config.wczytaj("dropy na airdrop");
 	
-		czasRespienia = config.wczytajLubDomyślna("czasRespienia", 120) * 20;
-		prędkośćSpadania = config.wczytajLubDomyślna("prędkośćSpadania", 1.0);
-		coIleRespić = config.wczytajLubDomyślna("co ile minut respić", 180);
+		czasRespienia = config.wczytaj("czasRespienia", 120) * 20;
+		prędkośćSpadania = config.wczytaj("prędkośćSpadania", 1.0);
+		coIleRespić = config.wczytaj("co ile minut respić", 180);
 		itemRespienia = config.wczytajItem("Item do zrespienia");
 	}
 	@Override
@@ -415,7 +415,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	public int czas() {
 		if (--coIleRespić <= 0) {
 			przywołaj();
-			coIleRespić = config.wczytajLubDomyślna("co ile minut respić", 180);
+			coIleRespić = config.wczytaj("co ile minut respić", 180);
 		}
 		return 20 * 60;
 	}

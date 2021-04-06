@@ -87,7 +87,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	@EventHandler
 	public void dmgEfektu(EntityDamageEvent ev) {
 		if (ev.getCause() == DamageCause.WITHER && zwykła.contains(ev.getEntity().getName()))
-			ev.setDamage(Main.ust.wczytajLubDomyślna("Radiacja.dmg", 1.0));
+			ev.setDamage(Main.ust.wczytaj("Radiacja.dmg", 1.0));
 	}
 	
 	void sprawdzRadiacjeZTerenu(Player p) {
@@ -98,7 +98,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	}
 	@Override
 	public int czas() {
-		int mx = Main.ust.wczytajLubDomyślna("ogólne.skanowanie.gracze na sekunde", 40);
+		int mx = Main.ust.wczytaj("ogólne.skanowanie.gracze na sekunde", 40);
 		int licz = 0;
 		
 		for (Player p : Bukkit.getOnlinePlayers()) {
@@ -127,7 +127,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	
 	@Override
 	public void przeładuj() {
-		czasPłynu = Main.ust.wczytajLubDomyślna("Radiacja.czas działania płynu", 60*20);
+		czasPłynu = Main.ust.wczytaj("Radiacja.czas działania płynu", 60*20);
 		płyn = Main.ust.wczytajItem("Radiacja.płyn");
 		if (płyn == null)
 			płyn = Func.stwórzItem(Material.HONEY_BOTTLE, "&6Płyn Lugola", "&aPowstrzymuje większość radiacji", "&a na " + Func.czas(czasPłynu));

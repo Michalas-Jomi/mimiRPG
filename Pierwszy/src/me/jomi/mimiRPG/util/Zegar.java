@@ -2,16 +2,12 @@ package me.jomi.mimiRPG.util;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
-
 import com.google.common.collect.Lists;
-
-import me.jomi.mimiRPG.Main;
 
 public interface Zegar {
 	static final List<_Zegar> zegary = Lists.newArrayList();
 	static void aktywuj() {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, Zegar::aktywuj, 1);
+		Func.opóznij(1, Zegar::aktywuj);
 		for (_Zegar zegar : zegary)
 			zegar.tick();
 	}

@@ -293,7 +293,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Skrzynki", config.klucze(false).size());
+		return Func.r("Skrzynki", config.klucze().size());
 	}
 
 	final EdytorOgólny<Box> edytor = new EdytorOgólny<>("szkatułka", Box.class);
@@ -304,7 +304,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		case 1:
 			return utab(args, "edytuj", "klucz", "skrzynka", "nowa");
 		case 2:
-			return utab(args, config.klucze(false));
+			return utab(args, config.klucze());
 		}
 		return null;
 	}

@@ -1082,6 +1082,11 @@ public abstract class Func {
 		}
 	}
 	
+	public static <T> void forEach(T[] args, Consumer<T> cons) {
+		for (int i=0; i < args.length; i++)
+			cons.accept(args[i]);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static <T> void dodajWszystkie(List<T> lista, T... elementy) {
 		for (T el : elementy)

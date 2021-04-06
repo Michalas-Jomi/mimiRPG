@@ -75,8 +75,8 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 			if (lootbag.wygrane == null) lootbag.wygrane = Lists.newArrayList();
 			
 			lootbag.item = config.wczytajItem(nazwa + ".item");
-			lootbag.broadcast = config.wczytajLubDomyślna(nazwa + ".broadcast", false);
-			lootbag.ilośćItemów = config.wczytajLubDomyślna(nazwa + ".ilośćItemów", 1);
+			lootbag.broadcast = config.wczytaj(nazwa + ".broadcast", false);
+			lootbag.ilośćItemów = config.wczytaj(nazwa + ".ilośćItemów", 1);
 			
 			lootbag.ustawPodgląd();
 			
@@ -144,7 +144,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 			}
 		config.przeładuj();
 		lootbagi.clear();
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			Lootbag.wczytaj(config, klucz);
 	}
 	@Override
@@ -157,7 +157,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		Player p = ev.getPlayer();
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		if (item == null) return;
-		if (ev.getAction().toString().contains("LEFT")) return;
+		if (!Func.multiEquals(ev.getAction(), org.bukkit.event.block.Action.RIGHT_CLICK_AIR, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
 		if (!(item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName() && 
 				item.getItemMeta().getDisplayName().startsWith("§6Lootbag "))) return;
 		String nazwa = item.getItemMeta().getDisplayName();

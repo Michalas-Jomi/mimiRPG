@@ -51,7 +51,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 		super("budownik", prefix + "/budownik <gracz>");
 		ustawKomende("rógbudownika", null, null);
 		Main.plugin.getCommand("rógbudownika").setPermission(null);
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			budowniki.add(_Budownik.wczytaj(config, klucz));
 	}
 	@Override
@@ -187,7 +187,7 @@ class _Budownik {
 		buduj();
 		
 		int i = 0;
-		while (Budownik.config.klucze(false).contains(""+(++i)));
+		while (Budownik.config.klucze().contains(""+(++i)));
 		id = "" + i;
 		zapisz(Budownik.config);
 	}

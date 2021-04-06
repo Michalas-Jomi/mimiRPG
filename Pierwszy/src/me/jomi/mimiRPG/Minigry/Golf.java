@@ -106,7 +106,7 @@ public class Golf extends Minigra {
 			Player p = Bukkit.getPlayer(kolejka.get(0));
 			p.sendTitle(Func.koloruj("&bTwój Ruch"), "", 10, 20, 10);
 			sprawdzKure();
-			Krotka<Integer, Runnable> k = new Krotka<>(Main.ust.wczytajLubDomyślna("Minigry.Golf.czas na uderzenie", 300)+1, null);
+			Krotka<Integer, Runnable> k = new Krotka<>(Main.ust.wczytaj("Minigry.Golf.czas na uderzenie", 300)+1, null);
 			k.b = () -> {
 				if (!kolejka.isEmpty() && kolejka.get(0).equals(p.getName())) {
 					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Func.koloruj("&6" + Func.czas(--k.a))));
@@ -277,7 +277,7 @@ public class Golf extends Minigra {
 		Function<Integer, ItemStack> kijek = lvl ->
 				Func.enchantuj(Func.stwórzItem(Material.STICK, "&2&lKijek Golfowy &5&l" + lvl), Enchantment.KNOCKBACK, lvl);
 		
-		List<Integer> lvle = Main.ust.wczytajLubDomyślna("Minigry.Golf.kijki", Arrays.asList(1, 2, 3, 5, 10));
+		List<Integer> lvle = Main.ust.wczytaj("Minigry.Golf.kijki", Arrays.asList(1, 2, 3, 5, 10));
 		
 		kijki = new ItemStack[lvle.size()];
 		

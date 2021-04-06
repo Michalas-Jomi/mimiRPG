@@ -207,19 +207,19 @@ public class Baza implements Listener {
 	private static void wczytajSelektoryItemów() {
 		selektoryItemów.clear();
 		Config config = new Config("configi/Selektory Itemów");
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			selektoryItemów.put(klucz, config.wczytajSelektorItemów(klucz));
 	}
 	private static void wczytajCustomoweItemy() {
 		itemy.clear();
 		Config config = new Config("Customowe Itemy");
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			itemy.put(klucz, config.wczytajItem(klucz));
 	}
 	private static void wczytajDropy() {
 		dropy.clear();
 		Config config = new Config("Dropy");
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			dropy.put(klucz, config.wczytajDrop(klucz));
 	}
 	private static void wczytajGrupy() {

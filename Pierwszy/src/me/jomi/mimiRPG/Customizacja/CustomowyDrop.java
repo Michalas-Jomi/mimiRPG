@@ -123,7 +123,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	private static void _przeładuj(Config config) {
 		config.przeładuj();
 
-		for (String typ : config.klucze(false)) {
+		for (String typ : config.klucze()) {
 			List<Object> lista = (List<Object>) config.wczytaj(typ);
 			typ = typ.replace("x", "");
 			LinkedHashMap<String, Object> _mapa = (LinkedHashMap<String, Object>) lista.get(0);

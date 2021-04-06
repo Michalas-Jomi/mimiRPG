@@ -260,11 +260,11 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 	public void przeładuj() {
 		config.przeładuj();
 		
-		max_odległość_od_gracza 			 	 = config.wczytajLubDomyślna("max odległość od gracza", 	  50);
-		min_odległość_od_gracza 			 	 = config.wczytajLubDomyślna("min odległość od gracza", 	  50);
-		czas_odświeżania_ticki 			 		 = config.wczytajLubDomyślna("czas odświeżania", 	 		  120) * 20;
-		dzienna_szansa_zrespawnowania_dla_gracza = config.wczytajLubDomyślna("szansa zrespawnowania za dnia", .02);
-		nocna_szansa_zrespawnowania_dla_gracza 	 = config.wczytajLubDomyślna("szansa zrespawnowania w nocy",  dzienna_szansa_zrespawnowania_dla_gracza);
+		max_odległość_od_gracza 			 	 = config.wczytaj("max odległość od gracza", 	  50);
+		min_odległość_od_gracza 			 	 = config.wczytaj("min odległość od gracza", 	  50);
+		czas_odświeżania_ticki 			 		 = config.wczytaj("czas odświeżania", 	 		  120) * 20;
+		dzienna_szansa_zrespawnowania_dla_gracza = config.wczytaj("szansa zrespawnowania za dnia", .02);
+		nocna_szansa_zrespawnowania_dla_gracza 	 = config.wczytaj("szansa zrespawnowania w nocy",  dzienna_szansa_zrespawnowania_dla_gracza);
 		
 		mapaMobów.clear();
 		ConfigurationSection sekcja = config.sekcja("Moby");

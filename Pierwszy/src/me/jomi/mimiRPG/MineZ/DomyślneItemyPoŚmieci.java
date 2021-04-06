@@ -38,7 +38,7 @@ public class DomyślneItemyPoŚmieci extends Komenda implements Przeładowalny, 
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Domyślne Itemy po śmierci", config.klucze(true).size() - 2);
+		return Func.r("Domyślne Itemy po śmierci", config.klucze().size() - 2);
 	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {

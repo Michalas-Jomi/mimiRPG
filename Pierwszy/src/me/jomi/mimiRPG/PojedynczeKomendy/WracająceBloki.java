@@ -44,7 +44,7 @@ public class WracająceBloki implements Listener, Przeładowalny {
 	public void przeładuj() {
 		mapa.clear();
 		Config config = new Config("Wracające Bloki");
-		for (String _klucz : config.klucze(false))
+		for (String _klucz : config.klucze())
 			try {
 				String klucz = _klucz.toUpperCase();
 				Material.valueOf(klucz);

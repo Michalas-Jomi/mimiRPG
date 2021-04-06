@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
+import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
@@ -73,7 +74,18 @@ public class EdytorOgólny<T> {
 	public boolean maEdytor(CommandSender sender) {
 		return mapa.containsKey(sender.getName());
 	}
-	
+
+	public List<String> wymuśConfig_onTabComplete(Config config, CommandSender sender, String label, String[] args) {
+		switch (args.length) {
+		case 0:
+		case 1:
+			return Komenda.utab(args, "edytor");
+		case 2:
+			return Komenda.utab(args, "-t", "-u");
+		default:
+			return Komenda.utab(args, config.klucze());
+		}
+	}
 	public boolean wymuśConfig_onCommand(String prefix, String config, CommandSender sender, String label, String args[]) {
 		if (args.length <= 2 && !maEdytor(sender))
 			return Func.powiadom(sender, prefix + "/" + label + " edytor -t <nazwa>");
@@ -340,5 +352,6 @@ public class EdytorOgólny<T> {
 			sender.sendMessage("Zapisano w " + ścieżka + " w " + config.path());
 		}
 	}
+
 }
 

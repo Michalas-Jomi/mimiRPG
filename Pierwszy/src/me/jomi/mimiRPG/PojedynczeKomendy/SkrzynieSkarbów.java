@@ -262,8 +262,8 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	public void przeładuj() {
 		config.przeładuj();
 
-		mxLinie = Main.ust.wczytajLubDomyślna("SkrzynieSkarbów.mxLinie", 10);
-		tickiUsuwaniaSkrzyń = Main.ust.wczytajLubDomyślna("SkrzynieSkarbów.czasUsuwaniaSkrzyń", 30)*20;
+		mxLinie = Main.ust.wczytaj("SkrzynieSkarbów.mxLinie", 10);
+		tickiUsuwaniaSkrzyń = Main.ust.wczytaj("SkrzynieSkarbów.czasUsuwaniaSkrzyń", 30)*20;
 		
 		mapaSkrzyń.clear();
 		Func.wykonajDlaNieNull(config.sekcja("skrzynie"), sekcja ->

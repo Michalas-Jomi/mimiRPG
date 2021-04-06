@@ -775,7 +775,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	public void zapisz() {
 		Config config = new Config(configPlik);
 		
-		config.klucze(false).forEach(klucz -> config.ustaw(klucz, null));
+		config.klucze().forEach(klucz -> config.ustaw(klucz, null));
 		
 		Osiągnięcie.mapa.values().forEach(adv -> {
 			if (adv.zapisywać)

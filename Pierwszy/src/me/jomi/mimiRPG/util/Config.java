@@ -90,6 +90,7 @@ public class Config {
 		ustaw(sciezka, obj);
 		zapisz();
 	}
+	
 	public void zapisz() {
 		try {
 			plik.save(f);
@@ -98,9 +99,10 @@ public class Config {
 		}
 	}
 
-	public Set<String> klucze(boolean wszystkie){
-		return plik.getKeys(wszystkie);
+	public Set<String> klucze(){
+		return plik.getKeys(false);
 	}
+	
 	public ConfigurationSection sekcja(String sciezka) {
 		return plik.getConfigurationSection(sciezka);
 	}
@@ -120,30 +122,34 @@ public class Config {
 	public String  wczytajStr	 (String sciezka) {return Func.koloruj(plik.getString(sciezka));}
 	public double  wczytajDouble (String sciezka) {return Func.Double("" + wczytaj(sciezka), 0);}
 
-	public <T> T wczytajLubDomyślna(String sciezka, T domyślna) {
-		return wczytajLubDomyślna(sciezka, () -> domyślna);
+	public <T> T wczytaj(String sciezka, T domyślna) {
+		return wczytaj(sciezka, () -> domyślna);
 	}
-	public <T> T wczytajLubDomyślna(String sciezka, Supplier<T> domyślna) {
+	public <T> T wczytaj(String sciezka, Supplier<T> domyślna) {
 		Object obj = wczytaj(sciezka);
 		if (obj == null)
 			return domyślna.get();
 		return Func.pewnyCast(obj);
 	}
 	
+	
 	public Object wczytajD(String ścieżka) {
 		Object wynik = plik.get(ścieżka);
 		return (wynik != null || domyślne == null) ? wynik : domyślne.get(ścieżka);
 	}
+	
 	@SuppressWarnings("unchecked")
 	public <T> T wczytajPewnyD(String ścieżka) {
 		return (T) wczytajD(ścieżka);
 	}
+	
 	
 	public List<String> wczytajListe(String sciezka){
 		List<String> lista = plik.getStringList(sciezka);
 		if (lista == null) lista = Lists.newArrayList();
 		return lista;
 	}
+	
 	@SuppressWarnings("unchecked")
 	public List<LepszaMapa<String>> wczytajListeMap(String sciezka){
 		List<Map<String, Object>> lista = (List<Map<String, Object>>) plik.getList(sciezka);
@@ -155,6 +161,7 @@ public class Config {
 		return końcowaLista;
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	public List<ItemStack> wczytajItemy(String sciezka) {
 		List<ItemStack> lista = Lists.newArrayList();
@@ -164,6 +171,7 @@ public class Config {
 			lista.add(item(obj));
 		return lista;
 	}
+	
 	public ItemStack wczytajItem(String sciezka) {
 		return item(wczytaj(sciezka));
 	}
@@ -336,11 +344,12 @@ public class Config {
 			}
 		}
 	}
+	
 	public void przeładuj() {
 		stwórz();
 		plik = YamlConfiguration.loadConfiguration(f);
 	}
-
+	
 	public String path() {
 		return sciezka;
 	}

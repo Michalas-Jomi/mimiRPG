@@ -468,7 +468,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 
 	@Override
 	public void przeładuj() {
-		dane =  new Config("configi/Spawnery").wczytajLubDomyślna("Spawnery", Dane::new);
+		dane =  new Config("configi/Spawnery").wczytaj("Spawnery", Dane::new);
 		
 		List<Ulepszenie> ulepszenia = Lists.newArrayList(dane.ulepszenia);
 		dane.ulepszenia.clear();

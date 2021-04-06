@@ -569,7 +569,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public static Wyspa wczytaj(Location loc) {
 			if (!Światy.należy(loc.getWorld()))
 				return null;
-			Wyspa wyspa = wczytaj(configData.wczytajLubDomyślna("wyspy loc." + dolnyRóg(loc), -1));
+			Wyspa wyspa = wczytaj(configData.wczytaj("wyspy loc." + dolnyRóg(loc), -1));
 			return wyspa == null ? null : wyspa.zawieraIgnorujŚwiat(loc) ? wyspa : null;
 		}
 		public static Wyspa wczytaj(Player p) {
@@ -1450,7 +1450,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				n.dodaj(new Napis(Func.koloruj("&e" + en.getKey()), Func.koloruj("&b" + en.getValue())));
 				if (it.hasNext()) {
 					dł += en.getKey().length();
-					if (dł <= Main.ust.wczytajLubDomyślna("opt.lore.znaki na linie", 50)) {
+					if (dł <= Main.ust.wczytaj("opt.lore.znaki na linie", 50)) {
 						n.dodaj("\n");
 						dł = 0;
 					}
@@ -3256,7 +3256,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane int y;
 	}
 	static Krotka<Integer, Integer> następnaPozycja() {
-		NastępnaPozycja next = configData.wczytajLubDomyślna("następna", () -> Func.utwórz(NastępnaPozycja.class));
+		NastępnaPozycja next = configData.wczytaj("następna", () -> Func.utwórz(NastępnaPozycja.class));
 		Krotka<Integer, Integer> w = new Krotka<>(next.x, next.y);
 
 		boolean r = false;
@@ -3299,12 +3299,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				}));
 		Wyspa.invTop = null;
 
-		odstęp = config.wczytajLubDomyślna("odstęp między wyspami", 150);
-		rzędyTopki = Math.max(1, Math.min(6, config.wczytajLubDomyślna("topka.rzędy", 4)));
+		odstęp = config.wczytaj("odstęp między wyspami", 150);
+		rzędyTopki = Math.max(1, Math.min(6, config.wczytaj("topka.rzędy", 4)));
 		slotyTopki = Func.nieNull((List<Integer>) config.wczytaj("topka.sloty"));
 		topInfo = Func.nieNull((List<TopInfo>) configData.wczytaj("topka.gracze"));
-		yWysp = config.wczytajLubDomyślna("y wysp", 100);
-		Wyspa.ostatnieLiczenie.ustawDomyślny(config.wczytajLubDomyślna("cooldown.liczenie punktów", 60 * 30));
+		yWysp = config.wczytaj("y wysp", 100);
+		Wyspa.ostatnieLiczenie.ustawDomyślny(config.wczytaj("cooldown.liczenie punktów", 60 * 30));
 
 		// Punktacja
 		punktacja.clear();
@@ -3410,14 +3410,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			TypWyspy.wrzućDomyślneSchematicki();
 
 		// Światy
-		Światy.dozwolonyNether = config.wczytajLubDomyślna("świat.dozwolony nether", true);
-		Światy.nazwaOverworld = config.wczytajLubDomyślna("świat.zwykły", "mimiSkyblock");
-		Światy.nazwaNether = config.wczytajLubDomyślna("świat.nether", "mimiSkyblockNether");
+		Światy.dozwolonyNether = config.wczytaj("świat.dozwolony nether", true);
+		Światy.nazwaOverworld = config.wczytaj("świat.zwykły", "mimiSkyblock");
+		Światy.nazwaNether = config.wczytaj("świat.nether", "mimiSkyblockNether");
 		stwórzŚwiaty();
 
 		// Border
 		for (Wyspa.Border kolor : Wyspa.Border.values())
-			kolor.dozwolony = config.wczytajLubDomyślna("border." + kolor.toString().toLowerCase(), true);
+			kolor.dozwolony = config.wczytaj("border." + kolor.toString().toLowerCase(), true);
 
 		// Ulepszenia
 		for (Field field : Ulepszenia.class.getDeclaredFields())

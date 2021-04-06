@@ -29,7 +29,7 @@ public class OchronaStartowa implements Listener, Przeładowalny {
         Player p = ev.getPlayer();
         if(!p.hasPlayedBefore()) {
         	ochrona.add(p.getName());
-        	Func.opóznij(Main.ust.wczytajLubDomyślna("OchronaStartowa.minuty", 30) * 60 * 20, () -> ochrona.remove(p.getName()));
+        	Func.opóznij(Main.ust.wczytaj("OchronaStartowa.minuty", 30) * 60 * 20, () -> ochrona.remove(p.getName()));
         }
     }
     @EventHandler
@@ -65,6 +65,6 @@ public class OchronaStartowa implements Listener, Przeładowalny {
 	public void przeładuj() {}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Ochrona początkowa", Main.ust.wczytajLubDomyślna("OchronaStartowa.minuty", 30));
+		return Func.r("Ochrona początkowa", Main.ust.wczytaj("OchronaStartowa.minuty", 30));
 	}
 }

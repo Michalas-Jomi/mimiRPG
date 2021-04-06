@@ -68,7 +68,7 @@ public class KompasPvP implements Zegar, Listener {
 	}
 
 	int getOdświeżanie() {
-		return Main.ust.wczytajLubDomyślna("KompasPvP.limit odświeżania", -1);
+		return Main.ust.wczytaj("KompasPvP.limit odświeżania", -1);
 	}
 	
 	final Set<String> cooldown = Sets.newConcurrentHashSet();
@@ -100,10 +100,10 @@ public class KompasPvP implements Zegar, Listener {
 			return 100;
 		List<Player> gracze = Lists.newArrayList(Bukkit.getOnlinePlayers());
 		
-		for (int i=0; i<Main.ust.wczytajLubDomyślna("KompasPvP.odświeżanie gracze na raz", 10); i++)
+		for (int i=0; i<Main.ust.wczytaj("KompasPvP.odświeżanie gracze na raz", 10); i++)
 			ustaw(Func.losujPop(gracze));
 		
-		return Main.ust.wczytajLubDomyślna("KompasPvP.odświeżanie ticki", 20);
+		return Main.ust.wczytaj("KompasPvP.odświeżanie ticki", 20);
 	}
 }
 

@@ -62,7 +62,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 		return shaped(nms, item, arr, mapa, config.wczytajStr(klucz + ".grupa"));
 	}
 	private static void wczytaj(String klucz) {
-		String typ = config.wczytajLubDomyślna(klucz + ".typ", "shaped");
+		String typ = config.wczytaj(klucz + ".typ", "shaped");
 		
 		NamespacedKey nms = new NamespacedKey(Main.plugin, klucz);
 		
@@ -103,7 +103,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 		
 		Bukkit.getScheduler().runTask(Main.plugin, () -> {
 			// TODO przetestować zapominanie recept, które są usuwane
-			for (Object przepis :  Main.ust.wczytajLubDomyślna("ZablokowaneCraftingi", Lists.newArrayList()))
+			for (Object przepis :  Main.ust.wczytaj("ZablokowaneCraftingi", Lists.newArrayList()))
 				Main.plugin.getServer().removeRecipe(NamespacedKey.minecraft((String) przepis));
 			
 			mapaTagów.clear();
@@ -121,7 +121,7 @@ public class CustomoweCraftingi implements Przeładowalny {
 				
 			});
 			
-			for (String klucz : config.klucze(false))
+			for (String klucz : config.klucze())
 				try {
 					if (klucz.equalsIgnoreCase("Tagi"))
 						continue;
@@ -134,6 +134,6 @@ public class CustomoweCraftingi implements Przeładowalny {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Customowe Craftingi", config.klucze(false).size());
+		return Func.r("Customowe Craftingi", config.klucze().size());
 	}
 }

@@ -164,7 +164,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			if (staty != null) {
 				Gracz g = Gracz.wczytaj(p.getName());
 				staty.sprawdzTopke(p, getInstMinigra());
-				if (Main.chat != null && Main.ust.wczytajLubDomyślna("Minigry.CaveWars.ustawSuffixRange", false))
+				if (Main.chat != null && Main.ust.wczytaj("Minigry.CaveWars.ustawSuffixRange", false))
 					Func.wykonajDlaNieNull(staty.ranga(getInstMinigra()), ranga -> Main.chat.setPlayerSuffix(null, p, ranga.toString()));
 				g.staty.put(getInstMinigra().getClass().getName(), staty);
 				g.zapisz();
@@ -393,7 +393,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Func.dajFields(getClass()).forEach(field -> {
 				if (field.isAnnotationPresent(Mapowane.class)) {
 					try {
-						punkty.a += field.getInt(this) * Main.ust.wczytajLubDomyślna("Minigry." + minigra.getClass().getSimpleName() + ".punktacja." + field.getName(), 0);
+						punkty.a += field.getInt(this) * Main.ust.wczytaj("Minigry." + minigra.getClass().getSimpleName() + ".punktacja." + field.getName(), 0);
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}
@@ -439,7 +439,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
-				String format = Main.ust.wczytajLubDomyślna("Minigry.CaveWars.format.wyświetlany nick", "%displayname%");
+				String format = Main.ust.wczytaj("Minigry.CaveWars.format.wyświetlany nick", "%displayname%");
 				format = format.replace("%nick%", p.getName());
 				format = format.replace("%displayname%", p.getDisplayName());
 				if (Main.chat != null) {
@@ -550,7 +550,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			List<String> części = Func.tnij(strLoc, " ");
 			Location loc = new Location(Bukkit.getWorld(części.get(0)),Func.Double(części.get(1)), Func.Double(części.get(2)), Func.Double(części.get(3)));
 			this.postawHologram(loc, topka, "&9" + this.getClass().getSimpleName() + " Top " +
-					Main.ust.wczytajLubDomyślna("Minigry." + this.getClass().getSimpleName() + ".hologramy." + pole + ".nazwa", pole));
+					Main.ust.wczytaj("Minigry." + this.getClass().getSimpleName() + ".hologramy." + pole + ".nazwa", pole));
 		});
 	}
 	private void postawHologram(Location loc, List<TriKrotka<String, Integer, String>> topka, String tytuł) {
@@ -737,7 +737,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		configDane.przeładuj();
 		wczytajTopki();
 		
-		rangi = new Config("configi/minigry/Rangi").wczytajLubDomyślna(this.getClass().getSimpleName(), () -> Func.utwórz(Statystyki.Rangi.class));
+		rangi = new Config("configi/minigry/Rangi").wczytaj(this.getClass().getSimpleName(), () -> Func.utwórz(Statystyki.Rangi.class));
 
 		wyłącz("Przeładowywanie pluginu");
 		
@@ -748,7 +748,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		Config configAreny = getConfigAreny();
 		configAreny.przeładuj();
 		mapaAren.clear();
-		for (String klucz : configAreny.klucze(false))
+		for (String klucz : configAreny.klucze())
 			try {
 				Arena arena = (Arena) configAreny.wczytaj(klucz);
 				arena.nazwa = klucz;

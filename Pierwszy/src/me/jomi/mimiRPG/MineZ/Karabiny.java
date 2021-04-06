@@ -1,14 +1,21 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.Statistic;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -29,6 +36,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -36,18 +45,29 @@ import org.bukkit.util.Vector;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
+import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.MineZ.SkinyItemków.Grupa;
+import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class Karabiny implements Listener, Przeładowalny {
+public class Karabiny extends Komenda implements Listener, Przeładowalny {
+	public static final String prefix = Func.prefix(Karabiny.class);
+	
+	
+	public Karabiny() {
+		super("edytujkarabin");
+	}
+
+	private static final NamespacedKey keyKarabin = new NamespacedKey(Main.plugin, "mimikarabin");
+	
 	public static class Karabin extends Mapowany {
 		@Mapowane Sound dzwiękStrzału = Sound.ENTITY_WITHER_SHOOT;
 		@Mapowane EntityType typPocisku = EntityType.ARROW;
@@ -64,24 +84,34 @@ public class Karabiny implements Listener, Przeładowalny {
 		@Mapowane double rozrzucenie = 0.0;
 		@Mapowane int pociski = 1;
 		@Mapowane int cooldownPocisków = 0; // ticki
+		@Mapowane int magazynek = 30;
+		@Mapowane int czasPrzeładowania = 5; // w sekundach
+		@Mapowane KolorRGB kolorOgonaPocisku;
 		
-		void strzel(Player p) {
-			if (!minąłCooldown(p)) return;
-			if (!zabierzPocisk(p)) {
+		@Override
+		protected void Init() {
+			if (item != null && nazwa != null) {
+				ItemMeta meta = item.getItemMeta();
+				meta.getPersistentDataContainer().set(Karabiny.keyKarabin, PersistentDataType.STRING, nazwa);
+				item.setItemMeta(meta);
+			}
+		}
+		
+		public void strzel(Player p, ItemStack karabin) {
+			if (!minąłCooldown(karabin)) return;
+			if (!zabierzPocisk(p, karabin)) {
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak amunicji"));
+				przeładuj(p, karabin);
 				return;
 			}
-			Vector wzrok = p.getLocation().getDirection();
 			
-			strzel(p, wzrok, 0);
+			strzel(p, p.getLocation().getDirection(), 0);
+			ustawCooldown(karabin);
+			
+			if (pociskiWMagazynku(karabin) <= 0)
+				przeładuj(p, karabin);
 			
 			p.incrementStatistic(Statistic.USE_ITEM, Material.SNOWBALL);
-			
-			if (attackCooldown > 0) 
-				Func.ustawMetadate(p, "mimiKarabinCoolown" + nazwa, System.currentTimeMillis() + (attackCooldown * 1000));
-
-			if (attackCooldown > 0)
-				tick(p, 0);
 		}
 		private void strzel(Player p, Vector _wzrok, int poziom) {
 			Vector wzrok = _wzrok.clone();
@@ -93,6 +123,8 @@ public class Karabiny implements Listener, Przeładowalny {
 			pocisk.setVelocity(wzrok.multiply(siłaStrzału));
 			pocisk.setInvulnerable(true);
 			pocisk.setShooter(p);
+			if (kolorOgonaPocisku != null)
+				Func.opóznij(2, () -> tickPocisku(pocisk));
 			
 			if (poziom == 0 || cooldownPocisków > 0)
 				p.getWorld().playSound(p.getLocation(), dzwiękStrzału, (float) głośność, (float) dzwiękPitch);
@@ -100,46 +132,136 @@ public class Karabiny implements Listener, Przeładowalny {
 			if (poziom + 1 < pociski)
 				Func.opóznij(cooldownPocisków, () -> strzel(p, wzrok, poziom+1));
 		}
-		private void tick(Player p, int ticki) {
-			if (ticki > attackCooldown*20) return;
+		private void tickPocisku(Projectile pocisk) {
+			if (pocisk.isDead()) return;
+			Func.particle(pocisk.getLocation(), 1, 0, 0, 0, 0, kolorOgonaPocisku.kolor(), 1f);
+			Func.opóznij(1, () -> tickPocisku(pocisk));
+		}
+		
+		private static final NamespacedKey keyStart = new NamespacedKey(Main.plugin, "karabin_cooldown_start");
+		private static final NamespacedKey keyStop  = new NamespacedKey(Main.plugin, "karabin_cooldown_stop");
+		private boolean minąłCooldown(ItemStack item) {
+			return item.getItemMeta().getPersistentDataContainer().getOrDefault(keyStop, PersistentDataType.LONG, 0L) < System.currentTimeMillis();
+		}
+		private void ustawCooldown(ItemStack item) {
+			ItemMeta meta = item.getItemMeta();
+			long teraz = System.currentTimeMillis();
+			
+			meta.getPersistentDataContainer().set(keyStart, PersistentDataType.LONG, teraz);
+			meta.getPersistentDataContainer().set(keyStop,  PersistentDataType.LONG, teraz + (int) (attackCooldown * 1000));
+			
+			item.setItemMeta(meta);
+		}
+		private boolean zabierzPocisk(Player p, ItemStack karabin) {
+			if (ammo == null) return true;
+			
+			ItemMeta meta = karabin.getItemMeta();
+			
+			int pociski;
+			String pref;
+			Matcher matcher;
+			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(meta.getDisplayName())).matches()) {
+				pociski = zabierzPociski(p);
+				pref = meta.hasDisplayName() ? meta.getDisplayName() : nazwa;
+			} else {
+				pociski = Integer.parseInt(matcher.group(2));
+				pref = matcher.group(1);
+			}
+			
+			pociski -= 1;
+			
+			if (pociski < 0)
+				return false;
+			
+			meta.setDisplayName(pref + " ⁍" + pociski);
+			karabin.setItemMeta(meta);
+			
+			return true;
+		}
+		public static int pociskiWMagazynku(ItemStack item) {
+			ItemMeta meta = item.getItemMeta();
+			
+			if (!meta.hasDisplayName())
+				return 0;
+			
+			Matcher matcher = patternPocisków.matcher(meta.getDisplayName());
+			if (!matcher.matches())
+				return 0;
+			
+			return Integer.parseInt(matcher.group(2));
+		}
+		private int zabierzPociski(Player p) {
+			int znalezione = 0;
+			
+			PlayerInventory inv = p.getInventory();
+			for (int i=0; i < inv.getSize(); i++) {
+				ItemStack item = inv.getItem(i);
+				if (Func.porównaj(ammo, item)) {
+					znalezione += item.getAmount();
+					if (znalezione >= magazynek) {
+						item.setAmount(znalezione - magazynek);
+						inv.setItem(i, item.getAmount() > 0 ? item : null);
+						return magazynek;
+					} else
+						inv.setItem(i, null);
+					p.updateInventory();
+				}
+			}
+			
+			return znalezione;
+		}
 
-			Func.opóznij(1, () -> tick(p, ticki + 1));
-			
-			if (!Func.porównaj(p.getInventory().getItemInMainHand(), item)) return;
-			
-			int zielone = (int) ((ticki / (attackCooldown*20)) * 100) / 4;
+		private static final Pattern patternPocisków = Pattern.compile("(.*) ⁍(\\d+)");
+		Set<ItemStack> przeładowywane = new HashSet<>();
+		public void przeładuj(Player p, ItemStack item) {
+			if (!p.getInventory().containsAtLeast(ammo, 1))
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
+			else if (przeładowywane.add(item))
+				przeładuj(p, item, czasPrzeładowania * 20 + 1);
+		}
+		private void przeładuj(Player p, ItemStack item, int ticki) {
+			if (!p.getInventory().getItemInMainHand().equals(item)) {
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cAnulowano Przeładowywanie"));
+				przeładowywane.remove(item);
+				return;
+			}
+		
+			int zielone = (int) (((czasPrzeładowania*20 - ticki) / (czasPrzeładowania*20d)) * 25);
 			
 			StringBuilder s = new StringBuilder();
 			
 			int i = -1;
-			while (++i < zielone) s.append("§a|");
-			while (++i < 25)	  s.append("§c|");
+			s.append("§a");	while (++i < zielone) s.append('|');
+			s.append("§c");	while (++i < 25)	  s.append('|');
 			
 			p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Przaładowywanie " + s));
+				
+			if (ticki <= 0)
+				przeładujTeraz(p, item);
+			else
+				Func.opóznij(1, () -> przeładuj(p, item, ticki - 1));
+		}
+		public void przeładujTeraz(Player p, ItemStack karabin) {
+			przeładowywane.remove(karabin);
 			
+			if (ammo == null) return;
+			
+			ItemMeta meta = karabin.getItemMeta();
+			
+			String pref;
+			Matcher matcher;
+			int pociski = zabierzPociski(p);
+			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(meta.getDisplayName())).matches())
+				pref = meta.hasDisplayName() ? meta.getDisplayName() : nazwa;
+			else
+				pref = matcher.group(1);
+			
+			meta.setDisplayName(pref + " ⁍" + pociski);
+			karabin.setItemMeta(meta);
+			if (pociski <= 0)
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
 		}
-		private boolean minąłCooldown(Player p) {
-			if (attackCooldown <= 0) return true;
-			final String meta = "mimiKarabinCoolown" + nazwa;
-			long następny = p.hasMetadata(meta) ? p.getMetadata(meta).get(0).asLong() : 0L;
-			return następny <= System.currentTimeMillis();
-		}
-		private boolean zabierzPocisk(Player p) {
-			if (ammo == null) return true;
-			PlayerInventory inv = p.getInventory();
-			for (int i=0; i<inv.getSize(); i++) {
-				ItemStack item = inv.getItem(i);
-				if (Func.porównaj(ammo, item)) {
-					int ile = item.getAmount() - 1;
-					item.setAmount(ile);
-					inv.setItem(i, ile > 0 ? item : null);
-					p.updateInventory();
-					return true;
-				}
-			}
-			return false;
-		}
-
+		
 		public void przybliż(Player p) {
 			if (odbliż(p)) return;
 			p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20*60*60*2, przybliżenie, false, false, false));
@@ -184,17 +306,13 @@ public class Karabiny implements Listener, Przeładowalny {
 		ev.setDamage(karabin.dmg);
 	}
 	
-	
 	private Karabin karabin(ItemStack item) {
-		if (Main.włączonyModół(SkinyItemków.class)) {
-			Grupa grp = SkinyItemków.wczytaj(item);
-			if (grp != null)
-				item = SkinyItemków.przetwórz(item.clone(), grp.podstawowy);
-		}
-		for (Karabin karabin : karabiny.values())
-			if (Func.porównaj(karabin.item, item))
-				return karabin;
-		return null;
+		if (item == null || !item.hasItemMeta()) return null;
+		
+		String key = item.getItemMeta().getPersistentDataContainer().getOrDefault(keyKarabin, PersistentDataType.STRING, null);
+		if (key == null) return null;
+		
+		return karabiny.get(key);
 	}
 	@EventHandler
 	public void użycie(PlayerInteractEvent ev) {
@@ -206,7 +324,7 @@ public class Karabiny implements Listener, Przeładowalny {
 		switch (ev.getAction()) {
 		case RIGHT_CLICK_AIR:
 		case RIGHT_CLICK_BLOCK:
-			karabin.strzel(ev.getPlayer());
+			karabin.strzel(ev.getPlayer(), ev.getItem());
 			break;
 		case LEFT_CLICK_AIR:
 		case LEFT_CLICK_BLOCK:
@@ -227,7 +345,7 @@ public class Karabiny implements Listener, Przeładowalny {
 	public void przeładuj() {
 		karabiny.clear();
 		config.przeładuj();
-		for (String klucz : config.klucze(false))
+		for (String klucz : config.klucze())
 			try {
 				Karabin karabin = (Karabin) config.wczytaj(klucz);
 				karabiny.put(karabin.nazwa, karabin);
@@ -252,6 +370,18 @@ public class Karabiny implements Listener, Przeładowalny {
 		return k == null ? null : k.item;
 	}
 
+
+	EdytorOgólny<Karabin> edytor = new EdytorOgólny<>("edytujkarabin", Karabin.class);
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		return edytor.wymuśConfig_onTabComplete(config, sender, label, args);
+	}
+
+	@Override
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError {
+		return edytor.wymuśConfig_onCommand(prefix, "Karabiny", sender, label, args);
+	}
 }
 
 

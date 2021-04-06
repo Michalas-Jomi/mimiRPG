@@ -92,7 +92,7 @@ public class Gracz extends Mapowany {
 	}
 	public static Gracz wczytaj(String nick) {
 		if (new File(scieżkaConfigu(nick)).exists())
-			return config(nick).wczytajLubDomyślna("gracz", () -> new Gracz(nick));
+			return config(nick).wczytaj("gracz", () -> new Gracz(nick));
 		else
 			return new Gracz(nick);
 	}

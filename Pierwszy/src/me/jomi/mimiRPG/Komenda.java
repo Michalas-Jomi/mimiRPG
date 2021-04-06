@@ -146,20 +146,23 @@ public abstract class Komenda implements TabExecutor {
 	protected void throwMsg(String lokalizacja, Object... args) throws MsgCmdError {
 		throw new MsgCmdError(preThrowMsg(lokalizacja, args));
 	}
+	protected String preThrowFormatMsg(String format, Object... args) {
+		return Func.msg(Func.prefix(this.getClass()) + format, args);
+	}
 	protected void throwFormatMsg(String format, Object... args) throws MsgCmdError {
 		throw new MsgCmdError(Func.prefix(this.getClass()) + Func.msg(format, args));
 	}
 	
-	protected List<String> utab(String[] wpisane, String... Podpowiedzi) {
+	public static List<String> utab(String[] wpisane, String... Podpowiedzi) {
 		return uzupełnijTabComplete(wpisane, Lists.newArrayList(Podpowiedzi));
 	}
-	protected List<String> utab(String[] wpisane, Iterable<String> Podpowiedzi) {
+	public static List<String> utab(String[] wpisane, Iterable<String> Podpowiedzi) {
 		return uzupełnijTabComplete(wpisane, Podpowiedzi);
 	}
-	protected List<String> uzupełnijTabComplete(String[] wpisane, Iterable<String> Podpowiedzi) {
+	public static List<String> uzupełnijTabComplete(String[] wpisane, Iterable<String> Podpowiedzi) {
 		return uzupełnijTabComplete(Func.ostatni(wpisane), Podpowiedzi);
 	}
-	protected List<String> uzupełnijTabComplete(String wpisane, Iterable<String> Podpowiedzi) {
+	public static List<String> uzupełnijTabComplete(String wpisane, Iterable<String> Podpowiedzi) {
     	List<String> lista = Lists.newArrayList();
     	wpisane = wpisane.toLowerCase();
 		for (String podpowiedz : Podpowiedzi)

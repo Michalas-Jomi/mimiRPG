@@ -109,7 +109,7 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 	}
 
 	static <T> T wczytaj(String sc, T domyślna) {
-		return Main.ust.wczytajLubDomyślna("Wilczek." + sc, domyślna);
+		return Main.ust.wczytaj("Wilczek." + sc, domyślna);
 	}
 	void wykonaj(Player p, Consumer<Wilk> cons) {
 		Gracz gracz = Gracz.wczytaj(p);

@@ -77,8 +77,8 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		public Strona(Config config) {
 			nazwa = config.f.getName();
 			nazwa = nazwa.substring(0, nazwa.lastIndexOf('.'));
-			nazwaInv = Func.koloruj(config.wczytajLubDomyślna("nazwa", "§1§lSklep"));
-			typ = Func.StringToEnum(Typ.class, config.wczytajLubDomyślna("typ", "ZWYKŁY"));
+			nazwaInv = Func.koloruj(config.wczytaj("nazwa", "§1§lSklep"));
+			typ = Func.StringToEnum(Typ.class, config.wczytaj("typ", "ZWYKŁY"));
 			
 			if (typ == Typ.ZWYKŁY) {
 				wczytajZwykłą(config);
@@ -96,13 +96,13 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				Main.warn("Nie odnaleziono shopkeepera id:", config.wczytajInt("id"), config.f.getAbsoluteFile());
 		}
 		private void wczytajZwykłą(Config config) {
-			int sloty = config.wczytajLubDomyślna("rzędy", 6);
+			int sloty = config.wczytaj("rzędy", 6);
 			
 			inv = Bukkit.createInventory(null, sloty*9, nazwaInv);
 			for (int i=0; i<inv.getSize(); i++)
 				inv.setItem(i, pustySlot);
 			
-			for (String _slot : config.klucze(false)) {
+			for (String _slot : config.klucze()) {
 				int slot = Func.Int(_slot.replace("_", ""), -1);
 				if (slot == -1 || slot > inv.getSize()) {
 					if (Func.multiEquals(_slot, "rzędy", "nazwa", "stały lore", "typ")) continue;
@@ -118,11 +118,11 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 					continue;
 				}
 				
-				item.setAmount(Math.min(config.wczytajLubDomyślna(_slot + ".ilość", 1), 64));
+				item.setAmount(Math.min(config.wczytaj(_slot + ".ilość", 1), 64));
 				
 				
-				double max = config.wczytajLubDomyślna(_slot + ".pkt_max", -1.0);
-				double min = config.wczytajLubDomyślna(_slot + ".pkt_min", 0.0);
+				double max = config.wczytaj(_slot + ".pkt_max", -1.0);
+				double min = config.wczytaj(_slot + ".pkt_min", 0.0);
 				if (max != -1 || min != 0) {
 					bezpośrednia = false;
 					ustaw = false;
@@ -130,7 +130,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				}
 				
 				if (min <= 0) {
-					double cenaZaJeden = config.wczytajLubDomyślna(_slot + ".cena sprzedarzy" , 0) / (double) item.getAmount();
+					double cenaZaJeden = config.wczytaj(_slot + ".cena sprzedarzy" , 0) / (double) item.getAmount();
 					if (cenaZaJeden > 0) {
 						ItemStack klucz = Func.ilość(item.clone(), 1);
 						Func.wykonajDlaNieNull(mapaCen.put(klucz, cenaZaJeden),
@@ -138,12 +138,12 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 					}
 				}
 				
-				String strona = config.wczytajLubDomyślna(_slot + ".strona", "");
+				String strona = config.wczytaj(_slot + ".strona", "");
 				if (!strona.isEmpty()) {
 					specjalneItemy.add(new SklepItem(item, slot, strona));
 				} else {
 					TriFunction<String, String, String, String> cena = (czynność, wyśtlane, skrót) -> {
-						int _cena = config.wczytajLubDomyślna(_slot + ".cena " + czynność, 0);
+						int _cena = config.wczytaj(_slot + ".cena " + czynność, 0);
 						return _cena == 0 ? "§cBrak możliwości " + czynność : "§8" + skrót + " §6Cena " + wyśtlane + ":§e " + _cena;
 					};
 					

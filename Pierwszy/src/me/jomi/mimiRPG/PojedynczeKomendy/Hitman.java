@@ -216,7 +216,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 		return Main.ust.wczytajItemy("Hitman.wymagane itemy");
 	}
 	
-	@Override public Krotka<String, Object> raport() { return Func.r("Wczytane oferty", config.klucze(false).size()); }
+	@Override public Krotka<String, Object> raport() { return Func.r("Wczytane oferty", config.klucze().size()); }
 	@Override public void przeładuj() {
 		Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
 			config.przeładuj();
@@ -245,12 +245,12 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 				return Func.powiadom(sender, prefix + "Nie możesz zlecić tego gracza, gdyż jest on nietylakny");
 			if (zlecony.getName().equals(p.getName()))
 				return Func.powiadom(sender, prefix + "Nie możesz zlecić zabicia samego siebie");
-			if (config.klucze(false).contains(zlecony.getName()))
+			if (config.klucze().contains(zlecony.getName()))
 				return Func.powiadom(sender, prefix + "Na tego gracze jest już zlecenie");
-			if (config.klucze(false).size() >= menu.getSize())
+			if (config.klucze().size() >= menu.getSize())
 				return Func.powiadom(sender, prefix + "Rynek pełen, wykonaj pare zleceń aby zwolnić miejsce");
 			Gracz g = Gracz.wczytaj(p);
-			int czas = Main.ust.wczytajLubDomyślna("Hitman.deley zgłoszenia", 12*60*60);
+			int czas = Main.ust.wczytaj("Hitman.deley zgłoszenia", 12*60*60);
 			czas = czas - (int) ((System.currentTimeMillis() / 1000) - g.HitmanOstatnieZgłoszenie);
 			if (czas > 0)
 				return Func.powiadom(sender, prefix + "Musisz poczekać jeszcze " + Func.czas(czas) + " zanim kogoś zlecisz");

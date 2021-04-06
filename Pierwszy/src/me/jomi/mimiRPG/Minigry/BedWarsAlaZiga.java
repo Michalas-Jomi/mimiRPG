@@ -146,14 +146,14 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		void regeneruj(Iterator<Block> it) {
 			int licz = 0;
-			int mx = Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Max Bloki", 50_000);
+			int mx = Main.ust.wczytaj("Minigry.Budowanie Aren.Max Bloki", 50_000);
 			while (it.hasNext()) {
 				Block blok = it.next();
 				if (blok.getType().equals(Material.AIR))
 					continue;
 				blok.setType(Material.AIR, false);
 				if (++licz >= mx) {
-					Func.opóznij(Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Ticki Przerw", 1), () -> regeneruj(it));
+					Func.opóznij(Main.ust.wczytaj("Minigry.Budowanie Aren.Ticki Przerw", 1), () -> regeneruj(it));
 					return;
 				}
 			}

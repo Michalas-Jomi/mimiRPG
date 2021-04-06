@@ -52,7 +52,7 @@ public class JednorekiBandyta extends Komenda implements Listener, Przeładowaln
 		automaty.clear();
 		
 		Automat ost = null;
-		for(String klucz : config.klucze(true))
+		for(String klucz : config.klucze())
 			if (!klucz.contains(".")) {
 				if (ost != null) ost.wczytany();
 				ost = new Automat(klucz);

@@ -34,7 +34,7 @@ public class Główki implements Listener, Przeładowalny {
 	public void przeładuj() {
 		mapa.clear();
 		Config config = new Config("configi/Główki");
-		for (String klucz : config.klucze(false)) {
+		for (String klucz : config.klucze()) {
 			try {
 				EntityType mob = Func.StringToEnum(EntityType.class, klucz);
 				ItemStack item = Func.dajGłówkę(ChatColor.GOLD + "Głowa " + Func.enumToString(mob), config.wczytajStr(klucz));

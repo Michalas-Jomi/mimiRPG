@@ -324,7 +324,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 		if (sekcja != null)
 			for (Entry<String, Object> en : sekcja.getValues(false).entrySet())
 				mapa.put(Material.valueOf(en.getKey().toUpperCase()), (int) en.getValue()*60);
-		maxCzas = Main.ust.wczytajLubDomyślna("Koniki.maxCzas", 3) * 60;
+		maxCzas = Main.ust.wczytaj("Koniki.maxCzas", 3) * 60;
 		usuńWszystkie();
 	}
 	@Override

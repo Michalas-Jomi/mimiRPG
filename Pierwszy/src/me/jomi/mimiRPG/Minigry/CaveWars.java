@@ -199,7 +199,7 @@ public class CaveWars extends MinigraDrużynowa {
 		}
 		private void wygenerujArene(Iterator<Block> iterator, Runnable runnable) {
 			int licz = 0;
-			int mx = Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Max Bloki", 50_000);
+			int mx = Main.ust.wczytaj("Minigry.Budowanie Aren.Max Bloki", 50_000);
 			while (iterator.hasNext()) {
 				Block blok = iterator.next();
 				blok.setType(blokiAreny.losuj(), false);
@@ -211,7 +211,7 @@ public class CaveWars extends MinigraDrużynowa {
 				}
 				
 				if (++licz > mx) {
-					Func.opóznij(Main.ust.wczytajLubDomyślna("Minigry.Budowanie Aren.Ticki Przerw", 1),
+					Func.opóznij(Main.ust.wczytaj("Minigry.Budowanie Aren.Ticki Przerw", 1),
 							() -> wygenerujArene(iterator, runnable));
 					return;
 				}
@@ -223,11 +223,11 @@ public class CaveWars extends MinigraDrużynowa {
 				runnable.run();
 		}
 		private boolean wygenerowana() {
-			Set<String> set = configDane.wczytajLubDomyślna("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
+			Set<String> set = configDane.wczytaj("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
 			return set.contains(nazwa);
 		}
 		private void zapiszWygenerowanieJako(boolean wygenerowana) {
-			Set<String> set = configDane.wczytajLubDomyślna("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
+			Set<String> set = configDane.wczytaj("CaveWars.Wygenerowane", Sets::newConcurrentHashSet);
 			if (wygenerowana)
 				set.add(nazwa);
 			else

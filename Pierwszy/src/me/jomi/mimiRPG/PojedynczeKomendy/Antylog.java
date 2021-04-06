@@ -162,7 +162,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		info(atakujący.getName());
 		info(atakowany.getName());
 		
-		if (Main.ust.wczytajLubDomyślna("Antylog.glowing", true)) {
+		if (Main.ust.wczytaj("Antylog.glowing", true)) {
 			atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
 			atakowany.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
 		}
@@ -208,7 +208,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	@EventHandler
 	public void tp(PlayerTeleportEvent ev) {
 		if (czasy.containsKey(ev.getPlayer().getName()))
-			if (Main.ust.wczytajLubDomyślna("Antylog.tp." + ev.getCause(), false)) {
+			if (Main.ust.wczytaj("Antylog.tp." + ev.getCause(), false)) {
 				ev.setCancelled(true);
 				ev.getPlayer().sendMessage(prefix + "Nie możesz się teleportować w trakcie walki");
 			}
@@ -219,7 +219,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	public void przeładuj() {
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
 		dozwolone.add("/antylogbypass");
-		maxCzas = Main.ust.wczytajLubDomyślna("Antylog.Czas", 10) * 4;
+		maxCzas = Main.ust.wczytaj("Antylog.Czas", 10) * 4;
 	}
 	@Override
 	public Krotka<String, Object> raport() {

@@ -93,7 +93,7 @@ public class Ujezdzaj extends Komenda {
 		}
 		double odległość = kto.getLocation().distance(naKim.getLocation());
 		if (!p.hasPermission("mimiRPG.ujezdzaj.ominzasieg")) {
-			if (odległość > Main.ust.wczytajLubDomyślna("ujezdzanie.maxOdległość", 5.0)) {
+			if (odległość > Main.ust.wczytaj("ujezdzanie.maxOdległość", 5.0)) {
 				p.sendMessage(prefix + "Nie można ujeżdzać graczy na tak daleki dystans");
 				return;
 			}

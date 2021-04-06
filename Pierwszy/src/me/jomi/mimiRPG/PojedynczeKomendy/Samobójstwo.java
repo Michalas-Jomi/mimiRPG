@@ -26,7 +26,7 @@ public class Samobójstwo extends Komenda {
 	
 	
 	int minuty() {
-		return Main.ust.wczytajLubDomyślna("Samobójstwo.Cooldown minuty", 30);
+		return Main.ust.wczytaj("Samobójstwo.Cooldown minuty", 30);
 	}
 	
 	@Override

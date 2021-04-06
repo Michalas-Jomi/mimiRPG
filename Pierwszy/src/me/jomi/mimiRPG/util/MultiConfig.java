@@ -3,7 +3,9 @@ package me.jomi.mimiRPG.util;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -35,12 +37,17 @@ public class MultiConfig {
 				wczytaj(file);
 			else {
 				Config config = new Config(file);
-				config.klucze(false).forEach(klucz -> mapaConfigów.put(klucz, config));
+				config.klucze().forEach(klucz -> mapaConfigów.put(klucz, config));
 				mapaNazwConfigów.put(file.getPath(), config);
 			}
 	}
 	
-	
+	public Set<String> klucze() {
+		return mapaConfigów.keySet();
+	}
+	public ConfigurationSection sekcja(String ścieżka) {
+		return mapaConfigów.get(st(ścieżka)).sekcja(ścieżka);
+	}
 	
 	public Object wczytaj(String ścieżka) {
 		return mapaConfigów.get(st(ścieżka)).wczytaj(ścieżka);

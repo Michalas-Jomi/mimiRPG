@@ -24,12 +24,12 @@ public class Pomoc extends Komenda implements Przeładowalny{
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return utab(args, config.klucze(false));
+		return utab(args, config.klucze());
 	}
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Predicate<String> pomoc = s -> {
-			if (!config.klucze(false).contains(s))
+			if (!config.klucze().contains(s))
 				return false;
 			config.wczytajNapis(s).wyświetl(sender);
 			return true;
@@ -50,6 +50,6 @@ public class Pomoc extends Komenda implements Przeładowalny{
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Pomoce", config.klucze(false).size());
+		return Func.r("Pomoce", config.klucze().size());
 	}	
 }

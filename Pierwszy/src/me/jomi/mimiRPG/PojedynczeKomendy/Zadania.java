@@ -645,7 +645,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		config.przeładuj();
 		mapaZadań.clear();
 		
-		for (String klucz : config.klucze(false)) {
+		for (String klucz : config.klucze()) {
 			Object obj = config.wczytaj(klucz);
 			if (obj instanceof Zadanie)
 				mapaZadań.put(klucz, (Zadanie) obj);

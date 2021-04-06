@@ -58,7 +58,7 @@ public class Statystyka {
 		this.nazwa = nazwa;
 		
 		przepisz(mapa.get(nazwa), this);
-		akt   = (double) config.wczytajLubDomyślna("stat." + nazwa, start);
+		akt   = (double) config.wczytaj("stat." + nazwa, start);
 		cena = (akt - start) / krok;
 		nst = akt + krok;
 	}

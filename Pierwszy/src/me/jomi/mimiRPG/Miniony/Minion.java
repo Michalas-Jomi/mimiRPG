@@ -151,8 +151,8 @@ public abstract class Minion extends EntityZombie {
 		loc = (Location) config.wczytaj("loc");
 		imie = (String) config.wczytaj("imie");
 		
-		stanWody = (int) config.wczytajLubDomyślna("stanWody", 0);
-		stanJedzenia = (double) config.wczytajLubDomyślna("stanJedzenia", 0);
+		stanWody = (int) config.wczytaj("stanWody", 0);
+		stanJedzenia = (double) config.wczytaj("stanJedzenia", 0);
 		
 		gracze = (List<String>) config.wczytaj("gracze");
 		stworzyciel = (String) config.wczytaj("stworzyciel");
@@ -160,7 +160,7 @@ public abstract class Minion extends EntityZombie {
 		narzędzie = (ItemStack) config.wczytaj("narzędzie");
 		ekwipunek = (List<ItemStack>) config.wczytaj("ekwipunek");
 
-		podnoszenie = (boolean) config.wczytajLubDomyślna("podnoszenie", false);
+		podnoszenie = (boolean) config.wczytaj("podnoszenie", false);
 		
 		staty.add(new Statystyka(config, "Prędkość"));
 		staty.add(new Statystyka(config, "ZużycieWody"));

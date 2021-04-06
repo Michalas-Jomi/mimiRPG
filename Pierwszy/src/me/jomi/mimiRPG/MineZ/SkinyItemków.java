@@ -219,7 +219,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 		Grupa.mapaGrup.clear();
 		mapaNazw.clear();
 		
-		File f = new File(Main.ust.wczytajLubDomyślna("Skiny itemków ustawienia.config z losowaniem", "plugins/JbwmMiscellaneous/csgoCase.yml"));
+		File f = new File(Main.ust.wczytaj("Skiny itemków ustawienia.config z losowaniem", "plugins/JbwmMiscellaneous/csgoCase.yml"));
 		if (f.exists()) {
 			Config configNazw = new Config(f);
 			Func.wykonajDlaNieNull(configNazw.sekcja("skiny"), sekcja -> 

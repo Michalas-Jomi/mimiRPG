@@ -66,7 +66,7 @@ public class LepszeEnchanty implements Listener, Przeładowalny {
 	}
 
 	boolean wymaganaFlaga() {
-		return Main.ust.wczytajLubDomyślna("LepszeEnchanty.wymagana Flaga enchantów", true);
+		return Main.ust.wczytaj("LepszeEnchanty.wymagana Flaga enchantów", true);
 	}
 	
 	@Override

@@ -138,7 +138,7 @@ public class SuperItem extends Komenda implements Listener {
 		if (Main.perms != null) {
 			int limit = -1;
 			for (String grupa : Main.perms.getPlayerGroups(p))
-				limit = Math.max(limit, Main.ust.wczytajLubDomyślna("SuperItem.grupy." + grupa, -1));
+				limit = Math.max(limit, Main.ust.wczytaj("SuperItem.grupy." + grupa, -1));
 			return limit == -1 ? 5 : limit;
 		}
 		return 5;

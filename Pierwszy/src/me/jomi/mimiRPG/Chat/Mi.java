@@ -29,7 +29,7 @@ public class Mi extends Komenda {
 		if (!(sender instanceof ConsoleCommandSender)) 
 			return Func.powiadom(sender, "Tej komendy można używać tylko z konsoli");
 		if (args.length < 1) return false;
-		String pref = Main.ust.wczytajLubDomyślna("WiadomoscConsole", "[Konsola]") + " ";
+		String pref = Main.ust.wczytaj("WiadomoscConsole", "[Konsola]") + " ";
 		Bukkit.broadcastMessage(Func.koloruj(pref + Func.listToString(args, 0)));
 		return true;
 	}
