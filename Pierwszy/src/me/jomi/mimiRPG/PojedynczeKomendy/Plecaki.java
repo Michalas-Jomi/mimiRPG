@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -110,6 +111,23 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 				ev.setCancelled(true);
 		});
 	}
+	@EventHandler
+	public void podnoszenieItemów(EntityPickupItemEvent ev) {
+		if (ev.getEntity() instanceof Player) {
+			Func.wykonajDlaNieNull(((Player) ev.getEntity()).getOpenInventory().getTopInventory().getHolder(),  Holder.class, holder -> {
+				ItemStack item = ev.getItem().getItemStack();
+				net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+				NBTTagCompound tag = nmsItem.getOrCreateTag().getCompound("plecak");
+				if (tag == null || tag.isEmpty())
+					return;
+				
+				ev.setCancelled(true);
+			});
+		}
+	}
+	
+	
+	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void zamykanieEq(InventoryCloseEvent ev) {
 		Func.wykonajDlaNieNull(ev.getInventory().getHolder(), Holder.class, holder -> {

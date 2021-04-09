@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.RPG;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,11 +8,15 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -32,12 +37,14 @@ import org.bukkit.potion.PotionEffectType;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.LepszaMapa;
 import me.jomi.mimiRPG.util.MultiConfig;
 import me.jomi.mimiRPG.util.Napis;
+import me.jomi.mimiRPG.util.PersistentDataTypeCustom;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
@@ -45,7 +52,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	public static final String prefix = Func.prefix(KamienieDusz.class);
 	
 	static ItemStack pustyKamień = Func.stwórzItem(Material.FIREWORK_STAR, "&8Pusty Kamień Dusz", 1, "&aZużyty kamień", "&aNic już z niego");
-	
+	static int maxKamienieNaItem = 2;
 	
 	public static abstract class Mechanika {
 		public final String nazwa;
@@ -88,7 +95,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		@Override public void odaplikuj(ItemMeta meta) {}
 		
 		@Override
-		public void wczytaj(LepszaMapa<String> mapa) {
+		public void wczytaj(LepszaMapa<String> mapa ) {
 			szansa = mapa.get("szansa", 1d);
 			effekt = new PotionEffect(
 					PotionEffectType.getByName(mapa.getString("efekt")),
@@ -102,7 +109,35 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			moment = Func.StringToEnum(Moment.class, mapa.getString("moment"));
 			target = Func.StringToEnum(Target.class, mapa.get("target", "self"));
 		}
+	
+		
+		private void fabric(Moment moment, Entity self, Entity other) {
+			if (this.moment == moment) {
+				Entity e = null;
+				switch (target) {
+				case SELF:	e = self;	break;
+				case OTHER:	e = other; 	break;
+				}
+				
+				if (e != null && e instanceof LivingEntity && Func.losuj(szansa))
+					((LivingEntity) e).addPotionEffect(effekt);
+			}
+		}
+		
+		@Override
+		public void onAttack(EntityDamageByEntityEvent ev) {
+			fabric(Moment.ATTACK, ev.getDamager(), ev.getEntity());
+		}
+		@Override
+		public void onDamaged(EntityDamageEvent ev) {
+			fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
+		}
+		@Override
+		public void onBlockBreak(BlockBreakEvent ev) {
+			fabric(Moment.BLOCK_BREAK, ev.getPlayer(), null);
+		}
 	}
+ 
 	public static class MechanikaAtrybut extends Mechanika {
 		public MechanikaAtrybut(String nazwa, LepszaMapa<String> mapa) {
 			super(nazwa, mapa);
@@ -144,18 +179,88 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		}
 	}
 	
+	public static enum Slot {
+		ARMOR(item -> EnchantmentTarget.ARMOR.includes(item)),
+		HEŁM(item -> EnchantmentTarget.ARMOR_HEAD.includes(item)),
+		KLATA(item -> EnchantmentTarget.ARMOR_TORSO.includes(item)),
+		SPODNIE(item -> EnchantmentTarget.ARMOR_LEGS.includes(item)),
+		BUTY(item -> EnchantmentTarget.ARMOR_FEET.includes(item)),
+		
+		BROŃ(item -> EnchantmentTarget.WEAPON.includes(item)),
+		MIECZ(item -> item.getType().toString().contains("_SWORLD")),
+		ŁUK(item -> EnchantmentTarget.BOW.includes(item)),
+		KUSZA(item -> EnchantmentTarget.CROSSBOW.includes(item)),
+		TRÓJZĄB(item -> EnchantmentTarget.TRIDENT.includes(item)),
+		
+		NARZĘDZIA(item -> EnchantmentTarget.TOOL.includes(item)),
+		KILOF(item -> item.getType().toString().contains("_PICKAXE")),
+		ŁOPATA(item -> item.getType().toString().contains("_SHOVEL")),
+		SIEKIERA(item -> item.getType().toString().contains("_AXE")),
+		MOTYKA(item -> item.getType().toString().contains("_HOE")),
+		WĘDKA(item -> EnchantmentTarget.FISHING_ROD.includes(item)),
+		
+		WSZYSTKO(item -> true);
+		
+		private final Predicate<ItemStack> możnaZałożyć;
+		Slot(Predicate<ItemStack> możnaZałożyć) {
+			this.możnaZałożyć = możnaZałożyć;
+		}
+		
+		public boolean możnaZałożyć(ItemStack item) {
+			return możnaZałożyć.test(item);
+		}
+		
+	}
 	public static class KamieńDusz {
+		private static final NamespacedKey kluczKamieni = new NamespacedKey(Main.plugin, "kamieniedusz");
+		private static final String linia0 = "§6Kamienie Dusz§8:";
+		
 		public final String nazwa;
 		public final Mechanika[] mechaniki; 
+		public final ItemStack item;
+		public final Slot slot;
 		
-		public KamieńDusz(String nazwa, Mechanika[] mechaniki) {
+		public KamieńDusz(String nazwa, Slot slot, Mechanika[] mechaniki, ItemStack item) {
 			this.mechaniki = mechaniki;
 			this.nazwa = nazwa;
+			this.slot = slot;
+			this.item = item;
 		}
 
-		private void zaaplikuj(ItemMeta meta) {
+		public void zaaplikuj(ItemMeta meta) {
 			for (int i=0; i < mechaniki.length; i++)
 				mechaniki[i].zaaplikuj(meta);
+			
+			String[] stare = nałożone(meta);
+			String[] nowe = new String[stare.length + 1];
+			int i = -1;
+			while (++i < stare.length)
+				nowe[i] = stare[i];
+			
+			nowe[i] = nazwa;
+			
+			meta.getPersistentDataContainer().set(kluczKamieni, PersistentDataTypeCustom.StringArray, nowe);
+			
+			List<String> lore = meta.hasLore() ? Func.nieNull(meta.getLore()) : new ArrayList<>();
+			
+			if (lore.isEmpty() || !lore.get(0).equals(linia0)) {
+				lore.add(0, linia0);
+				lore.add(1, " ");
+			}
+			lore.add(1, "§8§l- §d" + Func.koloruj(nazwa));
+			
+			meta.setLore(lore);
+			
+		}
+		public boolean możnaNałożyć(ItemStack item) {
+			return	slot.możnaZałożyć(item) && 
+					nałożone(item.getItemMeta()).length < maxKamienieNaItem;
+		}
+		
+		private static String[] nałożone(ItemMeta meta) {
+			if (meta == null) return new String[0];
+			String[] array = meta.getPersistentDataContainer().get(kluczKamieni, PersistentDataTypeCustom.StringArray);
+			return array == null ? new String[0] : array;
 		}
 	}
 	
@@ -165,8 +270,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	 * @return kamień dusz którym jest dany item
 	 */
 	public KamieńDusz rozpoznaj(ItemStack item) {
-		// TODO
-		return null;
+		return kamienieZItemów.get(item);
 	}
 	/**
 	 * Zwraca wszystkie Kamienie Dusz z danego itemka
@@ -174,8 +278,12 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	 * @return Kamienie Dusz nałożone na ten itemek
 	 */
 	public List<KamieńDusz> wczytaj(ItemStack item) {
-		// TODO
-		return null;
+		List<KamieńDusz> kamienie = new ArrayList<>();
+		
+		if (item != null && item.hasItemMeta())
+			Func.forEach(KamieńDusz.nałożone(item.getItemMeta()), nazwa -> kamienie.add(KamienieDusz.kamienie.get(nazwa)));
+		
+		return kamienie;
 	}
 	
 	private void wykonaj(PlayerInventory inv, Consumer<KamieńDusz> cons) {
@@ -190,17 +298,20 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		if (e instanceof Player && (!(ev instanceof Cancellable) || !((Cancellable) ev).isCancelled()))
 			wykonaj(((Player) e).getInventory(), kamień -> Func.forEach(kamień.mechaniki, mechanika -> bic.accept(mechanika, ev)));
 	}
-	@EventHandler(priority = EventPriority.MONITOR) public void otrzymywanieDmg	(EntityDamageEvent ev) 			{wykonaj(ev, ev.getEntity(), Mechanika::onDamaged);}
-	@EventHandler(priority = EventPriority.MONITOR) public void zadanieDmg		(EntityDamageByEntityEvent ev)	{wykonaj(ev, ev.getEntity(), Mechanika::onAttack);}
-	@EventHandler(priority = EventPriority.MONITOR) public void kopanie			(BlockBreakEvent ev)			{wykonaj(ev, ev.getPlayer(), Mechanika::onBlockBreak);}
+	@EventHandler(priority = EventPriority.MONITOR) public void otrzymywanieDmg	(EntityDamageEvent ev) 			{wykonaj(ev, ev.getEntity(),  Mechanika::onDamaged);}
+	@EventHandler(priority = EventPriority.MONITOR) public void zadanieDmg		(EntityDamageByEntityEvent ev)	{wykonaj(ev, ev.getDamager(), Mechanika::onAttack);}
+	@EventHandler(priority = EventPriority.MONITOR) public void kopanie			(BlockBreakEvent ev)			{wykonaj(ev, ev.getPlayer(),  Mechanika::onBlockBreak);}
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void klikanieEq(InventoryClickEvent ev) {
 		if (!ev.getClick().equals(ClickType.RIGHT)) return;
 		if (ev.getCurrentItem() == null) return;
-		if (!ev.getCurrentItem().hasItemMeta()) return;
 		Func.wykonajDlaNieNull(rozpoznaj(ev.getCursor()), kamień -> {
+			if (!kamień.możnaNałożyć(ev.getCurrentItem()))
+				return;
+			
 			ItemMeta meta = ev.getCurrentItem().getItemMeta();
+			
 			kamień.zaaplikuj(meta);
 			ev.getCurrentItem().setItemMeta(meta);
 			
@@ -215,18 +326,18 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	}
 
 
-	final Map<String, Mechanika> mechaniki = new HashMap<>();
-	final Map<String, KamieńDusz> kamienie = new HashMap<>();
+	static final Map<String, Mechanika> mechaniki = new HashMap<>();
+	static final Map<String, KamieńDusz> kamienie = new HashMap<>();
+	static final Map<ItemStack, KamieńDusz> kamienieZItemów = new HashMap<>();
 	
-	final MultiConfig configKamienie  = new MultiConfig("Kamienie Dusz/Kamienie");
-	final MultiConfig configMechaniki = new MultiConfig("Kamienie Dusz/Mechaniki");
+	static final MultiConfig configKamienie  = new MultiConfig("Kamienie Dusz/Kamienie");
+	static final MultiConfig configMechaniki = new MultiConfig("Kamienie Dusz/Mechaniki");
 	private static final Config configDane = new Config("configi/Kamienie Dusz");
 	
 	
 	@Override
 	public void przeładuj() {
-		
-		// TODO usunąć stare /citem custom
+		kamienie.keySet().forEach(nazwa -> CustomoweItemy.customoweItemy.remove("kamieńDuszy_" + nazwa));
 		
 		configDane.przeładuj();
 		configMechaniki.przeładuj();
@@ -234,12 +345,12 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		mechaniki.clear();
 		kamienie.clear();
+		kamienieZItemów.clear();
 
 		wczytajZConfigów(configMechaniki,	mechaniki,	this::wczytajMechanike);
 		wczytajZConfigów(configKamienie,	kamienie,	this::wczytajKamień);
 		
-		// TODO dodać nowe /citem custom
-		
+		kamienie.forEach((nazwa, kamień) -> CustomoweItemy.customoweItemy.put("kamieńDuszy_" + nazwa, kamień.item));
 	}
 	private <T> void wczytajZConfigów(MultiConfig config, Map<String, T> mapa, BiFunction<String, Map<String, Object>, T> bif) {
 		config.klucze().forEach(nazwa -> {
@@ -275,17 +386,22 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	private KamieńDusz wczytajKamień(String nazwa, Map<String, Object> mapa) {
 		LepszaMapa<String> lmap = new LepszaMapa<>(mapa);
 		
-		List<String> lista = lmap.getList("mechaniki");
+		ItemStack item = lmap.getItemStack("item");
 		
+		Slot slot = Func.StringToEnum(Slot.class, lmap.get("slot", "WSZYSTKO"));
+
+		List<String> lista = lmap.getList("mechaniki");
 		Mechanika[] mechaniki = new Mechanika[lista.size()];
 		for (int i=0; i < mechaniki.length; i++) {
-			Mechanika mechanika = this.mechaniki.get(lista.get(i));
+			Mechanika mechanika = KamienieDusz.mechaniki.get(lista.get(i));
 			if (mechanika == null)
 				throw new IllegalArgumentException("Nie odnaleziono mechaniki \"" + lista.get(i) + "\" z Kamienia \"" + nazwa + "\"");
 			mechaniki[i] = mechanika;
 		}
 		
-		return new KamieńDusz(nazwa, mechaniki);
+		KamieńDusz kamień = new KamieńDusz(nazwa, slot, mechaniki, item);
+		kamienieZItemów.put(item, kamień);
+		return kamień;
 	}
 
 	@Override

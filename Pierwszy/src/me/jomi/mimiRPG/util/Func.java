@@ -284,6 +284,8 @@ public abstract class Func {
 				strB.append(arrayToStringBuffer((Object[]) array[i]));
 			else
 				strB.append(array[i]);
+			if ( i + 1 < array.length)
+				strB.append("§f, ");
 		}
 		return strB.append("] len = ").append(array.length);
 	}
