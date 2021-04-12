@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -16,6 +17,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -28,13 +30,19 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.google.common.collect.Lists;
+
+import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
@@ -44,16 +52,12 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.LepszaMapa;
 import me.jomi.mimiRPG.util.MultiConfig;
 import me.jomi.mimiRPG.util.Napis;
+import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.PersistentDataTypeCustom;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class KamienieDusz implements Przeładowalny, Listener {
-	public static final String prefix = Func.prefix(KamienieDusz.class);
-	
-	static ItemStack pustyKamień = Func.stwórzItem(Material.FIREWORK_STAR, "&8Pusty Kamień Dusz", 1, "&aZużyty kamień", "&aNic już z niego");
-	static int maxKamienieNaItem = 2;
-	
 	public static abstract class Mechanika {
 		public final String nazwa;
 		
@@ -87,6 +91,8 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		Moment moment;
 		Target target;
 		
+		Enum<?> poCzym;
+		
 		public MechanikaEfekt(String nazwa, LepszaMapa<String> mapa) {
 			super(nazwa, mapa);
 		}
@@ -108,6 +114,18 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			
 			moment = Func.StringToEnum(Moment.class, mapa.getString("moment"));
 			target = Func.StringToEnum(Target.class, mapa.get("target", "self"));
+			
+			String strPoCzym = mapa.getString("po czym");
+			if (strPoCzym != null)
+				switch (moment) {
+				case ATTACK:
+				case DAMAGED:
+					poCzym = Func.StringToEnum(EntityType.class, strPoCzym);
+					break;
+				case BLOCK_BREAK:
+					poCzym = Func.StringToEnum(Material.class, strPoCzym);
+					break;
+				}
 		}
 	
 		
@@ -126,18 +144,20 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		@Override
 		public void onAttack(EntityDamageByEntityEvent ev) {
-			fabric(Moment.ATTACK, ev.getDamager(), ev.getEntity());
+			if (poCzym == null || poCzym == ev.getEntity().getType())
+				fabric(Moment.ATTACK, ev.getDamager(), ev.getEntity());
 		}
 		@Override
 		public void onDamaged(EntityDamageEvent ev) {
-			fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
+			if (poCzym == null || poCzym == ev.getEntityType())
+				fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
 		}
 		@Override
 		public void onBlockBreak(BlockBreakEvent ev) {
-			fabric(Moment.BLOCK_BREAK, ev.getPlayer(), null);
+			if (poCzym == null || poCzym == ev.getBlock().getType())
+				fabric(Moment.BLOCK_BREAK, ev.getPlayer(), null);
 		}
 	}
- 
 	public static class MechanikaAtrybut extends Mechanika {
 		public MechanikaAtrybut(String nazwa, LepszaMapa<String> mapa) {
 			super(nazwa, mapa);
@@ -252,6 +272,32 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			meta.setLore(lore);
 			
 		}
+		public void odaplikuj(ItemMeta meta, int indexWLiście) {
+			for (int i=0; i < mechaniki.length; i++)
+				mechaniki[i].odaplikuj(meta);
+			
+
+			List<String> lore = meta.getLore();
+			lore.remove(indexWLiście);
+			meta.setLore(lore);
+			
+			
+			List<String> nałożone = Lists.newArrayList(nałożone(meta));
+			String[] nowe = new String[nałożone.size() - 1];
+			int i=0;
+			
+			while (i < nowe.length) {
+				String akt = nałożone.remove(0);
+				if (i == indexWLiście) {
+					indexWLiście = -1;
+					continue;
+				}
+				nowe[i++] = akt;
+			}
+			
+			meta.getPersistentDataContainer().set(KamieńDusz.kluczKamieni, PersistentDataTypeCustom.StringArray, nowe);
+
+		}
 		public boolean możnaNałożyć(ItemStack item) {
 			return	slot.możnaZałożyć(item) && 
 					nałożone(item.getItemMeta()).length < maxKamienieNaItem;
@@ -263,6 +309,77 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			return array == null ? new String[0] : array;
 		}
 	}
+	
+	
+	
+	public static final String prefix = Func.prefix(KamienieDusz.class);
+	
+	static ItemStack pustyKamień = Func.stwórzItem(Material.FIREWORK_STAR, "&8Pusty Kamień Dusz", 1, "&aZużyty kamień", "&aNic już z niego");
+	static int maxKamienieNaItem = 2;
+	
+	
+	@SuppressWarnings("deprecation")
+	public KamienieDusz() {
+		CustomoweItemy.customoweItemy.put("kamienieDusz_Ekstraktor", itemEkstarktor);
+		
+		panelMenu.ustawClick(ev -> {
+			if (!Func.multiEquals(ev.getClick(), ClickType.RIGHT, ClickType.LEFT)) return;
+			ItemStack item = ev.getInventory().getItem(panel_slotItemu);
+			if (!ev.getCurrentItem().equals(itemBrakuKamienia))
+				Func.wykonajDlaNieNull(rozpoznaj(ev.getCurrentItem()), kamień -> {
+					if (!ev.getCursor().equals(itemEkstarktor)) return;
+					
+					ev.setCursor(ev.getCurrentItem());
+					ev.getCursor().setType(ev.getCurrentItem().getType());
+					ev.getCursor().setAmount(ev.getCurrentItem().getAmount());
+					ev.getCursor().setItemMeta(ev.getCurrentItem().getItemMeta());
+					ev.setCurrentItem(itemBrakuKamienia);
+					
+					ItemMeta meta = item.getItemMeta();
+					
+					kamień.odaplikuj(meta, slotWIndex(ev.getRawSlot()) + 1);
+					
+					item.setItemMeta(meta);
+					ev.getInventory().setItem(panel_slotItemu, item);
+					
+					ev.getWhoClicked().addScoreboardTag("mimiKamienieDuszDropBlok");
+					ev.getWhoClicked().closeInventory();
+					ev.getWhoClicked().removeScoreboardTag("mimiKamienieDuszDropBlok");
+					ev.getWhoClicked().openInventory(stwórzMenu(ev.getWhoClicked().getInventory().getItemInMainHand()));
+				});
+			else 
+				Func.wykonajDlaNieNull(rozpoznaj(ev.getCursor()), kamień -> {
+					if (!kamień.możnaNałożyć(item))
+						return;
+					
+					ItemMeta meta = item.getItemMeta();
+					
+					kamień.zaaplikuj(meta);
+					item.setItemMeta(meta);
+					ev.getInventory().setItem(panel_slotItemu, item);
+					
+					ev.setCancelled(true);
+					
+					ev.setCurrentItem(ev.getCursor());
+					
+					ev.setCursor(pustyKamień);
+					ev.getCursor().setType(pustyKamień.getType());
+					ev.getCursor().setAmount(pustyKamień.getAmount());
+					ev.getCursor().setItemMeta(pustyKamień.getItemMeta());
+					
+					Main.log(Func.msg(prefix + "%s nałożył kamień %s na %s przez panel", ev.getWhoClicked().getName(), kamień.nazwa, Napis.item(ev.getCurrentItem()).toString()));
+				});
+		});
+		panelMenu.ustawClose(ev -> {
+			if (ev.getPlayer().getInventory().getItemInMainHand().equals(panelMenu.dajDanePanelu(ev.getInventory()))) {
+				ev.getPlayer().getInventory().setItemInMainHand(ev.getInventory().getItem(panel_slotItemu));
+			} else {
+				ev.getPlayer().sendMessage(prefix + "Twój item uległ awarii, zgłoś się z tym problemem do administratora");
+				Main.log(prefix + ev.getPlayer().getName() + " był bliski kopiowania itemów przez panel kamieni dusz!");
+			}
+		});
+	}
+	
 	
 	/**
 	 * Rozpoznaje którym Kamieniem dusz jest dany item
@@ -286,6 +403,16 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		return kamienie;
 	}
 	
+	/**
+	 * zwraca index na liście kamieni dusz poprzez slot
+	 * @param slot w eq
+	 * @return index na liście kamieni dusz
+	 */
+	private static int slotWIndex(int slot) {
+		// TODO rozbudować
+		return slot - (9 + 5);
+	}
+	
 	private void wykonaj(PlayerInventory inv, Consumer<KamieńDusz> cons) {
 		wczytaj(inv.getItemInMainHand()).forEach(cons);
 		wczytaj(inv.getItemInOffHand()).forEach(cons);
@@ -304,6 +431,11 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void klikanieEq(InventoryClickEvent ev) {
+		if (ev.getRawSlot() >= ev.getInventory().getSize() && panelMenu.jestPanelem(ev.getInventory()) && ev.getCurrentItem() != null && ev.getCurrentItem().equals(ev.getWhoClicked().getInventory().getItemInMainHand())) {
+			ev.setCancelled(true);
+			return;
+		}
+		
 		if (!ev.getClick().equals(ClickType.RIGHT)) return;
 		if (ev.getCurrentItem() == null) return;
 		Func.wykonajDlaNieNull(rozpoznaj(ev.getCursor()), kamień -> {
@@ -321,10 +453,41 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			ev.getCursor().setAmount(pustyKamień.getAmount());
 			ev.getCursor().setItemMeta(pustyKamień.getItemMeta());
 			
-			Main.log(Func.msg(prefix + "%s nałożył kamień %s na %s", ev.getWhoClicked().getName(), kamień.nazwa, Napis.item(ev.getCurrentItem()).toString()));
+			Main.log(Func.msg(prefix + "%s nałożył kamień %s na %s przez inv", ev.getWhoClicked().getName(), kamień.nazwa, Napis.item(ev.getCurrentItem()).toString()));
 		});
 	}
-
+	@EventHandler
+	public void zmianaRęki(PlayerSwapHandItemsEvent ev) {
+		if (!ev.getPlayer().isSneaking()) return;
+		if (wczytaj(ev.getOffHandItem()).isEmpty()) return;
+		
+		ev.setCancelled(true);
+		ev.getPlayer().openInventory(stwórzMenu(ev.getOffHandItem()));
+	}
+	@EventHandler
+	public void wyrzucanieItemków(PlayerDropItemEvent ev) {
+		if (ev.getPlayer().getScoreboardTags().contains("mimiKamienieDuszDropBlok"))
+			ev.setCancelled(true);
+	}
+	
+	private final ItemStack itemEkstarktor = Func.połysk(Func.stwórzItem(Material.SCUTE, "&bEkstraktor Kamieni Dusz", "&aKliknij na kamień w panelu", "&aAby go wyjąć", "&cItem Jednorazowy!"));
+	
+	private final int panel_slotItemu = 9 + 2;
+	private final Panel panelMenu = new Panel(true);
+	private final ItemStack itemBrakuKamienia = Func.stwórzItem(Material.PINK_STAINED_GLASS_PANE, "&aSlot na kamień dusz");
+	Inventory stwórzMenu(ItemStack item) {
+		Inventory inv = panelMenu.stwórz(item.clone(), 3, "&1&lKamienie Dusz");
+		
+		Func.ustawPuste(inv, Baza.pustySlotCzarny);
+		
+		inv.setItem(panel_slotItemu, item.clone());
+		AtomicInteger slot = new AtomicInteger(9 + 5);
+		wczytaj(item).forEach(kamień -> inv.setItem(slot.getAndIncrement(), kamień.item));
+		while (slot.get() <= 9 + 6)
+			inv.setItem(slot.getAndIncrement(), itemBrakuKamienia);
+		
+		return inv;
+	}
 
 	static final Map<String, Mechanika> mechaniki = new HashMap<>();
 	static final Map<String, KamieńDusz> kamienie = new HashMap<>();

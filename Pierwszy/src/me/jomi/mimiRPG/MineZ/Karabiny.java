@@ -51,6 +51,7 @@ import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.MineZ.SkinyItemków.Grupa;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
@@ -88,8 +89,9 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		@Mapowane int czasPrzeładowania = 5; // w sekundach
 		@Mapowane KolorRGB kolorOgonaPocisku;
 		
-		@Override
-		protected void Init() {
+		
+		//@Override
+		protected void _Init() { // XXX temp do nowej edycji
 			if (item != null && nazwa != null) {
 				ItemMeta meta = item.getItemMeta();
 				meta.getPersistentDataContainer().set(Karabiny.keyKarabin, PersistentDataType.STRING, nazwa);
@@ -306,11 +308,30 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		ev.setDamage(karabin.dmg);
 	}
 	
-	private Karabin karabin(ItemStack item) {
+
+	static final HashMap<String, Karabin> stareKarabiny = new HashMap<>();// XXX temp do nowej edy
+	static final Config stareKarabinyConfig = new Config("Karabiny stare");// XXX temp do nowej edy
+	private Karabin karabin(ItemStack item, PlayerInteractEvent ev) {
 		if (item == null || !item.hasItemMeta()) return null;
-		
+
 		String key = item.getItemMeta().getPersistentDataContainer().getOrDefault(keyKarabin, PersistentDataType.STRING, null);
-		if (key == null) return null;
+		if (key == null) { // temp return null;
+			// XXX temp do nowej edy //////
+			if (Main.włączonyModół(SkinyItemków.class)) {
+				Grupa grp = SkinyItemków.wczytaj(item);
+				if (grp != null)
+					item = SkinyItemków.przetwórz(item.clone(), grp.podstawowy);
+			}
+			for (Karabin karabin : stareKarabiny.values())
+				if (Func.porównaj(karabin.item, item)) {
+					ev.getPlayer().getInventory().setItemInMainHand(karabiny.get(karabin.nazwa).item);
+					ev.getPlayer().sendMessage(prefix + "Twój karabin " + karabin.nazwa + " został wymieniony na nowszą wersję, baw sie dobrze");
+					Main.log(prefix + ev.getPlayer().getName() + " otrzymał nowszą wersję karabinu " + karabin.nazwa);
+					return null;
+				}
+			// XXX temp do nowej edy //////
+			return null;
+		}
 		
 		return karabiny.get(key);
 	}
@@ -318,13 +339,15 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 	public void użycie(PlayerInteractEvent ev) {
 		if (ev.getAction().equals(Action.PHYSICAL)) return;
 		
-		Karabin karabin = karabin(ev.getItem());
+		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand(); // XXX temp do nowej edyt / ev.getItem();
+		
+		Karabin karabin = karabin(item, ev);
 		if (karabin == null) return;
 		
 		switch (ev.getAction()) {
 		case RIGHT_CLICK_AIR:
 		case RIGHT_CLICK_BLOCK:
-			karabin.strzel(ev.getPlayer(), ev.getItem());
+			karabin.strzel(ev.getPlayer(), item);
 			break;
 		case LEFT_CLICK_AIR:
 		case LEFT_CLICK_BLOCK:
@@ -348,9 +371,21 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		for (String klucz : config.klucze())
 			try {
 				Karabin karabin = (Karabin) config.wczytaj(klucz);
+				karabin._Init();
 				karabiny.put(karabin.nazwa, karabin);
 			} catch (Throwable e) {
 				Main.warn("Niepoprawny karabin " + klucz + " w Karabiny.yml");
+			}
+		
+
+		stareKarabiny.clear();
+		stareKarabinyConfig.przeładuj();
+		for (String klucz : stareKarabinyConfig.klucze())
+			try {
+				Karabin karabin = (Karabin) stareKarabinyConfig.wczytaj(klucz);
+				stareKarabiny.put(karabin.nazwa, karabin);
+			} catch (Throwable e) {
+				Main.warn("Niepoprawny karabin " + klucz + " w Karabiny stare.yml");
 			}
 	}
 	@Override

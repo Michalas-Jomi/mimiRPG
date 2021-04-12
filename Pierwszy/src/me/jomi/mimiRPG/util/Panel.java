@@ -94,6 +94,10 @@ public class Panel {
 		return new Holder(dane, rzędy, nazwa, pustySlot).getInventory();
 	}
 	
+	public Object dajDanePanelu(Inventory inv) {
+		return ((Holder) inv.getHolder()).dane;
+	}
+	
 	public void ustawOpen(Consumer<InventoryOpenEvent> open) {
 		this.open = open;
 	}

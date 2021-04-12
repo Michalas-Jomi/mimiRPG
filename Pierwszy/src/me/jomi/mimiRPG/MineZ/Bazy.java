@@ -523,7 +523,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!mat.find())
 				Main.warn("Nieprawidłowe id regionu Bazy: " + region.getId());
 			UnaryOperator<Integer> func = i -> Func.Int(mat.group(i));
-			Bukkit.getWorld(nazwaŚwiata).getBlockAt(func.apply(1), func.apply(2), func.apply(3)).setType(Material.AIR);;
+			Bukkit.getWorld(nazwaŚwiata).getBlockAt(func.apply(1), func.apply(2), func.apply(3)).setType(Material.AIR);
 				
 				
 			ProtectedCuboidRegion nowy = new ProtectedCuboidRegion(
