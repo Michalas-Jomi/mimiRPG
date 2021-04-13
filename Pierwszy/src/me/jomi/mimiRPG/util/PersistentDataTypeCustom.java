@@ -8,9 +8,12 @@ import java.io.IOException;
 
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class PersistentDataTypeCustom {
-	public static final PersistentDataType<byte[], String[]> StringArray = new PersistentDataType<byte[], String[]>() {
+	public static final PersistentDataType<byte[], String[]> stringArray = new PersistentDataType<byte[], String[]>() {
 		@Override public Class<String[]> getComplexType() { return String[].class; }
 		@Override public Class<byte[]> getPrimitiveType() { return byte[].class; }
 
@@ -46,6 +49,25 @@ public class PersistentDataTypeCustom {
 			}
 			
 	        return w;
+		}
+	};
+	
+	public static final PersistentDataType<String, JSONObject> json = new PersistentDataType<String, JSONObject>() {
+		@Override public Class<JSONObject> getComplexType() { return JSONObject.class; }
+		@Override public Class<String> getPrimitiveType() 			 { return String.class; }
+
+		@Override
+		public String toPrimitive(JSONObject complex, PersistentDataAdapterContext context) {
+			return complex.toJSONString();
+		}
+		@Override
+		public JSONObject fromPrimitive(String primitive, PersistentDataAdapterContext context) {
+			try {
+				return (JSONObject) new JSONParser().parse(primitive);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
 	};
 }

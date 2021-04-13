@@ -19,6 +19,7 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduł;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Karabiny;
+import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Funkcje.TriPredicate;
 
@@ -40,6 +41,7 @@ public class CustomoweItemy extends Komenda {
 				lista.add("bazy");
 			if (Main.włączonyModół(Karabiny.class))
 				lista.add("karabin");
+			lista.add("ustaw");
 			return utab(args, lista);
 		}
 		switch (args[0].toLowerCase()) {
@@ -72,6 +74,17 @@ public class CustomoweItemy extends Komenda {
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 2) return false;
+		
+		if (sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("ustaw")) {
+			Player p = (Player) sender;
+			if (p.getInventory().getItemInMainHand() == null)
+				throwFormatMsg("Musisz trzymać coś w łapce aby tego użyć");
+			String ścieżka = Func.listToString(args, 1);
+			new Config("Customowe Itemy").ustaw_zapisz(ścieżka, p.getInventory().getItemInMainHand());
+			Baza.przeładuj();
+			throwFormatMsg("Wyeksportowałeś item pod nazwą %s", ścieżka);
+		}
+		
 		
 		TriPredicate<CommandSender, String, String> tric = null;
 		

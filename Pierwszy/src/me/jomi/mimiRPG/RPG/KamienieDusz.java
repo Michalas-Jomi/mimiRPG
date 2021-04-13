@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -39,6 +43,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.json.simple.JSONObject;
 
 import com.google.common.collect.Lists;
 
@@ -66,13 +71,13 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			wczytaj(mapa);
 		}
 		
-		public abstract void zaaplikuj(ItemMeta meta);
-		public abstract void odaplikuj(ItemMeta meta);
+		public abstract void zaaplikuj(ItemStack kopia, ItemMeta meta);
+		public abstract void odaplikuj(ItemStack kopia, ItemMeta meta);
 		public abstract void wczytaj(LepszaMapa<String> mapa);
 		
-		public void onAttack(EntityDamageByEntityEvent ev)	{};
-		public void onDamaged(EntityDamageEvent ev)			{};
-		public void onBlockBreak(BlockBreakEvent ev)		{};
+		public long onAttack(EntityDamageByEntityEvent ev)	{return 0L;};
+		public long onDamaged(EntityDamageEvent ev)			{return 0L;};
+		public long onBlockBreak(BlockBreakEvent ev)		{return 0L;};
 	}
 	public static class MechanikaEfekt extends Mechanika {
 		public static enum Moment {
@@ -85,6 +90,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			OTHER
 		}
 		
+		int odnowienie; // w milisekundach
 		double szansa;
 		PotionEffect effekt;
 		
@@ -97,11 +103,12 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			super(nazwa, mapa);
 		}
 		
-		@Override public void zaaplikuj(ItemMeta meta) {}
-		@Override public void odaplikuj(ItemMeta meta) {}
+		@Override public void zaaplikuj(ItemStack kopia, ItemMeta meta) {}
+		@Override public void odaplikuj(ItemStack kopia, ItemMeta meta) {}
 		
 		@Override
 		public void wczytaj(LepszaMapa<String> mapa ) {
+			odnowienie = mapa.get("odnowienie", 0);
 			szansa = mapa.get("szansa", 1d);
 			effekt = new PotionEffect(
 					PotionEffectType.getByName(mapa.getString("efekt")),
@@ -114,6 +121,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			
 			moment = Func.StringToEnum(Moment.class, mapa.getString("moment"));
 			target = Func.StringToEnum(Target.class, mapa.get("target", "self"));
+			
 			
 			String strPoCzym = mapa.getString("po czym");
 			if (strPoCzym != null)
@@ -129,7 +137,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		}
 	
 		
-		private void fabric(Moment moment, Entity self, Entity other) {
+		private long fabric(Moment moment, Entity self, Entity other) {
 			if (this.moment == moment) {
 				Entity e = null;
 				switch (target) {
@@ -138,24 +146,29 @@ public class KamienieDusz implements Przeładowalny, Listener {
 				}
 				
 				if (e != null && e instanceof LivingEntity && Func.losuj(szansa))
-					((LivingEntity) e).addPotionEffect(effekt);
+					if (((LivingEntity) e).addPotionEffect(effekt))
+						return odnowienie;
 			}
+			return 0L;
 		}
 		
 		@Override
-		public void onAttack(EntityDamageByEntityEvent ev) {
+		public long onAttack(EntityDamageByEntityEvent ev) {
 			if (poCzym == null || poCzym == ev.getEntity().getType())
-				fabric(Moment.ATTACK, ev.getDamager(), ev.getEntity());
+				return fabric(Moment.ATTACK, ev.getDamager(), ev.getEntity());
+			return 0L;
 		}
 		@Override
-		public void onDamaged(EntityDamageEvent ev) {
+		public long onDamaged(EntityDamageEvent ev) {
 			if (poCzym == null || poCzym == ev.getEntityType())
-				fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
+				return fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
+			return 0L;
 		}
 		@Override
-		public void onBlockBreak(BlockBreakEvent ev) {
+		public long onBlockBreak(BlockBreakEvent ev) {
 			if (poCzym == null || poCzym == ev.getBlock().getType())
-				fabric(Moment.BLOCK_BREAK, ev.getPlayer(), null);
+				return fabric(Moment.BLOCK_BREAK, ev.getPlayer(), null);
+			return 0L;
 		}
 	}
 	public static class MechanikaAtrybut extends Mechanika {
@@ -164,28 +177,100 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		}
 		
 		Attribute attr;
-		AttributeModifier attrMod;
+
+		UUID uuid;
+		double wartość;
+		AttributeModifier.Operation sposób;
+		EquipmentSlot slot;
+		
+		public AttributeModifier getAttributeModifier(Material mat) {
+			return new AttributeModifier(
+					uuid,
+					uuid.toString().replace("-", ""),
+					wartość,
+					sposób,
+					slot == null ? odpowiedniSlot(mat) : slot
+					);
+		}
 		
 		
-		@Override
-		public void zaaplikuj(ItemMeta meta) {
-			meta.addAttributeModifier(attr, attrMod);
+		private void odświeżInv(Player p) {
+			p.updateInventory();
+			try {
+				Object handle = Func.dajField(p.getClass(), "entity").get(p);
+				Func.dajMetode(handle.getClass(), "playerTick").invoke(handle);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		}
 		@Override
-		public void odaplikuj(ItemMeta meta) {
-			meta.removeAttributeModifier(attr, attrMod);
+		public void zaaplikuj(ItemStack kopia, ItemMeta meta) {
+			if (!meta.hasAttributeModifiers()) {
+				EquipmentSlot slot = odpowiedniSlot(kopia.getType());
+				
+				Player p = Bukkit.getOnlinePlayers().iterator().next();
+				PlayerInventory inv = p.getInventory();
+				
+				ItemStack stary = inv.getItem(slot);
+				if (stary != null) stary = stary.clone();
+				
+				inv.setItem(slot, null);
+				odświeżInv(p);
+				
+				Map<Attribute, Double> mapa = new HashMap<>();
+				
+				Func.forEach(Attribute.values(), attr ->
+					Func.wykonajDlaNieNull(p.getAttribute(attr), ai -> {
+						double akt = ai.getValue();
+						if (akt != 0)
+							mapa.put(attr, akt);
+					}));
+				
+				inv.setItem(slot, kopia);
+				odświeżInv(p);
+				
+				ItemStack fstary = stary;
+				Func.forEach(Attribute.values(), attr -> {
+					double akt = 0;
+					AttributeInstance ai = p.getAttribute(attr);
+					if (ai != null)
+						akt = ai.getValue();
+					akt = akt - mapa.getOrDefault(attr, 0d);
+					if (akt != 0)
+						mapa.put(attr, akt);
+					else
+						mapa.remove(attr);
+				});
+				
+				inv.setItem(slot, fstary);
+				odświeżInv(p);
+				
+				Bukkit.getScheduler().runTask(Main.plugin, () -> odświeżInv(p));
+				
+				mapa.forEach((attr, val) -> {
+					UUID uuid = UUID.randomUUID();
+					meta.addAttributeModifier(attr, new AttributeModifier(uuid, uuid.toString().replace("-", "") , val, Operation.ADD_NUMBER, slot));
+				});
+			}
+			
+			meta.addAttributeModifier(attr, getAttributeModifier(kopia.getType()));
+		}
+		@Override
+		public void odaplikuj(ItemStack kopia, ItemMeta meta) {
+			meta.removeAttributeModifier(attr, getAttributeModifier(kopia.getType()));
 		}
 		@Override
 		public void wczytaj(LepszaMapa<String> mapa) {
 			attr = Func.StringToEnum(Attribute.class, mapa.getString("atrybut"));
-			attrMod = new AttributeModifier(
-					getUUID(),
-					null,
-					mapa.getDouble("wartość"),
-					Func.StringToEnum(AttributeModifier.Operation.class, mapa.get("sposób", "ADD_NUMBER")),
-					Func.StringToEnum(EquipmentSlot.class, mapa.get("slot", "HAND"))
-					);
+			uuid = getUUID();
+			wartość = mapa.getDouble("wartość");
+			sposób = Func.StringToEnum(AttributeModifier.Operation.class, mapa.get("sposób", "ADD_NUMBER"));
+			String slot = mapa.get("slot", "HAND");
+			if (!slot.equalsIgnoreCase("AUTO"))
+				this.slot = Func.StringToEnum(EquipmentSlot.class, slot);
 		}
+		
+		
 		private UUID getUUID() {
 			String sc = "mechanika.atrybut.uuid." + nazwa;
 			
@@ -198,9 +283,32 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			return UUID.fromString(uuid);
 		}
 	}
+	public static class MechanikaTrwałyEfekt extends Mechanika {
+		public MechanikaTrwałyEfekt(String nazwa, LepszaMapa<String> mapa) {
+			super(nazwa, mapa);
+		}
+		
+		PotionEffect effekt;
+
+		@Override public void zaaplikuj(ItemStack kopia, ItemMeta meta) {}
+		@Override public void odaplikuj(ItemStack kopia, ItemMeta meta) {}
+
+		@Override
+		public void wczytaj(LepszaMapa<String> mapa) {
+			effekt = new PotionEffect(
+					PotionEffectType.getByName(mapa.getString("efekt")),
+					mapa.getInt("czas"),
+					mapa.getInt("poziom"),
+					mapa.getBoolean("ambient"),
+					mapa.getBoolean("particle"),
+					mapa.getBoolean("ikona")
+					);
+		}
+		
+	}
 	
 	public static enum Slot {
-		ARMOR(item -> EnchantmentTarget.ARMOR.includes(item)),
+		ZBROJA(item -> EnchantmentTarget.ARMOR.includes(item)),
 		HEŁM(item -> EnchantmentTarget.ARMOR_HEAD.includes(item)),
 		KLATA(item -> EnchantmentTarget.ARMOR_TORSO.includes(item)),
 		SPODNIE(item -> EnchantmentTarget.ARMOR_LEGS.includes(item)),
@@ -232,7 +340,6 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 	}
 	public static class KamieńDusz {
-		private static final NamespacedKey kluczKamieni = new NamespacedKey(Main.plugin, "kamieniedusz");
 		private static final String linia0 = "§6Kamienie Dusz§8:";
 		
 		public final String nazwa;
@@ -247,9 +354,9 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			this.item = item;
 		}
 
-		public void zaaplikuj(ItemMeta meta) {
+		public void zaaplikuj(ItemStack kopia, ItemMeta meta) {
 			for (int i=0; i < mechaniki.length; i++)
-				mechaniki[i].zaaplikuj(meta);
+				mechaniki[i].zaaplikuj(kopia, meta);
 			
 			String[] stare = nałożone(meta);
 			String[] nowe = new String[stare.length + 1];
@@ -259,7 +366,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			
 			nowe[i] = nazwa;
 			
-			meta.getPersistentDataContainer().set(kluczKamieni, PersistentDataTypeCustom.StringArray, nowe);
+			meta.getPersistentDataContainer().set(kluczKamieni, PersistentDataTypeCustom.stringArray, nowe);
 			
 			List<String> lore = meta.hasLore() ? Func.nieNull(meta.getLore()) : new ArrayList<>();
 			
@@ -272,9 +379,9 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			meta.setLore(lore);
 			
 		}
-		public void odaplikuj(ItemMeta meta, int indexWLiście) {
+		public void odaplikuj(ItemStack kopia, ItemMeta meta, int indexWLiście) {
 			for (int i=0; i < mechaniki.length; i++)
-				mechaniki[i].odaplikuj(meta);
+				mechaniki[i].odaplikuj(kopia, meta);
 			
 
 			List<String> lore = meta.getLore();
@@ -295,24 +402,35 @@ public class KamienieDusz implements Przeładowalny, Listener {
 				nowe[i++] = akt;
 			}
 			
-			meta.getPersistentDataContainer().set(KamieńDusz.kluczKamieni, PersistentDataTypeCustom.StringArray, nowe);
+			meta.getPersistentDataContainer().set(kluczKamieni, PersistentDataTypeCustom.stringArray, nowe);
 
 		}
 		public boolean możnaNałożyć(ItemStack item) {
-			return	slot.możnaZałożyć(item) && 
-					nałożone(item.getItemMeta()).length < maxKamienieNaItem;
+			if (!slot.możnaZałożyć(item))
+				return false;
+			String[] nałożone = nałożone(item.getItemMeta());
+			if (nałożone.length >= maxKamienieNaItem)
+				return false;
+			
+			for (String nałożony : nałożone)
+				if (nazwa.equals(nałożony))
+					return false;
+			
+			return true;
 		}
 		
 		private static String[] nałożone(ItemMeta meta) {
 			if (meta == null) return new String[0];
-			String[] array = meta.getPersistentDataContainer().get(kluczKamieni, PersistentDataTypeCustom.StringArray);
+			String[] array = meta.getPersistentDataContainer().get(kluczKamieni, PersistentDataTypeCustom.stringArray);
 			return array == null ? new String[0] : array;
 		}
 	}
 	
 	
-	
 	public static final String prefix = Func.prefix(KamienieDusz.class);
+
+	private static final NamespacedKey kluczKamieni = new NamespacedKey(Main.plugin, "kamieniedusz");
+	private static final NamespacedKey kluczKamieniOdnowienia = new NamespacedKey(Main.plugin, "kamieniedusz_odnowienie");
 	
 	static ItemStack pustyKamień = Func.stwórzItem(Material.FIREWORK_STAR, "&8Pusty Kamień Dusz", 1, "&aZużyty kamień", "&aNic już z niego");
 	static int maxKamienieNaItem = 2;
@@ -337,7 +455,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 					
 					ItemMeta meta = item.getItemMeta();
 					
-					kamień.odaplikuj(meta, slotWIndex(ev.getRawSlot()) + 1);
+					kamień.odaplikuj(item, meta, slotWIndex(ev.getRawSlot()) + 1);
 					
 					item.setItemMeta(meta);
 					ev.getInventory().setItem(panel_slotItemu, item);
@@ -354,7 +472,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 					
 					ItemMeta meta = item.getItemMeta();
 					
-					kamień.zaaplikuj(meta);
+					kamień.zaaplikuj(item, meta);
 					item.setItemMeta(meta);
 					ev.getInventory().setItem(panel_slotItemu, item);
 					
@@ -380,7 +498,6 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		});
 	}
 	
-	
 	/**
 	 * Rozpoznaje którym Kamieniem dusz jest dany item
 	 * @param item item kamienia dusz
@@ -402,6 +519,25 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		return kamienie;
 	}
+	@SuppressWarnings("unchecked")
+	public List<KamieńDusz> wczytajGotowe(ItemStack item) {
+		List<KamieńDusz> kamienie = wczytaj(item);
+		if (item == null || !item.hasItemMeta())
+			return kamienie;
+		
+		
+		JSONObject odnowienia = item.getItemMeta().getPersistentDataContainer().getOrDefault(kluczKamieniOdnowienia, PersistentDataTypeCustom.json, new JSONObject());
+		
+		long teraz = System.currentTimeMillis();
+		for (int i = kamienie.size() - 1; i >= 0; i--) {
+			KamieńDusz kamień = kamienie.get(i);
+			
+			if (((long) odnowienia.getOrDefault(kamień.nazwa, 0L)) > teraz)
+				kamienie.remove(i);
+		}
+		
+		return kamienie;
+	}
 	
 	/**
 	 * zwraca index na liście kamieni dusz poprzez slot
@@ -413,17 +549,37 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		return slot - (9 + 5);
 	}
 	
-	private void wykonaj(PlayerInventory inv, Consumer<KamieńDusz> cons) {
-		wczytaj(inv.getItemInMainHand()).forEach(cons);
-		wczytaj(inv.getItemInOffHand()).forEach(cons);
-		wczytaj(inv.getHelmet()).forEach(cons);
-		wczytaj(inv.getChestplate()).forEach(cons);
-		wczytaj(inv.getLeggings()).forEach(cons);
-		wczytaj(inv.getBoots()).forEach(cons);
+	@SuppressWarnings("unchecked")
+	private void wykonaj(ItemStack item, Consumer<ItemStack> setter, Function<KamieńDusz, Long> func) {
+		wczytajGotowe(item).forEach(kamień -> {
+			long odnowienie = func.apply(kamień);
+			if (odnowienie > 0) {
+				ItemMeta meta = item.getItemMeta();
+				
+				JSONObject json = meta.getPersistentDataContainer().getOrDefault(kluczKamieniOdnowienia, PersistentDataTypeCustom.json, new JSONObject());
+				json.put(kamień.nazwa, System.currentTimeMillis() + odnowienie);
+				meta.getPersistentDataContainer().set(kluczKamieniOdnowienia, PersistentDataTypeCustom.json, json);
+				
+				item.setItemMeta(meta);
+				setter.accept(item);
+			}
+		});
+		
 	}
-	private <E extends Event> void wykonaj(E ev, Entity e, BiConsumer<Mechanika, E> bic) {
+	private void wykonaj(PlayerInventory inv, Function<KamieńDusz, Long> func) {
+		wykonaj(inv.getItemInMainHand(), inv::setItemInMainHand, func);
+		wykonaj(inv.getHelmet(), inv::setHelmet, func);
+		wykonaj(inv.getChestplate(), inv::setChestplate, func);
+		wykonaj(inv.getLeggings(), inv::setLeggings, func);
+		wykonaj(inv.getBoots(), inv::setBoots, func);
+	}
+	private <E extends Event> void wykonaj(E ev, Entity e, BiFunction<Mechanika, E, Long> bif) {
 		if (e instanceof Player && (!(ev instanceof Cancellable) || !((Cancellable) ev).isCancelled()))
-			wykonaj(((Player) e).getInventory(), kamień -> Func.forEach(kamień.mechaniki, mechanika -> bic.accept(mechanika, ev)));
+			wykonaj(((Player) e).getInventory(), kamień -> {
+				AtomicLong odnowienie = new AtomicLong(0L);
+				Func.forEach(kamień.mechaniki, mechanika -> odnowienie.set(Math.max(odnowienie.get(), bif.apply(mechanika, ev))));
+				return odnowienie.get();
+			});
 	}
 	@EventHandler(priority = EventPriority.MONITOR) public void otrzymywanieDmg	(EntityDamageEvent ev) 			{wykonaj(ev, ev.getEntity(),  Mechanika::onDamaged);}
 	@EventHandler(priority = EventPriority.MONITOR) public void zadanieDmg		(EntityDamageByEntityEvent ev)	{wykonaj(ev, ev.getDamager(), Mechanika::onAttack);}
@@ -444,7 +600,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			
 			ItemMeta meta = ev.getCurrentItem().getItemMeta();
 			
-			kamień.zaaplikuj(meta);
+			kamień.zaaplikuj(ev.getCurrentItem(), meta);
 			ev.getCurrentItem().setItemMeta(meta);
 			
 			ev.setCancelled(true);
@@ -488,7 +644,20 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		return inv;
 	}
-
+	
+	
+	static EquipmentSlot odpowiedniSlot(Material mat) {
+		ItemStack item = new ItemStack(mat);
+		
+		if (EnchantmentTarget.ARMOR_HEAD.includes(item)) return EquipmentSlot.HEAD;
+		if (EnchantmentTarget.ARMOR_TORSO.includes(item))return EquipmentSlot.CHEST;
+		if (EnchantmentTarget.ARMOR_LEGS.includes(item)) return EquipmentSlot.LEGS;
+		if (EnchantmentTarget.ARMOR_FEET.includes(item)) return EquipmentSlot.FEET;
+		
+		return EquipmentSlot.HAND;
+	}
+	
+	
 	static final Map<String, Mechanika> mechaniki = new HashMap<>();
 	static final Map<String, KamieńDusz> kamienie = new HashMap<>();
 	static final Map<ItemStack, KamieńDusz> kamienieZItemów = new HashMap<>();
@@ -520,7 +689,12 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			try {
 				mapa.put(nazwa, bif.apply(nazwa, config.sekcja(nazwa).getValues(false)));
 			} catch (IllegalArgumentException e) {
-				Main.log(prefix + e.getMessage());
+				if (e.getMessage() != null)
+					Main.log(prefix + nazwa + e.getMessage());
+				else {
+					Main.warn(prefix + nazwa);
+					e.printStackTrace();
+				}
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -540,9 +714,11 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		try {
 			return clazz.getDeclaredConstructor(String.class, LepszaMapa.class).newInstance(nazwa, lmapa);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Nie udało się wczytać mechaniki " + nazwa + " \n" + e.getMessage());
 		} catch (Throwable e) {
 			e.printStackTrace();
-			throw new IllegalArgumentException("Nie udało się wczytaj mechaniki " + nazwa);
+			throw new IllegalArgumentException("Nie udało się wczytać mechaniki " + nazwa);
 		}
 		
 	}
