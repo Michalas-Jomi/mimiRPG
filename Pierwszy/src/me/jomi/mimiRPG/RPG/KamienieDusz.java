@@ -25,13 +25,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -60,9 +60,10 @@ import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.PersistentDataTypeCustom;
 import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
-public class KamienieDusz implements Przeładowalny, Listener {
+public class KamienieDusz implements Zegar, Przeładowalny, Listener {
 	public static abstract class Mechanika {
 		public final String nazwa;
 		
@@ -75,9 +76,10 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		public abstract void odaplikuj(ItemStack kopia, ItemMeta meta);
 		public abstract void wczytaj(LepszaMapa<String> mapa);
 		
-		public long onAttack(EntityDamageByEntityEvent ev)	{return 0L;};
-		public long onDamaged(EntityDamageEvent ev)			{return 0L;};
-		public long onBlockBreak(BlockBreakEvent ev)		{return 0L;};
+		public long onAttack(EntityDamageByEntityEvent ev)	{return 0L;}
+		public long onDamaged(EntityDamageEvent ev)			{return 0L;}
+		public long onBlockBreak(BlockBreakEvent ev)		{return 0L;}
+		public long czas(Player p)							{return 0L;}
 	}
 	public static class MechanikaEfekt extends Mechanika {
 		public static enum Moment {
@@ -122,17 +124,14 @@ public class KamienieDusz implements Przeładowalny, Listener {
 			moment = Func.StringToEnum(Moment.class, mapa.getString("moment"));
 			target = Func.StringToEnum(Target.class, mapa.get("target", "self"));
 			
-			
-			String strPoCzym = mapa.getString("po czym");
+
+			String strPoCzym = mapa.getString("poCzym");
+			if (strPoCzym == null) strPoCzym = mapa.getString("po czym");
 			if (strPoCzym != null)
 				switch (moment) {
-				case ATTACK:
-				case DAMAGED:
-					poCzym = Func.StringToEnum(EntityType.class, strPoCzym);
-					break;
-				case BLOCK_BREAK:
-					poCzym = Func.StringToEnum(Material.class, strPoCzym);
-					break;
+				case ATTACK:		poCzym = Func.StringToEnum(EntityType.class,	strPoCzym);	break;
+				case DAMAGED:		poCzym = Func.StringToEnum(DamageCause.class,	strPoCzym);	break;
+				case BLOCK_BREAK:	poCzym = Func.StringToEnum(Material.class,		strPoCzym);	break;
 				}
 		}
 	
@@ -160,7 +159,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		}
 		@Override
 		public long onDamaged(EntityDamageEvent ev) {
-			if (poCzym == null || poCzym == ev.getEntityType())
+			if (poCzym == null || poCzym == ev.getCause())
 				return fabric(Moment.DAMAGED, ev.getEntity(), null); // TODO Damaged by entity
 			return 0L;
 		}
@@ -178,12 +177,12 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		Attribute attr;
 
-		UUID uuid;
 		double wartość;
 		AttributeModifier.Operation sposób;
 		EquipmentSlot slot;
 		
 		public AttributeModifier getAttributeModifier(Material mat) {
+			UUID uuid = getUUID(mat);
 			return new AttributeModifier(
 					uuid,
 					uuid.toString().replace("-", ""),
@@ -262,7 +261,6 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		@Override
 		public void wczytaj(LepszaMapa<String> mapa) {
 			attr = Func.StringToEnum(Attribute.class, mapa.getString("atrybut"));
-			uuid = getUUID();
 			wartość = mapa.getDouble("wartość");
 			sposób = Func.StringToEnum(AttributeModifier.Operation.class, mapa.get("sposób", "ADD_NUMBER"));
 			String slot = mapa.get("slot", "HAND");
@@ -271,8 +269,10 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		}
 		
 		
-		private UUID getUUID() {
-			String sc = "mechanika.atrybut.uuid." + nazwa;
+		private UUID getUUID(Material mat) {
+			EquipmentSlot slot = this.slot == null ? odpowiedniSlot(mat) : this.slot;
+			
+			String sc = "mechanika.atrybut.uuid." + slot + "." + nazwa;
 			
 			String uuid = configDane.wczytajStr(sc);
 			if (uuid == null) {
@@ -305,6 +305,11 @@ public class KamienieDusz implements Przeładowalny, Listener {
 					);
 		}
 		
+		@Override
+		public long czas(Player p) {
+			p.addPotionEffect(effekt);
+			return 0L;
+		}
 	}
 	
 	public static enum Slot {
@@ -573,7 +578,7 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		wykonaj(inv.getLeggings(), inv::setLeggings, func);
 		wykonaj(inv.getBoots(), inv::setBoots, func);
 	}
-	private <E extends Event> void wykonaj(E ev, Entity e, BiFunction<Mechanika, E, Long> bif) {
+	private <E> void wykonaj(E ev, Entity e, BiFunction<Mechanika, E, Long> bif) {
 		if (e instanceof Player && (!(ev instanceof Cancellable) || !((Cancellable) ev).isCancelled()))
 			wykonaj(((Player) e).getInventory(), kamień -> {
 				AtomicLong odnowienie = new AtomicLong(0L);
@@ -707,9 +712,10 @@ public class KamienieDusz implements Przeładowalny, Listener {
 		
 		String rodzaj = lmapa.get("rodzaj", "efekt");
 		switch (rodzaj.toLowerCase()) {
-		case "efekt":	clazz = MechanikaEfekt.class;	break;
-		case "atrybut":	clazz = MechanikaAtrybut.class;	break;
-		default:		throw new IllegalArgumentException("Niepoprawny rodzaj mechaniki " + nazwa + ": " + rodzaj);
+		case "efekt":		clazz = MechanikaEfekt.class; break;
+		case "trwałyefekt": clazz = MechanikaTrwałyEfekt.class; break;
+		case "atrybut":		clazz = MechanikaAtrybut.class; break;
+		default: throw new IllegalArgumentException("Niepoprawny rodzaj mechaniki " + nazwa + ": " + rodzaj);
 		}
 		
 		try {
@@ -746,5 +752,13 @@ public class KamienieDusz implements Przeładowalny, Listener {
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Wczytane Kamienie Dusz", kamienie.size());
+	}
+
+	
+	
+	@Override
+	public int czas() {
+		Bukkit.getOnlinePlayers().forEach(p -> wykonaj(p, p, Mechanika::czas));
+		return 5 * 20;
 	}
 }

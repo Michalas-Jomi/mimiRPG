@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -26,76 +27,52 @@ public class Debug extends Komenda {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		return null;
+		List<String> lista = new ArrayList<>();
+		if (args.length <= 1) return lista;
+		
+		try {
+			String zcięte = "";
+			
+			String str = Func.listToString(args);
+			if (str.contains(".")) {
+				int index = str.lastIndexOf('.');
+				if (str.length() > index)
+					zcięte = str.substring(index + 1);
+				str = str.substring(0, index);
+			}
+			
+			args = str.split(" ");
+			
+			Object obj = znajdz(sender, klasa(args), args);
+			
+			Func.dajFields(obj.getClass()).forEach(field -> lista.add(field.getName()));
+			Func.dajMetody(obj.getClass()).forEach(met -> lista.add(met.getName() + (met.getParameterCount() == 0 ? "()" : "(")));
+			
+			for (int i = lista.size() - 1; i >= 0; i--)
+				if (!lista.get(i).startsWith(zcięte))
+					lista.remove(i);
+			
+			String fstr = str.substring(args[0].length() + 1);
+			return Func.wykonajWszystkim(lista, podpowiedz -> fstr + "." + podpowiedz);
+			
+		} catch (Throwable e) {}
+		
+		
+		return lista;
 	}
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length < 1) return false;
 		try {
-			Class<?> klasa = Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Main.classLoader);
+			Class<?> klasa = klasa(args);
 
 			if (label.equalsIgnoreCase("mdebugrozpisz"))
 				return Func.powiadom(sender, infoSimple(klasa));
 
 			if (args.length < 2) return false;
 			
-			Object obj = null;
 			
-			int wNawiasie = 0;
-			boolean wStringu = false;
-			String metoda = null;
-			StringBuilder strB = new StringBuilder();
-			List<String> parametry = null;
-			for (char znak : Func.listToString(args, 1).toCharArray()) {
-				if (wStringu && znak != '"') {
-					strB.append(znak);
-					continue;
-				}
-				switch (znak) {
-				case '.':
-					if (wNawiasie != 0 || wStringu)
-						strB.append(znak);
-					else {
-						obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
-						parametry = null;
-						metoda = null;
-						strB = new StringBuilder();
-					}
-					break;
-				case '(':
-					if (wNawiasie == 0) {
-						parametry = Lists.newArrayList();
-						metoda = strB.toString();
-						strB = new StringBuilder();
-					}
-					wNawiasie++;
-					break;
-				case ')':
-					wNawiasie--;
-					if (wNawiasie == 0) {
-						parametry.add(strB.toString());
-						strB = new StringBuilder();
-					} else if (wNawiasie < 0)
-						throw new Error("Za dużo nawiasów \")\"");
-					break;
-				case ',':
-					parametry.add(strB.toString());
-					strB = new StringBuilder();
-					break;
-				case '"':
-					wStringu = !wStringu;
-					strB.append(znak);
-					break;
-				case ' ':
-					if (!wStringu)
-						break;
-				default:
-					strB.append(znak);
-				}
-			}
-			
-			if (parametry != null || (strB.length() != 0 && metoda == null))
-				obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
+			Object obj = znajdz(sender, klasa, args);
 			
 			if (obj == null)
 				return Func.powiadom(sender, "null");
@@ -109,6 +86,71 @@ public class Debug extends Komenda {
 		}
 		return true;
 	}
+	
+	Class<?> klasa(String[] args) throws ClassNotFoundException {
+		return Class.forName(args[0].startsWith("-c") ? args[0].substring(2) : "me.jomi.mimiRPG." + args[0], false, Main.classLoader);
+	}
+	Object znajdz(CommandSender sender, Class<?> klasa, String args[]) throws Throwable {
+		Object obj = null;
+		
+		int wNawiasie = 0;
+		boolean wStringu = false;
+		String metoda = null;
+		StringBuilder strB = new StringBuilder();
+		List<String> parametry = null;
+		for (char znak : Func.listToString(args, 1).toCharArray()) {
+			if (wStringu && znak != '"') {
+				strB.append(znak);
+				continue;
+			}
+			switch (znak) {
+			case '.':
+				if (wNawiasie != 0 || wStringu)
+					strB.append(znak);
+				else {
+					obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
+					parametry = null;
+					metoda = null;
+					strB = new StringBuilder();
+				}
+				break;
+			case '(':
+				if (wNawiasie == 0) {
+					parametry = Lists.newArrayList();
+					metoda = strB.toString();
+					strB = new StringBuilder();
+				}
+				wNawiasie++;
+				break;
+			case ')':
+				wNawiasie--;
+				if (wNawiasie == 0) {
+					parametry.add(strB.toString());
+					strB = new StringBuilder();
+				} else if (wNawiasie < 0)
+					throw new Error("Za dużo nawiasów \")\"");
+				break;
+			case ',':
+				parametry.add(strB.toString());
+				strB = new StringBuilder();
+				break;
+			case '"':
+				wStringu = !wStringu;
+				strB.append(znak);
+				break;
+			case ' ':
+				if (!wStringu)
+					break;
+			default:
+				strB.append(znak);
+			}
+		}
+		
+		if (parametry != null || (strB.length() != 0 && metoda == null))
+			obj = wez(sender, obj == null ? klasa : obj.getClass(), obj, metoda == null ? strB.toString() : metoda, parametry);
+		
+		return obj;
+	}
 
 	Object wez(CommandSender p, Class<?> klasa, Object naCzym, String co, List<String> parametry) throws Throwable {
 		if (parametry != null) {
@@ -116,7 +158,7 @@ public class Debug extends Komenda {
 				parametry.clear();
 			Object[] args = new Object[parametry.size()];
 			for (Method met : Func.dajMetody(klasa))
-				if (met.getName().equals(co))
+				if (met.getName().equals(co) && met.getParameterCount() == parametry.size())
 					try {
 						for (int i=0; i < args.length; i++)
 							args[i] = typ(p, met.getParameters()[i], parametry.get(i));

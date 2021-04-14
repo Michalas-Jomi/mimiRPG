@@ -1565,7 +1565,11 @@ public abstract class Func {
 		return dajZKlasy(clazz, NoSuchFieldException.class, klasa -> klasa.getDeclaredField(nazwa));
 	}
 	public static Method dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
-		return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getDeclaredMethod(nazwa, klasy));
+		try {
+			return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getDeclaredMethod(nazwa, klasy));
+		} catch (NoSuchMethodException e) {
+			return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getMethod(nazwa, klasy));
+		}
 	}
 	@SuppressWarnings("unchecked")
 	public static <T> Constructor<T> dajKonstruktor(Class<T> clazz, Class<?>... klasy) throws Throwable {
@@ -1592,7 +1596,10 @@ public abstract class Func {
 		return dajZKlasy(clazz, Sets.newConcurrentHashSet(), Class::getDeclaredFields, Field::getName);
 	}
 	public static List<Method> dajMetody(Class<?> clazz) {
-		return dajZKlasy(clazz, Sets.newConcurrentHashSet(), Class::getDeclaredMethods, Method::getName);
+		List<Method> lista = dajZKlasy(clazz, null, Class::getDeclaredMethods, Method::getName);
+		dajZKlasy(clazz, null, Class::getMethods, null).forEach(lista::add);
+		return lista;
+		
 	}
 	private static <T extends AccessibleObject> List<T> dajZKlasy(Class<?> clazz, Set<String> nazwy, Function<Class<?>, T[]> getDeclared, Function<T, String> name) {
 		List<T> lista = Lists.newArrayList();
@@ -1601,7 +1608,7 @@ public abstract class Func {
 			return lista;
 		
 		for (T obj : getDeclared.apply(clazz))
-			if (nazwy.add(name.apply(obj))) {
+			if (nazwy == null || nazwy.add(name.apply(obj))) {
 				obj.setAccessible(true);
 				lista.add(obj);
 			}

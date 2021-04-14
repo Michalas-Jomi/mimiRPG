@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONObject;
@@ -30,6 +29,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Item;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import net.md_5.bungee.chat.TextComponentSerializer;
+
+import me.jomi.mimiRPG.Main;
 
 
 public class Napis implements ConfigurationSerializable {
@@ -150,16 +151,35 @@ public class Napis implements ConfigurationSerializable {
 	public static Napis item(ItemStack item) {
 		if (item == null)
 			return new Napis("[brak itemu]");
-		net.minecraft.server.v1_16_R2.ItemStack item2 = CraftItemStack.asNMSCopy(item);
-		Napis n = new Napis("§b[" + (item.getAmount() != 1 ? "§9"+item.getAmount() + "§3x§b " : "") +
-			((item.hasItemMeta() && item.getItemMeta().hasDisplayName()) ? item.getItemMeta().getDisplayName() : item2.getName().getString()) 
-			+ "§b]§r");
-		Item b = new Item(
-				item.getType().toString().toLowerCase(),
-				item.getAmount(),
-				ItemTag.ofNbt(item2.getOrCreateTag().toString()));
-		n.txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, b));
-		return n;
+		
+		String ver = Bukkit.getServer().getClass().getName();
+		ver = ver.replace("org.bukkit.craftbukkit.", "");
+		ver = ver.replace("." + Bukkit.getServer().getClass().getSimpleName(), "");
+		
+		try {
+			Class<?> classCraftItemStack = Class.forName("org.bukkit.craftbukkit." + ver + ".inventory.CraftItemStack", false, Main.classLoader);
+			Object nmsItem = Func.dajMetode(classCraftItemStack, "asNMSCopy", ItemStack.class).invoke(null, item);
+			
+			String nazwa;
+			if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
+				nazwa = item.getItemMeta().getDisplayName();
+			else {
+				Object nazwaItemu = Func.dajMetode(nmsItem.getClass(), "getName").invoke(nmsItem);
+				nazwa = (String) Func.dajMetode(nazwaItemu.getClass(), "getString").invoke(nazwaItemu);
+			}
+			
+			Napis n = new Napis("§b[" + (item.getAmount() != 1 ? "§9"+item.getAmount() + "§3x§b " : "") + nazwa + "§b]§r");
+			Item b = new Item(
+					item.getType().toString().toLowerCase(),
+					item.getAmount(),
+					ItemTag.ofNbt(Func.dajMetode(nmsItem.getClass(), "getOrCreateTag").invoke(nmsItem).toString()));
+			n.txt.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, b));
+				
+			return n;
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	@Override
