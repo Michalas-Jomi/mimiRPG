@@ -52,7 +52,7 @@ public class Wyplac extends Komenda implements Listener {
 		return true;
 	}
 	private static ItemStack dajBanknot(double kwota, int ile) {
-		ItemStack item = Func.stwórzItem(Material.PAPER, ile, "§9§lBanknot§2", Arrays.asList("&bUżyj prawym przyciskiem myszy", "&bWartość:&a " + Func.DoubleToString(kwota)));
+		ItemStack item = Func.stwórzItem(Material.PAPER, ile, "§9§lBanknot§2", Arrays.asList("&bUżyj Prawym Przyciskiem Myszy", "&bWartość:&a " + Func.DoubleToString(kwota)));
 		return Func.ukryj(Func.enchantuj(item, Enchantment.ARROW_INFINITE, 1), ItemFlag.HIDE_ENCHANTS);
 	}
 	
@@ -86,7 +86,7 @@ public class Wyplac extends Komenda implements Listener {
 		ItemMeta meta = item.getItemMeta();
 		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && meta.getDisplayName().equals("§9§lBanknot§2") && meta.hasLore()) {
 			List<String> lore = meta.getLore();
-			if (lore.size() == 2 && lore.get(0).equals("§bUżyj prawym przyciskiem myszy")) {
+			if (lore.size() == 2 && lore.get(0).equals("§bUżyj Prawym Przyciskiem Myszy")) {
 				double ile = Func.Double(lore.get(1).split(" ")[1].replace(",", ""), 0);
 				if (ile == 0) return;
 				EconomyResponse r = Main.econ.depositPlayer(p, ile);

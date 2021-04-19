@@ -460,7 +460,7 @@ public class KamienieDusz implements Zegar, Przeładowalny, Listener {
 					
 					ItemMeta meta = item.getItemMeta();
 					
-					kamień.odaplikuj(item, meta, slotWIndex(ev.getRawSlot()) + 1);
+					kamień.odaplikuj(item, meta, slotWIndex(ev.getRawSlot()));
 					
 					item.setItemMeta(meta);
 					ev.getInventory().setItem(panel_slotItemu, item);
