@@ -10,7 +10,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
+
 
 @Moduł
 public class BlockSkrzyńNaZwierzętach implements Listener {

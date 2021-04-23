@@ -26,11 +26,11 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł

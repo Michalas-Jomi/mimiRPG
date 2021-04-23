@@ -1,6 +1,6 @@
 package me.jomi.mimiRPG.Minigry;
 
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł

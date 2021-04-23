@@ -11,10 +11,10 @@ import org.bukkit.entity.Player;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -67,7 +67,7 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 				Func.wykonajDlaNieNull(sekcja.getConfigurationSection(komenda), sekcjaKomendy -> {
 					if (!sekcjaKomendy.contains("komendy"))
 						Main.warn("Brak komend customowej komendy " + komenda);
-					for (PluginCommand cmd : _komendy)
+					for (PluginCommand cmd : dajKomendy())
 						if (cmd.getName().equals(komenda))
 							return;
 					k.a = true;
@@ -79,7 +79,16 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Customowe Komendy", _komendy.size());
+		return Func.r("Customowe Komendy", dajKomendy().size());
+	}
+	@SuppressWarnings("unchecked")
+	private List<PluginCommand> dajKomendy() {
+		try {
+			return ((List<PluginCommand>) Func.dajZField(this, "_komendy"));
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	/*

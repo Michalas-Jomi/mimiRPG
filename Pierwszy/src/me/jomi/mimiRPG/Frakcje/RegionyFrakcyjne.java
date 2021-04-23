@@ -17,9 +17,9 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion.CircularInheritanceException;
 
 import me.jomi.mimiRPG.Baza;
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 
 @Moduł
 public class RegionyFrakcyjne extends Komenda {

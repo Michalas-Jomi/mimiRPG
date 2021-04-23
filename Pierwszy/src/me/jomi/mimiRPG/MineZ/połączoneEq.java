@@ -23,14 +23,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.MineZ.połączoneEq.Ekwipunki.Itemki;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 
 

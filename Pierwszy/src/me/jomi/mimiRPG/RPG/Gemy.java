@@ -17,8 +17,7 @@ import net.minecraft.server.v1_16_R2.NBTTagList;
 import net.minecraft.server.v1_16_R2.NBTTagString;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG.Gemy.Gem;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;

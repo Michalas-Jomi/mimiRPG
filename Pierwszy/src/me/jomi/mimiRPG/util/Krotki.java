@@ -1,7 +1,5 @@
 package me.jomi.mimiRPG.util;
 
-import me.jomi.mimiRPG.Mapowane;
-
 public class Krotki {
 	public static class Box<T> {
 		public T a;

@@ -34,9 +34,8 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;

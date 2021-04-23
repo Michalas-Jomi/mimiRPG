@@ -20,11 +20,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Gracz;
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 

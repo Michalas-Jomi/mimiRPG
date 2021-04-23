@@ -36,11 +36,11 @@ import org.bukkit.metadata.FixedMetadataValue;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Gracz;
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Mapowany.Mapowane;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;

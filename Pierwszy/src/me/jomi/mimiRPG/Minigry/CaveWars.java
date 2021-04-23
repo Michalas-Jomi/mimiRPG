@@ -29,10 +29,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
-import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;

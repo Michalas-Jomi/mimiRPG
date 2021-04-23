@@ -16,6 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.util.Komenda.MsgCmdError;
 
 public class Panel {
 	public static class PanelListener implements Listener {
@@ -33,7 +34,22 @@ public class Panel {
 				if (panel == null)
 					odwołania.remove(i--);
 				else if (panel.jestPanelem(ev.getInventory()))
-					Func.wykonajDlaNieNull(getter.apply(panel), cons -> cons.accept(ev));
+					Func.wykonajDlaNieNull(getter.apply(panel), cons -> {
+						try {
+							cons.accept(ev);
+						} catch (MsgCmdError e) {
+							if (ev instanceof InventoryOpenEvent)
+								((InventoryOpenEvent) ev).getPlayer().sendMessage(e.getMessage());
+							else if (ev instanceof InventoryCloseEvent)
+								((InventoryCloseEvent) ev).getPlayer().sendMessage(e.getMessage());
+							else if (ev instanceof InventoryClickEvent)
+								((InventoryClickEvent) ev).getWhoClicked().sendMessage(e.getMessage());
+							else
+								e.printStackTrace();
+						} catch (Throwable e) {
+							e.printStackTrace();
+						}
+					});
 			}
 		}
 	}
@@ -69,7 +85,6 @@ public class Panel {
 	private Consumer<InventoryOpenEvent> open;
 	private Consumer<InventoryCloseEvent> close;
 	private Consumer<InventoryClickEvent> click;
-	
 	
 	public Panel(boolean blokujKlikanie) {
 		if (PanelListener.odwołania == null) {

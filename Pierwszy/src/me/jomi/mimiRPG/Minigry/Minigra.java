@@ -43,8 +43,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
+import me.jomi.mimiRPG.Mapowany.Mapowane;
 import me.jomi.mimiRPG.PojedynczeKomendy.Antylog;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;

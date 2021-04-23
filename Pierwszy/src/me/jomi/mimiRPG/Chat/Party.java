@@ -22,11 +22,11 @@ import com.google.common.collect.Lists;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Chat.Party.API.DołączanieDoPartyEvent;
 import me.jomi.mimiRPG.Chat.Party.API.OpuszczaniePartyEvent;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Napis;
 
 @Moduł(priorytet = Moduł.Priorytet.NAJWYŻSZY)

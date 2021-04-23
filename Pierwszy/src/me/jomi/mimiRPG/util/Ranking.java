@@ -3,7 +3,6 @@ package me.jomi.mimiRPG.util;
 import java.util.List;
 import java.util.function.Supplier;
 
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 
 public class Ranking extends Mapowany {

@@ -30,9 +30,8 @@ import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG.ItemyRPG.Rozwój;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;

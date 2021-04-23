@@ -19,9 +19,9 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.NowyEkwipunek;
 
 @Moduł

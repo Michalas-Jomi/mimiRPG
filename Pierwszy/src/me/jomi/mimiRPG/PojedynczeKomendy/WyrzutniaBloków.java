@@ -8,7 +8,6 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
@@ -20,8 +19,10 @@ import org.bukkit.inventory.PlayerInventory;
 import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.InteractManager;
+import me.jomi.mimiRPG.util.InteractManager.Sposób;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -33,30 +34,27 @@ public class WyrzutniaBloków implements Listener, Przeładowalny {
 	double moc;
 	
 	Set<String> cooldown = Sets.newConcurrentHashSet();
-	@EventHandler
-	public void interackcja(PlayerInteractEvent ev) {
+	public boolean interackcja(PlayerInteractEvent ev) {
 		if (	wyrzutnia == null ||
-				!Func.multiEquals(ev.getAction(), Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK) ||
 				cooldown.contains(ev.getPlayer().getName())
 				)
-			return;
+			return false;
 		
 		PlayerInventory inv = ev.getPlayer().getInventory();
-		if (wyrzutnia.isSimilar(inv.getItemInMainHand())) {
-			Func.wykonajDlaNieNull(inv.getItemInOffHand(), blok -> {
-				if (blok.getType().isBlock()) {
-					cooldown.add(ev.getPlayer().getName());
-					Func.opóznij(3, () -> cooldown.remove(ev.getPlayer().getName()));
-					
-					przywołajBlok(ev.getPlayer(), blok);
-					
-					blok.setAmount(blok.getAmount() - 1);
-					inv.setItemInOffHand(blok.getAmount() <= 0 ? null : blok);
-					
-					ev.setCancelled(true);
-				}
-			});
-		}
+		Func.wykonajDlaNieNull(inv.getItemInOffHand(), blok -> {
+			if (blok.getType().isBlock()) {
+				cooldown.add(ev.getPlayer().getName());
+				Func.opóznij(3, () -> cooldown.remove(ev.getPlayer().getName()));
+				
+				przywołajBlok(ev.getPlayer(), blok);
+				
+				blok.setAmount(blok.getAmount() - 1);
+				inv.setItemInOffHand(blok.getAmount() <= 0 ? null : blok);
+				
+				ev.setCancelled(true);
+			}
+		});
+		return false;
 	}
 	
 	public FallingBlock przywołajBlok(Player p, ItemStack item) {
@@ -101,8 +99,15 @@ public class WyrzutniaBloków implements Listener, Przeładowalny {
 
 	@Override
 	public void przeładuj() {//TODO szablon
+		ItemStack stara = wyrzutnia;
+		
 		wyrzutnia = Main.ust.wczytajItem  ("WyrzutniaBloków.item");
 		moc 	  = Main.ust.wczytajDouble("WyrzutniaBloków.moc");
+		
+		if (!wyrzutnia.equals(wyrzutnia)) {
+			InteractManager.wyrejestruj(stara, Sposób.PRAWY);
+			InteractManager.zarejestruj(wyrzutnia, Sposób.PRAWY, this::interackcja);
+		}
 	}
 	@Override
 	public Krotka<String, Object> raport() {

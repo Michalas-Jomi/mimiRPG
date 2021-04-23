@@ -7,7 +7,6 @@ import org.bukkit.Color;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 
 public class KolorRGB extends Mapowany {

@@ -92,11 +92,9 @@ import net.minecraft.server.v1_16_R2.WorldBorder;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Gracz;
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.DołączanieDoWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.OpuszczanieWyspyEvent;
@@ -105,9 +103,11 @@ import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.TworzenieWyspyEvent;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.UsuwanieWyspyEvent;
 import me.jomi.mimiRPG.util.Cena;
 import me.jomi.mimiRPG.util.Ciąg;
+import me.jomi.mimiRPG.util.CmdChecker;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
 import me.jomi.mimiRPG.util.Napis;
@@ -120,6 +120,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	static final String permBypass = Func.permisja("skyblock.admin");
 	public static final String prefix = Func.prefix("Skyblock");
+	static CmdChecker checker;
 
 	// API
 	public static class API {
@@ -942,11 +943,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		// /is permsedit
 
-		public boolean edytorPermisji(Player p, String[] args) {
+		public void edytorPermisji(Player p, String[] args) throws MsgCmdError {
 			Permisje permP = permisje(p);
-			if (!(permP.edytowanie_hierarchii_grup_permisji || permP.tworzenie_grup_permisji
-					|| permP.usuwanie_grup_permisji))
-				return Func.powiadom(p, prefix + "Nie masz wystarczających uprawnień aby zarządzać uprawnieniami");
+			checker.checkFormat(permP.edytowanie_hierarchii_grup_permisji || permP.tworzenie_grup_permisji || permP.usuwanie_grup_permisji,
+					"Nie masz wystarczających uprawnień aby zarządzać uprawnieniami");
 			try {
 				Permisje perm = perms.get(args[2]);
 				Permisje perm2;
@@ -955,22 +955,18 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				case "zwiększ":
 					mnZwiększ = -1;
 				case "zmniejsz":
-					if (!permP.edytowanie_hierarchii_grup_permisji)
-						return Func.powiadom(p,
-								prefix + "Nie masz wystarczających uprawnień aby edytować hierarchie grup permisji");
+					checker.checkFormat(permP.edytowanie_hierarchii_grup_permisji, "Nie masz wystarczających uprawnień aby edytować hierarchie grup permisji");
 					if (permsNietykalne.contains(perm.grupa))
 						break;
 					int ipermP = indexPerm(permP);
-					if (indexPerm(perm) <= ipermP)
-						return Func.powiadom(p, prefix + "Nie możesz edytować tak ważnych permisji");
+					checker.checkFormat(!(indexPerm(perm) <= ipermP), "Nie możesz edytować tak ważnych permisji");
 					for (int i = 0; i < permsKody.size(); i++)
 						if (permsKody.get(i).startsWith(perm.grupa)) {
 							perm2 = kodToPerm(i + mnZwiększ);
 
 							if (permsNietykalne.contains(perm2.grupa))
 								break;
-							if (indexPerm(perm2) <= ipermP)
-								return Func.powiadom(p, prefix + "Nie możesz edytować tak ważnych permisji");
+							checker.checkFormat(!(indexPerm(perm2) <= ipermP), "Nie możesz edytować tak ważnych permisji");
 							String s1 = permsKody.get(i);
 							String s2 = permsKody.get(i + mnZwiększ);
 							permsKody.set(i, s2);
@@ -981,26 +977,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						}
 					break;
 				case "usuń":
-					if (!permP.usuwanie_grup_permisji)
-						return Func.powiadom(p,
-								prefix + "Nie masz wystarczających uprawnień aby usuwać grupy permisji");
+					checker.checkFormat(permP.usuwanie_grup_permisji, "Nie masz wystarczających uprawnień aby usuwać grupy permisji");
+					
 					Matcher mat = Pattern.compile("Tak, chcę usunąć grupe permisji (\\w+)")
 							.matcher(Func.listToString(args, 3));
 					if (mat.find())
 						Func.wykonajDlaNieNull(perms.get(mat.group(1)), permisja -> {
-							if (permsNietykalne.contains(permisja.grupa)) {
-								p.sendMessage(prefix + "Nie można usunąć tej grupy permisji");
-								return;
-							}
+							checker.checkFormat(!permsNietykalne.contains(permisja.grupa), "Nie można usunąć tej grupy permisji");
 							for (String permisjaCzłonka : członkowie.values())
-								if (permisjaCzłonka.equals(permisja.grupa)) {
-									p.sendMessage(prefix + "Nie można usunąć grupy w której są jacyś gracze!");
-									return;
-								}
-							if (indexPerm(permisja) <= indexPerm(permP)) {
-								p.sendMessage(prefix + "Nie możesz usunąć tak ważnych permisji");
-								return;
-							}
+								checker.checkFormat(!permisjaCzłonka.equals(permisja.grupa), "Nie można usunąć grupy w której są jacyś gracze!");
+							checker.checkFormat(!(indexPerm(permisja) <= indexPerm(permP)), "Nie możesz usunąć tak ważnych permisji");
 							for (int i = 0; i < permsKody.size(); i++)
 								if (permsKody.get(i).startsWith(permisja.grupa)) {
 									permsKody.remove(i);
@@ -1012,16 +998,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						});
 					break;
 				case "dodaj":
-					if (!(permP.tworzenie_grup_permisji))
-						return Func.powiadom(p,
-								prefix + "Nie masz wystarczających uprawnień aby dodawać grupy permisji");
-					if (args.length <= 3)
-						return Func.powiadom(p, prefix + "po znaku >> wpisz nazwe grupy");
-					if (args.length >= 5)
-						return Func.powiadom(p, prefix + "Nazwa grupy musi być pojedyńczym słowem");
+					checker.checkFormat(permP.tworzenie_grup_permisji, "Nie masz wystarczających uprawnień aby dodawać grupy permisji");
+					checker.checkFormat(args.length > 3, "po znaku >> wpisz nazwe grupy");
+					checker.checkFormat(args.length < 5, "Nazwa grupy musi być pojedyńczym słowem");
 					String nazwa = args[3];
-					if (perms.containsKey(nazwa))
-						return Func.powiadom(p, prefix + "Grupa permisji o tej nazwie już istnieje");
+					checker.checkFormat(!perms.containsKey(nazwa), "Grupa permisji o tej nazwie już istnieje");
+					
 					StringBuilder strB = new StringBuilder(nazwa).append(' ');
 					try {
 						for (int i = 0; i < Permisje.class.getDeclaredFields().length - 2; i++)
@@ -1041,7 +1023,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			} catch (Throwable e) {
 			}
 			edytorPermisjiWyświetl(p);
-			return false;
 		}
 		void edytorPermisjiWyświetl(Player p) {
 			Napis n = new Napis("\n\n§9Permisje wyspy: \n\n");
@@ -1066,7 +1047,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// /is warps
 
 		@Mapowane List<Warp> warpy;
-
 		public void otwórzWarpy(Player p) {
 			p.openInventory(getInvWarpy(p));
 			p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
@@ -1111,16 +1091,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		// /is addwarp
 
-		public boolean dodajWarp(Player p, String nazwa) {
-			if (warpy.size() >= Ulepszenia.warpy[poziomy.warpy].wartość)
-				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit warpów");
-
-			if (!permisje(p).dodawanie_i_usuwanie_warpów)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień na dodawanie warpów");
-
-			if (!zawiera(p.getLocation()))
-				return Func.powiadom(p, prefix + "Nie możesz tu ustawić warpa wyspy");
-
+		public void dodajWarp(Player p, String nazwa) throws MsgCmdError {
+			checker.checkFormat(warpy.size() < Ulepszenia.warpy[poziomy.warpy].wartość, "Wyspa osiągneła już limit warpów");
+			checker.checkFormat(permisje(p).dodawanie_i_usuwanie_warpów, "Nie masz uprawnień na dodawanie warpów");
+			checker.checkFormat(zawiera(p.getLocation()), "Nie możesz tu ustawić warpa wyspy");
+			
 			Warp warp = new Warp();
 			warp.loc = p.getLocation();
 			warp.nazwa = Func.koloruj(nazwa);
@@ -1134,7 +1109,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			odświeżEdytoryPermisji();
 
 			zapisz();
-			return Func.powiadom(p, prefix + "Dodano nowy warp", false);
+			inst.throwFormatMsg("Dodano nowy warp");
 		}
 
 		// /is delwarp
@@ -1185,27 +1160,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		static Set<String> coopZaproszenia = Sets.newConcurrentHashSet();
 		
 		@Mapowane List<Integer> coop;
-		public boolean coop(Player p, String zKim) {
-			if (!permisje(p).zapraszanie_członków_i_coop)
-				return Func.powiadom(p, prefix + "Nie masz permisji do zakładania coopów");
+		public void coop(Player p, String zKim) throws MsgCmdError {
+			checker.checkFormat(permisje(p).zapraszanie_członków_i_coop, "Nie masz permisji do zakładania coopów");
 			
-			Player kogoP = Bukkit.getPlayer(zKim);
-			if (kogoP == null)
-				return Func.powiadom(p, prefix + Func.msg("%s nie jest online", zKim));
-			
-			Wyspa wyspa = Wyspa.wczytaj(kogoP);
-			if (wyspa == null)
-				return Func.powiadom(p, prefix + Func.msg("%s nie ma Wyspy", kogoP.getDisplayName()));
-			
-			if (coop.contains(wyspa.id))
-				return Func.powiadom(p, prefix + "Kooperacja z tą wyspą jest już nawiązana");
+			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(zKim),	"%s nie jest online", zKim);
+			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", kogoP.getDisplayName());
+
+			checker.checkFormat(!coop.contains(wyspa.id), "Kooperacja z tą wyspą jest już nawiązana");
 
 			String kodJaTy = kodcoop(this, wyspa);
 			String kodTyJa = kodcoop(wyspa, this);
 			
-			if (coopZaproszenia.contains(kodJaTy))
-				return Func.powiadom(p, prefix + "Zaproszenie do coopu do tej wyspy zostało już wysłane");
-			else if (coopZaproszenia.remove(kodTyJa)) {
+			checker.checkFormat(!coopZaproszenia.contains(kodJaTy), "Zaproszenie do coopu do tej wyspy zostało już wysłane");
+			if (coopZaproszenia.remove(kodTyJa)) {
 				// Przyjmowanie coopu
 				BiConsumer<Wyspa, Wyspa> przyjmij = (w1, w2) -> {
 					w1.coop.add(w2.id);
@@ -1226,28 +1193,25 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					}
 				});
 			}
-			
-			return false;
 		}
-		public boolean uncoop(Player p, String zKim) {
-			if (!permisje(p).wyrzucanie_członków_i_uncoop)
-				return Func.powiadom(p, prefix + "Nie masz permisji do zakładania coopów");
+		public boolean uncoop(Player p, String zKim) throws MsgCmdError {
+			checker.checkFormat(permisje(p).wyrzucanie_członków_i_uncoop, "Nie masz permisji do zakładania coopów");
 			
-			Player kogoP = Bukkit.getPlayer(zKim);
-			if (kogoP == null)
-				return Func.powiadom(p, prefix + Func.msg("%s nie jest online", zKim));
+			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(zKim),	"%s nie jest online", zKim);
+			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", kogoP.getDisplayName());
 			
-			Wyspa wyspa = Wyspa.wczytaj(kogoP);
-			if (wyspa == null)
-				return Func.powiadom(p, prefix + Func.msg("%s nie ma Wyspy", kogoP.getDisplayName()));
-			
-			if (coop.remove((Integer) wyspa.id)) {
-				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", this .infoCzłonkowie());
-				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana", wyspa.infoCzłonkowie());
-				zapisz();
+			boolean f1 = this .coop.remove((Integer) wyspa.id);
+			boolean f2 = wyspa.coop.remove((Integer) this .id);
+			if (f1 || f2) {
+				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", wyspa.infoCzłonkowie(), p.getDisplayName());
+				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", this .infoCzłonkowie(), p.getDisplayName());
+				
+				this.zapisz();
+				wyspa.zapisz();
 				return false;
 			} else
-				return Func.powiadom(p, prefix + Func.msg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", kogoP.getDisplayName()));
+				inst.throwFormatMsg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", kogoP.getDisplayName());
+			return true;
 		}
 		private static String kodcoop(Wyspa wyspa1, Wyspa wyspa2) {
 			return wyspa1.id + "-" + wyspa2.id;
@@ -1391,16 +1355,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is transfer
 
-		public boolean transfer(Player p, String komu) {
-			if (!członkowie.containsKey(p.getName()))
-				return Func.powiadom(p, prefix + "Tylko prawowity właściciel wyspy może przekazać włąściciela");
-			if (!członkowie.get(p.getName()).equals("właściciel"))
-				return Func.powiadom(p, prefix + "Tylko właściciel wyspy może przekazać swoją range");
-			if (!członkowie.containsKey(komu))
-				return Func.powiadom(p, prefix + Func.msg("%s nie należy do twojej wyspy", komu));
-			Main.panelTakNie(p, "&4Oddać range właściciela dla &c" + komu + "&4?", "&aTak, nie chce jej dłużej nosić",
-					"&cNiee! ona jest moja!", () -> przekażWłaściciela(p, komu), null);
-			return false;
+		public void transfer(Player p, String komu) throws MsgCmdError {
+			checker.checkFormat(członkowie.containsKey(p.getName()), "Tylko prawowity właściciel wyspy może przekazać włąściciela");
+			checker.checkFormat(członkowie.get(p.getName()).equals("właściciel"), "Tylko właściciel wyspy może przekazać swoją range");
+			checker.checkFormat(członkowie.containsKey(komu), "%s nie należy do twojej wyspy", komu);
+			Main.panelTakNie(p, "&4Oddać range właściciela dla &c" + komu + "&4?",
+					"&aTak, nie chce jej dłużej nosić",
+					"&cNiee! ona jest moja!",
+					() -> przekażWłaściciela(p, komu), null);
 		}
 		private boolean przekażWłaściciela(Player p, String komu) {
 			if (!członkowie.containsKey(komu))
@@ -1432,6 +1394,18 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					"&aGenerator: &e" + Ulepszenia.generator[poziomy.generator].wartość + " lvl",
 					"&aPunkty: &e" + Func.DoubleToString(pkt), "&aTyp: &e" + typ);
 
+			n.dodaj(new Napis("§aKooperacje: §e"));
+			if (coop.isEmpty())
+				n.dodajK("&cBrak");
+			else
+				coop.forEach(id -> {
+					Wyspa wyspa = Wyspa.wczytaj(id);
+					if (wyspa != null)
+						n.dodaj(new Napis("\n§e§l- §e" + wyspa.nazwa, "§d(" + wyspa.id + ") §b" + wyspa.infoCzłonkowie().toString()));
+					else
+						n.dodaj("\n§e§l- §4Wyspa usunięta");
+				});
+			
 			n.dodaj("\n\n");
 
 			n.wyświetl(p);
@@ -1605,23 +1579,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// /is sethome
 
 		@Mapowane Location locHome;
-		public void ustawHome(Player p) {
-			if (!permisje(p).ustawianie_home_wyspy)
-				p.sendMessage(prefix + "Nie masz uprawnień na ustawnie home wyspy");
-			else if (!zawiera(p.getLocation()))
-				p.sendMessage(prefix + "Nie możesz ustawić home wyspy poza swoją wyspą");
-			else {
-				locHome = p.getLocation();
-				zapisz();
-				p.sendMessage(prefix + "Ustawiono nowy home wyspy");
-			}
+		public void ustawHome(Player p) throws MsgCmdError {
+			checker.checkFormat(permisje(p).ustawianie_home_wyspy, "Nie masz uprawnień na ustawnie home wyspy");
+			checker.checkFormat(zawiera(p.getLocation()), "Nie możesz ustawić home wyspy poza swoją wyspą");
+			locHome = p.getLocation();
+			zapisz();
+			inst.throwFormatMsg("Ustawiono nowy home wyspy");
 		}
 
 		// /is home
 
 		public void tpHome(Player p) {
 			p.teleport(locHome);
-			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
+			inst.throwFormatMsg("Zostałeś przeleportowany na swoją wyspę");
 		}
 
 		
@@ -1637,9 +1607,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					if (!członkowie.containsKey(gracz.getName()) && !maBypass(gracz) && zawiera(gracz.getLocation()))
 						Func.tpSpawn(gracz);
 		}
-		private boolean ustawPubliczność(Player p, boolean publiczna) {
-			if (!permisje(p).zmiana_prywatności)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień do zmiany prywatności wyspy", false);
+		private boolean ustawPubliczność(Player p, boolean publiczna) throws MsgCmdError {
+			checker.checkFormat(permisje(p).zmiana_prywatności, "Nie masz uprawnień do zmiany prywatności wyspy");
 			String msg = publiczna ? "publiczn" : "prywatn";
 			if (prywatna == publiczna) {
 				prywatna = !prywatna;
@@ -1662,11 +1631,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		@Mapowane double dodatkowe_pkt;
 		@Mapowane double pkt;
 		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
-		public boolean wartość(Player p) {
-			if (!permisje(p).liczenie_wartości_wyspy)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień do przeliczania wartości wyspy");
-			if (oczekujące > 0)
-				return Func.powiadom(p, prefix + "Wartość jest aktualnie liczona");
+		public boolean wartość(Player p) throws MsgCmdError {
+			checker.checkFormat(permisje(p).liczenie_wartości_wyspy, "Nie masz uprawnień do przeliczania wartości wyspy");
+			checker.checkFormat(oczekujące <= 0, "Wartość jest aktualnie liczona");
 
 			String strId = String.valueOf(id);
 
@@ -1678,12 +1645,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					if (Gracz.wczytaj(p).wyspa != id)
 						p.sendMessage(prefix + Func.msg("Aktualna wartość ich wyspy: %s", pkt));
 					członkowie.keySet().forEach(
-							nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), gracz -> gracz.sendMessage(prefix
-									+ Func.msg("Aktualna wartość twojej wyspy: %s", Func.IntToString((int) pkt)))));
+							nick -> Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), gracz -> 
+							gracz.sendMessage(prefix + Func.msg("Aktualna wartość twojej wyspy: %s", Func.IntToString((int) pkt)))));
 				}));
 			} else
-				p.sendMessage(prefix + Func.msg("musisz jeszcze poczekać %s żeby ponownie przeliczyć wartość wyspy",
-						ostatnieLiczenie.czas(strId)));
+				p.sendMessage(prefix + Func.msg("musisz jeszcze poczekać %s żeby ponownie przeliczyć wartość wyspy", ostatnieLiczenie.czas(strId)));
 			return false;
 
 		}
@@ -1774,17 +1740,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		static final Cooldown cooldownZaproszeń = new Cooldown(45);
 		private static final String metaZaproszenie = "mimiSkyblockZaproszenie";
-		public boolean zaproś(Player p, Player kogo) {
-			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
-				return Func.powiadom(p, prefix + "Wyspa osiągneła już limit członków");
-
-			if (!permisje(p).zapraszanie_członków_i_coop)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień na zapraszanie ludzi na wyspe");
-			if (!cooldownZaproszeń.minął(p.getName() + kogo.getName()))
-				return Func.powiadom(prefix, p, "Musisz poczekać jeszcze %s zanim ponownie go zaprosisz",
-						cooldownZaproszeń.czas(p.getName() + kogo.getName()));
-			if (Gracz.wczytaj(kogo).wyspa != -1)
-				return Func.powiadom(prefix, p, "%s ma już wyspę", kogo.getDisplayName());
+		public void zaproś(Player p, Player kogo) throws MsgCmdError {
+			checker.checkFormat(członkowie.size() < Ulepszenia.członkowie[poziomy.członkowie].wartość, "Wyspa osiągneła już limit członków");
+			checker.checkFormat(permisje(p).zapraszanie_członków_i_coop, "Nie masz uprawnień na zapraszanie ludzi na wyspe");
+			checker.checkFormat(cooldownZaproszeń.minął(p.getName() + kogo.getName()), "Musisz poczekać jeszcze %s zanim ponownie go zaprosisz",
+					cooldownZaproszeń.czas(p.getName() + kogo.getName()));
+			checker.checkFormat(Gracz.wczytaj(kogo).wyspa == -1, "%s ma już wyspę", kogo.getDisplayName());
 
 			Func.ustawMetadate(kogo, metaZaproszenie, p);
 
@@ -1793,7 +1754,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					"&cOdrzuć zaproszenie do wyspy &7" + p.getDisplayName(), () -> przyjmijZaproszenie(kogo),
 					() -> odrzućZaproszenie(kogo));
 
-			return Func.powiadom(p, prefix + "Wysłano zaproszenie na wyspy do " + kogo.getDisplayName(), false);
+			inst.throwFormatMsg("Wysłano zaproszenie na wyspy do " + kogo.getDisplayName());
 		}
 		boolean przyjmijZaproszenie(Player p) {
 			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
@@ -1830,11 +1791,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is leave
 
-		public void opuść(Player p) {
-			if ("właściciel".equals(członkowie.get(p.getName()))) {
-				p.sendMessage(prefix + "Nie możesz opuścić własnej wyspy");
-				return;
-			}
+		public void opuść(Player p) throws MsgCmdError {
+			checker.checkFormat(!"właściciel".equals(członkowie.get(p.getName())), "Nie możesz opuścić własnej wyspy");
 
 			if (new OpuszczanieWyspyEvent(this, p.getName()).isCancelled())
 				return;
@@ -1859,12 +1817,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		public void uwielb(Player p) {
 			Gracz gracz = Gracz.wczytaj(p);
 			
+			String czynność;
 			if (gracz.ulubioneWyspy.remove((Integer) id)) {
-				Func.powiadom(p, prefix + "Usunięto wyspę %s z ulubionych", nazwa);
+				czynność = "Usunięto";
 			} else {
+				czynność = "Dodano";
 				gracz.ulubioneWyspy.add(id);
-				Func.powiadom(p, prefix + "Dodano wyspę %s do ulubionych", nazwa);
 			}
+			Func.powiadom(p, prefix + czynność + " wyspę %s do ulubionych", nazwa);
 			
 			gracz.zapisz();
 		}
@@ -1915,20 +1875,17 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		
 		// /is delete
 
-		public void usuń(Player p) {
-			if (permisje(p).grupa.equals("właściciel"))
-				Main.panelTakNie(p, "&4Usunąć wyspe?", "&aTak, usuń wyspę", "&4Nie, nie usuwał wyspy", this::usuń,
-						null);
-			else
-				p.sendMessage(prefix + "Tylko właściciel może usunąć wyspe");
+		public void usuń(Player p) throws MsgCmdError {
+			checker.checkFormat(permisje(p).grupa.equals("właściciel"), "Tylko właściciel może usunąć wyspe");
+
+			Main.panelTakNie(p, "&4Usunąć wyspe?", "&aTak, usuń wyspę", "&4Nie, nie usuwał wyspy", this::usuń, null);
 		}
 
 		
 		// /is kick
 
-		public boolean wyrzuć(Player p, String kogo) {
-			if (p.getName().equalsIgnoreCase(kogo))
-				return Func.powiadom(p, prefix + "zamiast tego użyć /is opuść");
+		public void wyrzuć(Player p, String kogo) throws MsgCmdError {
+			checker.checkFormat(!p.getName().equalsIgnoreCase(kogo), "zamiast tego użyć /is opuść");
 			if (!członkowie.containsKey(kogo)) {
 				for (String nick : członkowie.keySet())
 					if (nick.equalsIgnoreCase(kogo)) {
@@ -1936,28 +1893,21 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 						break;
 					}
 				if (!członkowie.containsKey(kogo)) {
-					if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
-						return Func.powiadom(p, prefix + "Nie masz uprawnień aby wyrzucać odwiedzających z wyspy");
-					Player kogoP = Bukkit.getPlayer(kogo);
-					if (kogoP == null)
-						return Func.powiadom(p,
-								prefix + Func.msg("%s nie jest online i nie należy do twojej wyspy", kogo));
+					checker.checkFormat(permisje(p).wyrzucanie_banowanie_odwiedzających, "Nie masz uprawnień aby wyrzucać odwiedzających z wyspy");
+					Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(kogo), "%s nie jest online i nie należy do twojej wyspy", kogo);
 					if (zawiera(kogoP.getLocation())) {
-						if (maBypass(kogoP))
-							return Func.powiadom(p, prefix + "Nie możesz wyprosić tego gracza");
+						checker.checkFormat(!maBypass(kogoP), "Nie możesz wyprosić tego gracza");
 						Func.tpSpawn(kogoP);
 						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", kogoP.getDisplayName()));
 						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", p.getDisplayName()));
-						return false;
 					}
-					return true;
+					return;
 				}
 			}
-			if (!permisje(p).wyrzucanie_członków_i_uncoop)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień aby wyrzucać członków z wyspy");
+			checker.checkFormat(permisje(p).wyrzucanie_członków_i_uncoop, "Nie masz uprawnień aby wyrzucać członków z wyspy");
 
 			if (new OpuszczanieWyspyEvent(this, kogo).isCancelled())
-				return true;
+				return;
 
 			powiadomCzłonków("%s wyrzucił %s z wyspy!", p.getName(), kogo);
 
@@ -1972,21 +1922,18 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			odświeżInvMembers();
 
 			Func.wykonajDlaNieNull(Bukkit.getPlayer(kogo), Func::tpSpawn);
-			return false;
 		}
 
 		
 		// /is name
 
 		@Mapowane String nazwa;
-		public boolean zmieńNazwe(Player p, String nazwa) {
-			if (!permisje(p).zmiana_nazwy_wyspy)
-				return Func.powiadom(p, prefix + "Nie masz uprawnień do zmiany nazwy wyspy");
+		public void zmieńNazwe(Player p, String nazwa) throws MsgCmdError {
+			checker.checkFormat(permisje(p).zmiana_nazwy_wyspy, "Nie masz uprawnień do zmiany nazwy wyspy");
 			this.nazwa = Func.koloruj(nazwa);
 			p.sendMessage(prefix + Func.msg("Zmieniono nazwę wyspy na %s", this.nazwa));
 			odświeżTopJeśliZawiera();
 			zapisz();
-			return false;
 		}
 		
 		
@@ -2338,16 +2285,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// /is ban /is unban
 		
 		@Mapowane List<String> zbanowani;
-		public boolean zbanuj(Player p, String kogo) {
-			if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
-				return Func.powiadom(p, prefix + "Nie masz permisji na banowanie graczy");
-			if (członkowie.containsKey(kogo))
-				return Func.powiadom(p, prefix + "Nie możesz zbanować członka wyspy");
-			if (zbanowani.contains(kogo))
-				return Func.powiadom(p, prefix + "Ten gracz jest już zbanowany");
-			Player kogoP = Bukkit.getPlayer(kogo);
-			if (kogoP == null)
-				return Func.powiadom(p, prefix + "Ten gracz nie jest online");
+		public void zbanuj(Player p, String kogo) throws MsgCmdError {
+			checker.checkFormat(permisje(p).wyrzucanie_banowanie_odwiedzających, "Nie masz permisji na banowanie graczy");
+			checker.checkFormat(!członkowie.containsKey(kogo), "Nie możesz zbanować członka wyspy");
+			checker.checkFormat(!zbanowani.contains(kogo), "Ten gracz jest już zbanowany");
+			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(kogo), "Ten gracz nie jest online");
 			
 			zbanowani.add(kogoP.getName());
 			
@@ -2358,17 +2300,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			powiadomCzłonków("%s zbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
 			
 			zapisz();
-		
-			return false;
 		}
-		public boolean odbanuj(Player p, String kogo) {
-			if (!permisje(p).wyrzucanie_banowanie_odwiedzających)
-				return Func.powiadom(p, prefix + "Nie masz permisji na banowanie graczy");
-			if (!zbanowani.contains(kogo))
-				return Func.powiadom(p, prefix + "Ten gracz jest nie jest zbanowany");
-			Player kogoP = Bukkit.getPlayer(kogo);
-			if (kogoP == null)
-				return Func.powiadom(p, prefix + "Ten gracz nie jest online");
+		public void odbanuj(Player p, String kogo) throws MsgCmdError {
+			checker.checkFormat(permisje(p).wyrzucanie_banowanie_odwiedzających, "Nie masz permisji na banowanie graczy");
+			checker.checkFormat(zbanowani.contains(kogo), "Ten gracz jest nie jest zbanowany");
+			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(kogo), "Ten gracz nie jest online");
 			
 			zbanowani.remove(kogoP.getName());
 			
@@ -2376,8 +2312,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			powiadomCzłonków("%s odbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
 			
 			zapisz();
-			
-			return false;
 		}
 		
 		
@@ -2488,18 +2422,13 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		// /is create
 
 		private static final Cooldown cooldownTworzenia = new Cooldown(60 * 60);
-		public static boolean podejmijDecyzjeTworzeniaWyspy(Player p) {
-			Gracz g = Gracz.wczytaj(p);
-			if (g.wyspa != -1)
-				return Func.powiadom(p, prefix + "Masz już wyspę");
-			if (!maBypass(p) && !cooldownTworzenia.minął(p.getName()))
-				return Func.powiadom(p, prefix + "Musisz poczekać jeszcze " + cooldownTworzenia.czas(p.getName())
-						+ " zanim stworzysz kojeną wyspę");
+		public static void podejmijDecyzjeTworzeniaWyspy(Player p) throws MsgCmdError {
+			checker.checkFormat(Gracz.wczytaj(p).wyspa == -1, "Masz już wyspę");
+			checker.checkFormat(!(!maBypass(p) && !cooldownTworzenia.minął(p.getName())), "Musisz poczekać jeszcze " + cooldownTworzenia.czas(p.getName()) + " zanim stworzysz kojeną wyspę");
 			Func.wykonajDlaNieNull(dajPanelTworzeniaWyspy(p), inv -> {
 				p.openInventory(inv);
 				p.addScoreboardTag(Main.tagBlokWyciąganiaZEq);
 			});
-			return false;
 		}
 		static Inventory dajPanelTworzeniaWyspy(Player p) {
 			List<Entry<String, TypWyspy>> lista = Lists.newArrayList();
@@ -2821,8 +2750,11 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		}
 	}
 	
+	static SkyBlock inst;
 	public SkyBlock() {
 		super("is");
+		inst = this;
+		checker = new CmdChecker(this);
 		Main.dodajPermisje(permBypass);
 	}
 
@@ -3283,10 +3215,10 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	// Override
 
 	private boolean poprawnieWczytany;
-
+	
 	@Override
 	@SuppressWarnings("unchecked")
-	public void przeładuj() {
+ 	public void przeładuj() {
 		poprawnieWczytany = false;
 		final Config config = new Config("Skyblock");
 		configData.przeładuj();
@@ -3522,8 +3454,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		return utab(args, lista);
 	}
 	@Override
-	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
-		Player p2;
+	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError {
 		Gracz g2;
 
 		Wyspa wyspa;
@@ -3534,55 +3465,40 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (args.length > 0)
 				switch (args[0].toLowerCase()) {
 				case "fav":
-					if (args.length < 2)
-						return Func.powiadom(sender, prefix + "/is fav <nick>");
-					g2 = Gracz.wczytaj(args[1]);
-					if (g2.wyspa == -1)
-						return Func.powiadom(sender, prefix + Func.msg("%s nie posiada wyspy", g2.nick));
-					Wyspa.wczytaj(g2).uwielb(p);
-					return true;
 				case "like":
-					if (args.length < 2)
-						return Func.powiadom(sender, prefix + "/is like <nick>");
+					checker.checkFormat(args.length >= 2, "/is " + args[0].toLowerCase() + " <nick>");
 					g2 = Gracz.wczytaj(args[1]);
-					if (g2.wyspa == -1)
-						return Func.powiadom(sender, prefix + Func.msg("%s nie posiada wyspy", g2.nick));
-					Wyspa.wczytaj(g2).polub(p);
+					checker.checkFormat(g2.wyspa != -1, "%s nie posiada wyspy", g2.nick);
+					
+					if (args[0].equalsIgnoreCase("fav"))
+						Wyspa.wczytaj(g2).uwielb(p);
+					else
+						Wyspa.wczytaj(g2).polub(p);
+					
 					return true;
 				case "visit":
 				case "odwiedz":
-					if (args.length < 2)
-						return Func.powiadom(sender, prefix + "/is visit <nick>");
+					checker.checkFormat(args.length >= 2, "/is visit <nick>");
 					g2 = Gracz.wczytaj(args[1]);
-					if (g2.wyspa == -1)
-						return Func.powiadom(sender, prefix + Func.msg("%s nie posiada wyspy", g2.nick));
+					checker.checkFormat(g2.wyspa != -1, "%s nie posiada wyspy", g2.nick);
 					Wyspa.wczytaj(g2).odwiedz(p);
 					return true;
 				case "admin":
-					if (!sender.hasPermission(permBypass))
-						return Func.powiadom(sender, prefix + "Nie masz uprawnień do tego");
-					if (args.length < 2)
-						return Func.powiadom(sender, prefix + "/is admin <nick>");
-					 wyspa = Wyspa.wczytaj(Gracz.wczytaj(args[1]));
-					if (wyspa == null)
-						return Func.powiadom(sender, prefix + Func.msg("%s nie ma wyspy", args[1]));
-					wyspa.otwórzPanelIs(p);
+					checker.checkFormat(sender.hasPermission(permBypass), "Nie masz uprawnień do tego");
+					checker.checkFormat(args.length >= 2, "/is admin <nick>");
+					checker.nieNullFormat(Wyspa.wczytaj(Gracz.wczytaj(args[1])), "%s nie ma wyspy", args[1]).otwórzPanelIs(p);
 					return true;
 				case "bypass":
-					if (!sender.hasPermission(permBypass))
-						return Func.powiadom(sender, prefix + "Nie masz uprawnień do tego");
+					checker.checkFormat(sender.hasPermission(permBypass), "Nie masz uprawnień do tego");
 					ustawBypass(p, !maBypass(p));
 					return Func.powiadom(sender, prefix + (maBypass(p) ? "w" : "wy") + "łączono bypass");
 				case "info":
 				case "informacje":
-					if (args.length >= 2 && (p = Bukkit.getPlayer(args[1])) == null)
-						return Func.powiadom(prefix, sender, "%s nie jest online", args[1]);
-					if (p == null)
-						return Func.powiadom(sender, prefix + "/is info <nick>");
-					wyspa = Wyspa.wczytaj(p);
-					if (wyspa == null)
-						return Func.powiadom(sender, prefix + Func.msg("%s nie ma wyspy", p.getDisplayName()));
-					wyspa.info(sender);
+					String sprawdzany = sender instanceof Player ? sender.getName() : null;
+					if (args.length >= 2)
+						sprawdzany = args[1];
+					checker.checkFormat(sprawdzany != null, "/is info <nick>");
+					checker.nieNullFormat(Wyspa.wczytaj(Gracz.wczytaj(sprawdzany)), "%s nie ma wyspy", sprawdzany).info(sender);
 					return true;
 				case "top":
 					Wyspa.otwórzTopke(p);
@@ -3609,10 +3525,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				return true;
 			}
 			
-			if (p == null)
-				return Func.powiadom(prefix, sender, "Tylko gracz może zarządzać wyspą");
-			if (g.wyspa == -1)
-				return Func.powiadom(prefix, sender, "Problem jest następujący: Brak wyspy");
+			checker.checkFormat(p != null, "Tylko gracz może zarządzać wyspą");
+			checker.checkFormat(g.wyspa != -1, "Problem jest następujący: Brak wyspy");
 			
 			if (args.length == 0) {
 				wyspa.otwórzPanelIs(p);
@@ -3663,12 +3577,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				break;
 			case "invite":
 			case "zaproś":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is zaproś <nick>");
-				p2 = Bukkit.getPlayer(args[1]);
-				if (p2 == null)
-					return Func.powiadom(sender, prefix + Func.msg("%s nie jest online", args[1]));
-				wyspa.zaproś(p, p2);
+				checker.checkFormat(args.length >= 2, "/is zaproś <nick>");
+				wyspa.zaproś(p, checker.nieNullFormat(Bukkit.getPlayer(args[1]), "%s nie jest online", args[1]));
 				break;
 			case "leave":
 			case "opuść":
@@ -3693,8 +3603,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				break;
 			case "kick":
 			case "wyrzuć":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is wyrzuć <nick>");
+				checker.checkFormat(args.length >= 2, "/is wyrzuć <nick>");
 				wyspa.wyrzuć(p, args[1]);
 				break;
 			case "biom":
@@ -3703,8 +3612,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				break;
 			case "addwarp":
 			case "dodajwarp":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is dodajwarp <nazwa>");
+				checker.checkFormat(args.length >= 2, "/is dodajwarp <nazwa>");
 				wyspa.dodajWarp(p, args[1]);
 				break;
 			case "delwarp":
@@ -3719,14 +3627,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				break;
 			case "name":
 			case "nazwa":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is nazwa <nazwa>");
+				checker.checkFormat(args.length >= 2, "/is nazwa <nazwa>");
 				wyspa.zmieńNazwe(p, args[1]);
 				break;
 			case "transfer":
 			case "przekaż":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is przekaż <nick>");
+				checker.checkFormat(args.length >= 2, "/is przekaż <nick>");
 				wyspa.transfer(p, args[1]);
 				break;
 			case "drop":
@@ -3738,24 +3644,20 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				break;
 			case "zbanuj":
 			case "ban":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is ban <nick>");
+				checker.checkFormat(args.length >= 2, "/is ban <nick>");
 				wyspa.zbanuj(p, args[1]);
 				break;
 			case "odbanuj":
 			case "unban":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is unban <nick>");
+				checker.checkFormat(args.length >= 2, "/is unban <nick>");
 				wyspa.odbanuj(p, args[1]);
 				break;
 			case "coop":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is coop <nick>");
+				checker.checkFormat(args.length >= 2, "/is coop <nick>");
 				wyspa.coop(p, args[1]);
 				break;
 			case "uncoop":
-				if (args.length < 2)
-					return Func.powiadom(sender, prefix + "/is uncoop <nick>");
+				checker.checkFormat(args.length >= 2, "/is uncoop <nick>");
 				wyspa.uncoop(p, args[1]);
 				break;
 			default:

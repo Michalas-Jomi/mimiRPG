@@ -86,8 +86,8 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
+import me.jomi.mimiRPG.Mapowany.Mapowane;
 import me.jomi.mimiRPG.util.Funkcje.FunctionN;
 
 public abstract class Func {
@@ -1561,6 +1561,9 @@ public abstract class Func {
 		
 	}
 
+	public static Object dajZField(Object obj, String nazwa) throws Throwable {
+		return dajField(obj.getClass(), nazwa).get(obj);
+	}
 	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
 		return dajZKlasy(clazz, NoSuchFieldException.class, klasa -> klasa.getDeclaredField(nazwa));
 	}

@@ -3,12 +3,15 @@ package me.jomi.mimiRPG;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Entity;
@@ -42,6 +45,7 @@ import me.jomi.mimiRPG.SkyBlock.AutoEventy;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Przeładuj;
 import me.jomi.mimiRPG.util.Zegar;
@@ -178,6 +182,7 @@ public class Main extends JavaPlugin implements Listener {
 	
 	
 	static boolean pluginEnabled = false;
+	@SuppressWarnings("unchecked")
 	public static void zarejestruj(Object obj) {
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
@@ -192,12 +197,21 @@ public class Main extends JavaPlugin implements Listener {
 			p.przeładuj();
 		}
 		if (obj instanceof Komenda)
-			((Komenda) obj)._komendy.forEach(cmd -> {
-				Komenda.commandMap.register(plugin.getName(), cmd);
-				if (pluginEnabled)
-					Komenda.syncCommands();
-			});
+			try {
+				((List<PluginCommand>) Func.dajZField(obj, "_komendy")).forEach(cmd -> {
+					try {
+						((CommandMap) Func.dajField(Komenda.class, "commandMap").get(null)).register(plugin.getName(), cmd);
+						if (pluginEnabled)
+							Func.dajMetode(Komenda.class, "syncCommands").invoke(null);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				});
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 	}
+	@SuppressWarnings("unchecked")
 	public static void wyrejestruj(Object obj) {
 		if (obj instanceof Listener)
 			HandlerList.unregisterAll((Listener) obj);
@@ -206,20 +220,29 @@ public class Main extends JavaPlugin implements Listener {
 		if (obj instanceof Przeładowalny)
 			Przeładowalny.przeładowalne.remove(obj.getClass().getSimpleName());
 		if (obj instanceof Komenda)
-			((Komenda) obj)._komendy.forEach(cmd -> {
-				Consumer<String> usuń = alias -> {
-					Command usuwana = Komenda.mapaKomend.remove((cmd.getPlugin().getName() + ":" + alias).toLowerCase());
-					if (Komenda.mapaKomend.get(alias) == usuwana)
-						Komenda.mapaKomend.remove(alias);
-				};
-				
-				usuń.accept(cmd.getName());
-				cmd.getAliases().forEach(usuń::accept);
-			
-				cmd.unregister(Komenda.commandMap);
-				
-				Komenda.syncCommands();
-			});
+			try {
+				((List<PluginCommand>) Func.dajZField(obj, "_komendy")).forEach(cmd -> {
+					try {
+						Map<String, Command> mapaKomend = (Map<String, Command>) Func.dajField(Komenda.class, "mapaKomend").get(null);
+						Consumer<String> usuń = alias -> {
+							Command usuwana = mapaKomend.remove((cmd.getPlugin().getName() + ":" + alias).toLowerCase());
+							if (mapaKomend.get(alias) == usuwana)
+								mapaKomend.remove(alias);
+						};
+						
+						usuń.accept(cmd.getName());
+						cmd.getAliases().forEach(usuń::accept);
+						
+						cmd.unregister((CommandMap) Func.dajField(Komenda.class, "commandMap").get(null));
+						
+						Func.dajMetode(Komenda.class, "syncCommands").invoke(null);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				});
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 	}
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");

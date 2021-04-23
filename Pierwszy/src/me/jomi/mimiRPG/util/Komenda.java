@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.util;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -14,7 +14,8 @@ import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.Baza;
+import me.jomi.mimiRPG.Main;
 
 @SuppressWarnings("unchecked")
 public abstract class Komenda implements TabExecutor {
@@ -26,7 +27,7 @@ public abstract class Komenda implements TabExecutor {
 	}
 	
 	
-	protected List<PluginCommand> _komendy = Lists.newArrayList();
+	private List<PluginCommand> _komendy = Lists.newArrayList();
 	public Komenda(String komenda) {
 		this(komenda, null);
 	}
@@ -134,6 +135,7 @@ public abstract class Komenda implements TabExecutor {
 		}
 	}
 	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError;
+	
 	
 	protected String preThrowMsg(String lokalizacja, Object... args) {
 		return Baza.msg(Func.prefix(this.getClass()), lokalizacja, args);

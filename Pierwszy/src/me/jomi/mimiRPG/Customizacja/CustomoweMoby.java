@@ -47,7 +47,7 @@ import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.util.Ciąg;
 import me.jomi.mimiRPG.util.Config;

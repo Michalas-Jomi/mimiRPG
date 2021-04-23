@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG;
+package me.jomi.mimiRPG.Chat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +17,10 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 
+import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 
 @Moduł
 public class DajPermisjeKomendomPluginów {
@@ -136,8 +139,18 @@ public class DajPermisjeKomendomPluginów {
 	
 	PluginManager pluginManager = Main.plugin.getServer().getPluginManager();
 	
+	private Map<String, Command> mapaKomend;
+	private CommandMap commandMap;
+	
+	@SuppressWarnings("unchecked")
 	public DajPermisjeKomendomPluginów() {
 		Func.opóznij(1, this::zainicjuj);
+		try {
+			mapaKomend = (Map<String, Command>) Func.dajField(Komenda.class, "mapaKomend").get(null);
+			commandMap = (CommandMap) Func.dajField(Komenda.class, "commandMap").get(null);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 
 	
@@ -174,9 +187,13 @@ public class DajPermisjeKomendomPluginów {
 		zasłonięte(Main.ust.wczytajListe("DajPermisjeKomendomPluginów.zasłonięte"));
 		przekierowania(Main.ust.wczytajListe("DajPermisjeKomendomPluginów.przekierowane"));
 		
-		Komenda.mapaKomend.values().forEach(this::ustawOgólne);
+		mapaKomend.values().forEach(this::ustawOgólne);
 		
-		Komenda.syncCommands();
+		try {
+			Func.dajMetode(Komenda.class, "syncCommands").invoke(null);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 	void przekierowania(List<String> przekierowane) {
 		przekierowane.forEach(przekierowywane -> {
@@ -184,30 +201,30 @@ public class DajPermisjeKomendomPluginów {
 			if (oba.size() != 2)
 				Main.warn(prefix + "Niepoprawne przekierowywanie komend: " + przekierowywane);
 			else {
-				Command cmd1 = Komenda.mapaKomend.get(oba.get(0));// tą kopiuje
-				Command cmd2 = Komenda.mapaKomend.get(oba.get(1));// tej ustawia
+				Command cmd1 = mapaKomend.get(oba.get(0));// tą kopiuje
+				Command cmd2 = mapaKomend.get(oba.get(1));// tej ustawia
 				
-				if (cmd1 != null) {
+				if (cmd1 == null) {
 					Main.warn(prefix + "Nieodnaleziono przekierowywanej komendy: " + oba.get(0));
 					return;
-				} else if (cmd2 != null)
+				} else if (cmd2 == null)
 					Main.log(prefix + Func.msg("Utworzono alias %s dla komendy %s", oba.get(1), oba.get(0)));
 				else
 					Main.log(prefix + Func.msg("Przekierowano komendę %s na %s", oba.get(1), oba.get(0)));
-				Komenda.mapaKomend.put(oba.get(1), cmd1);
+				mapaKomend.put(oba.get(1), cmd1);
 			}
 		});
 	}
 	void zasłonięte(List<String> zasłonięte) {
 		Map<String, MimiCommand> zrobione = new HashMap<>();
 		zasłonięte.forEach(zasłonięta -> {
-			Command cmd = Komenda.mapaKomend.get(zasłonięta);
+			Command cmd = mapaKomend.get(zasłonięta);
 			if (cmd == null)
 				Main.warn(prefix + "Nie odnaleziono komendy do przesłonienia: " + zasłonięta);
 			else if (zrobione.containsKey(cmd.getName())) {
-				Komenda.mapaKomend.put(zasłonięta, zrobione.get(cmd.getName()));
+				mapaKomend.put(zasłonięta, zrobione.get(cmd.getName()));
 			} else {
-				cmd.unregister(Komenda.commandMap);
+				cmd.unregister(commandMap);
 				
 				String namespace;
 				if (cmd instanceof PluginCommand)
@@ -225,18 +242,18 @@ public class DajPermisjeKomendomPluginów {
 				String fnamespace = namespace;
 				aliasy.forEach(alias -> {
 					String alias1 = alias.toLowerCase();
-					Func.wykonajDlaNieNull(Komenda.mapaKomend.get(alias1), znaleziona -> {
+					Func.wykonajDlaNieNull(mapaKomend.get(alias1), znaleziona -> {
 						if (znaleziona.getName().equals(mimicmd.getName()))
-							Komenda.mapaKomend.remove(alias1);
+							mapaKomend.remove(alias1);
 					});
 					String alias2 = (fnamespace + ":" + alias).toLowerCase();
-					Func.wykonajDlaNieNull(Komenda.mapaKomend.get(alias2), znaleziona -> {
+					Func.wykonajDlaNieNull(mapaKomend.get(alias2), znaleziona -> {
 						if (znaleziona.getName().equals(mimicmd.getName()))
-							Komenda.mapaKomend.remove(alias2);
+							mapaKomend.remove(alias2);
 					});
 				});
 				
-				Komenda.commandMap.register(namespace, cmd);
+				commandMap.register(namespace, cmd);
 			}	
 		});
 		

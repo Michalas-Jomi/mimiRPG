@@ -16,9 +16,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Napis;
 
 @Moduł

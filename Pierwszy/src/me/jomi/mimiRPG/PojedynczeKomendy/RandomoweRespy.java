@@ -16,9 +16,9 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
-import me.jomi.mimiRPG.Komenda;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;

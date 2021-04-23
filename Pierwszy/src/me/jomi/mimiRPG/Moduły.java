@@ -1,5 +1,9 @@
 package me.jomi.mimiRPG;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,6 +16,24 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Moduły implements Przeładowalny {
+	@Target(value=ElementType.TYPE)
+	@Retention(value=RetentionPolicy.RUNTIME)
+	public static @interface Moduł {
+		public Priorytet priorytet() default Priorytet.NORMALNY;
+		public enum Priorytet {
+			NAJWYŻSZY(0),
+			WYSOKI(1),
+			NORMALNY(2),
+			NISKI(3),
+			NAJNIŻSZY(4);
+
+			int poziom;
+			Priorytet(int poziom) {
+				this.poziom = poziom;
+			}
+		}
+	}
+	
 	static class Klasa {
 		Class<?> klasa;
 		Object inst;

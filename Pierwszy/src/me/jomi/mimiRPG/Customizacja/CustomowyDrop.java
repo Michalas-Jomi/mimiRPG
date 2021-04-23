@@ -19,7 +19,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;

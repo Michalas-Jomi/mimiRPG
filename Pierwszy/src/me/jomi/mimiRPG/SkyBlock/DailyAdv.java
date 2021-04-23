@@ -19,9 +19,8 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Customizacja.CustomoweOsiągnięcia;
 import me.jomi.mimiRPG.Customizacja.CustomoweOsiągnięcia.Kryterium.Typ;
 import me.jomi.mimiRPG.Customizacja.CustomoweOsiągnięcia.Osiągnięcie;

@@ -9,8 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import me.jomi.mimiRPG.Komenda;
-
 public abstract class KomendaZItemami<T> extends Komenda {
 	public KomendaZItemami(String komenda) {
 		super(komenda, "/" + komenda + " <nazwa> (nick)");

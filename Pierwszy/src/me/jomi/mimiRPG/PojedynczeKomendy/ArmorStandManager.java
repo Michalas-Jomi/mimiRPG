@@ -22,10 +22,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Napis;
 
 @Moduł
@@ -165,7 +165,6 @@ public class ArmorStandManager extends Komenda implements Listener {
 	
 	public ArmorStandManager() {
 		super("edytujarmorstand");
-		
 	}
 	
 	Map<String, Manager> mapa = new HashMap<>(); 
@@ -176,8 +175,8 @@ public class ArmorStandManager extends Komenda implements Listener {
 	@EventHandler
 	public void wybieranieArmorstanda(PlayerInteractAtEntityEvent ev) {
 		if (!(ev.getRightClicked() instanceof ArmorStand)) return;
-		if (!ev.getPlayer().hasPermission("mimirpg.edytujarmorstand"))
-		if (!ev.getPlayer().getInventory().getItemInMainHand().equals(różdzka)) return;
+		if (!ev.getPlayer().hasPermission("mimirpg.edytujarmorstand")) return;
+		if (!ev.getPlayer().getInventory().getItemInMainHand().isSimilar(różdzka)) return;
 		
 		Manager manager = new Manager((ArmorStand) ev.getRightClicked()); 
 		
@@ -283,6 +282,11 @@ public class ArmorStandManager extends Komenda implements Listener {
 		if (!(sender instanceof Player))
 			throwFormatMsg("Tylko gracz może tego użyć");
 		Player p = (Player) sender;
+		
+		if (args.length <= 0) {
+			Func.dajItem(p, różdzka);
+			throwFormatMsg("Otrzymałeś różdzkę");
+		}
 		
 		
 		Func.wykonajDlaNieNull(mapa.get(sender.getName()), manager -> {

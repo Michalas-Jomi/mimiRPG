@@ -1,5 +1,9 @@
 package me.jomi.mimiRPG;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +17,21 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MimiObject;
 
 public abstract class Mapowany extends MimiObject implements ConfigurationSerializable, Cloneable {
+	@Target(value=ElementType.FIELD)
+	@Retention(value=RetentionPolicy.RUNTIME)
+	public static @interface Mapowane {
+		public boolean nieTwórz() default false;
+	}
+	@SuppressWarnings("serial")
+	public static class NiepoprawneDemapowanieException extends Error {
+		public NiepoprawneDemapowanieException() {
+		}
+		public NiepoprawneDemapowanieException(String msg) {
+			super(msg);
+		}
+		
+	}
+	
 	/**
 	 * zamienia mape na obiekt
 	 * @param mapa do zdemapowania

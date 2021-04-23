@@ -6,7 +6,6 @@ import org.bukkit.inventory.PlayerInventory;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.PojedynczeKomendy.Poziom;
 

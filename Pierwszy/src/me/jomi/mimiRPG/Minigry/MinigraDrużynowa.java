@@ -30,9 +30,7 @@ import org.bukkit.scoreboard.Team.OptionStatus;
 import com.google.common.collect.Sets;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
 import me.jomi.mimiRPG.Mapowany;
-import me.jomi.mimiRPG.NiepoprawneDemapowanieException;
 import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.ItemCreator;

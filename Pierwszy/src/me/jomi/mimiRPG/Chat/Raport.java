@@ -10,7 +10,6 @@ import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.Lists;
 
-import me.jomi.mimiRPG.Komenda;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
@@ -18,6 +17,7 @@ import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Miniony.Minion;
 import me.jomi.mimiRPG.Miniony.Miniony;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 

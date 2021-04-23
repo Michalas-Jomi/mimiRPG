@@ -31,8 +31,7 @@ import org.bukkit.util.EulerAngle;
 import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Mapowane;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł

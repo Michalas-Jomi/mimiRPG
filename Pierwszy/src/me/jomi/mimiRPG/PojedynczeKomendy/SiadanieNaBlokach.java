@@ -12,45 +12,43 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Moduł;
+import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.InteractManager;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class SiadanieNaBlokach implements Listener, Przeładowalny {
+public class SiadanieNaBlokach implements Przeładowalny {
 	final Map<Material, Double> mapaWysokości = new HashMap<>();
 	final String tagPojazdu = "mimiSiadanieNaBlokachPojazd";
 	final String perm = Func.permisja("siadanienablokach");
 	
 	public SiadanieNaBlokach() {
 		Main.dodajPermisje(perm);
-	}
-	
-	@EventHandler
-	public void klikanieBloki(PlayerInteractEvent ev) {
-		if (	ev.getPlayer().hasPermission(perm) &&
-				ev.getBlockFace() == BlockFace.UP &&
-				ev.getAction() == Action.RIGHT_CLICK_BLOCK &&
-				ev.getPlayer().getInventory().getItemInMainHand().getType() == Material.SADDLE
-				)
-			Func.wykonajDlaNieNull(mapaWysokości.get(ev.getClickedBlock().getType()), wysokość -> {
-				Predicate<Integer> wolny = plus -> ev.getClickedBlock().getLocation().add(0, plus, 0).getBlock().getType().isAir();
-				if (!wolny.test(1) || !wolny.test(2))
-					return;
-				ev.getPlayer().leaveVehicle();
-				Entity pojazd = zrespPojazd(ev.getClickedBlock().getLocation().add(.5, wysokość - 1, .5));
-				pojazd.addPassenger(ev.getPlayer());
-				tick(ev.getPlayer(), pojazd);
-			});
+		InteractManager.zarejestruj(new ItemStack(Material.SADDLE), InteractManager.Sposób.PRAWY, ev -> {
+			if (	ev.getAction() == Action.RIGHT_CLICK_BLOCK &&
+					ev.getBlockFace() == BlockFace.UP &&
+					ev.getPlayer().hasPermission(perm)
+					)
+				Func.wykonajDlaNieNull(mapaWysokości.get(ev.getClickedBlock().getType()), wysokość -> {
+					Predicate<Integer> wolny = plus -> ev.getClickedBlock().getLocation().add(0, plus, 0).getBlock().getType().isAir();
+					if (!wolny.test(1) || !wolny.test(2))
+						return;
+					ev.getPlayer().leaveVehicle();
+					Entity pojazd = zrespPojazd(ev.getClickedBlock().getLocation().add(.5, wysokość - 1, .5));
+					pojazd.addPassenger(ev.getPlayer());
+					tick(ev.getPlayer(), pojazd);
+				});
+			
+			return false;
+		});
 	}
 	
 	private void tick(Player p, Entity pojazd) {
