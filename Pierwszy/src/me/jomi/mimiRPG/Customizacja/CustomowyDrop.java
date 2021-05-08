@@ -15,6 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityDropItemEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -92,6 +94,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 	public static final Config configBloki = new Config("Customowy Drop Bloki");
 	public static final Config configMoby  = new Config("Customowy Drop Moby");
 
+	// Material : [Drop]
 	public static final HashMap<String, List<Drop>> mapa = new HashMap<>();
 	
 	private static int _bloki;
@@ -181,6 +184,41 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 				if (drop.wyłączPierwotny)
 					ev.setDropItems(false);
 			}
+		}
+	}
+	@EventHandler
+	public void wyrzucanieItemów(PlayerDropItemEvent ev) {
+		if (ev.isCancelled()) return;
+		
+		ItemStack item = ev.getItemDrop().getItemStack();
+		try {
+			Func.wykonajDlaNieNull(mapa.get(item.getType().toString()), dropy -> {
+				dropy.forEach(drop -> {
+					if (drop.blokuj)
+						throw new RuntimeException();
+				});
+			});
+		} catch (RuntimeException e) {
+			ev.setCancelled(true);
+			ev.getPlayer().sendMessage(Func.msg(Func.prefix("Blokady") + "Hej! Nie wyrzucaj tego."));
+		}
+		
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void blokDropiącyItemy(ItemSpawnEvent ev) {
+		if (ev.isCancelled()) return;
+		
+		ItemStack item = ev.getEntity().getItemStack();
+		try {
+			Func.wykonajDlaNieNull(mapa.get(item.getType().toString()), dropy -> {
+				dropy.forEach(drop -> {
+					if (drop.blokuj)
+						throw new RuntimeException();
+				});
+			});
+		} catch (RuntimeException e) {
+			ev.setCancelled(true);
+			ev.getEntity().remove();
 		}
 	}
 	@EventHandler(priority=EventPriority.HIGHEST)

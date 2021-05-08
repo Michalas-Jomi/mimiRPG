@@ -73,7 +73,6 @@ public abstract class Komenda implements TabExecutor {
 			użycie = "/" + komenda;
 		try {
 			PluginCommand cmd = komenda(komenda, użycie, aliasy);
-			commandMap.register(Main.plugin.getName(), cmd);
 			cmd.setTabCompleter(this);
 			cmd.setExecutor(this);
 			return cmd;

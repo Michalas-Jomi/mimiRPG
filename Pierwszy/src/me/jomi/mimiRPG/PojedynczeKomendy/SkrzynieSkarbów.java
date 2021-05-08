@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
@@ -397,5 +398,34 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 		}
 		return true;
 	}
+
+
+	@SuppressWarnings("unused")
+	private static void debugUsuńStare() {
+		Config config = new Config("stareSkrzynieSkarbów");
+		AtomicInteger licznik = new AtomicInteger(0);
+		config.sekcja("lokacje").getKeys(false).forEach(klucz -> {
+			List<String> części = Func.tnij(klucz, ",");
+			
+			World world = Bukkit.getWorld(części.get(0));
+			int x = Func.Int(części.get(1));
+			int y = Func.Int(części.get(2));
+			int z = Func.Int(części.get(3));
+			
+			Block blok = world.getBlockAt(x, y, z);
+			
+			if (blok.getState() instanceof Container) {
+				((Container) blok.getState()).getInventory().clear();
+				blok.setType(Material.AIR, false);
+				licznik.incrementAndGet();
+			} else if (blok.getType() == Material.AIR) {
+			} else {
+				Main.warn("Nieznany blok %s %s na koordynatach %s %sx %sy %sz", blok, Func.enumToString(blok.getType()), world.getName(), x, y, z);
+			}
+		});
+		
+		Main.log("Usunięto " + licznik.get() + " starych skrzyń ze skarbami");
+	}
 }
 
+ 

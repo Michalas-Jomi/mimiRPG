@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.Chat;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -12,7 +13,7 @@ public class Mimi extends Komenda {
 
 	public Mimi() {
 		super("mimi");
-		Main.plugin.getCommand("mimi").setPermission(null);
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Main.plugin.getCommand("mimi").setPermission(null));
 	}
 
 	@Override

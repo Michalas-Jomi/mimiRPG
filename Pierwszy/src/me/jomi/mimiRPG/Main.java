@@ -1,7 +1,5 @@
 package me.jomi.mimiRPG;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -68,30 +66,6 @@ public class Main extends JavaPlugin implements Listener {
 	public static String path;	
 	public static ClassLoader classLoader;
 	
-	public static class MultiOutputStream extends OutputStream {
-		OutputStream[] nasłuchujące;
-		public MultiOutputStream(OutputStream... nasłuchujące) {
-			this.nasłuchujące = nasłuchujące;
-		}
-		
-		@Override
-		public void write(int b) throws IOException {
-			for (OutputStream out : nasłuchujące)
-				out.write(b);
-		}
-		
-		@Override
-		public void flush() throws IOException {
-			for (OutputStream out : nasłuchujące)
-				out.flush();
-		}
-		@Override
-		public void close() throws IOException {
-			for (OutputStream out : nasłuchujące)
-				out.close();
-		}
-	}
-	
 	@Override
 	@SuppressWarnings("unchecked")
 	public void onLoad() {
@@ -119,12 +93,12 @@ public class Main extends JavaPlugin implements Listener {
 		
 		zarejestruj(this);
 		zarejestruj(new Baza());
-		new Mimi();
-        new Raport();
+		zarejestruj(new Mimi());
+        zarejestruj(new Raport());
         
 		zarejestruj(new Moduły());
 		
-		new Przeładuj();
+		zarejestruj(new Przeładuj());
         if (!Zegar.zegary.isEmpty())
         	Zegar.aktywuj();
         

@@ -55,6 +55,7 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.ParticleZwykłe;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
@@ -87,6 +88,7 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		@Mapowane int magazynek = 30;
 		@Mapowane int czasPrzeładowania = 5; // w sekundach
 		@Mapowane KolorRGB kolorOgonaPocisku;
+		@Mapowane ParticleZwykłe particleWybuchu;
 		
 		
 		//@Override
@@ -100,7 +102,13 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		
 		public void strzel(Player p, ItemStack karabin) {
 			if (!minąłCooldown(karabin)) return;
-			if (!zabierzPocisk(p, karabin)) {
+			
+			boolean granat = magazynek <= 0 && item.isSimilar(ammo);
+			
+			if (granat) {
+				karabin.setAmount(karabin.getAmount() - 1);
+				p.getInventory().setItemInMainHand(karabin.getAmount() > 0 ? karabin : null);
+			} else if (!zabierzPocisk(p, karabin)) {
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak amunicji"));
 				przeładuj(p, karabin);
 				return;
@@ -109,7 +117,7 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 			strzel(p, p.getLocation().getDirection(), 0);
 			ustawCooldown(karabin);
 			
-			if (pociskiWMagazynku(karabin) <= 0)
+			if (!granat && pociskiWMagazynku(karabin) <= 0)
 				przeładuj(p, karabin);
 			
 			p.incrementStatistic(Statistic.USE_ITEM, Material.SNOWBALL);
@@ -145,6 +153,8 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 			return item.getItemMeta().getPersistentDataContainer().getOrDefault(keyStop, PersistentDataType.LONG, 0L) < System.currentTimeMillis();
 		}
 		private void ustawCooldown(ItemStack item) {
+			if (item == null || !item.hasItemMeta()) return;
+			
 			ItemMeta meta = item.getItemMeta();
 			long teraz = System.currentTimeMillis();
 			
@@ -265,6 +275,7 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		
 		public void przybliż(Player p) {
 			if (odbliż(p)) return;
+			if (przybliżenie == -1) return;
 			p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20*60*60*2, przybliżenie, false, false, false));
 			Func.ustawMetadate(p, "mimiKarabinPrzybliżenie", true);
 		}
@@ -292,7 +303,11 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		
 		Location loc = pocisk.getLocation();
 		pocisk.remove();
+		
 		loc.getWorld().spawnParticle(Particle.CRIT, loc, 5, 0, 0, 0, .1);
+		
+		if (karabin.particleWybuchu != null)
+			karabin.particleWybuchu.zresp(loc);
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -306,6 +321,7 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());
 		ev.setDamage(karabin.dmg);
 	}
+	
 	
 
 	static final HashMap<String, Karabin> stareKarabiny = new HashMap<>();// XXX temp do nowej edy
@@ -403,7 +419,7 @@ public class Karabiny extends Komenda implements Listener, Przeładowalny {
 		Karabin k = karabiny.get(karabin);
 		return k == null ? null : k.item;
 	}
-
+	
 
 	EdytorOgólny<Karabin> edytor = new EdytorOgólny<>("edytujkarabin", Karabin.class);
 	
