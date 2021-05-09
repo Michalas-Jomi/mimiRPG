@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.MineZ.AbstractKarabiny;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Karabiny;
 import me.jomi.mimiRPG.util.Config;
@@ -61,7 +62,7 @@ public class CustomoweItemy extends Komenda {
 			if (args.length == 2)
 				return utab(args, "broń", "ammo");
 			if (args.length == 3)
-				return utab(args, Karabiny.getKarabiny());
+				return utab(args, AbstractKarabiny.getKarabiny());
 			break;
 		}
 		return null;
@@ -119,10 +120,10 @@ public class CustomoweItemy extends Komenda {
 			switch (args[1].toLowerCase()) {
 			case "broń":
 			case "bron":
-				func = Karabiny::getKarabin;
+				func = AbstractKarabiny::getKarabin;
 				break;
 			case "ammo":
-				func = Karabiny::getAmmunicje;
+				func = AbstractKarabiny::getAmmunicje;
 				break;
 			default:
 				return Func.powiadom(p, prefix + "/citem karabin [broń / ammo] <karabin>");
