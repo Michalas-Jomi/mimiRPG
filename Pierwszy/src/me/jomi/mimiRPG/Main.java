@@ -22,7 +22,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
@@ -41,6 +40,7 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
+import me.jomi.mimiRPG.SkyBlock.Multi.MultiSkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
@@ -148,11 +148,14 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
-    	ChunkGenerator generator;
-    	if (id.equals("skyblock") && (generator = SkyBlock.worldGenerator(worldName)) != null)
-			return generator;
-    	return super.getDefaultWorldGenerator(worldName, id);
+    	ChunkGenerator generator = null;
+    	switch (id) {
+    	case "skyblock":		generator = SkyBlock.worldGenerator(worldName);	break;
+    	case "multiskyblock":	generator = MultiSkyBlock.generatorChunków;		break;
+    	}
+    	return generator != null ? generator : super.getDefaultWorldGenerator(worldName, id);
     }
+    
 	
 	
 	static boolean pluginEnabled = false;
@@ -316,13 +319,6 @@ public class Main extends JavaPlugin implements Listener {
 		if (p.isInvulnerable()) return;
 		p.setInvulnerable(true);
 		Func.opóznij(20 * sekundy, () -> p.setInvulnerable(false));
-	}
-	
-	@EventHandler
-	public void pobieranieWody(PlayerBucketFillEvent ev) {
-		if (Baza.rg != null && !Func.regiony(ev.getBlock().getWorld()).getApplicableRegions(Func.locToVec3(ev.getBlock().getLocation()))
-				.testState(Baza.rg.wrapPlayer(ev.getPlayer()), Baza.flagaUżywanieWiadra))
-			ev.setCancelled(true);
 	}
 	
 	

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -20,11 +19,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.StringFlag;
 
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Drop;
@@ -62,13 +56,6 @@ public class Baza implements Listener {
 	}
 	
 
-	// Api WorldGuard
-	public static WorldGuardPlugin rg;
-    public static StringFlag flagaCustomoweMoby;
-	public static StateFlag flagaStawianieBaz;
-	public static StateFlag flagaC4;
-	public static StateFlag flagaUżywanieWiadra;
-	public static StateFlag flagaRadiacja;
 	// Api WorldEdit
 	public static WorldEdit we;
 	
@@ -232,25 +219,12 @@ public class Baza implements Listener {
 		Gracz.mapa.remove(ev.getPlayer().getName().toLowerCase());
 	}
 
-	static class APIs {
-		private static void brakPluginu(String plugin) {
+	public static class APIs {
+		public static void brakPluginu(String plugin) {
 			Main.error("Nie wykryto " + plugin + "! Wyłączanie niektórych funkcji");;
 		}
 		static void włączWorldGuard() {
-			try {
-				Baza.rg = (WorldGuardPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
-				
-				for (Flag<?> flaga : new Flag<?>[]{
-					Baza.flagaUżywanieWiadra = new StateFlag("NapelnianieWiadra", true),
-					Baza.flagaStawianieBaz = new StateFlag("StawianieBaz", true),
-					Baza.flagaRadiacja = new StateFlag("Radiacja", false),
-					Baza.flagaC4 = new StateFlag("C4", false),
-					Baza.flagaCustomoweMoby = new StringFlag("CustomoweMoby")
-				})
-					WorldGuard.getInstance().getFlagRegistry().register(flaga);
-			} catch (NoClassDefFoundError e) {
-				brakPluginu("WorldGuard");
-			}
+			me.jomi.mimiRPG.api._WorldGuard.włącz();
 		}
 		static void włączWorldEdit() {
 			try {

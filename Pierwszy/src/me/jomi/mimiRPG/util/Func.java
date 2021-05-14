@@ -38,6 +38,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -1813,6 +1816,74 @@ public abstract class Func {
 		return BlockVector3.at(loc.getX(), loc.getY(), loc.getZ());
 	}
 	
+    public static void zipFile(String sourceFile, String gdzie) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(gdzie.endsWith(".zip") ? gdzie : (gdzie + ".zip"))) {
+			try (ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+				File fileToZip = new File(sourceFile);
+				zipFile(fileToZip, fileToZip.getName(), zipOut);
+			}
+		}
+    }
+    private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+        if (fileToZip.isDirectory()) {
+            if (fileName.endsWith("/")) {
+                zipOut.putNextEntry(new ZipEntry(fileName));
+                zipOut.closeEntry();
+            } else {
+                zipOut.putNextEntry(new ZipEntry(fileName + "/"));
+                zipOut.closeEntry();
+            }
+            
+            for (File childFile : fileToZip.listFiles())
+				zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
+            
+            return;
+        }
+        
+        try (FileInputStream fis = new FileInputStream(fileToZip)) {
+			zipOut.putNextEntry(new ZipEntry(fileName));
+			byte[] bytes = new byte[1024];
+			int length;
+			while ((length = fis.read(bytes)) >= 0)
+				zipOut.write(bytes, 0, length);
+		}
+    }
+	public static void unzipFile(String fileZip, String gdzie) throws IOException {
+		File destDir = new File(gdzie);
+		byte[] buffer = new byte[1024];
+		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(fileZip))) {
+			ZipEntry zipEntry = zis.getNextEntry();
+			while (zipEntry != null) {
+			    File newFile = newFile(destDir, zipEntry);
+			    if (zipEntry.isDirectory()) {
+			        if (!newFile.isDirectory() && !newFile.mkdirs())
+						throw new IOException("Failed to create directory " + newFile);
+			    } else {
+			        // fix for Windows-created archives
+			        File parent = newFile.getParentFile();
+			        if (!parent.isDirectory() && !parent.mkdirs())
+						throw new IOException("Failed to create directory " + parent);
+			        
+			        // write file content
+		            try (FileOutputStream fos = new FileOutputStream(newFile)) {
+		            	int len;
+		            	while ((len = zis.read(buffer)) > 0)
+		            		fos.write(buffer, 0, len);
+		            };
+			    }
+			    	zipEntry = zis.getNextEntry();
+			}
+			zis.closeEntry();
+		}
+    }
+    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+        File destFile = new File(destinationDir, zipEntry.getName());
+
+        if (!destFile.getCanonicalPath().startsWith(destinationDir.getCanonicalPath() + File.separator))
+			throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+
+        return destFile;
+    }
 	
 	public static void particle(Particle particle, Location loc, int ilość, double dx, double dy, double dz, double prędkość) {
 		loc.getWorld().spawnParticle(particle, loc, ilość, dx, dy, dz, prędkość);

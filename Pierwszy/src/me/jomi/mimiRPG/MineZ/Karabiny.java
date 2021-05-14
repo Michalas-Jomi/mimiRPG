@@ -51,18 +51,18 @@ public class Karabiny extends AbstractKarabiny<Karabiny.Karabin> {
 	public void usuwanieStzał(ProjectileHitEvent ev) {
 		Projectile pocisk = ev.getEntity();
 		if (!pocisk.hasMetadata("mimiPocisk")) return;
+
+		Location loc = pocisk.getLocation();
 		
 		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());	
 		if (karabin.mocWybuchu > 0)
 			pocisk.getWorld().createExplosion(pocisk.getLocation(), (float) karabin.mocWybuchu, false, false, (Player) pocisk.getShooter());
-		
-		Location loc = pocisk.getLocation();
-		pocisk.remove();
-		
-		loc.getWorld().spawnParticle(Particle.CRIT, loc, 5, 0, 0, 0, .1);
-		
 		if (karabin.particleWybuchu != null)
 			karabin.particleWybuchu.zresp(loc);
+		
+		loc.getWorld().spawnParticle(Particle.CRIT, loc, 5, 0, 0, 0, .1);
+
+		pocisk.remove();
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void postrzelenie(EntityDamageByEntityEvent ev) {

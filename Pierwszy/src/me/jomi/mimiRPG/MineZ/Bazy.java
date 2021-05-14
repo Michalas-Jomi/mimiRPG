@@ -70,6 +70,7 @@ import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.api._WorldGuard;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
@@ -374,9 +375,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			owners.addPlayer(p.getName());
 			region.setOwners(owners);
 			region.setPriority(Bazy.config.wczytajInt("ustawienia.prority baz"));
-			region.setFlag(me.jomi.mimiRPG.Baza.flagaCustomoweMoby, "brak");
-			region.setFlag(me.jomi.mimiRPG.Baza.flagaStawianieBaz, StateFlag.State.DENY);
-			region.setFlag(me.jomi.mimiRPG.Baza.flagaC4, 		   StateFlag.State.ALLOW);
+			region.setFlag(_WorldGuard.flagaCustomoweMoby, "brak");
+			region.setFlag(_WorldGuard.flagaStawianieBaz, StateFlag.State.DENY);
+			region.setFlag(_WorldGuard.flagaC4, 		  StateFlag.State.ALLOW);
 			String msgWejścia = config.wczytaj("ustawienia.msg wejścia", "§6Wszedłeś na teren bazy gracza {gracz}");
 			region.setFlag(Flags.GREET_MESSAGE, Func.koloruj(msgWejścia.replace("{gracz}", p.getName())));
 			String msgWyjścia = config.wczytaj("ustawienia.msg wyjścia", "§6Wyszedłeś z terenu bazy gracza {gracz}");
@@ -430,7 +431,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					);
 			if (Bazy.regiony.get(BukkitAdapter.adapt(świat))
 					.getApplicableRegions(region)
-					.testState(null, me.jomi.mimiRPG.Baza.flagaStawianieBaz)) {
+					.testState(null, _WorldGuard.flagaStawianieBaz)) {
 				g.BazaOstatnieStawianie = (int) (System.currentTimeMillis() / 1000);
 				g.zapisz();
 				return new Baza(x, y, z, dx, dy, dz, świat, ev.getPlayer());
@@ -447,11 +448,11 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					region.getMaximumPoint().add(xz, xz, xz),
 					region.getMinimumPoint().add(-xz, 0, -xz)
 					);
-			region.setFlag(me.jomi.mimiRPG.Baza.flagaStawianieBaz, StateFlag.State.ALLOW);
+			region.setFlag(_WorldGuard.flagaStawianieBaz, StateFlag.State.ALLOW);
 			boolean w = Bazy.regiony.get(BukkitAdapter.adapt(świat))
 					.getApplicableRegions(regionKontrolny)
-					.testState(null, me.jomi.mimiRPG.Baza.flagaStawianieBaz);
-			region.setFlag(me.jomi.mimiRPG.Baza.flagaStawianieBaz, StateFlag.State.DENY);
+					.testState(null, _WorldGuard.flagaStawianieBaz);
+			region.setFlag(_WorldGuard.flagaStawianieBaz, StateFlag.State.DENY);
 			return w;
 		}
 
@@ -532,8 +533,8 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(nowy);
 			
 			nowy.setFlag(Flags.BLOCK_BREAK, 	StateFlag.State.ALLOW);
-			nowy.setFlag(me.jomi.mimiRPG.Baza.flagaC4, 			StateFlag.State.ALLOW);
-			nowy.setFlag(me.jomi.mimiRPG.Baza.flagaStawianieBaz,StateFlag.State.DENY);
+			nowy.setFlag(_WorldGuard.flagaC4, 			StateFlag.State.ALLOW);
+			nowy.setFlag(_WorldGuard.flagaStawianieBaz, StateFlag.State.DENY);
 			nowy.setPriority(region.getPriority() - 1);
 			
 			Func.regiony(świat).removeRegion(region.getId());
@@ -584,7 +585,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		regiony = WorldGuard.getInstance().getPlatform().getRegionContainer();
 	}
 	public static boolean warunekModułu() {
-		return me.jomi.mimiRPG.Baza.rg != null;
+		return _WorldGuard.rg != null;
 	}
 	
 	static class Explozja {
@@ -604,7 +605,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			final String mat = blok.getType().toString();
 			final String str = config.sekcja("c4").getString(mat);
 			
-			if (!regiony.getApplicableRegions(Func.locToVec3(blok.getLocation())).testState(null, me.jomi.mimiRPG.Baza.flagaC4))
+			if (!regiony.getApplicableRegions(Func.locToVec3(blok.getLocation())).testState(null, _WorldGuard.flagaC4))
 				return;
 			
 			if (str != null) {
@@ -835,7 +836,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					if (mapa.containsKey("schemat") && !blokuj && 
 							Bazy.regiony.get(BukkitAdapter.adapt(świat))
 								.getApplicableRegions(BlockVector3.at(x, y, z))
-								.testState(me.jomi.mimiRPG.Baza.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
+								.testState(_WorldGuard.rg.wrapPlayer(ev.getPlayer()), Flags.BUILD) &&
 							(warn = Func.wklejSchemat(Main.path + mapa.get("schemat"), świat, x, y, z)))
 								zabierz = true;
 					if (warn)

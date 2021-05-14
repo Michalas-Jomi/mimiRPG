@@ -42,6 +42,7 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.api._WorldGuard;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Napis;
@@ -49,7 +50,7 @@ import me.jomi.mimiRPG.util.Napis;
 @Moduł
 public class BedWarsAlaZiga extends MinigraDrużynowa {
 	public static boolean warunekModułu() {
-		return Baza.rg != null;
+		return _WorldGuard.rg != null;
 	}
 	public static final String prefix = Func.prefix("Bedwars ala Ziga");
 	public static class PustyHolder implements InventoryHolder {

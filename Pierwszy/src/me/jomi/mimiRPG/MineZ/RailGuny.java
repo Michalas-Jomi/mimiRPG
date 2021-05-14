@@ -22,8 +22,18 @@ public class RailGuny extends AbstractKarabiny<RailGuny.RailGun> {
 			RayTraceResult rezult = p.getWorld().rayTrace(p.getEyeLocation(), wzrok, zasięg, FluidCollisionMode.NEVER, true, 0, e -> e instanceof LivingEntity && ! p.getUniqueId().equals(e.getUniqueId()));
 			
 			
-			if (rezult != null)
+			if (rezult != null) {
 				Func.wykonajDlaNieNull(rezult.getHitEntity(), e -> ((LivingEntity) e).damage(dmg, p));
+				
+				Location loc = rezult.getHitPosition().toLocation(p.getWorld());
+				
+				if (mocWybuchu > 0)
+					p.getWorld().createExplosion(loc, (float) mocWybuchu, false, false, p);
+				
+				if (particleWybuchu != null)
+					particleWybuchu.zresp(loc);
+				
+			}
 			
 			if (kolorOgonaPocisku != null) {
 				Location start = p.getEyeLocation();

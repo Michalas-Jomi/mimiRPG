@@ -21,9 +21,9 @@ import org.bukkit.potion.PotionEffectType;
 
 import com.google.common.collect.Sets;
 
-import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.api._WorldGuard;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
@@ -33,7 +33,7 @@ import me.jomi.mimiRPG.util.Zegar;
 public class Radiacja implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Radiacja");
 	public static boolean warunekModułu() {
-		return Baza.rg != null;
+		return _WorldGuard.rg != null;
 	}
 
 	
@@ -92,7 +92,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 	
 	void sprawdzRadiacjeZTerenu(Player p) {
 		if (Func.regiony(p.getWorld()).getApplicableRegions(Func.locToVec3(p.getLocation()))
-				.testState(Baza.rg.wrapPlayer(p), Baza.flagaRadiacja)) {
+				.testState(_WorldGuard.rg.wrapPlayer(p), _WorldGuard.flagaRadiacja)) {
 			nałóżEfekt(p);
 		}
 	}
@@ -117,7 +117,7 @@ public class Radiacja implements Listener, Zegar, Przeładowalny {
 		Player p = (Player) ev.getEntity();
 		
 		if (Func.regiony(p.getWorld()).getApplicableRegions(Func.locToVec3(p.getLocation()))
-					.testState(Baza.rg.wrapPlayer(p), Baza.flagaRadiacja))
+					.testState(_WorldGuard.rg.wrapPlayer(p), _WorldGuard.flagaRadiacja))
 			nałóżMobEfekt(p);
 	}
 	

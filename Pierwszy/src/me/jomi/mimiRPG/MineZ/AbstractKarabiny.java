@@ -97,7 +97,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			if (granat) {
 				karabin.setAmount(karabin.getAmount() - 1);
 				p.getInventory().setItemInMainHand(karabin.getAmount() > 0 ? karabin : null);
-			} else if (ammo != null && !zabierzPocisk(p, karabin)) {
+			} else if (!zabierzPocisk(p, karabin)) {
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak amunicji"));
 				przeładuj(p, karabin);
 				return;
@@ -219,9 +219,10 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 
 		Set<ItemStack> przeładowywane = new HashSet<>();
 		public void przeładuj(Player p, ItemStack item) {
-			if (!p.getInventory().containsAtLeast(ammo, 1))
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
-			else if (przeładowywane.add(item))
+			if (!p.getInventory().containsAtLeast(ammo, 1)) {
+				if (ammo != null)
+					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
+			} else if (przeładowywane.add(item))
 				przeładuj(p, item, czasPrzeładowania * 20 + 1);
 		}
 		private void przeładuj(Player p, ItemStack item, int ticki) {
