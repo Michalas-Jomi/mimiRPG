@@ -172,6 +172,9 @@ public class Config {
 		return lista;
 	}
 	
+	public ItemStack wczytajItemD(String sciezka) {
+		return item(wczytajD(sciezka));
+	}
 	public ItemStack wczytajItem(String sciezka) {
 		return item(wczytaj(sciezka));
 	}

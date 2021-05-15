@@ -1091,6 +1091,11 @@ public abstract class Func {
 		for (int i=0; i < args.length; i++)
 			cons.accept(args[i]);
 	}
+	public static <T> void forEach(T[] args, Predicate<T> warunek, Consumer<T> cons) {
+		for (int i=0; i < args.length; i++)
+			if (warunek.test(args[i]))
+				cons.accept(args[i]);
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static <T> void dodajWszystkie(List<T> lista, T... elementy) {
@@ -1891,4 +1896,15 @@ public abstract class Func {
 	public static void particle(Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
 		loc.getWorld().spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
 	}
+
+	public static String replaceGroup(Pattern pattern, String co, int grupa, String naCo) {
+	    return replaceGroup(pattern, co, grupa, 1, naCo);
+	}
+	public static String replaceGroup(Pattern pattern, String co, int grupa, int ile, String naCo) {
+	    Matcher m = pattern.matcher(co);
+	    for (int i = 0; i < ile; i++)
+	        if (!m.find()) return co;
+	    return new StringBuilder(co).replace(m.start(grupa), m.end(grupa), naCo).toString();
+	}
+
 }
