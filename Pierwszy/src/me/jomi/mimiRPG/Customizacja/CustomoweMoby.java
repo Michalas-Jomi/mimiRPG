@@ -16,7 +16,7 @@ import org.bukkit.World;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEntity;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -38,12 +38,12 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 
-import net.minecraft.server.v1_16_R2.EntityInsentient;
-import net.minecraft.server.v1_16_R2.EntityPlayer;
-import net.minecraft.server.v1_16_R2.MojangsonParser;
-import net.minecraft.server.v1_16_R2.NBTTagCompound;
-import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
-import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
+import net.minecraft.server.v1_16_R3.EntityInsentient;
+import net.minecraft.server.v1_16_R3.EntityPlayer;
+import net.minecraft.server.v1_16_R3.MojangsonParser;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.PathfinderGoalNearestAttackableTarget;
+import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;

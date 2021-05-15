@@ -9,9 +9,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import net.minecraft.server.v1_16_R2.NBTBase;
-import net.minecraft.server.v1_16_R2.NBTCompressedStreamTools;
-import net.minecraft.server.v1_16_R2.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.NBTBase;
+import net.minecraft.server.v1_16_R3.NBTCompressedStreamTools;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -119,7 +119,7 @@ public class ZamienEq extends Komenda{
 		HashMap<Integer, ItemStack> mapa = new HashMap<>();
 		
 		for (NBTBase nbt : (NBTTagList) tag.get(klucz))
-			mapa.put(((NBTTagCompound) nbt).getInt("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R2.ItemStack.a((NBTTagCompound) nbt)));
+			mapa.put(((NBTTagCompound) nbt).getInt("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a((NBTTagCompound) nbt)));
 		
 		return mapa;
 	}

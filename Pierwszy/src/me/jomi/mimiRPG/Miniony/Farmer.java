@@ -11,12 +11,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import net.minecraft.server.v1_16_R3.EntityHuman;
+import net.minecraft.server.v1_16_R3.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
-import net.minecraft.server.v1_16_R2.EntityHuman;
-import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 public class Farmer extends Minion {
 
@@ -30,6 +31,7 @@ public class Farmer extends Minion {
 	protected static int ulepszanieSadzenieCena = 20000;
 	
 	
+	@Override
 	public Config zapisz() {
 		Config config = super.zapisz();
 		
@@ -40,6 +42,7 @@ public class Farmer extends Minion {
 	public Farmer(Config config) {
 		super(config);
 	}
+	@Override
 	protected void init(Config config) {
 		sadzenie = (boolean) config.wczytaj("sadzenie");
 	}
@@ -50,20 +53,25 @@ public class Farmer extends Minion {
 		super(p, item);
 		sadzenie = item.getItemMeta().getLore().get(10).split(" ")[1].startsWith("§a");
 	}
+	@Override
 	protected void init() {}
+	@Override
 	protected void zrespMoba() {
 		super.zrespMoba();
 		goalSelector 	= new PathfinderGoalSelector(getWorld().getMethodProfilerSupplier());
 		goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
 	}
 	
+	@Override
 	protected void dajItem(Player p) {
 		dajItem(p, Miniony.itemFarmer);
 	}
+	@Override
 	protected void _dajItem(List<String> lore) {
 		lore.add("sadzenie: " + zakup(sadzenie));
 	}
 	
+	@Override
 	protected void ubierz() {
 		ubierz(hełm, klata, spodnie, buty);
 	}
@@ -111,6 +119,7 @@ public class Farmer extends Minion {
 		}
 		podnieśItemy(2.5, 2, 2.5);
 	}
+	@Override
 	protected void wykop(Block b) {
 		Material mat = b.getType();
 		switch (b.getType()) {
@@ -136,6 +145,7 @@ public class Farmer extends Minion {
 		}
 	}
 	
+	@Override
 	protected void mimiTick() {
 		if (mimiTick(true)) {
 			Location l = new Location(loc.getWorld(), locX(), locY(), locZ()).add(0, .2, 0);
@@ -144,10 +154,12 @@ public class Farmer extends Minion {
 		}
 	}
 	
+	@Override
 	protected void ulepszeniaOdśwież(Inventory inv){
 		super.ulepszeniaOdśwież(inv);
 		ustawItem(inv, 22, Material.WHEAT_SEEDS, "&2Sadzenie", Func.BooleanToString(sadzenie, Arrays.asList("&aZakupione"), Arrays.asList("&cNie Zakupione", "&3Cena: &e" + Func.IntToString(ulepszanieSadzenieCena) + "$")));
 		}
+	@Override
 	public boolean kliknięcie(Player p, InventoryClickEvent ev) {
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))

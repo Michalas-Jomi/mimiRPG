@@ -10,8 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftItem;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftItem;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -28,13 +28,14 @@ import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
 
+import net.minecraft.server.v1_16_R3.EntityZombie;
+import net.minecraft.server.v1_16_R3.IChatBaseComponent.ChatSerializer;
+import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
+
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MenuStronne;
-import net.minecraft.server.v1_16_R2.EntityZombie;
-import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
-import net.minecraft.server.v1_16_R2.PathfinderGoalSelector;
 
 public abstract class Minion extends EntityZombie {
 	public static String prefix = Miniony.prefix;
@@ -151,8 +152,8 @@ public abstract class Minion extends EntityZombie {
 		loc = (Location) config.wczytaj("loc");
 		imie = (String) config.wczytaj("imie");
 		
-		stanWody = (int) config.wczytaj("stanWody", 0);
-		stanJedzenia = (double) config.wczytaj("stanJedzenia", 0);
+		stanWody = config.wczytaj("stanWody", 0);
+		stanJedzenia = config.wczytaj("stanJedzenia", 0);
 		
 		gracze = (List<String>) config.wczytaj("gracze");
 		stworzyciel = (String) config.wczytaj("stworzyciel");
@@ -160,7 +161,7 @@ public abstract class Minion extends EntityZombie {
 		narzędzie = (ItemStack) config.wczytaj("narzędzie");
 		ekwipunek = (List<ItemStack>) config.wczytaj("ekwipunek");
 
-		podnoszenie = (boolean) config.wczytaj("podnoszenie", false);
+		podnoszenie = config.wczytaj("podnoszenie", false);
 		
 		staty.add(new Statystyka(config, "Prędkość"));
 		staty.add(new Statystyka(config, "ZużycieWody"));

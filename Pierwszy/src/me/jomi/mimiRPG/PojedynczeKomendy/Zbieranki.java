@@ -12,8 +12,8 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftArmorStand;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
@@ -28,10 +28,10 @@ import org.bukkit.util.EulerAngle;
 
 import com.mojang.datafixers.util.Pair;
 
-import net.minecraft.server.v1_16_R2.EnumItemSlot;
-import net.minecraft.server.v1_16_R2.ItemStack;
-import net.minecraft.server.v1_16_R2.Packet;
-import net.minecraft.server.v1_16_R2.PacketPlayOutEntityEquipment;
+import net.minecraft.server.v1_16_R3.EnumItemSlot;
+import net.minecraft.server.v1_16_R3.ItemStack;
+import net.minecraft.server.v1_16_R3.Packet;
+import net.minecraft.server.v1_16_R3.PacketPlayOutEntityEquipment;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Moduły.Moduł;

@@ -12,17 +12,18 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import net.minecraft.server.v1_16_R3.EntityChicken;
+import net.minecraft.server.v1_16_R3.EntityCow;
+import net.minecraft.server.v1_16_R3.EntityHuman;
+import net.minecraft.server.v1_16_R3.EntityPig;
+import net.minecraft.server.v1_16_R3.EntityPolarBear;
+import net.minecraft.server.v1_16_R3.EntityRabbit;
+import net.minecraft.server.v1_16_R3.EntitySheep;
+import net.minecraft.server.v1_16_R3.PathfinderGoalLookAtPlayer;
+import net.minecraft.server.v1_16_R3.PathfinderGoalNearestAttackableTarget;
+
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
-import net.minecraft.server.v1_16_R2.EntityChicken;
-import net.minecraft.server.v1_16_R2.EntityCow;
-import net.minecraft.server.v1_16_R2.EntityHuman;
-import net.minecraft.server.v1_16_R2.EntityPig;
-import net.minecraft.server.v1_16_R2.EntityPolarBear;
-import net.minecraft.server.v1_16_R2.EntityRabbit;
-import net.minecraft.server.v1_16_R2.EntitySheep;
-import net.minecraft.server.v1_16_R2.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R2.PathfinderGoalNearestAttackableTarget;
 
 public class Rzeźnik extends Minion{
 
@@ -36,6 +37,7 @@ public class Rzeźnik extends Minion{
 	public Rzeźnik(Config config) {
 		super(config);
 	}
+	@Override
 	protected void init(Config config) {
 		staty.add(new Statystyka(config, "dmg"));
 	}
@@ -46,9 +48,11 @@ public class Rzeźnik extends Minion{
 		super(p, item);
 		staty.add(new Statystyka(item.getItemMeta().getLore().get(10)));
 	}
+	@Override
 	protected void init() {
 		staty.add(new Statystyka("dmg"));
 	}
+	@Override
 	protected void zrespMoba() {
 		super.zrespMoba();
 		goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
@@ -61,15 +65,19 @@ public class Rzeźnik extends Minion{
 		ustawDmg();
 	}
 	
+	@Override
 	protected void _dajItem(List<String> lore) {}
+	@Override
 	protected void dajItem(Player p) {
 		dajItem(p, Miniony.itemRzeznik);
 	}
+	@Override
 	public void zamknij(Player p, Inventory inv, boolean menu) {
 		super.zamknij(p, inv, menu);
 		if (mimiTick(false))
 			włączAtakZwierząt();
 	}
+	@Override
 	public void otwórz(Player p) {
 		super.otwórz(p);
 		wyłączAtakZwierząt();
@@ -87,9 +95,11 @@ public class Rzeźnik extends Minion{
 		atakuje = true;
 	}
 	
+	@Override
 	protected void ubierz() {
 		ubierz(hełm, klata, spodnie, buty);
 	}
+	@Override
 	protected void mimiTick() {
 		if (mimiTick(true)) {
 			podnieśItemy(1.5, 1, 1.5);
@@ -102,10 +112,12 @@ public class Rzeźnik extends Minion{
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(staty.get(3).akt);
 	}
 	
+	@Override
 	protected void ulepszeniaOdśwież(Inventory inv){
 		super.ulepszeniaOdśwież(inv);
 		ustawItem(inv, 15, Material.IRON_SWORD, "&2Atak", Arrays.asList("&3Aktualny dmg: &e"   + staty.get(3).str(), "&3Następny poziom: &e" + staty.get(3).str2(), staty.get(3).strCena()));
 	}
+	@Override
 	public boolean kliknięcie(Player p, InventoryClickEvent ev) {
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))

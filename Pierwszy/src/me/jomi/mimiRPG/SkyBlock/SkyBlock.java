@@ -38,8 +38,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -87,8 +87,8 @@ import com.google.common.collect.Sets;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-import net.minecraft.server.v1_16_R2.PacketPlayOutWorldBorder;
-import net.minecraft.server.v1_16_R2.WorldBorder;
+import net.minecraft.server.v1_16_R3.PacketPlayOutWorldBorder;
+import net.minecraft.server.v1_16_R3.WorldBorder;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Gracz;

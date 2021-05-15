@@ -11,12 +11,12 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsX-2.18.1.13.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/EssentialsXSpawn-2.18.1.13.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/spigot-1.16.3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/Shopkeepers-2.11.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/MythicMobs-4.10.1.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="https://www.mythicmobs.net/javadocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/spigot-1.16.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
