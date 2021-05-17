@@ -1268,7 +1268,10 @@ public abstract class Func {
 		}
 	}
 	public static int opóznij(int ticki, Runnable lambda) {
-		return Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
+		if (ticki > 0)
+			return Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, lambda, ticki);
+		else
+			return Bukkit.getScheduler().runTask(Main.plugin, lambda).getTaskId();
 	}
 	public static Task opóznijWykonajOnDisable(int ticki, Runnable lambda) {
 		return new Task(ticki, lambda);

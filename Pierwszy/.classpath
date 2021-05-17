@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/Vault.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/worldedit-bukkit-7.2.0-SNAPSHOT-dist.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/worldguard-bukkit-7.0.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -18,5 +17,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/spigot-1.16.5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/moje pluginy 1.16.5/spigot.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/ProtocolLib.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/moje pluginy 1.16.5/plugins/worldguard-bukkit-7.0.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

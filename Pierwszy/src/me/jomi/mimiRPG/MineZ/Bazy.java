@@ -359,6 +359,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			return licz;
 		}
 		
+		@SuppressWarnings("deprecation")
 		Baza(int x, int y, int z, int dx, int dy, int dz, World świat, Player właściciel) {
 			Player p = właściciel;
 			this.świat = świat;

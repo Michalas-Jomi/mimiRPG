@@ -19,6 +19,7 @@ public class Bestie implements Listener {
 		mob.setCustomNameVisible(true);
 		mob.addScoreboardTag(tagBestii);
 		odświeżLicznikHp(mob);
+		
 	}
 	
 	private static void odświeżLicznikHp(LivingEntity mob) {

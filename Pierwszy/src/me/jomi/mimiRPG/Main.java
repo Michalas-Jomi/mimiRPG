@@ -2,6 +2,7 @@ package me.jomi.mimiRPG;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -30,6 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 
 import me.jomi.mimiRPG.Chat.Mimi;
 import me.jomi.mimiRPG.Chat.Raport;
@@ -82,11 +84,16 @@ public class Main extends JavaPlugin implements Listener {
 		
 		Baza.APIs.włączWorldGuard();
 		Baza.APIs.włączWorldEdit();
+		
+		pluginLoaded = true;
 	}
 	@Override
 	public void onEnable() {
 		boolean wl = getServer().hasWhitelist();
 		getServer().setWhitelist(true);
+		
+		while (!doZarejestrowania.isEmpty())
+			zarejestruj(doZarejestrowania.remove());
 		
 		Baza.APIs.włączVault();
 		essentials = (Essentials) Bukkit.getServer().getPluginManager().getPlugin("Essentials");
@@ -158,9 +165,16 @@ public class Main extends JavaPlugin implements Listener {
     
 	
 	
+    private static Queue<Object> doZarejestrowania = Queues.newConcurrentLinkedQueue();
+    static boolean pluginLoaded = false;
 	static boolean pluginEnabled = false;
 	@SuppressWarnings("unchecked")
 	public static void zarejestruj(Object obj) {
+		if (!pluginLoaded) {
+			doZarejestrowania.add(obj);
+			return;
+		}
+		
 		if (obj instanceof Listener)
 			plugin.getServer().getPluginManager().registerEvents((Listener) obj, plugin);
 		if (obj instanceof Zegar)

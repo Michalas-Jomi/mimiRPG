@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.RecipeChoice.MaterialChoice;
 import org.bukkit.inventory.ShapedRecipe;
 
@@ -27,6 +28,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
+	@SuppressWarnings("deprecation")
 	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, String> mapa, String grupa) {
 		ShapedRecipe rec = new ShapedRecipe(nms, item);
 		
@@ -36,7 +38,19 @@ public class CustomoweCraftingi implements Przeładowalny {
 			String str = mapa.get(klucz);
 			Func.wykonajDlaNieNull(mapaTagów.get(str),
 					choice -> rec.setIngredient(klucz, choice),
-					() -> rec.setIngredient(klucz, Func.StringToEnum(Material.class, str)));
+					() -> {
+						ItemStack arg = Config.item(str);
+						try {
+							Material mat = Func.StringToEnum(Material.class, str);
+							if (arg.isSimilar(new ItemStack(mat)))
+								rec.setIngredient(klucz, mat);
+							else
+								throw new IllegalArgumentException();
+						} catch (IllegalArgumentException e) {
+							rec.setIngredient(klucz, new RecipeChoice.ExactChoice(arg));
+						}
+						
+					});
 		}
 		
 		Func.wykonajDlaNieNull(grupa, grp -> rec.setGroup(grp));

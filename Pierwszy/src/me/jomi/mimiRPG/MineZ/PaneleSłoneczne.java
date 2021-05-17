@@ -181,7 +181,7 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		
 		zresp(loc, "§a§lPanel Słoneczny", tagNapisNazwa);
 		
-		ArmorStand armorStand = zresp(loc.add(0, -.25, 0), "§eEnergia§8: §94 §7(60:00)", tagNapisTimer);
+		ArmorStand armorStand = zresp(loc.add(0, -.25, 0), "§eEnergia§8: §90 §7(60:00)", tagNapisTimer);
 
 		
 		znajdz(armorStand);
