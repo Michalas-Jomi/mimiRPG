@@ -444,8 +444,12 @@ public abstract class Func {
 			return Double.parseDouble(liczba) / mn;
 		return ((double) Int(liczba)) / mn;
 	}
-	public static int Int(String liczba) throws NumberFormatException {
-		return Integer.parseInt(liczba.trim());
+	public static int Int(Object liczba) throws NumberFormatException {
+		if (liczba == null)
+			return 0;
+		if (liczba instanceof Integer || liczba.getClass().isPrimitive())
+			return (int) liczba;
+		return Integer.parseInt((liczba.toString()).trim());
 	}
 	
 	public static double Double(String liczba, double domyślna) {
@@ -901,7 +905,10 @@ public abstract class Func {
 		return w;
 	}
 	public static int max(Iterable<Integer> iterable) {
-		return max(iterable, (a, b) -> Math.max(a, b));
+		Object obj = max(iterable, (a, b) -> Math.max(a, b));
+		if (obj == null)
+			return 0;
+		return (int) obj;
 	}
 	public static int min(Iterable<Integer> iterable) {
 		return max(iterable, (a, b) -> Math.min(a, b));

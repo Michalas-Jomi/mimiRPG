@@ -165,7 +165,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			
 			g.zapisz();
 			
-			p.sendMessage(prefix + Func.msg("Przyjołeś nowe zadanie: %s", nazwaWyświetlana));
+			p.sendMessage(prefix + Func.msg("Przyjąłeś nowe zadanie: %s", nazwaWyświetlana));
 			
 			return zadanie;
 		}
