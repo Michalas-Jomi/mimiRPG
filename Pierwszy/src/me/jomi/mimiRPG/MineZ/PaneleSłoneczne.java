@@ -47,7 +47,7 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	static final Map<UUID, Panel> mapaPaneli = new HashMap<>();
 	
 	static class Panel {
-		private static final Pattern pattern = Pattern.compile("§eEnergia§8: §9(\\d+) (§7\\((\\d+):(\\d+)\\))?(§4Zasłonięty!)?");
+		private static final Pattern pattern = Pattern.compile("§eEnergia§8: §9(\\d+) ?(§7\\((\\d+):(\\d+)\\))?(§4Zasłonięty!)?");
 		
 		final ArmorStand tytuł;
 		final ArmorStand napis;

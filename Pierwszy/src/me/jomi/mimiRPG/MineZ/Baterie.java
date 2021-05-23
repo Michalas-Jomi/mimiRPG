@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -156,7 +157,10 @@ public class Baterie implements Listener, Przeładowalny {
 		if (ev.isCancelled()) return;
 		if (ev.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
+		Player p = ev.getPlayer();
+		ItemStack item = p.getInventory().getItemInMainHand();
+		
+		if (item == null || item.getAmount() != 1) return;
 		
 		Func.wykonajDlaNieNull(bateria(item), bateria -> {
 			int energia = bateria.getPoziomNaładowania(item);
@@ -169,16 +173,16 @@ public class Baterie implements Listener, Przeładowalny {
 					panel.ustawEnergię(wPanelu - ładowane);
 					bateria.ustawPoziomNaładowania(item, energia + ładowane);
 					
-					ev.getPlayer().getInventory().setItemInMainHand(item);
+					p.getInventory().setItemInMainHand(item);
 					
 					ev.getClickedBlock().getWorld().playSound(ev.getClickedBlock().getLocation().add(.5, .5, .5), Sound.ENTITY_VEX_DEATH, .5f, 2f);
 					
 					
-					Func.powiadom(ev.getPlayer(), prefix + "%s -> %s (%s) (%s)",
+					Func.powiadom(p, prefix + "%s -> %s (%s) (%s)",
 							bateria.koloruj(energia), bateria.koloruj(energia + ładowane),  "+" + ładowane, "§9Panel Słoneczny");
 					
 					Main.log(prefix + Func.msg("%s naładował baterię %s -> %s (%s) w panelu słonecznym %s",
-							ev.getPlayer().getName(), bateria.koloruj(energia), bateria.koloruj(energia + ładowane),  "+" + ładowane,
+							p.getName(), bateria.koloruj(energia), bateria.koloruj(energia + ładowane),  "+" + ładowane,
 							Func.locBlockToString(ev.getClickedBlock().getLocation())));
 				});
 		});

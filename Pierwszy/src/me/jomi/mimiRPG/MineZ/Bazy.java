@@ -1022,7 +1022,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!(zaproszony.gildia == null || zaproszony.gildia.isEmpty()))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("%s nalezy już do gildi %s", args[1], zaproszony.gildia));
 
-			if (gildia.gracze.size() >= Main.ust.wczytaj("Gildie.max członkowie", 8))
+			if (gildia.gracze.size() >= config.wczytaj("max osób w gildi", 4))
 				return Func.powiadom(sender, Gildia.prefix + "Twoja gildia jest już przepełniona, nie możesz zaprosić więcej osób");
 			
 			mapaZaproszeń.put(sender.getName(), new Krotka<>(p.getName(), czasZaproszeń));
@@ -1126,7 +1126,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 				Gildia _gildia = Gildia.wczytaj(nazwaGildi);
 				if (_gildia == null)
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia już nie istnieje");
-				if (_gildia.gracze.size() >= Main.ust.wczytaj("Gildie.max członkowie", 8))
+				if (_gildia.gracze.size() >= config.wczytaj("max osób w gildi", 4))
 					return Func.powiadom(sender, Gildia.prefix + "Ta gildia jest już pełna");
 				_gildia.dołącz(sender);
 				_gildia.wyświetlCzłonkom(Gildia.prefix + Func.msg("%s %s na mocy %s dołączył do gildi", nazwaGildi, zapraszający, sender.getName()));

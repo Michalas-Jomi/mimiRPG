@@ -1,28 +1,31 @@
 package me.jomi.mimiRPG.SkyBlock.Multi;
 
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
 @Moduł
-public class Bestie implements Listener {
-	private static final String tagBestii = "mimiBestia";
+public class LicznikHp implements Listener {
+	private static final String tagMobówZLicznikiem = "mimiBestia";
 	
 	public static void ustawLicznikHp(LivingEntity mob) {
 		mob.setCustomNameVisible(true);
-		mob.addScoreboardTag(tagBestii);
+		mob.addScoreboardTag(tagMobówZLicznikiem);
 		odświeżLicznikHp(mob);
-		
 	}
-	
-	private static void odświeżLicznikHp(LivingEntity mob) {
+	public static void odświeżLicznikHp(LivingEntity mob) {
 		double maxHp = mob.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		double hp = mob.getHealth();
 		
@@ -43,10 +46,17 @@ public class Bestie implements Listener {
 		if (ev.getEntity() instanceof Monster)
 			ustawLicznikHp((LivingEntity) ev.getEntity());
 	}
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void obrażenia(EntityDamageEvent ev) {
-		if (ev.getEntity().getScoreboardTags().contains(tagBestii))
-			odświeżLicznikHp((LivingEntity) ev.getEntity());
+		obsłużEvent(ev);
+	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void heal(EntityRegainHealthEvent ev) {
+		obsłużEvent(ev);
+	}
+	private void obsłużEvent(EntityEvent ev) {
+		if (ev.getEntity().getScoreboardTags().contains(tagMobówZLicznikiem))
+			Bukkit.getScheduler().runTask(Main.plugin, () -> odświeżLicznikHp((LivingEntity) ev.getEntity()));
 	}
 	
 }

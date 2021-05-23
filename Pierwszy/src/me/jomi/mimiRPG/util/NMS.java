@@ -12,6 +12,7 @@ import net.minecraft.server.v1_16_R3.BlockPosition;
 import net.minecraft.server.v1_16_R3.Entity;
 import net.minecraft.server.v1_16_R3.EntityPlayer;
 import net.minecraft.server.v1_16_R3.IBlockData;
+import net.minecraft.server.v1_16_R3.ItemStack;
 import net.minecraft.server.v1_16_R3.World;
 
 public class NMS {
@@ -26,6 +27,13 @@ public class NMS {
 	}
 	public static World nms(org.bukkit.World świat) {
 		return ((CraftWorld) świat).getHandle();
+	}
+	public static ItemStack nms(org.bukkit.inventory.ItemStack item) {
+		try {
+			return (ItemStack) Func.dajZField(item, "handle");
+		} catch (Throwable e) {
+			return null;
+		}
 	}
 	
 	public static Location loc(org.bukkit.World world, BlockPosition pos) {

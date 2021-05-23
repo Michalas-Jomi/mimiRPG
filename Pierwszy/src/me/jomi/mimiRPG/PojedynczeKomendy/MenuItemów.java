@@ -35,8 +35,8 @@ public class MenuItemów extends Komenda implements Przeładowalny {
 	static MenuItemów inst;
 	public MenuItemów() {
 		super("menuitemów", "/menuitemów (kategoria)");
-		inst = this;
 		ustawKomende("edytujmenuitemów", "/edytujmenuitemów (kategoria)", null);
+		inst = this;
 		
 		panel.ustawClick(ev -> {
 			if (Baza.pustySlot.isSimilar(ev.getCurrentItem()))
