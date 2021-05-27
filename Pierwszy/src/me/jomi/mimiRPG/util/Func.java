@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,7 +53,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
@@ -184,7 +188,14 @@ public abstract class Func {
 			} catch (Throwable e) {}
 			return (E) met.invoke(null, str.toUpperCase());
 		} catch (Throwable e) {
-			throw new IllegalArgumentException();
+			String msg = null;
+			try {
+				msg = "Nie odnaleziono wartości " + str + " w " + Arrays.asList((Enum<?>[]) Func.dajMetode(clazz, "values").invoke(null));
+			} catch (Throwable e1) {
+				e1.printStackTrace();
+				throw new IllegalArgumentException(e);
+			}
+			throw new IllegalArgumentException(msg, e);
 		}
 	}
 	
@@ -1074,6 +1085,9 @@ public abstract class Func {
 	public static <T> List<T> nieNull(List<T> lista) {
 		return lista != null ? lista : Lists.newArrayList();
 	}
+	public static ItemStack nieNull(ItemStack item) {
+		return item != null ? item : Func.stwórzItem(Material.POPPY);
+	}
 	
 	public static String ostatni(String[] stringi) {
 		if (stringi.length == 0) return "";
@@ -1917,4 +1931,80 @@ public abstract class Func {
 	    return new StringBuilder(co).replace(m.start(grupa), m.end(grupa), naCo).toString();
 	}
 
+	public static ArmorStand zrespNietykalnyArmorStand(Location loc) {
+		return zrespNietykalnyArmorStand(loc, null);
+	}
+	public static ArmorStand zrespNietykalnyArmorStand(Location loc, String nick) {
+		ArmorStand armorStand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+		
+		if (nick != null) {
+			armorStand.setCustomName(nick);
+			armorStand.setCustomNameVisible(true);
+		}
+		armorStand.addEquipmentLock(EquipmentSlot.OFF_HAND, LockType.ADDING_OR_CHANGING);
+		armorStand.addEquipmentLock(EquipmentSlot.HAND,  	LockType.ADDING_OR_CHANGING);
+		armorStand.addEquipmentLock(EquipmentSlot.HEAD,  	LockType.ADDING_OR_CHANGING);
+		armorStand.addEquipmentLock(EquipmentSlot.CHEST,	LockType.ADDING_OR_CHANGING);
+		armorStand.addEquipmentLock(EquipmentSlot.LEGS,		LockType.ADDING_OR_CHANGING);
+		armorStand.addEquipmentLock(EquipmentSlot.FEET,  	LockType.ADDING_OR_CHANGING);
+		armorStand.setInvulnerable(true);
+		armorStand.setCollidable(false);
+		armorStand.setInvisible(true);
+		armorStand.setGravity(false);
+		armorStand.setSmall(true);
+		armorStand.teleport(loc);
+		
+		return armorStand;
+	}
+	
+	private static final File backUpFile = new File("plugins/mimiRPG/backupy");
+	public static void backUp(File file) {
+		backUp(file, Baza.ilośćBackapów);
+	}
+	public static void backUp(File file, int limit) {
+		if (file.length() == 0L) return;
+		try {
+			File dir = new File(backUpFile, file.getName().substring(0, file.getName().indexOf('.')));
+			dir.mkdirs();
+			
+			Function<Integer, File> getFile = nr -> new File(dir, file.getName() + (nr != 0 ? " (" + nr + ")" : ""));
+			
+			if (backUp(getFile.apply(0), file)) return;
+			
+			for (int licz = 1; licz < limit; licz++)
+				if (backUp(getFile.apply(licz), file))
+					return;
+			
+			getFile.apply(0).delete();
+			for (int licz = 1; licz < limit; licz++)
+				getFile.apply(licz).renameTo(getFile.apply(licz - 1));
+			
+			if (!backUp(getFile.apply(limit - 1), file))
+				Main.warn(Func.prefix("Backup") + Func.msg("nie można zbackapować pliku %s", file.getName()));
+		} catch (Throwable e) {
+			Main.warn(Func.prefix("Backup") + Func.msg("Nie można zrobić backupu pliku %s", file.getAbsolutePath()));
+			e.printStackTrace();
+		}
+	}
+	private static boolean backUp(File gdzie, File co) {
+		if (gdzie.exists()) return false;
+		
+		try {
+			gdzie.createNewFile();
+			
+			FileInputStream  in  = new FileInputStream(co);
+			FileOutputStream out = new FileOutputStream(gdzie);
+			
+			out.write(in.readAllBytes());
+			
+			in.close();
+			out.close();
+			
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 }

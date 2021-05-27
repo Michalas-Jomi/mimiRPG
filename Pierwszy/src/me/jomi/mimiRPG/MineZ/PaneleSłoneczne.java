@@ -14,9 +14,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.DaylightDetector;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -25,7 +23,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -70,6 +67,7 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 			this.tytuł = _tytuł;
 			
 			locParticle = napis.getLocation().add(0, .3, 0);
+			napis.getLocation().getBlock().setType(Material.DAYLIGHT_DETECTOR, false);
 		}
 		void sprawdzPattern() {
 			Matcher matcher = pattern.matcher(napis.getCustomName());
@@ -187,23 +185,9 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		znajdz(armorStand);
 	}
 	private static ArmorStand zresp(Location loc, String customName, String tag) {
-		ArmorStand armorStand = (ArmorStand) loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+		ArmorStand armorStand = Func.zrespNietykalnyArmorStand(loc, customName);
 		
-		armorStand.addEquipmentLock(EquipmentSlot.OFF_HAND, LockType.ADDING_OR_CHANGING);
-		armorStand.addEquipmentLock(EquipmentSlot.HAND,  	LockType.ADDING_OR_CHANGING);
-		armorStand.addEquipmentLock(EquipmentSlot.HEAD,  	LockType.ADDING_OR_CHANGING);
-		armorStand.addEquipmentLock(EquipmentSlot.CHEST,	LockType.ADDING_OR_CHANGING);
-		armorStand.addEquipmentLock(EquipmentSlot.LEGS,		LockType.ADDING_OR_CHANGING);
-		armorStand.addEquipmentLock(EquipmentSlot.FEET,  	LockType.ADDING_OR_CHANGING);
-		armorStand.setCustomNameVisible(true);
-		armorStand.setCustomName(customName);
 		armorStand.addScoreboardTag(tag);
-		armorStand.setInvulnerable(true);
-		armorStand.setCollidable(false);
-		armorStand.setInvisible(true);
-		armorStand.setGravity(false);
-		armorStand.setSmall(true);
-		armorStand.teleport(loc);
 		
 		return armorStand;
 	}

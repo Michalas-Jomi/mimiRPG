@@ -24,7 +24,8 @@ import me.jomi.mimiRPG.util.NMS;
 public class PokazywanyDmg implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void damage(EntityDamageEvent ev) {
-		zrespDmg(ev.getEntity(), ev.getFinalDamage(), "c");
+		if (!ev.isCancelled())
+			zrespDmg(ev.getEntity(), ev.getFinalDamage(), "c");
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void heal(EntityRegainHealthEvent ev) {

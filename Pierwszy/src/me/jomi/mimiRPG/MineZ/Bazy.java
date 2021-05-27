@@ -61,6 +61,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion.CircularInheritanceException;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -371,11 +372,15 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					BlockVector3.at(x+dx, y+dy, z+dz),
 					BlockVector3.at(x-dx, Math.max(getMinY(), y-Bazy.config.wczytaj("ustawienia.kraki w dół baz", 1)), z-dz)
 					);
+			
 			Bazy.regiony.get(BukkitAdapter.adapt(świat)).addRegion(region);
+			
 			DefaultDomain owners = new DefaultDomain();
 			owners.addPlayer(p.getName());
 			region.setOwners(owners);
+			
 			region.setPriority(Bazy.config.wczytajInt("ustawienia.prority baz"));
+			
 			region.setFlag(_WorldGuard.flagaCustomoweMoby, "brak");
 			region.setFlag(_WorldGuard.flagaStawianieBaz, StateFlag.State.DENY);
 			region.setFlag(_WorldGuard.flagaC4, 		  StateFlag.State.ALLOW);
@@ -545,11 +550,29 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		void ulepsz(int ile) {
-			ulepsz(region::getMaximumPoint, region::setMaximumPoint, ile, ile);
-			ulepsz(region::getMinimumPoint, region::setMinimumPoint, -ile, 0);
-		}
-		private void ulepsz(Supplier<BlockVector3> supplier, Consumer<BlockVector3> consumer, int xz, int y) {	
-			consumer.accept(supplier.get().add(xz, y, xz));
+			ProtectedCuboidRegion region = new ProtectedCuboidRegion(
+					this.region.getId(),
+					this.region.getMaximumPoint().add(ile, ile, ile),
+					this.region.getMinimumPoint().add(-ile, 0, -ile)
+					);
+			
+			this.region.getFlags().forEach((flaga, val) -> region.setFlag(flaga, Func.pewnyCast(val)));
+			region.setMembers(this.region.getMembers());
+			region.setOwners(this.region.getOwners());
+			try {
+				region.setParent(this.region.getParent());
+			} catch (CircularInheritanceException e) {
+				Main.warn("Problem z parentem regionu " + this.region.getId());
+			}
+			region.setPriority(this.region.getPriority());
+			region.setDirty(this.region.isDirty());
+			
+			
+			RegionManager regiony = Bazy.regiony.get(BukkitAdapter.adapt(świat));
+			regiony.removeRegion(this.region.getId());
+			regiony.addRegion(region);
+			
+			this.region = region;
 		}
 	
 		boolean atakowana = false;
@@ -1013,7 +1036,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (mapaZaproszeń.containsKey(sender.getName()))
 				return Func.powiadom(sender, Gildia.prefix + "Poczekaj aż minie poprzednie zaproszenie zanim wyślesz kolejne");
 			if (gildia.gracze.size() >= config.wczytaj("max osób w gildi", 4))
-				return Func.powiadom(sender, Gildia.prefix + "Osiągnięto już limit członków gildi");
+				return Func.powiadom(sender, Gildia.prefix + "Twoja gildia jest już przepełniona, nie możesz zaprosić więcej osób");
 			
 			Player p = Bukkit.getPlayer(args[1]);
 			if (p == null) return Func.powiadom(sender, Gildia.prefix + "Gracz nie jeste online");
@@ -1022,8 +1045,6 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (!(zaproszony.gildia == null || zaproszony.gildia.isEmpty()))
 				return Func.powiadom(sender, Gildia.prefix + Func.msg("%s nalezy już do gildi %s", args[1], zaproszony.gildia));
 
-			if (gildia.gracze.size() >= config.wczytaj("max osób w gildi", 4))
-				return Func.powiadom(sender, Gildia.prefix + "Twoja gildia jest już przepełniona, nie możesz zaprosić więcej osób");
 			
 			mapaZaproszeń.put(sender.getName(), new Krotka<>(p.getName(), czasZaproszeń));
 			

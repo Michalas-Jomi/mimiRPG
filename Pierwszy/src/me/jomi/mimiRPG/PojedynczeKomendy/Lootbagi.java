@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -152,14 +153,26 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		return Func.r("Lootbagi", lootbagi.size());
 	}
 	
+	private boolean jestLootbagiem(ItemStack item) {
+		
+		return	item != null &&
+				item.hasItemMeta() &&
+				item.getItemMeta().hasDisplayName() &&
+				item.getItemMeta().getDisplayName().startsWith("§6Lootbag ");
+	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void użycie(PlayerInteractEvent ev) {
+		if (ev.getHand() != EquipmentSlot.HAND) return;
+		if (!Func.multiEquals(ev.getAction(), org.bukkit.event.block.Action.RIGHT_CLICK_AIR, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
+		
 		Player p = ev.getPlayer();
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
-		if (item == null) return;
-		if (!Func.multiEquals(ev.getAction(), org.bukkit.event.block.Action.RIGHT_CLICK_AIR, org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)) return;
-		if (!(item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName() && 
-				item.getItemMeta().getDisplayName().startsWith("§6Lootbag "))) return;
+		
+		if (jestLootbagiem(p.getInventory().getItemInOffHand()))
+			ev.setCancelled(true);
+		
+		if (!jestLootbagiem(item)) return;
+		
 		String nazwa = item.getItemMeta().getDisplayName();
 		nazwa = nazwa.substring(nazwa.indexOf(" ")+1);
 		

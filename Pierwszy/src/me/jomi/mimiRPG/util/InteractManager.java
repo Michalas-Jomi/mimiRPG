@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -17,6 +18,8 @@ public class InteractManager {
 	public static class InteractListener implements Listener {
 		@EventHandler
 		public void interakcja(PlayerInteractEvent ev) {
+			if (ev.getHand() != EquipmentSlot.HAND) return;
+			
 			Map<Material, Map<Item, Predicate<PlayerInteractEvent>>> mapa = null;
 			switch (ev.getAction()) {
 			case PHYSICAL:
@@ -33,7 +36,7 @@ public class InteractManager {
 			
 			if (mapa == null)
 				return;
-			
+
 			ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 			
 			Func.wykonajDlaNieNull(mapa.get(item.getType()), mapaItemów ->
@@ -68,7 +71,15 @@ public class InteractManager {
 			hash = hash * 31 + item.getType().hashCode();
 			hash = hash * 31 + (item.hasItemMeta() ? item.getItemMeta().hashCode() : 0);
 			return hash;
-			
+		}
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof Item && ((Item) obj).item.equals(item);
+		}
+		
+		@Override
+		public String toString() {
+			return "Item(hash = " + hashCode() + ")";
 		}
 	}
 	

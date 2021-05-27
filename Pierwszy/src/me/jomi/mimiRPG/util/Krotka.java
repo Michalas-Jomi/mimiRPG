@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.util;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import me.jomi.mimiRPG.Mapowany;
@@ -53,6 +54,10 @@ public class Krotka<T1, T2> extends Mapowany {
 		result = prime * result + ((a == null) ? 0 : a.hashCode());
 		result = prime * result + ((b == null) ? 0 : b.hashCode());
 		return result;
+	}
+	
+	public void wykonaj(BiConsumer<T1, T2> bic) {
+		bic.accept(a, b);
 	}
 	
 	protected final Object[] dajWartości() {

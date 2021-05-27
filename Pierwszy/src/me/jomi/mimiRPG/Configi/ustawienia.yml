@@ -95,6 +95,10 @@ Moduły:
   ZamienEq: false
   ZmienioneKusze: false
 
+backup:
+  max ilość: 16
+
+
 ###############################
 ### Zablokowane Osiągnięcia ###
 

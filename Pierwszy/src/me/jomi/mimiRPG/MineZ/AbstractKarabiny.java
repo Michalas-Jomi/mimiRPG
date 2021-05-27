@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -298,6 +299,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 	@EventHandler
 	public void użycie(PlayerInteractEvent ev) {
 		if (ev.getAction().equals(Action.PHYSICAL)) return;
+		if (ev.getHand() != EquipmentSlot.HAND) return;
 		
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		

@@ -106,6 +106,7 @@ public class Config {
 	public ConfigurationSection sekcja(String sciezka) {
 		return plik.getConfigurationSection(sciezka);
 	}
+	
 	@SuppressWarnings("unchecked")
 	public <T> Collection<T> wartości(Class<T> clazz) {
 		return (Collection<T>) plik.getValues(false).values();

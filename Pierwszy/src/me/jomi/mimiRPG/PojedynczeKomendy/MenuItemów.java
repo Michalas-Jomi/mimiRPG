@@ -109,16 +109,10 @@ public class MenuItemów extends Komenda implements Przeładowalny {
 	public void zapisz() {
 		Config config = new Config("configi/MenuItemów");
 		
+		Func.backUp(config.f);
+		
 		config.ustaw("kategorie", null);
-		
-		kategorie.forEach((kategoria, inv) -> {
-			String sc = "kategorie." + kategoria + ".";
-			ItemStack item;
-			for (int i=0; i < inv.getSize(); i++)
-				if ((item = inv.getItem(i)) != null)
-					config.ustaw(sc + i, item);
-		});
-		
+
 		ItemStack item;
 		for (int i=0; i < invKategori.getSize(); i++)
 			if ((item = invKategori.getItem(i)) != null) {
@@ -127,6 +121,16 @@ public class MenuItemów extends Komenda implements Przeładowalny {
 				config.ustaw(sc + "item", item);
 			}
 		
+		kategorie.forEach((kategoria, inv) -> {
+			String sc = "kategorie." + kategoria + ".";
+			
+			if (config.wczytaj(sc + "item") == null) return;
+			
+			ItemStack item2;
+			for (int i=0; i < inv.getSize(); i++)
+				if ((item2 = inv.getItem(i)) != null)
+					config.ustaw(sc + i, item2);
+		});
 		
 		config.zapisz();
 	}
@@ -139,23 +143,28 @@ public class MenuItemów extends Komenda implements Przeładowalny {
 		kategorie.clear();
 		Func.wykonajDlaNieNull(config.sekcja("kategorie"), sekcja ->
 			sekcja.getKeys(false).forEach(kategoria -> {
-				ConfigurationSection sekcjaKategori = sekcja.getConfigurationSection(kategoria);
-				
-				invKategori.setItem(Func.Int(sekcjaKategori.get("slot")), Func.nazwij(Config.item(sekcjaKategori.get("item")), "§9" + kategoria));
-				
-				Map<Integer, ItemStack> mapa = new HashMap<>();
-				
-				sekcjaKategori.getValues(false).forEach((slot, item) -> {
-					if (slot.equals("slot") || slot.equals("item"))
-						return;
-					mapa.put(Func.Int(slot), Config.item(item));
-				});
-				
-				Inventory inv = panelEdycji.stwórz("kat. " + kategoria, 6, "§c§l" + kategoria + " §7(edytowanie)");
-				
-				mapa.forEach(inv::setItem);
-				
-				kategorie.put(kategoria, inv);
+				try {
+					ConfigurationSection sekcjaKategori = sekcja.getConfigurationSection(kategoria);
+					
+					invKategori.setItem(Func.Int(sekcjaKategori.get("slot")), Func.nazwij(Func.nieNull(Config.item(sekcjaKategori.get("item"))), "§9" + kategoria));
+					
+					Map<Integer, ItemStack> mapa = new HashMap<>();
+					
+					sekcjaKategori.getValues(false).forEach((slot, item) -> {
+						if (slot.equals("slot") || slot.equals("item"))
+							return;
+						mapa.put(Func.Int(slot), Config.item(item));
+					});
+					
+					Inventory inv = panelEdycji.stwórz("kat. " + kategoria, 6, "§c§l" + kategoria + " §7(edytowanie)");
+					
+					mapa.forEach(inv::setItem);
+					
+					kategorie.put(kategoria, inv);
+				} catch (Throwable e) {
+					Main.warn(prefix + "problem z kategorią " + kategoria);
+					e.printStackTrace();
+				}
 			}));
 	}
 	@Override

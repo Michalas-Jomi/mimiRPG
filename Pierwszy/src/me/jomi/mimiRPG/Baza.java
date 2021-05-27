@@ -40,6 +40,7 @@ public class Baza implements Listener {
 	public static ItemStack walutaPremium;
 	public static Config config;
 	private static Config configWiadomości;
+	public static int ilośćBackapów;
 	
 	// TODO: wczytywać
 	public static class BudowanieAren {
@@ -67,6 +68,8 @@ public class Baza implements Listener {
 	}
 	public static void przeładuj() {
 		Main.ust.przeładuj();
+		
+		ilośćBackapów = (int) Main.ust.wczytajD("backup.max ilość");
 
 		configWiadomości.przeładuj();
 		config.przeładuj();

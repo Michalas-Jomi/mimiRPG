@@ -345,6 +345,8 @@ public class EdytorOgólny<T> {
 		}
 			
 		void zatwierdz() throws Throwable {
+			Func.backUp(config.f);
+			
 			listaDlaZatwierdzenia.forEach(cons -> cons.accept(obiekt, ścieżka));
 			listaDlaZatwierdzenia2.forEach(cons -> cons.accept(obiekt, this));
 			config.ustaw_zapisz(ścieżka, obiekt);
