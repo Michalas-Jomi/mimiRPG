@@ -1,6 +1,13 @@
 
 # Prefix dla konsoli w /mi
 WiadomoscConsole: '[Konsola]'
+# Prefix dla konsoli w /lis
+WiadomoscConsole lis: '[Konsola]'
+
+PySocket:
+  socket:
+    ip: '127.0.0.1'
+    port: 65432
 
 # Pozwala wyłączyć niepotrzebne części pluginu
 # Nie będą one wczytywane, ani inicjowane

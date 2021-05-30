@@ -212,11 +212,11 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	
 	@EventHandler
 	public void ładowanieChunka(ChunkLoadEvent ev) {
-		Func.forEach(ev.getChunk().getEntities(), PaneleSłoneczne::znajdz);
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.forEach(ev.getChunk().getEntities(), PaneleSłoneczne::znajdz));
 	}
 	@EventHandler
 	public void odładowywanieChunka(ChunkUnloadEvent ev) {
-		Func.forEach(ev.getChunk().getEntities(), e -> mapaPaneli.remove(e.getUniqueId()));
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.forEach(ev.getChunk().getEntities(), e -> mapaPaneli.remove(e.getUniqueId())));
 	}
 	
 	

@@ -14,9 +14,11 @@ import me.jomi.mimiRPG.util.Komenda;
 
 @Moduł
 public class Mi extends Komenda {
+	public static final String prefix = Func.prefix("Wiadomość Console");
 
 	public Mi() {
-	    super("mi", Func.prefix("Wiadomość Console") + "/mi <wiadomość>");
+	    super("mi", prefix + "/mi <wiadomość>");
+	    ustawKomende("lis", prefix + "/lis <wiadomość>", null);
 	}
 
 	@Override
@@ -27,9 +29,9 @@ public class Mi extends Komenda {
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (!(sender instanceof ConsoleCommandSender)) 
-			return Func.powiadom(sender, "Tej komendy można używać tylko z konsoli");
+			throwFormatMsg("Tej komendy można używać tylko z konsoli");
 		if (args.length < 1) return false;
-		String pref = Main.ust.wczytaj("WiadomoscConsole", "[Konsola]") + " ";
+		String pref = Main.ust.wczytajD("WiadomoscConsole" + (cmd.getName().equalsIgnoreCase("lis") ? " lis" : "")) + " ";
 		Bukkit.broadcastMessage(Func.koloruj(pref + Func.listToString(args, 0)));
 		return true;
 	}
