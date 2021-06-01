@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
@@ -962,6 +963,14 @@ public abstract class Func {
 		posortowanaLista.add(index, obj);
 		return index;
 	}
+	public static <T> void posortuj(List<T> lista, Function<T, Double> wartość) {
+		List<Krotka<T, Double>> nowa = new ArrayList<>();
+		
+		lista.forEach(el -> Func.insort(new Krotka<>(el, wartość.apply(el)), nowa, k -> k.b));
+		
+		lista.clear();
+		nowa.forEach(krotka -> lista.add(krotka.a));
+	}
 	public static <T> int wyszukajBinarnieLIndex(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
 		int l = 0;
 		int r = posortowanaLista.size() - 1;
@@ -1592,7 +1601,15 @@ public abstract class Func {
 		return (T) Mapowany.deserialize(mapa);
 		
 	}
-
+	public static boolean dziedziczy(Class<?> clazz1, Class<?> clazz2) {
+		while (clazz1 != null) {
+			if (clazz1.isAssignableFrom(clazz2))
+				return true;
+			clazz1 = clazz1.getSuperclass();
+		}
+		return false;
+	}
+	
 	public static Object dajZField(Object obj, String nazwa) throws Throwable {
 		return dajField(obj.getClass(), nazwa).get(obj);
 	}

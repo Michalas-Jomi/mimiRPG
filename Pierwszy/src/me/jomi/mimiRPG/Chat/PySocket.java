@@ -18,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
@@ -49,6 +50,13 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
 				if (nick.equalsIgnoreCase("Console"))
 					Bukkit.getConsoleSender().sendMessage(msg);
 			});
+		}
+		void zarejestrowany(DataInputStream in) throws IOException {
+			String nick = in.readUTF();
+			
+			Gracz gracz = Gracz.wczytaj(nick);
+			gracz.zarejestrowanyDiscord = true;
+			gracz.zapisz();
 		}
 	}
 

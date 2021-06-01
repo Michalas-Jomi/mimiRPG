@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.SkyBlock.Multi;
+package me.jomi.mimiRPG.RPG_Ultra;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,10 +62,17 @@ public class ZfaktoryzowaneItemy implements Listener {
 		if (item == null) return;
 		przerób(p, GraczRPG.gracz(p), item, NMS.nms(item));
 	}
-	private static void przerób(Player p, GraczRPG gracz, org.bukkit.inventory.ItemStack bukkit, net.minecraft.server.v1_16_R3.ItemStack nms) {
+	private static void przerób(Player p, GraczRPG gracz, ItemStack bukkit, net.minecraft.server.v1_16_R3.ItemStack nms) {
 		NBTTagCompound tag = tag(bukkit);
 		ItemMeta meta = bukkit.getItemMeta();
 		List<String> lore = new ArrayList<>();
+		
+		List<Boost> boosty = getBoosty(tag);
+		if (!boosty.isEmpty()) {
+			lore.add(" ");
+			lore.add("§6§lBonusy:");
+			boosty.forEach(boost -> lore.add(boost.toString()));
+		}
 		
 		Ranga ranga = ranga(tag);
 		lore.add(" ");
@@ -108,6 +115,79 @@ public class ZfaktoryzowaneItemy implements Listener {
 	}
 	static void ustawRangę(NBTTagCompound tag, Ranga ranga) {
 		tag.setString("ranga", ranga.name());
+	}
+	
+	public static class Boost {
+		public final Atrybut attr;
+		public final boolean baza; // baza : mnożnik
+		public final double wartość;
+		
+		public Boost(Atrybut attr, boolean baza, double wartość) {
+			this.wartość = wartość;
+			this.baza = baza;
+			this.attr = attr;
+		}
+		Boost(String klucz, boolean baza, double wartość) {
+			this(Func.StringToEnum(Atrybut.class, klucz.substring(baza ? 5: 3)), baza, wartość);
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder strB = new StringBuilder();
+			
+			strB.append(attr.nazwa);
+			
+			if (wartość >= 0)
+				strB.append('+');
+			
+			strB.append((int) wartość);
+			
+			if (baza)
+				strB.append("%");
+			
+			return strB.toString();
+		}
+	}
+	public static List<Boost> getBoosty(ItemStack item) {
+		return getBoosty(tag(item));
+	}
+	static List<Boost> getBoosty(NBTTagCompound tag) {
+		List<Boost> list = new ArrayList<>();
+		
+		NBTTagCompound boosty = tag.getCompound("boosty");
+		
+		boosty.getKeys().forEach(klucz -> list.add(new Boost(klucz, klucz.startsWith("baza_"), boosty.getDouble(klucz))));
+		
+		return list;
+	}
+	public static double getBoost(ItemStack item, Atrybut attr, boolean baza) {
+		return getBoost(tag(item), attr, baza);
+	}
+	static double getBoost(NBTTagCompound tag, Atrybut attr, boolean baza) {
+		if (!tag.hasKey("boosty")) return 0;
+		
+		NBTTagCompound boosty = tag.getCompound("boosty");
+		String klucz = (baza ? "baza" : "mn") + "_" + attr.name();
+		
+		return boosty.getDouble(klucz);
+	}
+	public static void dodajBoost(ItemStack item, Atrybut attr, double ile) {
+		dodajBoost(item, attr, ile, true);
+	}
+	public static void dodajBoost(ItemStack item, Atrybut attr, double ile, boolean baza) {
+		NBTTagCompound tag = tag(item);
+		dodajBoost(tag, attr, ile, baza);
+		ustawTag(item, tag);
+	}
+	static void dodajBoost(NBTTagCompound tag, Atrybut attr, double ile, boolean baza) {
+		if (!tag.hasKey("boosty"))
+			tag.set("boosty", new NBTTagCompound());
+		
+		NBTTagCompound boosty = tag.getCompound("boosty");
+		String klucz = (baza ? "baza" : "mn") + "_" + attr.name();
+
+		double akt = boosty.getDouble(klucz);
+		boosty.setDouble(klucz, akt + ile);
 	}
 
 	

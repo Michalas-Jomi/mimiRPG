@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.SkyBlock.Multi;
+package me.jomi.mimiRPG.RPG_Ultra;
 
 import static me.jomi.mimiRPG.util.NMS.nms;
 
@@ -39,8 +39,7 @@ import net.minecraft.server.v1_16_R3.SoundCategory;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.SkyBlock.Multi.KopanieRPG.Api.LiczeniePrędkościKopaniaEvent;
-import me.jomi.mimiRPG.SkyBlock.Multi.KopanieRPG.Api.WykopanyBlokEvent;
+import me.jomi.mimiRPG.RPG_Ultra.KopanieRPG.Api.WykopanyBlokEvent;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
@@ -148,21 +147,15 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		if (!Bukkit.isPrimaryThread())
 			Bukkit.getScheduler().runTask(Main.plugin, () -> niszczenie(p, pos));
 		else {
-			LiczeniePrędkościKopaniaEvent ev = new LiczeniePrędkościKopaniaEvent(p, NMS.loc(p.getWorld(), pos).getBlock());
-			Bukkit.getPluginManager().callEvent(ev);
-			
-			if (ev.isCancelled())
-				return;
-			
-			int mocGracza = (int) ((ev.graczRPG.prędkośćKopania.getBaza() + ev.dodatkowa_baza) * ev.graczRPG.prędkośćKopania.getMnożnik() * ev.dodatkowy_mnożnik);
-			int mocBloku  = ev.wytrzymałośćBloku;
+			Blok blok = Blok.daj(NMS.loc(p.getWorld(), pos).getBlock().getType());
+			int mocBloku  = blok == null ? -1 : blok.wytrzymałośćBloku;
 			int kontrolny = this.kontrolny++;
 			
 			Func.ustawMetadate(p, metaKontrolny, kontrolny);
-			niszczenie(p, pos, mocGracza, mocBloku, mocBloku, kontrolny);
+			niszczenie(p, pos, GraczRPG.gracz(p), mocBloku, mocBloku, kontrolny);
 		}
 	}
-	private void niszczenie(Player p, BlockPosition pos, int mocGracza, int wytrzymałość, int pozostało, int kontrolny) {
+	private void niszczenie(Player p, BlockPosition pos, GraczRPG graczRPG, int wytrzymałość, int pozostało, int kontrolny) {
 		if (!p.hasMetadata(metaKontrolny) || p.getMetadata(metaKontrolny).get(0).asInt() != kontrolny) return;
 		
 		if (pozostało <= 0) {
@@ -186,12 +179,16 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		
 		p.addPotionEffect(efekt);
 		
-		double procent = (double) pozostało / (double) wytrzymałość;
-		
-		niszcz(p, pos, (int) ((1 - procent) * 11) - 1);
-		
-		Func.opóznij(pozostało > mocGracza ? 5 : (int) (5 * (1 - (double) pozostało / (double) mocGracza)),
-				() -> niszczenie(p, pos, mocGracza, wytrzymałość, pozostało - mocGracza, kontrolny));
+		if (wytrzymałość != -1) {
+			double procent = (double) pozostało / (double) wytrzymałość;
+			
+			niszcz(p, pos, (int) ((1 - procent) * 11) - 1);
+			
+			double prędkośćKopania = graczRPG.prędkośćKopania.wartość();
+			Func.opóznij(pozostało > prędkośćKopania ? 5 : (int) (5 * (1 - pozostało / prędkośćKopania)),
+					() -> niszczenie(p, pos, graczRPG, wytrzymałość, (int) (pozostało - prędkośćKopania), kontrolny));
+		} else
+			Func.opóznij(5, () -> niszczenie(p, pos, graczRPG, wytrzymałość, pozostało, kontrolny));
 	}
 
 	public static void niszcz(Player p, BlockPosition pos, int lvl) {

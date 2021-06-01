@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.SkyBlock.Multi;
+package me.jomi.mimiRPG.RPG_Ultra;
 
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;

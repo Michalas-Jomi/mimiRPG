@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -81,23 +82,26 @@ public class Moduły implements Przeładowalny {
 			subKlasy.forEach(Moduły.klasy::add);
 	}
 	
-	@Override
-	public void przeładuj() {
-		włącz(Main.ust.sekcja("Moduły"));
-	}
-	@Override
-	public Krotka<String, Object> raport() {
-		return Func.r("Włączone Moduły", włączone + "/" + klasy.size());
-	}
-	
 	public static String moduły() {
-		StringBuilder strB1 = new StringBuilder();
-		StringBuilder strB2 = new StringBuilder();
+		List<Klasa> moduły = new ArrayList<>();
 		
-		mapa.values().forEach(klasa -> (klasa.włączony ? strB1 : strB2).append("§r, §").append(klasa.włączony ? 'a' : 'c').append(klasa.klasa.getSimpleName()));
+		moduły.addAll(mapa.values());
 		
-		return  "§6Wyłączone Moduły§8: " + (strB2.toString().isEmpty() ? "§4Brak" : strB2.substring(4)) + "\n" +
-				"§6Włączone Moduły§8: "  + (strB1.toString().isEmpty() ? "§4Brak" : strB1.substring(4));
+		Func.posortuj(moduły, k -> {
+			double w = 0;
+			double dzielnik = 1;
+			for (char znak : Func.odpolszcz(k.klasa.getSimpleName()).toCharArray()) {
+				w += znak / dzielnik;
+				dzielnik *= znak;
+			}
+			return w;
+		});
+		
+		StringBuilder strB = new StringBuilder();
+		moduły.forEach(moduł -> strB.append('§').append(moduł.włączony ? 'a' : 'c').append(moduł.klasa.getSimpleName()).append("§r, "));
+		
+		String w = strB.toString();
+		return w.substring(0, w.length() - 2);
 	}
 	
 	void włączModuł(Class<?> klasa) {
@@ -147,4 +151,14 @@ public class Moduły implements Przeładowalny {
 		Klasa klasa = mapa.get(moduł);
 		return klasa == null ? false : klasa.włączony;
 	}	
+
+
+	@Override
+	public void przeładuj() {
+		włącz(Main.ust.sekcja("Moduły"));
+	}
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Włączone Moduły", włączone + "/" + klasy.size());
+	}
 }

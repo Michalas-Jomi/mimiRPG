@@ -67,6 +67,8 @@ public class Gracz extends Mapowany {
 	
 	@Mapowane public Wilczek.Wilk wilk;
 	
+	@Mapowane public boolean zarejestrowanyDiscord = false;
+	
  	public void zapisz() {
 		config(nick).ustaw_zapisz("gracz", this);
 	}
