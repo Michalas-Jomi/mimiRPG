@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.util.Vector;
 
@@ -25,7 +26,7 @@ public class PokazywanyDmg implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void damage(EntityDamageEvent ev) {
 		if (!ev.isCancelled())
-			zrespDmg(ev.getEntity(), ev.getFinalDamage(), "c");
+			zrespDmg(ev.getEntity(), ev.getFinalDamage(), kolor(ev.getCause()));
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void heal(EntityRegainHealthEvent ev) {
@@ -38,6 +39,50 @@ public class PokazywanyDmg implements Listener {
 		double hp = mob.getHealth();
 		
 		zrespDmg(ev.getEntity(), Math.min(ev.getAmount(), maxHp - hp), "a");
+	}
+	
+	private String kolor(DamageCause cause) {
+		switch (cause) {
+		case FALL:
+			return "f";
+		case MAGIC:
+			return "5";
+		case POISON:
+			return "2";
+		case THORNS:
+			return "e";
+		case VOID:
+		case WITHER:
+			return "8";
+		case DROWNING:
+			return "9";
+		case FIRE:
+		case FIRE_TICK:
+		case HOT_FLOOR:
+		case LAVA:
+			return "6";
+		/*
+		case STARVATION:
+		case BLOCK_EXPLOSION:
+		case CONTACT:
+		case CRAMMING:
+		case CUSTOM:
+		case DRAGON_BREATH:
+		case DRYOUT:
+		case ENTITY_ATTACK:
+		case ENTITY_EXPLOSION:
+		case ENTITY_SWEEP_ATTACK:
+		case FALLING_BLOCK:
+		case FLY_INTO_WALL:
+		case LIGHTNING:
+		case MELTING:
+		case PROJECTILE:
+		case SUFFOCATION:
+		case SUICIDE:
+		*/
+		default:
+			return "c";
+		}
 	}
 	
 	private void zrespDmg(Entity entity, double _dmg, String kolor) {

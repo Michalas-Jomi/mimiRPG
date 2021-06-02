@@ -1118,8 +1118,8 @@ public abstract class Func {
 	}
 	
 	public static <T> void forEach(T[] args, Consumer<T> cons) {
-		for (int i=0; i < args.length; i++)
-			cons.accept(args[i]);
+		for (T arg : args)
+			cons.accept(arg);
 	}
 	public static <T> void forEach(T[] args, Predicate<T> warunek, Consumer<T> cons) {
 		for (int i=0; i < args.length; i++)

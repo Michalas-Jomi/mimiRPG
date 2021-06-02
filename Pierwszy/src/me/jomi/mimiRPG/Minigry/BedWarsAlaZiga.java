@@ -585,7 +585,6 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			
 			// Zdejmowanie Zbroji
 			if (ev.getInventory() instanceof PlayerInventory) {
-				Main.log(ev.getRawSlot(), ev.getSlot(), ev.getSlotType());
 				ev.setCancelled(true);
 				return;
 			}

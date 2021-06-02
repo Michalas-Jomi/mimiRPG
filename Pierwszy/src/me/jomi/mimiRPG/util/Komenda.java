@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Timming;
 
 @SuppressWarnings("unchecked")
 public abstract class Komenda implements TabExecutor {
@@ -127,10 +128,12 @@ public abstract class Komenda implements TabExecutor {
 	 */
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		try {
-			return wykonajKomende(sender, cmd, label, args);
-		} catch (MsgCmdError e) {
-			return Func.powiadom(sender, e.getMessage());
+		try (Timming timming = new Timming("Komenda " + cmd.getName())) {
+			try {
+				return wykonajKomende(sender, cmd, label, args);
+			} catch (MsgCmdError e) {
+				return Func.powiadom(sender, e.getMessage());
+			}
 		}
 	}
 	public abstract boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError;

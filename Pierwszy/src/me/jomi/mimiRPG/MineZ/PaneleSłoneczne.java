@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -55,6 +56,7 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		boolean zasłonięty;
 		
 		Panel(ArmorStand napis) {
+			Main.log(prefix + "loadowany panel na %s", Func.locBlockToString(napis.getLocation()));
 			this.napis = napis;
 			sprawdzPattern();
 			
@@ -101,7 +103,8 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 				return;
 			
 			particle();
-			sprawdzDzień();
+			if (doSprawdzenia % 5 == 0)
+				sprawdzDzień();
 
 			
 			if (--sekundy < 0) {
@@ -173,6 +176,13 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		}
 	}
 	
+	
+	public PaneleSłoneczne() {
+		Bukkit.getWorlds().forEach(world -> Func.forEach(world.getLoadedChunks(), this::sprawdzChunk));
+	}
+	
+	
+	
 	public static void postawPanel(Location loc) {
 		loc = loc.getBlock().getLocation().add(.5, .3, .5);
 		loc.getBlock().setType(Material.DAYLIGHT_DETECTOR);
@@ -194,7 +204,10 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 
 	static void znajdz(Entity armorStand) {
 		if (armorStand instanceof ArmorStand && armorStand.getScoreboardTags().contains(tagNapisTimer))
-			mapaPaneli.put(armorStand.getUniqueId(), new Panel((ArmorStand) armorStand));
+			if (mapaPaneli.containsKey(armorStand.getUniqueId()))
+				Main.warn(prefix + "Próba podwojenia panelu na " + Func.locBlockToString(armorStand.getLocation()));
+			else
+				mapaPaneli.put(armorStand.getUniqueId(), new Panel((ArmorStand) armorStand));
 	}
 	
 	public static Panel znajdz(Block blok) {
@@ -210,12 +223,17 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	}
 	
 	
+	void sprawdzChunk(Chunk chunk) {
+		Func.forEach(chunk.getEntities(), PaneleSłoneczne::znajdz);
+	}
 	@EventHandler
 	public void ładowanieChunka(ChunkLoadEvent ev) {
-		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.forEach(ev.getChunk().getEntities(), PaneleSłoneczne::znajdz));
+		Main.log(prefix + ev.getEventName() + " " + ev.getChunk().getX() + " " + ev.getChunk().getZ());
+		sprawdzChunk(ev.getChunk());
 	}
 	@EventHandler
 	public void odładowywanieChunka(ChunkUnloadEvent ev) {
+		Main.log(prefix + ev.getEventName() + " " + ev.getChunk().getX() + " " + ev.getChunk().getZ());
 		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.forEach(ev.getChunk().getEntities(), e -> mapaPaneli.remove(e.getUniqueId())));
 	}
 	

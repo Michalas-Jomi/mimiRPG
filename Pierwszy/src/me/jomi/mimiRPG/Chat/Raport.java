@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły;
+import me.jomi.mimiRPG.Timming;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Miniony.Minion;
@@ -22,7 +23,7 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 public class Raport extends Komenda {
-	public static final String prefix = Func.prefix("Raport");
+	public static final String prefix = Func.prefix(Raport.class);
 	
 	public Raport() {
 		super("raport", prefix + "/raport (sekcja)");
@@ -33,6 +34,7 @@ public class Raport extends Komenda {
 		if (args.length <= 1) {
 			List<String> lista = Lists.newArrayList(Przeładowalny.przeładowalne.keySet());
 			lista.add("handlery");
+			lista.add("timmingi");
 			return utab(args, lista);
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("handlery")) {
 			List<String> lista = Func.wykonajWszystkim(Bukkit.getPluginManager().getPlugins(), Plugin::getName);
@@ -64,6 +66,12 @@ public class Raport extends Komenda {
 					plugin = Main.plugin;
 				
 				return Func.powiadom(sender, prefix + "Zarejestrowane handlery pluginu %s: %s", plugin.getName(), HandlerList.getRegisteredListeners(plugin).size());
+			} else if (args[0].equalsIgnoreCase("timmingi")) {
+				if (args.length < 2)
+					throwFormatMsg("/raport timmingi <Sekcja>");
+				String nazwa = Func.listToString(args, 1);
+				
+				return Func.powiadom(sender, raport(Timming.raport(nazwa)));
 			}
 			
 			Przeładowalny p = Przeładowalny.przeładowalne.get(args[0]);

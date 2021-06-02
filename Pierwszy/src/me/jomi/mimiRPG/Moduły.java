@@ -46,7 +46,9 @@ public class Moduły implements Przeładowalny {
 		Object włącz() throws InstantiationException, IllegalAccessException {
 			if (włączony) return inst;
 			if (inst == null)
-				inst = Func.nowaInstancja(klasa);
+				try (Timming timming = new Timming("Włączany Moduł " + klasa.getSimpleName())) {
+					inst = Func.nowaInstancja(klasa);
+				}
 			Main.zarejestruj(inst);
 			włączony = true;
 			return inst;

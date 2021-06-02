@@ -93,7 +93,7 @@ public class ZamienEq extends Komenda{
 					Func.wykonajDlaNieNull(p1, Player::loadData);
 					Func.wykonajDlaNieNull(p2, Player::loadData);
 					
-					Main.log(prefix + "Zamieniono eq, ec i exp graczy", nick1, nick2);
+					Main.log(prefix + "Zamieniono eq, ec i exp graczy %s %s", nick1, nick2);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

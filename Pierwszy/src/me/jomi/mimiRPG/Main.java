@@ -69,8 +69,11 @@ public class Main extends JavaPlugin implements Listener {
 	public static ClassLoader classLoader;
 	
 	@Override
+	public final void onLoad() {
+		Timming.test("onLoad", this::_onLoad);
+	}
 	@SuppressWarnings("unchecked")
-	public void onLoad() {
+	private void _onLoad() {
 		plugin = this;
 		classLoader = this.getClassLoader();
 		path = getDataFolder().getPath() + '/';
@@ -89,6 +92,9 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	@Override
 	public void onEnable() {
+		Timming.test("onEnable", this::_onEnable);
+	}
+	private void _onEnable() {
 		boolean wl = getServer().hasWhitelist();
 		getServer().setWhitelist(true);
 		
@@ -124,7 +130,10 @@ public class Main extends JavaPlugin implements Listener {
 	
 	public static boolean pluginWyłączany = false;
 	@Override
-	public void onDisable() {
+	public final void onDisable() {
+		Timming.test("onDisable", this::_onDisable);
+	}
+	private void _onDisable() {
 		pluginWyłączany = true;
 		
 		for (Player p : Bukkit.getOnlinePlayers())
@@ -238,8 +247,8 @@ public class Main extends JavaPlugin implements Listener {
 	
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private static final String logprefix = "[mimiRPG] ";
-	public static void log(Object... msg) {
-		logger.info(logprefix + Func.listToString(msg, 0));
+	public static void log(Object format, Object... uzupełnienia) {
+		logger.info(logprefix + Func.msg(format.toString(), uzupełnienia));
 	}
 	public static void warn(Object... msg) {
 		logger.warning(logprefix + Func.listToString(msg, 0));

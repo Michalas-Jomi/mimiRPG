@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import me.jomi.mimiRPG.Timming;
+
 public interface Zegar {
 	static final List<_Zegar> zegary = Lists.newArrayList();
 	static void aktywuj() {
@@ -37,7 +39,8 @@ class _Zegar {
 	void tick() {
 		if (++timer >= maxTimer) {
 			timer = 0;
-			maxTimer = zegar.czas();
+			Timming.test("Zegar " + zegar.getClass().getSimpleName(),
+					() -> maxTimer = zegar.czas());
 		}
 	}
 }

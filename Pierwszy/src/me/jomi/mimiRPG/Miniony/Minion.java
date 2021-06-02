@@ -187,7 +187,7 @@ public abstract class Minion extends EntityZombie {
 		
 		id = 0;
 		while (mapa.containsKey(++id));
-		Main.log(imie, id);
+		Main.log(imie + " " + id);
 		
 		init();
 		

@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Timming;
 import me.jomi.mimiRPG.Chat.Raport;
 
 public class Przeładuj extends Komenda {
@@ -43,18 +44,19 @@ public class Przeładuj extends Komenda {
 		sender.sendMessage("§aPrzeładowano " + co);
 	}
 	public static void przeładuj(CommandSender sender, Przeładowalny p) {
-		if (p.getClass().isAnnotationPresent(Przeładowalny.WymagaReloadBukkitData.class)) {
-			if (!Main.przeładowywanaBukkitData()) {
-				Main.reloadBukkitData();
-				return;
+		Timming.test("Przeładowywanie " + p.getClass().getSimpleName(), () -> {
+			if (p.getClass().isAnnotationPresent(Przeładowalny.WymagaReloadBukkitData.class)) {
+				if (!Main.przeładowywanaBukkitData()) {
+					Main.reloadBukkitData();
+					return;
+				}
 			}
-		}
-		
-		p.przeładuj();
-		String r = Raport.raport(p);
-		if (sender instanceof Player)
-			sender.sendMessage(r);
-		Main.log(r);
 			
+			p.przeładuj();
+			String r = Raport.raport(p);
+			if (sender instanceof Player)
+				sender.sendMessage(r);
+			Main.log(r);
+		});
 	}
 }
