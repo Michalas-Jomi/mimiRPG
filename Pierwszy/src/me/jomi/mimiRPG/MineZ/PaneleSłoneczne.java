@@ -1,8 +1,11 @@
 package me.jomi.mimiRPG.MineZ;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +26,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -47,13 +49,14 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	static class Panel {
 		private static final Pattern pattern = Pattern.compile("§eEnergia§8: §9(\\d+) ?(§7\\((\\d+):(\\d+)\\))?(§4Zasłonięty!)?");
 		
-		final ArmorStand tytuł;
-		final ArmorStand napis;
 		final Location locParticle;
+		ArmorStand tytuł;
+		ArmorStand napis;
 		int energia;
 		int minuty;
 		int sekundy;
 		boolean zasłonięty;
+		boolean loaded = true;
 		
 		Panel(ArmorStand napis) {
 			Main.log(prefix + "loadowany panel na %s", Func.locBlockToString(napis.getLocation()));
@@ -85,8 +88,27 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		}
 		
 		private int doSprawdzenia = 0;
+		public boolean aktywny() {
+			return	!zasłonięty &&
+					energia < maxEnergia &&
+					napis.getLocation().getChunk().isLoaded();
+		}
 		public void czas() {
 			if (energia >= maxEnergia) return;
+			if (!napis.getLocation().getChunk().isLoaded()) {
+				loaded = false;
+				return;
+			}
+			if (!loaded) {
+				loaded = true;
+				Bukkit.getScheduler().runTask(Main.plugin, () -> {
+					napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
+					tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
+					sprawdzPattern();
+					czas();
+				});
+				return;
+			}
 			
 			if (--doSprawdzenia <= 0) {
 				doSprawdzenia = Func.losuj(30, 180);
@@ -223,18 +245,14 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	}
 	
 	
+	private final Set<String> sprawdzoneChunki = new HashSet<>();
 	void sprawdzChunk(Chunk chunk) {
-		Func.forEach(chunk.getEntities(), PaneleSłoneczne::znajdz);
+		if (sprawdzoneChunki.add(new StringBuilder().append(chunk.getX()).append(' ').append(chunk.getZ()).toString()))
+			Func.forEach(chunk.getEntities(), PaneleSłoneczne::znajdz);
 	}
 	@EventHandler
 	public void ładowanieChunka(ChunkLoadEvent ev) {
-		Main.log(prefix + ev.getEventName() + " " + ev.getChunk().getX() + " " + ev.getChunk().getZ());
 		sprawdzChunk(ev.getChunk());
-	}
-	@EventHandler
-	public void odładowywanieChunka(ChunkUnloadEvent ev) {
-		Main.log(prefix + ev.getEventName() + " " + ev.getChunk().getX() + " " + ev.getChunk().getZ());
-		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.forEach(ev.getChunk().getEntities(), e -> mapaPaneli.remove(e.getUniqueId())));
 	}
 	
 	
@@ -290,6 +308,12 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("Aktywne Panele Słoneczne", mapaPaneli.size());
+		AtomicInteger licz = new AtomicInteger();
+		mapaPaneli.values().forEach(panel -> {
+			if (panel.aktywny())
+				licz.incrementAndGet();
+		});
+		
+		return Func.r("Aktywne Panele Słoneczne", licz.get());
 	}
 }

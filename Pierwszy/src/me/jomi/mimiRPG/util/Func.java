@@ -478,6 +478,25 @@ public abstract class Func {
 			return domyslna;
 		}
 	}
+	public static String rzymskie(int liczba) {
+		String[] znaki = {"M", "CM", "D", "C", "XC", "L", "X", "IX", "V", "I"};
+		int[] wartości = {1000, 900, 500, 100, 90, 50, 10, 9, 5, 1};
+		StringBuilder strB = new StringBuilder();
+		 
+		for (int i = 0; i < wartości.length; i++) {
+			int numer = liczba / wartości[i];
+			if (numer == 0) continue;
+			if (numer == 4 && i > 0)
+				strB.append(znaki[i] + znaki[i - 1]);
+			else {
+				String znak = znaki[i];
+				for (int j=0; j < numer; j++)
+					strB.append(znak);
+			}
+			liczba %= wartości[i];
+		}
+		return strB.toString();
+	}
 	
 	public static ItemStack typ(ItemStack item, Material mat) {
 		item.setType(mat);
@@ -963,13 +982,24 @@ public abstract class Func {
 		posortowanaLista.add(index, obj);
 		return index;
 	}
-	public static <T> void posortuj(List<T> lista, Function<T, Double> wartość) {
+	public static double stringToDouble(String str) {
+		double w = 0;
+		double dzielnik = 1;
+		for (char znak : Func.odpolszcz(str).toCharArray()) {
+			w += znak / dzielnik;
+			dzielnik *= znak;
+		}
+		return w;
+	}
+	public static <T> List<T> posortuj(List<T> lista, Function<T, Double> wartość) {
 		List<Krotka<T, Double>> nowa = new ArrayList<>();
 		
 		lista.forEach(el -> Func.insort(new Krotka<>(el, wartość.apply(el)), nowa, k -> k.b));
 		
 		lista.clear();
 		nowa.forEach(krotka -> lista.add(krotka.a));
+		
+		return lista;
 	}
 	public static <T> int wyszukajBinarnieLIndex(double numer, List<T> posortowanaLista, Function<T, Double> wartość) {
 		int l = 0;
@@ -1104,7 +1134,7 @@ public abstract class Func {
 	}
 	public static List<String> tnij(String napis, String regex) {
 		final List<String> lista = Lists.newArrayList();
-		if (napis.isEmpty()) return lista;
+		if (napis == null || napis.isEmpty()) return lista;
 		while (true) {
 			int i = napis.indexOf(regex);
 			if (i == -1) {
@@ -1613,13 +1643,13 @@ public abstract class Func {
 	public static Object dajZField(Object obj, String nazwa) throws Throwable {
 		return dajField(obj.getClass(), nazwa).get(obj);
 	}
-	public static Field dajField(Class<?> clazz, String nazwa) throws Throwable {
+	public static Field dajField(Class<?> clazz, String nazwa) {
 		return dajZKlasy(clazz, NoSuchFieldException.class, klasa -> klasa.getDeclaredField(nazwa));
 	}
 	public static Method dajMetode(Class<?> clazz, String nazwa, Class<?>... klasy) throws Throwable {
 		try {
 			return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getDeclaredMethod(nazwa, klasy));
-		} catch (NoSuchMethodException e) {
+		} catch (Throwable e) {
 			return dajZKlasy(clazz, NoSuchMethodException.class, klasa -> klasa.getMethod(nazwa, klasy));
 		}
 	}
@@ -1630,7 +1660,7 @@ public abstract class Func {
 	private static interface dajZKlasyInterface<R> {
 		R call(Class<?> clazz) throws Throwable;
 	}
-	private static <T extends AccessibleObject> T dajZKlasy(Class<?> clazz, Class<?> error, dajZKlasyInterface<T> getDeclared) throws Throwable {
+	private static <T extends AccessibleObject> T dajZKlasy(Class<?> clazz, Class<?> error, dajZKlasyInterface<T> getDeclared) {
 		try {
 			T obj = getDeclared.call(clazz);
 			obj.setAccessible(true);
@@ -1638,10 +1668,10 @@ public abstract class Func {
 		} catch (Throwable e) {
 			if (e.getClass().isAssignableFrom(error))
 				if (clazz.getName().equals(Object.class.getName()))
-					throw e;
+					throw new RuntimeException(e);
 				else
 					return dajZKlasy(clazz.getSuperclass(), error, getDeclared);
-			throw e;
+			throw new RuntimeException(e);
 		}	
 	}
 	public static List<Field> dajFields(Class<?> clazz) {

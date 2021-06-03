@@ -23,6 +23,7 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Statystyka;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.StatystykaProcentowa;
+import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
 
 @Moduł
@@ -69,13 +70,13 @@ public class TabInfo implements Listener {
 		default: return null;
 		}
 		
-		return ustawNazwe(id, stat.atrybut.nazwa + "§8: §f" + (stat instanceof StatystykaProcentowa ? ((StatystykaProcentowa) stat).procent() : (int) stat.wartość()));
+		return ustawNazwe(id, stat.atrybut + "§8: §f" + (stat instanceof StatystykaProcentowa ? ((StatystykaProcentowa) stat).procent() : (int) stat.wartość()));
 	}
 	
 	@EventHandler
 	public void zmianaStatystyki(ZmianaStatystykiGraczaEvent ev) {
-		NMS.nms(ev.getPlayer()).playerConnection.sendPacket(new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.UPDATE_DISPLAY_NAME,
-				odświeżStatystykę(GraczRPG.gracz(ev.getPlayer()), ev.statystyka)));
+		Func.wykonajDlaNieNull(odświeżStatystykę(GraczRPG.gracz(ev.getPlayer()), ev.statystyka),
+				ep -> NMS.nms(ev.getPlayer()).playerConnection.sendPacket(new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, ep)));
 	}
 	@EventHandler
 	public void join(PlayerJoinEvent ev) {

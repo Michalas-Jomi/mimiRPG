@@ -20,5 +20,7 @@
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/moje pluginy 1.16.5/spigot.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/ProtocolLib.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/moje pluginy 1.16.5/plugins/worldguard-bukkit-7.0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/sqlite-jdbc-3.7.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Michal/Desktop/syf/jary/lombok.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

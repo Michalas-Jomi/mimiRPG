@@ -89,15 +89,7 @@ public class Moduły implements Przeładowalny {
 		
 		moduły.addAll(mapa.values());
 		
-		Func.posortuj(moduły, k -> {
-			double w = 0;
-			double dzielnik = 1;
-			for (char znak : Func.odpolszcz(k.klasa.getSimpleName()).toCharArray()) {
-				w += znak / dzielnik;
-				dzielnik *= znak;
-			}
-			return w;
-		});
+		Func.posortuj(moduły, k -> Func.stringToDouble(k.klasa.getSimpleName()));
 		
 		StringBuilder strB = new StringBuilder();
 		moduły.forEach(moduł -> strB.append('§').append(moduł.włączony ? 'a' : 'c').append(moduł.klasa.getSimpleName()).append("§r, "));

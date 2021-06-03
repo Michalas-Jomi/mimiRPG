@@ -23,11 +23,10 @@ public class Timming implements AutoCloseable {
 	@Override
 	public void close() {
 		czas = (int) (System.currentTimeMillis() - start);
-		Main.log("Ukończono Timming %s w czasie %sms", nazwa, czas);
 		
 		Krotka<Double, Integer> akt = timmingi.get(nazwa);
 		if (akt == null) {
-			akt = new Krotka<>();
+			akt = new Krotka<>(0d, 0);
 			timmingi.put(nazwa, akt);
 		}
 		akt.a = (akt.a * akt.b + czas) / ((double) akt.b + 1);
@@ -35,9 +34,12 @@ public class Timming implements AutoCloseable {
 	}
 	
 	public static Krotka<String, Object> raport(String nazwa) {
-		Krotka<Double, Integer> timming = timmingi.getOrDefault(nazwa, new Krotka<>());
+		Krotka<Double, Integer> timming = timmingi.getOrDefault(nazwa, new Krotka<>(0d, 0));
 		
 		return Func.r("timming " + nazwa, Func.zaokrąglij(timming.a, 2) + "ms x" + timming.b);
+	}
+	public static Iterable<String> utworzone() {
+		return timmingi.keySet();
 	}
 	
 	

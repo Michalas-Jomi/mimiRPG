@@ -100,6 +100,11 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			Blok blok = daj(mat);
 			return blok == null ? Integer.MAX_VALUE : blok.wytrzymałośćBloku;
 		}
+		
+		@Override
+		public String toString() {
+			return String.format("Blok(%s, %s, %s)", mat, drop, wytrzymałośćBloku);
+		}
 	}
 	
 	public KopanieRPG() {
@@ -152,7 +157,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			int kontrolny = this.kontrolny++;
 			
 			Func.ustawMetadate(p, metaKontrolny, kontrolny);
-			niszczenie(p, pos, GraczRPG.gracz(p), mocBloku, mocBloku, kontrolny);
+			niszczenie(p, pos, GraczRPG.gracz(p), mocBloku, mocBloku == -1 ? Integer.MAX_VALUE : mocBloku, kontrolny);
 		}
 	}
 	private void niszczenie(Player p, BlockPosition pos, GraczRPG graczRPG, int wytrzymałość, int pozostało, int kontrolny) {

@@ -40,6 +40,8 @@ public class Raport extends Komenda {
 			List<String> lista = Func.wykonajWszystkim(Bukkit.getPluginManager().getPlugins(), Plugin::getName);
 			lista.add("wszystkie");
 			return utab(args, lista);
+		} else if (args.length >= 2 && args[0].equalsIgnoreCase("timmingi")) {
+			return Lists.newArrayList(Timming.utworzone());
 		}
 		return null;
 	}

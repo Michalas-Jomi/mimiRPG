@@ -19,6 +19,7 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.MineZ.AbstractKarabiny;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Karabiny;
+import me.jomi.mimiRPG.RPG_Ultra.ZfaktoryzowaneItemy;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Funkcje.TriPredicate;
@@ -42,6 +43,8 @@ public class CustomoweItemy extends Komenda {
 				lista.add("bazy");
 			if (Main.włączonyModół(Karabiny.class))
 				lista.add("karabin");
+			if (Main.włączonyModół(ZfaktoryzowaneItemy.class))
+				lista.add("rpg");
 			lista.add("ustaw");
 			return utab(args, lista);
 		}
@@ -57,6 +60,10 @@ public class CustomoweItemy extends Komenda {
 		case "bazy":
 			if (args.length == 2)
 				return utab(args, Bazy.getBazy());
+			break;
+		case "rpg":
+			if (args.length == 2)
+				return utab(args, ZfaktoryzowaneItemy.itemy());
 			break;
 		case "karabin":
 			if (args.length == 2)
@@ -111,6 +118,13 @@ public class CustomoweItemy extends Komenda {
 			item = Bazy.getBaze(args[1]);
 			if (item == null)
 				return Func.powiadom(prefix, p, "Niepoprawna nazwa %s", args[1]);
+			break;
+		case "rpg":
+			if (!Main.włączonyModół(ZfaktoryzowaneItemy.class))
+				return Func.powiadom(p, prefix + "Ta funkcja aktualnie jest wyłączona w configu");
+			item = ZfaktoryzowaneItemy.dajItem(args[1]);
+			if (item == null)
+				return Func.powiadom(prefix, p, "Niepoprawne id %s", args[1]);
 			break;
 		case "karabin":
 			// /citem karabin [broń / ammo] <nazwa>

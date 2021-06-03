@@ -344,7 +344,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			sprawdzZadanie(p, g, rodzaj, czego, pred, aktywneZadanie, k -> 1);
 	}
 	@SuppressWarnings("unchecked")
-	private static <E> void sprawdzZadanie(Player p, Gracz g, Rodzaj rodzaj, E czego, Predicate<E> pred, AktywneZadanie aktywneZadanie, Function<Kryterium, Integer> ile) {
+	private static <E> void sprawdzZadanie(Player p, Gracz g, Rodzaj rodzaj, E czego, Predicate<E> pred,
+			AktywneZadanie aktywneZadanie, Function<Kryterium, Integer> ile) {
 		try {
 			if (!aktywneZadanie.ukończone())
 				Func.wykonajDlaNieNull(wczytaj(aktywneZadanie.zadanie), zadanie -> {
@@ -482,7 +483,9 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 						n.dodaj("\n§6" + Func.enumToString(kryterium.rodzaj) + " ")
 						 .dodaj(kryterium.getCzego() instanceof ItemStack ?
 								 Napis.item((ItemStack) kryterium.getCzego()) : new Napis("§e" + Func.enumToString((Enum<?>) kryterium.getCzego())))
-						 .dodaj(String.format(" §e%s§6/§e%s\n", aktywneZadanie.postępKryteriow.get(i++), kryterium.ile));
+						 .dodaj(String.format(" §e%s§6/§e%s\n",
+								 aktywneZadanie.postępKryteriow.size() > i ? aktywneZadanie.postępKryteriow.get(i++) : 0,
+								 kryterium.ile));
 				});
 	
 			n.dodaj("\n");
@@ -607,7 +610,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		}
 		return true;
 	}
-	private boolean dodajItem(List<Krotka<Zadanie, Status>> zadania, Zadanie zadanie, boolean przyjmij, boolean odbierz, boolean dostarcz, MonoKrotka<Boolean> dostarczone, Gracz g, Player p) {
+	private boolean dodajItem(List<Krotka<Zadanie, Status>> zadania, Zadanie zadanie,
+			boolean przyjmij, boolean odbierz, boolean dostarcz, MonoKrotka<Boolean> dostarczone, Gracz g, Player p) {
 		if (dostarczone.a)
 			return true;
 		

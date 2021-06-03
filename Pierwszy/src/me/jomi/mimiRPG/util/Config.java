@@ -204,14 +204,16 @@ public class Config {
 		String[] wejscie = ((String) item).split(" ");
 		if (!Baza.itemy.containsKey(wejscie[0])) {
 			try {
-				_item = new ItemStack(Material.valueOf(wejscie[0].toUpperCase()));
+				_item = new ItemStack(Func.StringToEnum(Material.class, wejscie[0]));
 			} catch (Exception e) {
 				return null;
 			}
 		} else
 			_item = Baza.itemy.get(wejscie[0]).clone();
+		
 		if (wejscie.length >= 2)
 			_item.setAmount(Func.Int(wejscie[1], 1));
+		
 		return _item;
 	}
 	public static List<ItemStack> itemy(List<?> itemy) {

@@ -18,18 +18,13 @@ public enum Atrybut {
 	public final String ikona;
 	public final String kolor;
 	private final String str;
-	public final String nazwa;
 	Atrybut(String ikona, String kolor, String nazwa) {
 		this.ikona = ikona;
 		this.kolor = "§" + kolor;
 		
-		this.str = this.kolor + this.ikona + " ";
-		this.nazwa = this.str + nazwa;
+		this.str = this.kolor + this.ikona + " " + nazwa;
 	}
 	
-	public String nazwa() {
-		return this.nazwa;
-	}
 	@Override
 	public String toString() {
 		return this.str;
