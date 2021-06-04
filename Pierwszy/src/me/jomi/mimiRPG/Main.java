@@ -112,16 +112,16 @@ public class Main extends JavaPlugin implements Listener {
 		zarejestruj(new Moduły());
 		
 		zarejestruj(new Przeładuj());
-        if (!Zegar.zegary.isEmpty())
-        	Zegar.aktywuj();
+		
+        Zegar.aktywuj();
         
         Main.dodajPermisje(permBlokowanieKomend);
-
+        
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "mimirpg:raport");
         
 		String msg = "\n§a╓───┐ ┌───┐ ┌───┐\n§a║   │ │   │ │\n§a╟───┘ ├───┘ │  ─┬\n§a║ \\   │     │   │\n§a║  \\  │     └───┘§1 by Michałas";
 		Bukkit.getConsoleSender().sendMessage(msg);
-
+		
 		getServer().setWhitelist(wl);
 		
 		pluginEnabled = true;
@@ -248,7 +248,7 @@ public class Main extends JavaPlugin implements Listener {
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private static final String logprefix = "[mimiRPG] ";
 	public static void log(Object format, Object... uzupełnienia) {
-		logger.info(logprefix + Func.msg(format.toString(), uzupełnienia));
+		logger.info(logprefix + Func.msg(format == null ? "null" : format.toString(), uzupełnienia));
 	}
 	public static void warn(Object... msg) {
 		logger.warning(logprefix + Func.listToString(msg, 0));

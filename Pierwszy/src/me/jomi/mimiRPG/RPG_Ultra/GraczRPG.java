@@ -15,6 +15,7 @@ import net.minecraft.server.v1_16_R3.NBTBase;
 import net.minecraft.server.v1_16_R3.NBTTagIntArray;
 
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.RPG_Ultra.Bestie.Bestia;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
@@ -234,7 +235,7 @@ public class GraczRPG {
 	public final Player p;
 
 	public final PersistentDataContainer dataRPG;
-	public final PersistentDataContainer dataStatystyki;
+	public final PersistentDataContainer dataBestie;
 	public final PersistentDataContainer dataŚcieżkiDoświadczenia;
 	public final PersistentDataContainer dataTrwałeBuffy;
 	
@@ -245,18 +246,9 @@ public class GraczRPG {
 			p.getPersistentDataContainer().set(kluczGraczRPG, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
 		dataRPG = p.getPersistentDataContainer().get(kluczGraczRPG, PersistentDataType.TAG_CONTAINER);
 		
-		if (!NMS.getRaw(dataRPG).containsKey("statystyki"))
-			NMS.set(dataRPG, "statystyki", PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
-		dataStatystyki = NMS.get(dataRPG, "statystyki", PersistentDataType.TAG_CONTAINER);
-		
-		if (!NMS.getRaw(dataRPG).containsKey("ścieżkiDoświadczenia"))
-			NMS.set(dataRPG, "ścieżkiDoświadczenia", PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
-		dataŚcieżkiDoświadczenia = NMS.get(dataRPG, "ścieżkiDoświadczenia", PersistentDataType.TAG_CONTAINER);
-		
-		if (!NMS.getRaw(dataRPG).containsKey("trwałeBuffy"))
-			NMS.set(dataRPG, "trwałeBuffy", PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
-		dataTrwałeBuffy = NMS.get(dataRPG, "trwałeBuffy", PersistentDataType.TAG_CONTAINER);
-		
+		dataŚcieżkiDoświadczenia= dataDajUtwórz(dataRPG, "ścieżkiDoświadczenia");
+		dataTrwałeBuffy			= dataDajUtwórz(dataRPG, "trwałeBuffy");
+		dataBestie				= dataDajUtwórz(dataRPG, "bestie");
 		
 		NMS.getRaw(dataTrwałeBuffy).forEach((attr, buff) -> {
 			Statystyka statystyka = statystyka(Func.StringToEnum(Atrybut.class, attr));
@@ -297,12 +289,24 @@ public class GraczRPG {
 			statystyka.zwiększMnożnik(oIle);
 	}
 	
-	
-	public void zwiększStatystykę(String statystyka) {
-		NMS.set(dataStatystyki, statystyka, PersistentDataType.INTEGER, NMS.get(dataStatystyki, statystyka, PersistentDataType.INTEGER));
+	private PersistentDataContainer dataDajUtwórz(PersistentDataContainer bazowy, String klucz) {
+		if (!NMS.getRaw(bazowy).containsKey(klucz))
+			NMS.set(bazowy, klucz, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
+		return NMS.get(bazowy, klucz, PersistentDataType.TAG_CONTAINER);
+		
 	}
-	public int dajStatystykę(String statystyka) {
-		return NMS.get(dataStatystyki, statystyka, PersistentDataType.INTEGER);
+	
+	public PersistentDataContainer getBestie(Bestia bestia) {
+		return getBestie(bestia.kategoria, bestia.grupa, bestia.nazwa);
+	}
+	public PersistentDataContainer getBestie(String kategoria, String grupa, String nazwa) {
+		return dataDajUtwórz(getBestieGrupa(kategoria, grupa), nazwa);
+	}
+	public PersistentDataContainer getBestieGrupa(String kategoria, String grupa) {
+		return dataDajUtwórz(getBestieKategoria(kategoria), grupa);
+	}
+	public PersistentDataContainer getBestieKategoria(String kategoria) {
+		return dataDajUtwórz(dataBestie, kategoria);
 	}
 	
 	

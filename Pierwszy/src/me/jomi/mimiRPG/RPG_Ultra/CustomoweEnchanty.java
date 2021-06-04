@@ -11,6 +11,7 @@ public class CustomoweEnchanty implements Listener {
 		return Main.włączonyModół(ZfaktoryzowaneItemy.class);
 	}
 	
-	// TODO: customwoe Enchanty
+	
+	
 	
 }

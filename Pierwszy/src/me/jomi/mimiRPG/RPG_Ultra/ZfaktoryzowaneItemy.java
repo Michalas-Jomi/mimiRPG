@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
@@ -26,8 +24,6 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 
 import com.google.common.collect.Lists;
 
@@ -56,9 +52,11 @@ import me.jomi.mimiRPG.util.Napis;
  *   
  *   enchanty: {
  *   Enchant: lvl
- *   }
+ *   },
  *   
- *   id: String
+ *   id: String,
+ *   
+ *   typ: TypItemu
  * }
  */
 
@@ -136,232 +134,58 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		bukkit.setItemMeta(meta);
 	}
 
-	public static String id(ItemStack item) {
-		String id = tag(item).getString("id");
-		return id.isEmpty() ? null : id;
-	}
-	
-	private static NBTTagCompound tag(ItemStack item) {
-		return NMS.nms(item).getOrCreateTag().getCompound("mimiFactor");
-	}
-	static void ustawTag(ItemStack item, NBTTagCompound tag) {
-		net.minecraft.server.v1_16_R3.ItemStack nms = NMS.nms(item);
+	public static void exportujDoBazy(ItemStack item, String id) {
+		tag(item).setString("id", id);
 		
-		boolean miał = nms.hasTag();
+		String opis = null;
+		if (item.hasItemMeta() && item.getItemMeta().hasLore())
+			opis = Func.listToString(item.getItemMeta().getLore(), 0, "\\n");
 		
-		NBTTagCompound nbt = nms.getOrCreateTag();
-		nbt.set("mimiFactor", tag);
-		
-		if (!miał)
-			nms.setTag(nbt);
-	}
-
-	
-	public static enum Ranga {
-		ZWYCZAJNY("f", ChatColor.WHITE),
-		NADZWYCZAJNY("a", ChatColor.GREEN),
-		RZADKI("9", ChatColor.BLUE),
-		EPICKI("5", ChatColor.DARK_PURPLE),
-		LEGENDARNY("6", ChatColor.GOLD),
-		MISTYCZNY("c", ChatColor.RED),
-		
-		EVENTOWY("e", ChatColor.YELLOW);
-		
-		public final Team team;
-		public final String kolor;
-		Ranga(String kolor, ChatColor chatColor) {
-			this.kolor = (kolor.length() == 13 ? "&%" : "§") + kolor;
+		List<Boost> boosty = Boost.getBoosty(item);
+		ByteArrayOutputStream blobStream = new ByteArrayOutputStream();
+		DataOutputStream blobOut = boosty.isEmpty() ? null : new DataOutputStream(blobStream);
+		Map<Atrybut, MonoKrotka<Double>> mapaBoostów = new HashMap<>();
+		boosty.forEach(boost -> {
+			MonoKrotka<Double> krotka = mapaBoostów.get(boost.attr);
+			if (krotka == null) {
+				krotka = new MonoKrotka<>(0d, 0d);
+				mapaBoostów.put(boost.attr, krotka);
+			}
+			
+			if (boost.baza)	krotka.a = boost.wartość;
+			else			krotka.b = boost.wartość;
+		});
+		if (!boosty.isEmpty()) {
 			try {
-				Scoreboard sc = Bukkit.getScoreboardManager().getMainScoreboard();
-				Team team = sc.getTeam("rang" + name());
-				if (team == null)
-					team = sc.registerNewTeam("rang" + name());
-				this.team = team;
+				blobOut.writeShort(boosty.size());
+				mapaBoostów.forEach((attr, krotka) -> krotka.wykonaj((baza, mnożnik) -> {
+					try {
+						blobOut.writeUTF(attr.name());
+						blobOut.writeDouble(baza);
+						blobOut.writeDouble(mnożnik);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}));
 			} catch (Throwable e) {
 				e.printStackTrace();
-				throw new RuntimeException(e);
-			}
-			this.team.setColor(chatColor);
-		}
-		
-		@Override
-		public String toString() {
-			return Func.koloruj(kolor + name());
-		}
-		
-
-		public static Ranga ranga(ItemStack item) {
-			return ranga(tag(item));
-		}
-		static Ranga ranga(NBTTagCompound tag) {
-			try {
-				return Func.StringToEnum(Ranga.class, tag.getString("ranga"));
-			} catch (Throwable e) {
-				return Ranga.ZWYCZAJNY;
 			}
 		}
-		public static void ustawRangę(ItemStack item, Ranga ranga) {
-			NBTTagCompound tag = tag(item);
-			ustawRangę(tag, ranga);
-			ustawTag(item, tag);
-		}
-		static void ustawRangę(NBTTagCompound tag, Ranga ranga) {
-			tag.setString("ranga", ranga.name());
+		
+		PreparedStatement stat = BazaDanych.prepare("INSERT INTO itemy(id, opis, ranga, bazowy_item, bonusy) VALUES (?, ?, ?, ?, ?)");
+		try {
+			stat.setString(1, id);
+			stat.setString(2, opis);
+			stat.setString(3, Ranga.ranga(item).name());
+			stat.setString(4, item.getType().name());
+			stat.setBytes (5, blobOut == null ? null : blobStream.toByteArray());
+			stat.execute();
+			if (blobOut != null)
+				blobOut.close();
+		} catch (SQLException | IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
-	
-	public static class Boost {
-		public static List<Boost> getBoosty(ItemStack item) {
-			return getBoosty(tag(item));
-		}
-		static List<Boost> getBoosty(NBTTagCompound tag) {
-			List<Boost> list = new ArrayList<>();
-			
-			NBTTagCompound boosty = tag.getCompound("boosty");
-			
-			boosty.getKeys().forEach(klucz -> list.add(new Boost(klucz, klucz.startsWith("baza_"), boosty.getDouble(klucz))));
-			
-			return list;
-		}
-		
-		public static double getBoost(ItemStack item, Atrybut attr, boolean baza) {
-			return getBoost(tag(item), attr, baza);
-		}
-		static double getBoost(NBTTagCompound tag, Atrybut attr, boolean baza) {
-			if (!tag.hasKey("boosty")) return 0;
-			
-			NBTTagCompound boosty = tag.getCompound("boosty");
-			String klucz = (baza ? "baza" : "mn") + "_" + attr.name();
-			
-			return boosty.getDouble(klucz);
-		}
-		
-		public static void dodajBoost(ItemStack item, Atrybut attr, double ile) {
-			dodajBoost(item, attr, ile, true);
-		}
-		public static void dodajBoost(ItemStack item, Atrybut attr, double ile, boolean baza) {
-			NBTTagCompound tag = tag(item);
-			dodajBoost(tag, attr, ile, baza);
-			ustawTag(item, tag);
-		}
-		static void dodajBoost(NBTTagCompound tag, Atrybut attr, double ile, boolean baza) {
-			if (!tag.hasKey("boosty"))
-				tag.set("boosty", new NBTTagCompound());
-			
-			NBTTagCompound boosty = tag.getCompound("boosty");
-			String klucz = (baza ? "baza" : "mn") + "_" + attr.name();
-
-			double akt = boosty.getDouble(klucz);
-			boosty.setDouble(klucz, akt + ile);
-		}
-
-		
-		public final Atrybut attr;
-		public final boolean baza; // baza : mnożnik
-		public final double wartość;
-		
-		public Boost(Atrybut attr, boolean baza, double wartość) {
-			this.wartość = wartość;
-			this.baza = baza;
-			this.attr = attr;
-		}
-		Boost(String klucz, boolean baza, double wartość) {
-			this(Func.StringToEnum(Atrybut.class, klucz.substring(baza ? 5 : 3)), baza, wartość);
-		}
-		
-		
-		private void __aplikuj(GraczRPG gracz, double wartość) {
-			if (baza)
-				gracz.statystyka(attr).zwiększBaza(wartość);
-			else
-				gracz.statystyka(attr).zwiększMnożnik(wartość);
-			
-		}
-		public void zaaplikuj(GraczRPG gracz) {
-			__aplikuj(gracz, wartość);
-		}
-		public void odaplikuj(GraczRPG gracz) {
-			__aplikuj(gracz, -wartość);
-		}
-		
-		
-		@Override
- 		public String toString() {
-			StringBuilder strB = new StringBuilder();
-			
-			strB.append(attr);
-			strB.append(wartość < 0 ? "§c-" : "§a+");
-			if (baza)
-				strB.append((int) wartość);
-			else
-				strB.append(((int) ((wartość - 1) * 100)) + "%");
-			
-			return strB.toString();
-		}
-	
-		
-
-		
-	}
-	
-	public static class Enchant {
-		static final Map<String, Enchant> mapa = new HashMap<>();
-		
-		public final String nazwa;
-		public final String opis;
-		
-		public Enchant(String nazwa, String opis) {
-			this.nazwa = nazwa;
-			this.opis = opis;
-			mapa.put(nazwa, this);
-		}
-	
-		
-		static NBTTagCompound enchanty(ItemStack item) {
-			return tag(item).getCompound("enchanty");
-		}
-		public static int getEnchantLvl(ItemStack item, String enchant) {
-			return enchanty(item).getInt(enchant);
-		}
-		private static final Enchant pusty = new Enchant("", "");
-		public static Enchant getEnchant(String enchant) {
-			return mapa.getOrDefault(enchant, pusty);
-		}
-		public static Iterable<String> getEnchanty() {
-			return mapa.keySet();
-		}
-	}
-	
-	
-	
-	public ZfaktoryzowaneItemy() {
-		super("edytujitemrpg");
-		ustawKomende("exportujitemrpg", "/exportujitemrpg <id>", null);
-		BazaDanych.otwórz();
-	}
-		
-	
-	@EventHandler
-	public void spawnItemu(ItemSpawnEvent ev) {
-		if (id(ev.getEntity().getItemStack()) == null) {
-			ev.setCancelled(true);
-			return;
-		}
-		
-		Ranga ranga = Ranga.ranga(ev.getEntity().getItemStack());
-		
-		Ranga.ustawRangę(ev.getEntity().getItemStack(), ranga);
-		
-		ranga.team.addEntry(ev.getEntity().getUniqueId().toString());
-		ev.getEntity().setGlowing(true);
-	}
-	@EventHandler
-	public void podnoszenieItemów(EntityPickupItemEvent ev) {
-		if (!(ev.getEntity() instanceof Player)) return;
-		
-		przerób(ev.getItem().getItemStack());
-	}
-
 
 	public static List<String> itemy() {
 		ResultSet set = BazaDanych.executeQuery("SELECT id FROM itemy");
@@ -416,6 +240,57 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		}
 		return null;
 	}
+	
+	public static String id(ItemStack item) {
+		String id = tag(item).getString("id");
+		return id.isEmpty() ? null : id;
+	}
+	
+	static NBTTagCompound tag(ItemStack item) {
+		return NMS.nms(item).getOrCreateTag().getCompound("mimiFactor");
+	}
+	static void ustawTag(ItemStack item, NBTTagCompound tag) {
+		net.minecraft.server.v1_16_R3.ItemStack nms = NMS.nms(item);
+		
+		boolean miał = nms.hasTag();
+		
+		NBTTagCompound nbt = nms.getOrCreateTag();
+		nbt.set("mimiFactor", tag);
+		
+		if (!miał)
+			nms.setTag(nbt);
+	}
+	
+
+	
+	public ZfaktoryzowaneItemy() {
+		super("edytujitemrpg");
+		ustawKomende("exportujitemrpg", "/exportujitemrpg <id>", null);
+		BazaDanych.otwórz();
+	}
+		
+	
+	@EventHandler
+	public void spawnItemu(ItemSpawnEvent ev) {
+		if (id(ev.getEntity().getItemStack()) == null) {
+			ev.setCancelled(true);
+			return;
+		}
+		
+		Ranga ranga = Ranga.ranga(ev.getEntity().getItemStack());
+		
+		Ranga.ustawRangę(ev.getEntity().getItemStack(), ranga);
+		
+		ranga.team.addEntry(ev.getEntity().getUniqueId().toString());
+		ev.getEntity().setGlowing(true);
+	}
+	@EventHandler
+	public void podnoszenieItemów(EntityPickupItemEvent ev) {
+		if (!(ev.getEntity() instanceof Player)) return;
+		
+		przerób(ev.getItem().getItemStack());
+	}
+
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
@@ -527,59 +402,5 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		n.dodaj("\n\n");
 		
 		n.wyświetl(p);
-	}
-
-	
-	public static void exportujDoBazy(ItemStack item, String id) {
-		tag(item).setString("id", id);
-		
-		String opis = null;
-		if (item.hasItemMeta() && item.getItemMeta().hasLore())
-			opis = Func.listToString(item.getItemMeta().getLore(), 0, "\\n");
-		
-		List<Boost> boosty = Boost.getBoosty(item);
-		ByteArrayOutputStream blobStream = new ByteArrayOutputStream();
-		DataOutputStream blobOut = boosty.isEmpty() ? null : new DataOutputStream(blobStream);
-		Map<Atrybut, MonoKrotka<Double>> mapaBoostów = new HashMap<>();
-		boosty.forEach(boost -> {
-			MonoKrotka<Double> krotka = mapaBoostów.get(boost.attr);
-			if (krotka == null) {
-				krotka = new MonoKrotka<>(0d, 0d);
-				mapaBoostów.put(boost.attr, krotka);
-			}
-			
-			if (boost.baza)	krotka.a = boost.wartość;
-			else			krotka.b = boost.wartość;
-		});
-		if (!boosty.isEmpty()) {
-			try {
-				blobOut.writeShort(boosty.size());
-				mapaBoostów.forEach((attr, krotka) -> krotka.wykonaj((baza, mnożnik) -> {
-					try {
-						blobOut.writeUTF(attr.name());
-						blobOut.writeDouble(baza);
-						blobOut.writeDouble(mnożnik);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}));
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		
-		PreparedStatement stat = BazaDanych.prepare("INSERT INTO itemy(id, opis, ranga, bazowy_item, bonusy) VALUES (?, ?, ?, ?, ?)");
-		try {
-			stat.setString(1, id);
-			stat.setString(2, opis);
-			stat.setString(3, Ranga.ranga(item).name());
-			stat.setString(4, item.getType().name());
-			stat.setBytes (5, blobOut == null ? null : blobStream.toByteArray());
-			stat.execute();
-			if (blobOut != null)
-				blobOut.close();
-		} catch (SQLException | IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

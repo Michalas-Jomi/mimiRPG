@@ -39,9 +39,14 @@ public class BazaDanych {
             return;
         }
         
-        utwórz();
+        try {
+        	utwórz();
+            Main.log(prefix + "Otwarto bazę danych");
+        } catch (Throwable e) {
+        	Main.error(prefix + "Otwarcie bazy danych nie powiodło się");
+        	e.printStackTrace();
+        }
         
-        Main.log(prefix + "Otwarto bazę danych");
 	}
 	private static void utwórz() {
 		execute("CREATE TABLE IF NOT EXISTS graczrpg ("
@@ -51,8 +56,8 @@ public class BazaDanych {
 		execute("CREATE TABLE IF NOT EXISTS itemy ("
 				+ "id varchar(32) PRIMARY KEY UNIQUE NOT NULL,"
 				+ "opis TEXT,"
-				+ "ranga TEXT NOT NULL,"
-				+ "bazowy_item TEXT NOT NULL,"
+				+ "ranga TEXT NOT NULL DEFAULT ZWYCZAJNY,"
+				+ "bazowy_item TEXT NOT NULL DEFAULT STONE,"
 				+ "bonusy BLOB"
 				+ ")");
 	}

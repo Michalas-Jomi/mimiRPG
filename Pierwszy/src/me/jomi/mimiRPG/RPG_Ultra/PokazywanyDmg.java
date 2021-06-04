@@ -88,6 +88,10 @@ public class PokazywanyDmg implements Listener {
 	private void zrespDmg(Entity entity, double _dmg, String kolor) {
 		int dmg = (int) (_dmg > (int) _dmg ? _dmg + 1 : _dmg);
 		
+		zrespDmg(entity, "§" + kolor + dmg);
+	}
+	
+	public static void zrespDmg(Entity entity, String napis) {
 		World world = NMS.nms(entity.getWorld());
 		
 		Location loc = entity.getLocation();
@@ -96,7 +100,7 @@ public class PokazywanyDmg implements Listener {
 		
 		EntityArmorStand as = new EntityArmorStand(world, loc.getX(), loc.getY(), loc.getZ());
 		as.setCustomNameVisible(true);
-		as.setCustomName(CraftChatMessage.fromStringOrNull("§" + kolor + dmg));
+		as.setCustomName(CraftChatMessage.fromStringOrNull(napis));
 		as.setSmall(true);
 		as.setNoGravity(true);
 		as.setInvisible(true);

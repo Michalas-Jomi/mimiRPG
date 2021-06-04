@@ -53,10 +53,14 @@ public class RPG implements Listener {
 		GraczRPG gracz = GraczRPG.gracz(ev.getPlayer());
 		
 		Func.wykonajDlaNieNull(inv.getItem(ev.getPreviousSlot()),
-				item -> ZfaktoryzowaneItemy.Boost.getBoosty(item).forEach(
+				item -> Boost.getBoosty(item).forEach(
 						boost -> boost.odaplikuj(gracz)));
 		Func.wykonajDlaNieNull(inv.getItem(ev.getNewSlot()),
-				item -> ZfaktoryzowaneItemy.Boost.getBoosty(item).forEach(
+				item -> Boost.getBoosty(item).forEach(
 						boost -> boost.zaaplikuj(gracz)));
+	}
+
+	public static String monety(double ile) {
+		return "§6Ⓞ " + Func.DoubleToString(ile);
 	}
 }
