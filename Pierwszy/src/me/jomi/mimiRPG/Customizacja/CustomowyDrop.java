@@ -195,10 +195,10 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			Func.wykonajDlaNieNull(mapa.get(item.getType().toString()), dropy -> {
 				dropy.forEach(drop -> {
 					if (drop.blokuj)
-						throw new RuntimeException();
+						throw new IllegalArgumentException();
 				});
 			});
-		} catch (RuntimeException e) {
+		} catch (IllegalArgumentException e) {
 			ev.setCancelled(true);
 			ev.getPlayer().sendMessage(Func.msg(Func.prefix("Blokady") + "Hej! Nie wyrzucaj tego."));
 		}
@@ -213,10 +213,10 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			Func.wykonajDlaNieNull(mapa.get(item.getType().toString()), dropy -> {
 				dropy.forEach(drop -> {
 					if (drop.blokuj)
-						throw new RuntimeException();
+						throw new IllegalArgumentException();
 				});
 			});
-		} catch (RuntimeException e) {
+		} catch (IllegalArgumentException e) {
 			ev.setCancelled(true);
 			ev.getEntity().remove();
 		}

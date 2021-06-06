@@ -23,6 +23,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -172,6 +173,10 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 				pref = meta.hasDisplayName() ? meta.getDisplayName() : nazwa;
 			} else {
 				pociski = Integer.parseInt(matcher.group(2));
+				if (pociski > magazynek) {
+					Main.warn(Karabiny.prefix + "%s miał %s amunicji w karabinie %s na max %s", p.getName(), pociski, nazwa, magazynek);
+					return false;
+				}
 				pref = matcher.group(1);
 			}
 			
@@ -327,6 +332,12 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 	@EventHandler public void __(PlayerItemHeldEvent ev)		{ Karabin.odbliż(ev.getPlayer()); }
 	@EventHandler public void __(PlayerDropItemEvent ev)		{ Karabin.odbliż(ev.getPlayer()); }
 	@EventHandler public void __(PlayerSwapHandItemsEvent ev)	{ Karabin.odbliż(ev.getPlayer()); }
+	
+	@EventHandler
+	public void anvil(PrepareAnvilEvent ev) {
+		if (karabin(ev.getResult()) != null)
+			ev.setResult(null);
+	}
 	
 	public static Set<String> getKarabiny() {
 		Set<String> karabiny = new HashSet<>();

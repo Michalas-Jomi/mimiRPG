@@ -34,6 +34,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import me.jomi.mimiRPG.Chat.Mimi;
+import me.jomi.mimiRPG.Chat.PySocket;
 import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Minigry.Paintball;
@@ -157,6 +158,8 @@ public class Main extends JavaPlugin implements Listener {
 			Paintball.wyłącz();
 		if (włączonyModół(SkyBlock.class))
 			SkyBlock.onDisable();
+		if (włączonyModół(PySocket.class))
+			PySocket.onDisable();
 
 		Func.onDisable();
 	}

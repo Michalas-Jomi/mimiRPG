@@ -162,6 +162,25 @@ public abstract class Func {
 		
 		return s.toString();
 	}
+	public static String progres(int ileJest, int ilePotrzeba, int ileZnaków, String znak, String kolorZrobione, String kolorNieZrobione) {
+		StringBuilder strB = new StringBuilder();
+		
+		double procent = ileJest / (double) ilePotrzeba;
+		
+		strB.append(kolorZrobione);
+		
+		int zrobione = 0;
+		
+		while (zrobione / (double) ileZnaków < procent) {
+			strB.append(znak);
+			zrobione++;
+		}
+		strB.append(kolorNieZrobione);
+		while (zrobione++ < ileZnaków)
+			strB.append(znak);
+		
+		return strB.toString();
+	}
 	
 	public static long czasSekundy() {
 		return System.currentTimeMillis() / 1000;
@@ -212,13 +231,13 @@ public abstract class Func {
 		double r = liczba - (int) liczba;
 		String reszta = "";
 		if (r != 0)
-			if ((""+r).length()>5) {
-				reszta += (""+r).substring(1, 5);
+			if (String.valueOf(r).length() > 5) {
+				reszta += String.valueOf(r).substring(1, 5);
 				while (reszta.endsWith("0"))
 					reszta = reszta.substring(0, reszta.length()-1);
 			}
 			else
-				reszta += (""+r).substring(1);
+				reszta += String.valueOf(r).substring(1);
 		return całości + reszta;
 	}
 	public static List<String> BooleanToString(boolean bool, List<String> tak, List<String> nie) {
@@ -1668,10 +1687,10 @@ public abstract class Func {
 		} catch (Throwable e) {
 			if (e.getClass().isAssignableFrom(error))
 				if (clazz.getName().equals(Object.class.getName()))
-					throw new RuntimeException(e);
+					throw Func.throwEx(e);
 				else
 					return dajZKlasy(clazz.getSuperclass(), error, getDeclared);
-			throw new RuntimeException(e);
+			throw Func.throwEx(e);
 		}	
 	}
 	public static List<Field> dajFields(Class<?> clazz) {
@@ -1726,7 +1745,6 @@ public abstract class Func {
 		} catch (Throwable e) {}
 		return clazz.newInstance();
 	}
-
 	public static <T1, T2> List<T2> wykonajWszystkim(Iterable<T1> lista, Function<T1, T2> func) {
 		List<T2> _lista = Lists.newArrayList();
 		for (T1 el : lista)
@@ -1735,6 +1753,16 @@ public abstract class Func {
 	}
 	public static <T1, T2> List<T2> wykonajWszystkim(T1[] lista, Function<T1, T2> func) {
 		return wykonajWszystkim(Lists.newArrayList(lista), func);
+	}
+	
+	public static RuntimeException throwEx(Throwable t) {
+		if (t == null)
+			throw new NullPointerException();
+		throw throwEx0(t);
+	}
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> T throwEx0(Throwable t) throws T {
+		throw (T) t;
 	}
 	
 	public static <T> List<T> przefiltruj(T[] lista, Predicate<T> warunek) {
@@ -1961,6 +1989,12 @@ public abstract class Func {
         return destFile;
     }
 	
+    public static void usuń(File plik) {
+    	if (plik.isDirectory())
+    		Func.forEach(plik.listFiles(), Func::usuń);
+    	plik.delete();
+    }
+    
 	public static void particle(Particle particle, Location loc, int ilość, double dx, double dy, double dz, double prędkość) {
 		loc.getWorld().spawnParticle(particle, loc, ilość, dx, dy, dz, prędkość);
 	}

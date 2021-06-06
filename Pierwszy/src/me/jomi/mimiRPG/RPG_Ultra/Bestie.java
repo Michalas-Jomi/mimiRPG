@@ -1,10 +1,12 @@
 package me.jomi.mimiRPG.RPG_Ultra;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -30,8 +32,6 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import net.minecraft.server.v1_16_R3.EntityLiving;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
@@ -50,6 +50,8 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
 import lombok.Getter;
+
+// TODO: szablon
 
 @Moduł
 public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
@@ -123,8 +125,33 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 				return Func.ilość(item.clone(), Func.losuj(min_ilość, max_ilość));
 			return null;
 		}
-		public void dropnij(List<ItemStack> dropy) {
-			Func.wykonajDlaNieNull(dropnij(), dropy::add);
+		public boolean dropnij(List<ItemStack> dropy) {
+			ItemStack item = dropnij();
+			Func.wykonajDlaNieNull(item, dropy::add);
+			return item != null;
+		}
+	
+		private String str;
+		@Override
+		public String toString() {
+			if (str != null)
+				return str;
+			
+			StringBuilder strB = new StringBuilder();
+			
+			strB.append("§2");
+			strB.append(Func.nazwaItemku(item));
+			strB.append(" §a");
+			boolean nierówne = min_ilość != max_ilość;
+			if (min_ilość != 1 || nierówne)
+				strB.append('x').append(min_ilość);
+			if (nierówne)
+				strB.append('-').append(max_ilość);
+			
+			if (szansa < 1)
+				strB.append(' ').append(Func.DoubleToString(Func.zaokrąglij(szansa * 100, 2))).append('%');
+			
+			return str = strB.toString();
 		}
 	}
 	public static class Bestia {
@@ -172,7 +199,9 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			this.grupa		= grupa 	== null ? nazwa : grupa;
 			this.kategoria	= kategoria == null ? grupa : kategoria;
 			
-			this.ikona = ikona;
+			this.ikona = ikona != null ? ikona : Func.stwórzItem(Material.BONE, "&c" + nazwa);
+			if (!this.ikona.hasItemMeta() || !this.ikona.getItemMeta().hasDisplayName())
+				Func.nazwij(this.ikona, "&c" + nazwa);
 			this.slot = slot;
 			
 			if (!mapa.containsKey(kategoria))
@@ -202,15 +231,20 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			return mob.getBukkitEntity();
 		}
+	
+	
+		public boolean zabił(GraczRPG gracz) {
+			return gracz.getBestie(this).hasKey("kill");
+		}
 	}
 	
 	
 	
 	public Bestia bestia(Entity mob) {
-		if (!mob.hasMetadata(metaBesti))
-			return null;
-		else
+		if (mob.hasMetadata(metaBesti))
 			return (Bestia) mob.getMetadata(metaBesti).get(0).value();
+		else
+			return null;
 	}
 	
 	@EventHandler(priority = EventPriority.LOW)
@@ -226,10 +260,8 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (ev.getEntity().getLastDamageCause() instanceof EntityDamageByEntityEvent) {
 				EntityDamageByEntityEvent ev2 = (EntityDamageByEntityEvent) ev.getEntity().getLastDamageCause();
 				Func.wykonajDlaNieNull(bestia(ev2.getDamager()), bestia -> {
-					GraczRPG gracz = GraczRPG.gracz((Player) ev.getEntity());
-					PersistentDataContainer data = gracz.getBestie(bestia);
-					PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-					NMS.set(data, "zgon", type, NMS.get(data, "zgon", type) + 1);
+					NBTTagCompound data = GraczRPG.gracz((Player) ev.getEntity()).getBestie(bestia);
+					data.setInt("zgon", data.getInt("zgon") + 1);
 				});
 			}
 			return;
@@ -242,7 +274,11 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 				spawner.sprawdzZrespione();
 			}
 			
-			bestia.dropy.forEach(drop -> drop.dropnij(ev.getDrops()));
+			List<DropRPG> dropnięte = new ArrayList<>();
+			bestia.dropy.forEach(drop -> {
+				if (drop.dropnij(ev.getDrops()))
+					dropnięte.add(drop);
+			});
 			ev.setDroppedExp(bestia.exp);
 			
 			Func.wykonajDlaNieNull(ev.getEntity().getKiller(), killer -> {
@@ -250,9 +286,24 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 				gracz.ścieżka_łowca.zwiększExp(bestia.exp_łowcy);
 				gracz.dodajKase(bestia.kasa);
 
-				PersistentDataContainer data = gracz.getBestie(bestia);
-				PersistentDataType<Integer, Integer> type = PersistentDataType.INTEGER;
-				NMS.set(data, "kill", type, NMS.get(data, "kill", type) + 1);			
+				NBTTagCompound data = gracz.getBestie(bestia);
+				data.setInt("kill", data.getInt("kill") + 1);
+				
+				dropnięte.forEach(drop -> {
+					int[] dropy = data.getIntArray("dropy");
+					int hash = Func.nazwaItemku(drop.item).hashCode();
+					boolean był = false;
+					for (int _drop : dropy)
+						if (był = (_drop == hash))
+							break;
+					if (!był) {
+						int[] nowe = new int[dropy.length + 1];
+						for (int i=0; i < dropy.length; i++)
+							nowe[i] = dropy[i];
+						nowe[dropy.length] = hash;
+						data.setIntArray("dropy", nowe);
+					}
+				});
 			});
 		}, () -> ev.setDroppedExp(0));
 	}
@@ -354,8 +405,32 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 	void otwórzPanel(Player p, String kategoria) {
 		Inventory inv = panelGrupy.stwórz(kategoria, 3, "&4&l" + kategoria);
 		Func.ustawPuste(inv, Baza.pustySlotCzarny);
+
+		GraczRPG gracz = GraczRPG.gracz(p);
 		
-		Bestia.mapa.get(kategoria).mapa.values().forEach(grupa -> inv.setItem(grupa.slot, grupa.item));
+		Bestia.mapa.get(kategoria).mapa.values().forEach(grupa -> {
+			ItemStack item = grupa.item.clone();
+			
+			ItemMeta meta = item.getItemMeta();
+			List<String> lore = Func.nieNull(meta.getLore());
+			
+			AtomicInteger odblokowane = new AtomicInteger();
+			
+			grupa.mapa.values().forEach(bestia -> {
+				if (bestia.zabił(gracz))
+					odblokowane.getAndIncrement();
+			});
+			
+			lore.add(Func.msg("Odblokowano %s/%s", odblokowane.get(), grupa.mapa.size()));
+			lore.add("§a|" + Func.progres(odblokowane.get(), grupa.mapa.size(), 20, "-", "§a", "§7") + " (" + Func.zaokrąglij(odblokowane.get() / (double) grupa.mapa.size(), 1) + "%)");
+			lore.add(" ");
+			
+
+			meta.setLore(lore);
+			item.setItemMeta(meta);
+			
+			inv.setItem(grupa.slot, item);
+		});
 		
 		p.openInventory(inv);
 	}
@@ -363,15 +438,56 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		Inventory inv = panelBestie.stwórz(new MonoKrotka<String>(kategoria, grupa), 3, "&4&l" + grupa);
 		Func.ustawPuste(inv, Baza.pustySlotCzarny);
 		
+		GraczRPG gracz = GraczRPG.gracz(p);
+		
 		Bestia.mapa.get(kategoria).mapa.get(grupa).mapa.values().forEach(bestia -> {
 			ItemStack item = bestia.ikona.clone();
 			
 			ItemMeta meta = item.getItemMeta();
 			List<String> lore = Func.nieNull(meta.getLore());
-			if (bestia.kasa		 != 0) lore.add("§7Monety§8: §6"	+ RPG.monety(bestia.kasa));
-			if (bestia.exp		 != 0) lore.add("§7Exp§8: §6"		+ Func.IntToString(bestia.exp));
-			if (bestia.exp_łowcy != 0) lore.add("§7Exp Łowcy§8: §6"	+ Func.IntToString(bestia.exp_łowcy));
-			lore.add(" ");
+			
+			if (bestia.zabił(gracz)) {
+				NBTTagCompound dane = gracz.getBestie(bestia);
+				
+				if (bestia.kasa		 != 0) lore.add("§7Monety§8: §6"	+ RPG.monety(bestia.kasa));
+				if (bestia.exp		 != 0) lore.add("§7Exp§8: §6"		+ Func.IntToString(bestia.exp));
+				if (bestia.exp_łowcy != 0) lore.add("§7Exp Łowcy§8: §6"	+ Func.IntToString(bestia.exp_łowcy));
+				lore.add(" ");
+				
+				lore.add("§7Kille§8: §a" + dane.getInt("kill"));
+				lore.add("§7Zgony§8: §a" + dane.getInt("zgon"));
+				lore.add(" ");
+				
+				
+				Map<Ranga, List<DropRPG>> mapaDropów = new EnumMap<>(Ranga.class);
+				bestia.dropy.forEach(drop -> {
+					Ranga ranga = Ranga.ranga(drop.item);
+					List<DropRPG> lista = mapaDropów.get(ranga);
+					if (lista == null)
+						mapaDropów.put(ranga, lista = new ArrayList<>());
+					lista.add(drop);
+				});
+				
+				Func.forEach(Ranga.values(), ranga -> {
+					Func.wykonajDlaNieNull(mapaDropów.get(ranga), lista -> {
+						lore.add(ranga.toString());
+						lista.forEach(drop -> {
+							String nazwa = Func.nazwaItemku(drop.item);
+							int hash = nazwa.hashCode();
+							boolean był = false;
+							for (int dropnięte : dane.getIntArray("dropy"))
+								if (był = (dropnięte == hash))
+									break;
+							lore.add(był ? drop.toString() : "§7???");
+						});
+					});
+				});
+				
+				
+			} else {
+				item.setType(Material.GRAY_DYE);
+				lore.add("§7????");
+			}
 			
 			meta.setLore(lore);
 			item.setItemMeta(meta);
@@ -465,12 +581,10 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		return Func.r("wczytane Bestie", Bestia.mapa.size());
 	}
 
-	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return null;
 	}
-
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, "Musisz być graczem żeby tego użyć");
@@ -480,7 +594,6 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		return true;
 	}
 
-	
 	@Override
 	public int czas() {
 		spawnery.forEach(Spawner::czas);

@@ -84,7 +84,7 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
                 connect();
             } catch (Throwable e) {
             	e.printStackTrace();
-                throw new RuntimeException(e);
+            	Func.throwEx(e);
             }
         })).start();
     }
@@ -136,10 +136,19 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
 			out.writeUTF(task);
 			cons.accept(out);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Func.throwEx(e);
 		}
     }
 	
+    
+    public static void onDisable() {
+    	try {
+    		socket_thread.interrupt();
+    	} catch (Throwable e) {
+    		e.printStackTrace();
+    	}
+    }
+    
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void pisanie(AsyncPlayerChatEvent ev) {

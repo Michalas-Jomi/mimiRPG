@@ -41,7 +41,7 @@ public class Golf extends Minigra {
 	static ItemStack[] kijki;
 	static final ItemStack itemReset = Func.stwórzItem(Material.EGG, "&4Reset Piłki");
 	static final ItemStack itemTp = Func.stwórzItem(Material.ENDER_PEARL, "&dZnajdz Piłke");
-	public static final String prefix = Func.prefix("Golf");
+	public static final String prefix = Func.prefix(Golf.class);
 	public static class Arena extends Minigra.Arena {
 		Golf inst;
 		@Mapowane Location locStart;

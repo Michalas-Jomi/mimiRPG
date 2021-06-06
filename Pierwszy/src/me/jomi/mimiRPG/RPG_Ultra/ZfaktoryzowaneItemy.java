@@ -183,7 +183,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			if (blobOut != null)
 				blobOut.close();
 		} catch (SQLException | IOException e) {
-			throw new RuntimeException(e);
+			Func.throwEx(e);
 		}
 	}
 
@@ -247,7 +247,10 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	}
 	
 	static NBTTagCompound tag(ItemStack item) {
-		return NMS.nms(item).getOrCreateTag().getCompound("mimiFactor");
+		return tag(NMS.nms(item));
+	}
+	static NBTTagCompound tag(net.minecraft.server.v1_16_R3.ItemStack item) {
+		return item.getOrCreateTag().getCompound("mimiFactor");
 	}
 	static void ustawTag(ItemStack item, NBTTagCompound tag) {
 		net.minecraft.server.v1_16_R3.ItemStack nms = NMS.nms(item);
@@ -261,7 +264,6 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			nms.setTag(nbt);
 	}
 	
-
 	
 	public ZfaktoryzowaneItemy() {
 		super("edytujitemrpg");

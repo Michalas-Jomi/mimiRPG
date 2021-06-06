@@ -67,21 +67,21 @@ public class BazaDanych {
 		try {
 			stat.execute(sql);
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			Func.throwEx(e);
 		}
 	}
 	public static ResultSet executeQuery(String sql) {
 		try {
 			return stat.executeQuery(sql);
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			throw Func.throwEx(e);
 		}
 	}
 	public static PreparedStatement prepare(String sql) {
 		try {
 			return connection.prepareStatement(sql);
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			throw Func.throwEx(e);
 		}
 	}
 	
@@ -94,7 +94,7 @@ public class BazaDanych {
 			InputStream stream = set.getBinaryStream(kolumna);
 			return stream != null ? new DataInputStream(stream) : null;
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			throw Func.throwEx(e);
 		}
 	}
 }

@@ -22,8 +22,11 @@ public enum Ranga {
 	
 	public final Team team;
 	public final String kolor;
+	public final String str;
 	Ranga(String kolor, ChatColor chatColor) {
 		this.kolor = (kolor.length() == 13 ? "&%" : "§") + kolor;
+		this.str = Func.koloruj(this.kolor + name());
+
 		try {
 			Scoreboard sc = Bukkit.getScoreboardManager().getMainScoreboard();
 			Team team = sc.getTeam("rang" + name());
@@ -31,15 +34,14 @@ public enum Ranga {
 				team = sc.registerNewTeam("rang" + name());
 			this.team = team;
 		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw Func.throwEx(e);
 		}
 		this.team.setColor(chatColor);
 	}
 	
 	@Override
 	public String toString() {
-		return Func.koloruj(kolor + name());
+		return str;
 	}
 	
 

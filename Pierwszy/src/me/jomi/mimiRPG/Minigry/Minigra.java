@@ -71,6 +71,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		String nazwa = "Minigra";
 		boolean grane = false;
 		int timer = -1;
+		long startAreny;
 
 		// abstract
 		abstract Minigra getInstMinigra();
@@ -94,11 +95,13 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			odświeżWPanelu();
 			
+			startAreny = System.currentTimeMillis();
+			
 			Main.log(getInstMinigra().getPrefix() + Func.msg("Arena %s wsytartowała z graczami(%s) %s", nazwa, gracze.size(), gracze));
 		}
 		
 		boolean dołącz(Player p) {
-			if (p.hasMetadata(getInstMinigra().getMetaId()) || gracze.size() >= max_gracze || opuść(p))
+			if (p.hasMetadata(getInstMinigra().getMetaId()) || (max_gracze != -1 && gracze.size() >= max_gracze) || opuść(p))
 				return false;
 			Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
 				Arena arena = getInstMinigra().arena(onlinePlayer);
@@ -222,6 +225,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			} catch (IllegalPluginAccessException e) {}
 			
 			odświeżWPanelu();
+			
+			Main.log(getInstMinigra().getPrefix() + "Arena %s zakończyła się", nazwa);
 		}
 		private Set<Integer> doAnulowania = Sets.newConcurrentHashSet();
 		void opóznijTask(int ticki, Runnable runnable) {
@@ -246,6 +251,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			msg = Func.msg(msg, uzupełnienia);
 			for (Player p : gracze)
 				p.sendMessage(msg);
+			Main.log(msg);
 		}				
 		
 		boolean pełna() {
@@ -260,6 +266,10 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		boolean sprawdzKoniec() {
 			if (gracze.size() == 1)
 				return wygrana(gracze.get(0));
+			else if (gracze.size() <= 0) {
+				koniec();
+				return true;
+			}
 			return false;
 		}
 
@@ -583,7 +593,9 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 		return configAreny;
 	}
 	// abstract
-	abstract String getPrefix();
+	String getPrefix() {
+		return Func.prefix(this.getClass());
+	}
 	abstract String getMetaStatystyki();
 	abstract String getMetaId();
 	

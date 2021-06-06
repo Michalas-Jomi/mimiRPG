@@ -8,10 +8,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.minecraft.server.v1_16_R3.NBTBase;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import net.minecraft.server.v1_16_R3.NBTTagIntArray;
 
 import me.jomi.mimiRPG.Main;
@@ -169,16 +169,12 @@ public class GraczRPG {
 		}
 		
 		public void zapisz() {
-			NMS.set(dataŚcieżkiDoświadczenia, ścieżka.nazwa, PersistentDataType.INTEGER_ARRAY, new int[] {exp, lvl});
+			dataŚcieżkiDoświadczenia.setIntArray(ścieżka.nazwa, new int[] {exp, lvl});
 		}
 		public void wczytaj() {
-			int[] exp_lvl = NMS.get(
-					dataŚcieżkiDoświadczenia,
-					ścieżka.nazwa,
-					PersistentDataType.INTEGER_ARRAY
-					);
+			int[] exp_lvl = dataŚcieżkiDoświadczenia.getIntArray(ścieżka.nazwa);
 			
-			if (exp_lvl != null) {
+			if (exp_lvl.length == 2) {
 				exp = exp_lvl[0];
 				lvl = exp_lvl[1];
 			}
@@ -234,25 +230,25 @@ public class GraczRPG {
 	
 	public final Player p;
 
-	public final PersistentDataContainer dataRPG;
-	public final PersistentDataContainer dataBestie;
-	public final PersistentDataContainer dataŚcieżkiDoświadczenia;
-	public final PersistentDataContainer dataTrwałeBuffy;
+	public final NBTTagCompound dataRPG;
+	public final NBTTagCompound dataBestie;
+	public final NBTTagCompound dataŚcieżkiDoświadczenia;
+	public final NBTTagCompound dataTrwałeBuffy;
 	
 	GraczRPG(Player p) {
 		this.p = p;
 
 		if (!p.getPersistentDataContainer().getKeys().contains(kluczGraczRPG))
 			p.getPersistentDataContainer().set(kluczGraczRPG, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
-		dataRPG = p.getPersistentDataContainer().get(kluczGraczRPG, PersistentDataType.TAG_CONTAINER);
+		dataRPG = NMS.tag(p.getPersistentDataContainer().get(kluczGraczRPG, PersistentDataType.TAG_CONTAINER));
 		
-		dataŚcieżkiDoświadczenia= dataDajUtwórz(dataRPG, "ścieżkiDoświadczenia");
-		dataTrwałeBuffy			= dataDajUtwórz(dataRPG, "trwałeBuffy");
-		dataBestie				= dataDajUtwórz(dataRPG, "bestie");
+		dataŚcieżkiDoświadczenia= RPG.dataDajUtwórz(dataRPG, "ścieżkiDoświadczenia");
+		dataTrwałeBuffy			= RPG.dataDajUtwórz(dataRPG, "trwałeBuffy");
+		dataBestie				= RPG.dataDajUtwórz(dataRPG, "bestie");
 		
-		NMS.getRaw(dataTrwałeBuffy).forEach((attr, buff) -> {
+		dataTrwałeBuffy.getKeys().forEach(attr -> {
 			Statystyka statystyka = statystyka(Func.StringToEnum(Atrybut.class, attr));
-			int[] baza_mnożnik = ((NBTTagIntArray) buff).getInts();
+			int[] baza_mnożnik = dataTrwałeBuffy.getIntArray(attr);
 			
 			statystyka.zwiększBaza	 (baza_mnożnik[0] / 1000d);
 			statystyka.zwiększMnożnik(baza_mnożnik[1] / 1000d);
@@ -273,7 +269,7 @@ public class GraczRPG {
 		int[] baza_mnożnik = new int[] {0, 1000};
 		
 		NBTBase buff;
-		if ((buff = NMS.getRaw(dataTrwałeBuffy).get(attr.name())) != null)
+		if ((buff = dataTrwałeBuffy.get(attr.name())) != null)
 			baza_mnożnik = ((NBTTagIntArray) buff).getInts();
 		
 		if (baza)
@@ -281,7 +277,7 @@ public class GraczRPG {
 		else
 			baza_mnożnik[1] *= oIle;
 		
-		NMS.set(dataTrwałeBuffy, attr.name(), PersistentDataType.INTEGER_ARRAY, baza_mnożnik);
+		dataTrwałeBuffy.setIntArray(attr.name(), baza_mnożnik);
 		
 		if (baza)
 			statystyka.zwiększBaza(oIle);
@@ -289,24 +285,17 @@ public class GraczRPG {
 			statystyka.zwiększMnożnik(oIle);
 	}
 	
-	private PersistentDataContainer dataDajUtwórz(PersistentDataContainer bazowy, String klucz) {
-		if (!NMS.getRaw(bazowy).containsKey(klucz))
-			NMS.set(bazowy, klucz, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer());
-		return NMS.get(bazowy, klucz, PersistentDataType.TAG_CONTAINER);
-		
-	}
-	
-	public PersistentDataContainer getBestie(Bestia bestia) {
+	public NBTTagCompound getBestie(Bestia bestia) {
 		return getBestie(bestia.kategoria, bestia.grupa, bestia.nazwa);
 	}
-	public PersistentDataContainer getBestie(String kategoria, String grupa, String nazwa) {
-		return dataDajUtwórz(getBestieGrupa(kategoria, grupa), nazwa);
+	public NBTTagCompound getBestie(String kategoria, String grupa, String nazwa) {
+		return RPG.dataDajUtwórz(getBestieGrupa(kategoria, grupa), nazwa);
 	}
-	public PersistentDataContainer getBestieGrupa(String kategoria, String grupa) {
-		return dataDajUtwórz(getBestieKategoria(kategoria), grupa);
+	public NBTTagCompound getBestieGrupa(String kategoria, String grupa) {
+		return RPG.dataDajUtwórz(getBestieKategoria(kategoria), grupa);
 	}
-	public PersistentDataContainer getBestieKategoria(String kategoria) {
-		return dataDajUtwórz(dataBestie, kategoria);
+	public NBTTagCompound getBestieKategoria(String kategoria) {
+		return RPG.dataDajUtwórz(dataBestie, kategoria);
 	}
 	
 	
@@ -314,7 +303,9 @@ public class GraczRPG {
 		// TODO ekonomia rpg
 	}
 
-	
+	public void zapisz() {
+		p.getPersistentDataContainer().set(kluczGraczRPG, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer(dataRPG));
+	}
 	
 	public List<Statystyka> getStaty() {
 		List<Statystyka> lista = new ArrayList<>();

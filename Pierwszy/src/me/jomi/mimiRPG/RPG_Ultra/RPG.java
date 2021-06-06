@@ -7,10 +7,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.PlayerInventory;
 
 import net.minecraft.server.v1_16_R3.EntityPlayer;
 import net.minecraft.server.v1_16_R3.GenericAttributes;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
@@ -59,8 +61,18 @@ public class RPG implements Listener {
 				item -> Boost.getBoosty(item).forEach(
 						boost -> boost.zaaplikuj(gracz)));
 	}
-
+	@EventHandler
+	public void disconnect(PlayerQuitEvent ev) {
+		GraczRPG.gracz(ev.getPlayer()).zapisz();
+	}
+	
+	
 	public static String monety(double ile) {
 		return "§6Ⓞ " + Func.DoubleToString(ile);
+	}
+	public static NBTTagCompound dataDajUtwórz(NBTTagCompound bazowy, String klucz) {
+		if (!bazowy.hasKey(klucz))
+			bazowy.set(klucz, new NBTTagCompound());
+		return bazowy.getCompound(klucz);
 	}
 }

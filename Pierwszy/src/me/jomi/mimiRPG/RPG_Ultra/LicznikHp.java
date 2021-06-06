@@ -18,11 +18,13 @@ import me.jomi.mimiRPG.util.Func;
 
 @Moduł
 public class LicznikHp implements Listener {
-	private static final String tagMobówZLicznikiem = "mimiBestia";
+	private static final String tagMobówZLicznikiem = "mimiMozZLicznikiemHp";
+	private static final String metaMobówZLicznikiem = "mimiMozZLicznikiemHp";
 	
 	public static void ustawLicznikHp(LivingEntity mob) {
 		mob.setCustomNameVisible(true);
 		mob.addScoreboardTag(tagMobówZLicznikiem);
+		Func.ustawMetadate(mob, metaMobówZLicznikiem, mob.getCustomName() == null ? Func.enumToString(mob.getType()) : mob.getCustomName());
 		odświeżLicznikHp(mob);
 	}
 	public static void odświeżLicznikHp(LivingEntity mob) {
@@ -38,7 +40,9 @@ public class LicznikHp implements Listener {
 		else if (procent > .2)	kolor = 'c';
 		else					kolor = '4';
 		
-		mob.setCustomName(String.format("§9%s §%s%s§8/§a%s§4♥", Func.enumToString(mob.getType()), kolor, (int) hp, (int) maxHp));
+		String nazwa = mob.getMetadata(metaMobówZLicznikiem).get(0).asString();
+		
+		mob.setCustomName(String.format("§9%s §%s%s§8/§a%s§4♥", nazwa, kolor, (int) hp, (int) maxHp));
 	}
 	
 	@EventHandler

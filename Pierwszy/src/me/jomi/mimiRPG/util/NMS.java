@@ -20,6 +20,8 @@ import net.minecraft.server.v1_16_R3.EntityPlayer;
 import net.minecraft.server.v1_16_R3.IBlockData;
 import net.minecraft.server.v1_16_R3.ItemStack;
 import net.minecraft.server.v1_16_R3.NBTBase;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.Packet;
 import net.minecraft.server.v1_16_R3.World;
 
 public class NMS {
@@ -43,13 +45,20 @@ public class NMS {
 		}
 	}
 	
+	public static void wyślij(Player p, Packet<?> packet) {
+		nms(p).playerConnection.sendPacket(packet);
+	}
+	
 	public static Location loc(org.bukkit.World world, BlockPosition pos) {
 		return new Location(world, pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	
+
 	public static PersistentDataContainer utwórzDataContainer() {
 		return new CraftPersistentDataContainer(new CraftPersistentDataTypeRegistry());
+	}
+	public static PersistentDataContainer utwórzDataContainer(NBTTagCompound tag) {
+		return new CraftPersistentDataContainer(getRaw(tag), new CraftPersistentDataTypeRegistry());
 	}
 
 	public static <T, Z> void set(PersistentDataContainer data, String key, PersistentDataType<T, Z> type, Z value) {
@@ -61,7 +70,22 @@ public class NMS {
 		NBTBase value = _data.getRaw().get(key.toString());
 		return value == null ? null : type.fromPrimitive(_data.getDataTagTypeRegistry().extract(type.getPrimitiveType(), value), data.getAdapterContext());
 	}
+	public static <T, Z> Z get(PersistentDataContainer data, String key, PersistentDataType<T, Z> type, Z domyślna) {
+		Z w = get(data, key, type);
+		return w == null ? domyślna : w;
+	}
 	public static Map<String, NBTBase> getRaw(PersistentDataContainer data) {
 		return ((CraftPersistentDataContainer) data).getRaw();
+	}
+	@SuppressWarnings("unchecked")
+	public static Map<String, NBTBase> getRaw(NBTTagCompound tag) {
+		try {
+			return (Map<String, NBTBase>) Func.dajZField(tag, "map");
+		} catch (Throwable e) {
+			throw Func.throwEx(e);
+		}
+	}
+	public static NBTTagCompound tag(PersistentDataContainer data) {
+		return ((CraftPersistentDataContainer) data).toTagCompound();
 	}
 }
