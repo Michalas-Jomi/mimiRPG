@@ -85,11 +85,11 @@ public class Boost {
 	
 	
 	@Override
-		public String toString() {
+	public String toString() {
 		StringBuilder strB = new StringBuilder();
 		
 		strB.append(attr);
-		strB.append(wartość < 0 ? " §c-" : " §a+");
+		strB.append(wartość < 0 ? " §c" : " §a+");
 		if (baza)
 			strB.append((int) wartość);
 		else

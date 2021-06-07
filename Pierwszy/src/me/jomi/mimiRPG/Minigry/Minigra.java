@@ -28,6 +28,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.IllegalPluginAccessException;
@@ -97,7 +99,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			startAreny = System.currentTimeMillis();
 			
-			Main.log(getInstMinigra().getPrefix() + Func.msg("Arena %s wsytartowała z graczami(%s) %s", nazwa, gracze.size(), gracze));
+			Main.log(getInstMinigra().getPrefix() + Func.msg("Arena %s wsytartowała z graczami(%s) %s", nazwa, gracze.size(), Func.wykonajWszystkim(gracze, Player::getName)));
 		}
 		
 		boolean dołącz(Player p) {
@@ -246,12 +248,13 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return max_gracze <= 0 ? min_gracze + "+" : max_gracze;
 		}
 		void napiszGraczom(String msg, Object... uzupełnienia) {
-			if (!msg.startsWith(getInstMinigra().getPrefix()))
-				msg = getInstMinigra().getPrefix() + msg;
+			String prefix = getInstMinigra().getPrefix();
+			if (!msg.startsWith(prefix))
+				msg = prefix + msg;
 			msg = Func.msg(msg, uzupełnienia);
 			for (Player p : gracze)
 				p.sendMessage(msg);
-			Main.log(msg);
+			Main.log(prefix + "%s " + msg.substring(prefix.length()), "[" + nazwa + "]");
 		}				
 		
 		boolean pełna() {
@@ -715,8 +718,8 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void śmierć(PlayerDeathEvent ev) {
-		if (!ev.getKeepInventory()) return;
-		Func.wykonajDlaNieNull(arena(ev.getEntity()), a -> ev.setKeepInventory(false));
+		if (ev.getKeepInventory())
+			Func.wykonajDlaNieNull(arena(ev.getEntity()), a -> ev.setKeepInventory(false));
 	}
 	@EventHandler
 	public void opuszczenieGry(PlayerQuitEvent ev) {
@@ -735,6 +738,12 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					arena.dołącz((Player) ev.getWhoClicked());
 			});
 		});
+	}
+	
+	@EventHandler
+	public void portal(PlayerTeleportEvent ev) {
+		if (Func.multiEquals(ev.getCause(), TeleportCause.CHORUS_FRUIT, TeleportCause.END_GATEWAY, TeleportCause.END_PORTAL, TeleportCause.NETHER_PORTAL))
+			Func.wykonajDlaNieNull(arena(ev.getPlayer()), arena -> ev.setCancelled(true));
 	}
 	
 	// Override

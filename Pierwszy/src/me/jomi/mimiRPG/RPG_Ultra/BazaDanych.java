@@ -14,7 +14,7 @@ import me.jomi.mimiRPG.util.Func;
 
 public class BazaDanych {
 	public static final String prefix = Func.prefix(BazaDanych.class);
-	  
+	
     private static Connection connection;
     private static Statement stat;
     
@@ -49,10 +49,6 @@ public class BazaDanych {
         
 	}
 	private static void utwórz() {
-		execute("CREATE TABLE IF NOT EXISTS graczrpg ("
-				+ "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "nick varchar(16) UNIQUE"
-				+ ")");
 		execute("CREATE TABLE IF NOT EXISTS itemy ("
 				+ "id varchar(32) PRIMARY KEY UNIQUE NOT NULL,"
 				+ "opis TEXT,"
@@ -88,7 +84,7 @@ public class BazaDanych {
 	public static boolean włączona() {
 		return stat != null;
 	}
-
+	
 	public static DataInputStream readBlob(ResultSet set, String kolumna) {
 		try {
 			InputStream stream = set.getBinaryStream(kolumna);

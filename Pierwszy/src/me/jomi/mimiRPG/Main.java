@@ -34,7 +34,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import me.jomi.mimiRPG.Chat.Mimi;
-import me.jomi.mimiRPG.Chat.PySocket;
 import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Minigry.Paintball;
@@ -47,6 +46,7 @@ import me.jomi.mimiRPG.SkyBlock.Multi.MultiSkyBlock;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
+import me.jomi.mimiRPG.util.MimiThread;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Przeładuj;
 import me.jomi.mimiRPG.util.Zegar;
@@ -75,6 +75,7 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	@SuppressWarnings("unchecked")
 	private void _onLoad() {
+		pluginWyłączany = false;
 		plugin = this;
 		classLoader = this.getClassLoader();
 		path = getDataFolder().getPath() + '/';
@@ -96,6 +97,7 @@ public class Main extends JavaPlugin implements Listener {
 		Timming.test("onEnable", this::_onEnable);
 	}
 	private void _onEnable() {
+		pluginWyłączany = false;
 		boolean wl = getServer().hasWhitelist();
 		getServer().setWhitelist(true);
 		
@@ -158,10 +160,9 @@ public class Main extends JavaPlugin implements Listener {
 			Paintball.wyłącz();
 		if (włączonyModół(SkyBlock.class))
 			SkyBlock.onDisable();
-		if (włączonyModół(PySocket.class))
-			PySocket.onDisable();
 
 		Func.onDisable();
+		MimiThread.onDisable();
 	}
 
 

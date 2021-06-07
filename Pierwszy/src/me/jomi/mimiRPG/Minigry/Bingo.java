@@ -16,6 +16,9 @@ import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -30,6 +33,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
@@ -71,6 +77,8 @@ public class Bingo extends Minigra {
 		}
 	}
 	public static class Arena extends Minigra.Arena {
+		@Mapowane String customowaMapa = "bingo";
+		@Mapowane String folderItemów = "bingo";
 		List<Material> materiały = new ArrayList<>();
 		Map<String, Set<Material>> znalezione = new HashMap<>();
 		byte[] mapa;
@@ -80,20 +88,35 @@ public class Bingo extends Minigra {
 		private static final PotionEffect startowyEfekt = new PotionEffect(PotionEffectType.BLINDNESS, 10 * 20, 1, false, false, false);
 		@Override
 		public void start() {
-			mapa = bingo(losujItemy());
+			mapa = losujMape(losujItemy());
 			PacketPlayOutMap packet = CustomoweMapy.packet(idMapy, mapa);
 			
 			world = new WorldCreator("Bingo_" + nazwa)
+					.generatorSettings("{\"biome\"\\:\"minecraft\\:plains\"}")
 					.environment(Environment.NORMAL)
 					.generateStructures(false)
 					.type(WorldType.NORMAL)
 					.hardcore(true)
 					.createWorld();
+			
 			WorldBorder border = world.getWorldBorder();
 			border.setCenter(0, 0);
-			border.setSize(1000);
-			border.setSize(10, 30 * 60);
+			border.setSize(1500);
+			border.setSize(10, 60 * 60);
 			border.setDamageAmount(2d);
+			
+			world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+			world.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+			world.setGameRule(GameRule.SHOW_DEATH_MESSAGES, true);
+			world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+			world.setGameRule(GameRule.RANDOM_TICK_SPEED, 20);
+			world.setGameRule(GameRule.DO_FIRE_TICK, false);
+			world.setGameRule(GameRule.SPAWN_RADIUS, 0);
+			world.setDifficulty(Difficulty.HARD);
+			world.setKeepSpawnInMemory(false);
+			world.setAutoSave(false);
+			world.setHardcore(true);
+			world.setPVP(true);
 			
 			super.start();
 			
@@ -101,14 +124,18 @@ public class Bingo extends Minigra {
 			gracze.forEach(p -> {
 				p.teleport(new Location(world, los.get(), 200, los.get()));
 				znalezione.put(p.getName(), new HashSet<>());
-				p.addPotionEffect(startowyEfekt);
 				p.getInventory().setItemInOffHand(itemMapy);
+				p.addPotionEffect(startowyEfekt);
+				p.setGameMode(GameMode.SURVIVAL);
 			});
 			Func.opóznij(10, () -> gracze.forEach(p -> NMS.wyślij(p, packet)));
+			
+			napiszGraczom("Potrzebne Itemy: %s", Func.wykonajWszystkim(materiały, Func::enumToString));
+			napiszGraczom("Arena wystartowała, znajdzcie wszystkie potrzebne itemy, albo zabijcie wszystkich przeciwników aby zwyciężyć!");
 		}
 		private List<BufferedImage> losujItemy() {
 			List<BufferedImage> wynik = new ArrayList<>();
-			File[] ikony = new File(Main.path + "bingo").listFiles();
+			File[] ikony = new File(Main.path + folderItemów).listFiles();
 
 			Consumer<File> cons = ikona -> {
 				Material mat;
@@ -168,8 +195,10 @@ public class Bingo extends Minigra {
 
 		public void podniósł(Player p, Material mat) {
 			if (materiały.contains(mat) && znalezione.get(p.getName()).add(mat)) {
-				napiszGraczom("%s znalazł %s!", p.getDisplayName(), Func.enumToString(mat));
+				napiszGraczom("%s znalazł %s! (%s/%s)", p.getDisplayName(), Func.enumToString(mat), znalezione.size(), materiały.size());
 				wyślijMape(p);
+				
+				Func.wykonajDlaNieNull(inst.staty(p), stat -> stat.znalezioneItemy++);
 
 				if (znalezione.size() == materiały.size())
 					wygrana(p);
@@ -194,6 +223,60 @@ public class Bingo extends Minigra {
 			NMS.wyślij(p, CustomoweMapy.packet(idMapy, mapa));
 		}
 		
+		public byte[] losujMape(List<BufferedImage> ikony) {
+			byte[] mapa = new byte[128 * 128];
+			
+			if (ikony.size() != 25)
+				throw new IllegalArgumentException("Nieodpowiednia ilość ikon: " + ikony.size());
+			
+			try {
+				mapa = CustomoweMapy.wczytaj(customowaMapa);
+			} catch (Throwable e) {
+				if (Main.włączonyModół(CustomoweMapy.class))
+					Main.warn(inst.getPrefix() + nazwa + " Nieodnaleziono customowej mapy " + customowaMapa + " ");
+				for (int i=0; i < mapa.length; i++)
+					mapa[i] = (byte) (45 * 4 + 1);
+			}
+			
+			int m1 = 3;
+			int m2 = 18;
+			Iterator<BufferedImage> it = ikony.iterator();
+			for (int y = m2 + 10; y < 128 - m2 + 10; y += 16 + m1)
+				for (int x = m2; x < 128 - m2; x += 16 + m1)
+					CustomoweMapy.umieść(it.next(), mapa, x, y);
+			
+			for (int x = m2 - 2; x <= 128 - m2 + 2; x += 16 + m1)
+				for (int y = m2 - 2 + 10; y < 128 - m2 + 10 + 1; y++)
+					mapa[y * 128 + x] = (byte) (45 * 4 + 0);
+			for (int y = m2 - 2 + 10; y <= 128 - m2 + 2 + 10; y += 16 + m1)
+				for (int x = m2 - 2; x < 128 - m2 + 1; x++)
+					mapa[y * 128 + x] = (byte) (45 * 4 + 0);
+			
+			return mapa;
+		}
+		
+		
+		@Override
+		boolean poprawna() {
+			File f = new File(Main.path + folderItemów);
+			
+			if (!f.exists()) {
+				Main.warn("Nieodnaleziono katalogu z itemami bingo dla areny " + nazwa);
+				return false;
+			}
+			
+			Func.forEach(f.listFiles(), file -> {
+				try {
+					Func.StringToEnum(Material.class, file.getName().substring(0, file.getName().lastIndexOf('.')));
+				} catch (Throwable e) {
+					Main.warn("Niepoprawna ikona " + file.getName() + " dla areny bingo " + nazwa);
+				}
+				
+			});
+			
+			return super.poprawna();
+		}
+		
 		Bingo inst;
 		@Override Minigra getInstMinigra() { return inst; }
 		@Override <M extends Minigra> void setInst(M inst) { this.inst = (Bingo) inst; }
@@ -203,47 +286,18 @@ public class Bingo extends Minigra {
 		}
 	}
 	public static class Statystyki extends Minigra.Statystyki {
-	}
-	
-	public static byte[] bingo(List<BufferedImage> ikony) {
-		byte[] mapa = new byte[128 * 128];
+		@Mapowane int znalezioneItemy;
 		
-		if (ikony.size() != 25)
-			throw new IllegalArgumentException("Nieodpowiednia ilość ikon: " + ikony.size());
-		
-		try {
-			mapa = CustomoweMapy.wczytaj("bingo");
-		} catch (Throwable e) {
-			for (int i=0; i < mapa.length; i++)
-				mapa[i] = (byte) (45 * 4 + 1);
-		}
-		
-		int m1 = 3;
-		int m2 = 18;
-		Iterator<BufferedImage> it = ikony.iterator();
-		for (int y = m2 + 10; y < 128 - m2 + 10; y += 16 + m1)
-			for (int x = m2; x < 128 - m2; x += 16 + m1)
-				CustomoweMapy.umieść(it.next(), mapa, x, y);
-		
-		for (int x = m2 - 2; x <= 128 - m2 + 2; x += 16 + m1)
-			for (int y = m2 - 2 + 10; y < 128 - m2 + 10 + 1; y++)
-				mapa[y * 128 + x] = (byte) (45 * 4 + 0);
-		for (int y = m2 - 2 + 10; y <= 128 - m2 + 2 + 10; y += 16 + m1)
-			for (int x = m2 - 2; x < 128 - m2 + 1; x++)
-				mapa[y * 128 + x] = (byte) (45 * 4 + 0);
-		
-		return mapa;
-	}
-	
-	@SuppressWarnings("unused")
-	private static BufferedImage losujIkone(File f) {
-		try {
-			return ImageIO.read(Func.losuj(f.listFiles()));
-		} catch (IOException e) {
-			throw Func.throwEx(e);
-		}
-	}
+		@Override
+		void rozpiska(Consumer<String> cons, boolean usuwaćKolor, Minigra minigra) {
+			super.rozpiska(cons, usuwaćKolor, minigra);
 
+			int punkty = policzPunkty(minigra);
+			cons.accept(_rozpiska("Znalezione Itemy", znalezioneItemy));
+			cons.accept(_rozpiska("Punkty", punkty));
+			użyjRangi(ranga(punkty, minigra), usuwaćKolor, cons);
+		}
+	}
 	
 	@Override
 	public void przeładuj() {
@@ -260,6 +314,20 @@ public class Bingo extends Minigra {
 		if (!ev.isCancelled()) 
 			Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.podniósł((Player) ev.getEntity(), ev.getItem().getItemStack().getType()));
 	}
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void craftowanie(CraftItemEvent ev) {
+		if (!ev.isCancelled()) 
+			Func.wykonajDlaNieNull(arena(ev.getWhoClicked()), arena -> arena.podniósł((Player) ev.getWhoClicked(), ev.getCurrentItem().getType()));
+	}
+	@EventHandler
+	public void dropnienie(PlayerDropItemEvent ev) {
+		Func.wykonajDlaNieNull(arena(ev.getPlayer()), arena -> {
+			if (ev.getItemDrop().getItemStack().getType() == Material.FILLED_MAP) {
+				Func.powiadom(getPrefix(), ev.getPlayer(), "Nie wyrzucaj, to ci się jeszcze może przydać");
+				ev.setCancelled(true);
+			}
+		});
+	}
 	@EventHandler
 	public void spadanie(EntityDamageEvent ev) {
 		if (ev.getCause() == DamageCause.FALL)
@@ -268,8 +336,15 @@ public class Bingo extends Minigra {
 					ev.setCancelled(true);
 			});
 	}
-
-	@Override @SuppressWarnings("unchecked") Arena arena(Entity p) { return super.arena(p); }
+	@Override
+	@EventHandler
+	public void śmierć(PlayerDeathEvent ev) {
+		super.śmierć(ev);
+		Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.opuść(ev.getEntity()));
+	}
+	
+	@Override @SuppressWarnings("unchecked") Arena 		arena(Entity p) { return super.arena(p); }
+	@Override @SuppressWarnings("unchecked") Statystyki staty(Entity p) { return super.staty(p); }
 	
 	@Override String getMetaStatystyki() { return "mimiMinigraBingoStatystyki"; }
 	@Override String getMetaId() 		 { return "mimiMinigraBingo"; }

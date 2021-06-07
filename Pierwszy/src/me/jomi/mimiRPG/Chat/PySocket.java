@@ -24,6 +24,7 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.MimiThread;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
@@ -79,7 +80,7 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
     		e.printStackTrace();
     	}
     	
-    	(socket_thread = new Thread(() -> {
+    	(socket_thread = new MimiThread(() -> {
             try {
                 connect();
             } catch (Throwable e) {
@@ -140,15 +141,6 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
 		}
     }
 	
-    
-    public static void onDisable() {
-    	try {
-    		socket_thread.interrupt();
-    	} catch (Throwable e) {
-    		e.printStackTrace();
-    	}
-    }
-    
     
     @EventHandler(priority = EventPriority.MONITOR)
     public void pisanie(AsyncPlayerChatEvent ev) {

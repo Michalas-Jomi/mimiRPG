@@ -20,8 +20,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -130,6 +130,9 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		lore.add(ranga.toString());
 		
 		meta.setLore(lore);
+		
+		meta.setUnbreakable(true);
+		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_DYE);
 		
 		bukkit.setItemMeta(meta);
 	}
@@ -242,6 +245,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	}
 	
 	public static String id(ItemStack item) {
+		if (item == null) return null;
 		String id = tag(item).getString("id");
 		return id.isEmpty() ? null : id;
 	}
@@ -286,12 +290,12 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		ranga.team.addEntry(ev.getEntity().getUniqueId().toString());
 		ev.getEntity().setGlowing(true);
 	}
-	@EventHandler
+	/*@EventHandler
 	public void podnoszenieItemów(EntityPickupItemEvent ev) {
 		if (!(ev.getEntity() instanceof Player)) return;
 		
 		przerób(ev.getItem().getItemStack());
-	}
+	}*/
 
 
 	@Override
@@ -337,16 +341,17 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				Ranga.ustawRangę(tag, ranga);
 				break;
 			case "boost":
+				NBTTagCompound boosty = tag.getCompound("boosty");
 				switch (args[1].toLowerCase()) {
 				case "usuń":
-					NBTTagCompound boosty = tag.getCompound("boosty");
 					boosty.remove(args[2]);
 					break;
 				case "dodaj":
 					boolean baza = !args[6].endsWith("%");
+					Atrybut attr = Func.StringToEnum(Atrybut.class, args[5]);
 					Boost.dodajBoost(tag,
-							Func.StringToEnum(Atrybut.class, args[5]),
-							Func.Double(baza ? args[6].substring(0, args[6].length() - 1) : args[6]) - (baza ? 0 : 1),
+							attr,
+							Func.Double(args[6]) + (Boost.getBoost(boosty, attr, baza) == 0 ? 1 : 0),
 							baza
 							);
 					break;

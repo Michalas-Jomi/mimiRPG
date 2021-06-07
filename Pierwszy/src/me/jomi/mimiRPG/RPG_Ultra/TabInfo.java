@@ -1,12 +1,15 @@
 package me.jomi.mimiRPG.RPG_Ultra;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -19,6 +22,7 @@ import net.minecraft.server.v1_16_R3.PacketPlayOutPlayerInfo.EnumPlayerInfoActio
 import net.minecraft.server.v1_16_R3.PlayerInteractManager;
 import net.minecraft.server.v1_16_R3.WorldServer;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Statystyka;
@@ -54,6 +58,33 @@ public class TabInfo implements Listener {
 		return ep;
 	}
 	
+	private static Thread threadOdświeżający;
+	public static void odświeżGraczyOnline() {
+		if (threadOdświeżający != null)
+			try {
+				threadOdświeżający.interrupt();
+			} catch (Throwable e) {
+			}
+		
+		threadOdświeżający = new Thread(() -> {
+			EntityPlayer[] fakeGracze = new EntityPlayer[38];
+			
+			for (int i = 21; i < 40; i++) fakeGracze[i - 21]	  = TabInfo.fakeGracze[i];
+			for (int i = 41; i < 60; i++) fakeGracze[i - 41 + 19] = TabInfo.fakeGracze[i];
+			
+			List<String> gracze = Func.wykonajWszystkim(Bukkit.getOnlinePlayers(), Player::getDisplayName);
+			Func.posortuj(gracze, Func::stringToDouble);
+			for (int i = 0; i < fakeGracze.length; i++) {
+				String nick = gracze.isEmpty() ? "" : gracze.remove(0);
+				fakeGracze[i].listName = new ChatComponentText(nick);
+			}
+			
+			PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, fakeGracze);
+			Bukkit.getOnlinePlayers().forEach(p -> NMS.wyślij(p, packet));
+		});
+		threadOdświeżający.start();
+	}
+	
 	
 	EntityPlayer odświeżStatystykę(GraczRPG gracz, Statystyka stat) {
 		int id = 63;
@@ -84,5 +115,11 @@ public class TabInfo implements Listener {
 		gracz.getStaty().forEach(stat -> odświeżStatystykę(gracz, stat));
 		
 		NMS.nms(ev.getPlayer()).playerConnection.sendPacket(new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.ADD_PLAYER, fakeGracze));
+		
+		Bukkit.getScheduler().runTask(Main.plugin, TabInfo::odświeżGraczyOnline);
+	}
+	@EventHandler
+	public void quit(PlayerQuitEvent ev) {
+		Bukkit.getScheduler().runTask(Main.plugin, TabInfo::odświeżGraczyOnline);
 	}
 }
