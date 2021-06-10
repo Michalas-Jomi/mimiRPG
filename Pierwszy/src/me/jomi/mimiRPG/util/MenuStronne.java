@@ -12,8 +12,8 @@ import com.google.common.collect.Lists;
 public class MenuStronne {
 	private static ItemStack nic_dolne   = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE,	   1, "§6§2 ", null);
 	private static ItemStack totalne_nic = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§6§2 ", null);
-	private static ItemStack lewo  = Func.dajGłówkę("§6Poprzednia strona", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyYTdkNzU1YzYzMzg4ZmYwMTc1MmQ1ZjQ0MTlmYzY0NSJ9fX0=", null);
-	private static ItemStack prawo = Func.dajGłówkę("§6Następna strona",   "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19", null);
+	private static ItemStack lewo  = Func.dajGłówkę("§6Poprzednia strona", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyYTdkNzU1YzYzMzg4ZmYwMTc1MmQ1ZjQ0MTlmYzY0NSJ9fX0=");
+	private static ItemStack prawo = Func.dajGłówkę("§6Następna strona",   "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjgyYWQxYjljYjRkZDIxMjU5YzBkNzVhYTMxNWZmMzg5YzNjZWY3NTJiZTM5NDkzMzgxNjRiYWM4NGE5NmUifX19");
 	
 	public int wielkość;
 	public int strona = 0;

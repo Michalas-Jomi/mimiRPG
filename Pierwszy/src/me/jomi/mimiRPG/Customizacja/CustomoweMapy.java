@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.Customizacja;
 
 import java.awt.Graphics2D;
 import java.awt.Image;

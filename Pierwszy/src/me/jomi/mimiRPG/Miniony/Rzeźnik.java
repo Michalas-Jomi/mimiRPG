@@ -69,7 +69,7 @@ public class Rzeźnik extends Minion{
 	protected void _dajItem(List<String> lore) {}
 	@Override
 	protected void dajItem(Player p) {
-		dajItem(p, Miniony.itemRzeznik);
+		dajItem(p, Miniony_Stare.itemRzeznik);
 	}
 	@Override
 	public void zamknij(Player p, Inventory inv, boolean menu) {

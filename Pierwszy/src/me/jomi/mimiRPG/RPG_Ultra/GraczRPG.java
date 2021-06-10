@@ -122,7 +122,6 @@ public class GraczRPG {
 	}
 
 	public static class ŚcieżkaDoświadczenia {
-		
 		public static final ŚcieżkaDoświadczenia farmer		= new ŚcieżkaDoświadczenia("Farmer",	"Zbieraj plony i zabijaj zwięrzęta", new int[]{20, 100,250,500});
 		public static final ŚcieżkaDoświadczenia łowca		= new ŚcieżkaDoświadczenia("Łowca",		"Zabijaj moby", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
 		public static final ŚcieżkaDoświadczenia kopacz		= new ŚcieżkaDoświadczenia("Kopacz",	"Kop rudy i kamień", new int[]{20, 100, 250, 500, 1000, 2500});
@@ -162,10 +161,27 @@ public class GraczRPG {
 			while (exp != -1 && exp >= ścieżka.potrzebyExp[lvl]) {
 				exp -= ścieżka.potrzebyExp[lvl++];
 				p.sendMessage(RPG.prefix + Func.msg("Awansowałeś w ścieżce %s %s -> %s §alvl§c!", ścieżka.nazwa, lvl - 1, lvl));
+				Main.log(RPG.prefix + "%s awansował w ścieżce rozwoju %s %s -> %s lvl", p.getName(), ścieżka.nazwa, lvl - 1, lvl);
 				if (lvl >= ścieżka.potrzebyExp.length)
 					exp = -1;
 			}
+			
 			zapisz();
+			
+			if (exp != -1)
+				RPG.actionBar(GraczRPG.this, strB -> {
+					strB.append("§3");
+					strB.append(ścieżka.nazwa);
+					strB.append(' ');
+					strB.append(exp);
+					strB.append(" / ");
+					strB.append(ścieżka.potrzebyExp[lvl]);
+					strB.append(" +");
+					strB.append(exp);
+					strB.append(" (");
+					strB.append(Func.zaokrąglij(exp / (double) ścieżka.potrzebyExp[lvl], 1));
+					strB.append("%)");
+				});
 		}
 		
 		public void zapisz() {
@@ -218,9 +234,10 @@ public class GraczRPG {
 		throw new IllegalArgumentException("Brak statystyki graczaRPG " + attr);
 	}
 	
+	protected long ostActionBar; // zmienna dla actionBaru
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_farmer;
-	public final ŚcieżkaDoświadczeniaGracz ścieżka_łowca;
-	public final ŚcieżkaDoświadczeniaGracz ścieżka_kopacz;
+	public final ŚcieżkaDoświadczeniaGracz ścieżka_łowca; // w bestie
+	public final ŚcieżkaDoświadczeniaGracz ścieżka_kopacz; // w kopanieRPG
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_drwal;
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_rybak;
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_mag;
@@ -234,6 +251,7 @@ public class GraczRPG {
 	public final NBTTagCompound dataBestie;
 	public final NBTTagCompound dataŚcieżkiDoświadczenia;
 	public final NBTTagCompound dataTrwałeBuffy;
+	public final NBTTagCompound dataPamięć;
 	
 	GraczRPG(Player p) {
 		this.p = p;
@@ -245,6 +263,7 @@ public class GraczRPG {
 		dataŚcieżkiDoświadczenia= RPG.dataDajUtwórz(dataRPG, "ścieżkiDoświadczenia");
 		dataTrwałeBuffy			= RPG.dataDajUtwórz(dataRPG, "trwałeBuffy");
 		dataBestie				= RPG.dataDajUtwórz(dataRPG, "bestie");
+		dataPamięć				= RPG.dataDajUtwórz(dataRPG, "pamięć");
 		
 		dataTrwałeBuffy.getKeys().forEach(attr -> {
 			Statystyka statystyka = statystyka(Func.StringToEnum(Atrybut.class, attr));

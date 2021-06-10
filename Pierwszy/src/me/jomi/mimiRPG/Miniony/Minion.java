@@ -38,7 +38,7 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MenuStronne;
 
 public abstract class Minion extends EntityZombie {
-	public static String prefix = Miniony.prefix;
+	public static String prefix = Miniony_Stare.prefix;
 	protected static ItemStack ekwipunekObwódka 	 = Func.stwórzItem(Material.GRAY_STAINED_GLASS_PANE, 1, "&2Ekwipunek", 	 null);
 	protected static ItemStack ekwipunekZablkowany 	 = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE,1, "&cZablokowane", Arrays.asList("&aMożna odblokować", "&aza pewną opłatą"));
 	protected static ItemStack ulepszeniaObwódka 	 = Func.stwórzItem(Material.GRAY_STAINED_GLASS_PANE, 1, "&2Ulepszenia",  null);
@@ -46,7 +46,7 @@ public abstract class Minion extends EntityZombie {
 	protected static ItemStack usuńItem 			 = Func.stwórzItem(Material.BARRIER, 1, "&9Zabierz", Arrays.asList("&bZabiera miniona", "&bDo twojego ekwipunku"));
 	protected static ItemStack woda 				 = Func.stwórzItem(Material.BLUE_STAINED_GLASS_PANE, 1, "&9Woda", 		 Arrays.asList("&3Aktualny stan:&e coś nie pykło, poinformuj admina&3mb"));
 	protected static ItemStack jedzenie 			 = Func.stwórzItem(Material.BAKED_POTATO, 			 1, "&6Jedzenie", 	 Arrays.asList("&3Zapas:&e coś nie pykło, poinformuj admina"));
-	protected static ItemStack ulepszenia 			 = Func.dajGłówkę("&6Ulepszenia", 	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmQ5Mjg3NjE2MzQzZDgzM2U5ZTczMTcxNTljYWEyY2IzZTU5NzQ1MTEzOTYyYzEzNzkwNTJjZTQ3ODg4NGZhIn19fQ==", null);
+	protected static ItemStack ulepszenia 			 = Func.dajGłówkę("&6Ulepszenia", 	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmQ5Mjg3NjE2MzQzZDgzM2U5ZTczMTcxNTljYWEyY2IzZTU5NzQ1MTEzOTYyYzEzNzkwNTJjZTQ3ODg4NGZhIn19fQ==");
 	protected static ItemStack wodaInfo 			 = Func.dajGłówkę("&2Woda", 		"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGM0ZTQ0MWVhYzg4NGRlMzM0N2E4Nzc1YTA3YTY2YmJjNGM4MmEyNGVkMmQwY2ZlYjFhY2FmNmNlOTlkNTNiNiJ9fX0=", Arrays.asList("&aTwój minion ma też swoje potrzeby", "&aMusisz mu regularnie przynosić", "&aZarówno jedzenie jak i picie"));
 	protected static ItemStack jedzenieInfo 		 = Func.dajGłówkę("&2Jedzenie", 	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGM0ZTQ0MWVhYzg4NGRlMzM0N2E4Nzc1YTA3YTY2YmJjNGM4MmEyNGVkMmQwY2ZlYjFhY2FmNmNlOTlkNTNiNiJ9fX0=", Arrays.asList("&aTwój minion ma też swoje potrzeby", "&aMusisz mu regularnie przynosić", "&aZarówno jedzenie jak i picie"));
 	protected static ItemStack ulepszeniaInfo 		 = Func.dajGłówkę("&2Ulepszenia", 	"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGM0ZTQ0MWVhYzg4NGRlMzM0N2E4Nzc1YTA3YTY2YmJjNGM4MmEyNGVkMmQwY2ZlYjFhY2FmNmNlOTlkNTNiNiJ9fX0=", Arrays.asList("&aMinion to nie maszyna!", "&aGo też trzeba nauczyć.", "&aZna tylko podstawy", "&aTutaj możesz go szkolić"));
@@ -275,7 +275,7 @@ public abstract class Minion extends EntityZombie {
 	
 	protected abstract void mimiTick();
 	protected boolean mimiTick(boolean ujmij) {
-		if (Miniony.otwarte.containsValue(id))
+		if (Miniony_Stare.otwarte.containsValue(id))
 			return false;
 		
 		if (stanWody >= staty.get(1).akt && stanJedzenia >= staty.get(2).akt) {
@@ -312,7 +312,7 @@ public abstract class Minion extends EntityZombie {
 		ulepszeniaOdśwież(inv);
 		
 		p.openInventory(inv);
-		Miniony.otwarte.put(p.getName(), id);
+		Miniony_Stare.otwarte.put(p.getName(), id);
 	}
 	protected void ulepszeniaOdśwież(Inventory inv){
 		ustawItem(inv, 11, Material.CHEST, 	  	  "&2Pojemność",		Arrays.asList("&3Aktualne sloty: &e"   + ekwipunek.size(),					"&3Następny poziom: &e" + (ekwipunek.size() + 1 < 12 ? ekwipunek.size() : "&6MAX"), strCenaEkwipunek()));
@@ -374,10 +374,10 @@ public abstract class Minion extends EntityZombie {
 		inv.setItem(38, narzędzie);
 		
 		p.openInventory(inv);
-		Miniony.otwarte.put(p.getName(), id);
+		Miniony_Stare.otwarte.put(p.getName(), id);
 	}
 	public void zamknij(Player p, Inventory inv, boolean menu) {
-		Miniony.otwarte.remove(p.getName());
+		Miniony_Stare.otwarte.remove(p.getName());
 		if (menu) {
 			ustawNarzędzie(inv.getItem(38));
 			for (int i=0; i<ekwipunek.size(); i++)
@@ -423,7 +423,7 @@ public abstract class Minion extends EntityZombie {
 		p.openInventory(menu.inv);
 		
 		mapaMenuStronne.put(p.getName(), menu);
-		Miniony.otwarte.put(p.getName(), id);
+		Miniony_Stare.otwarte.put(p.getName(), id);
 	}
 	protected void ustawNarzędzie(ItemStack item) {
 		narzędzie = item;

@@ -39,7 +39,7 @@ public class Kopacz extends Minion{
 	}
 	
 	protected void dajItem(Player p) {
-		dajItem(p, Miniony.itemKopacz);
+		dajItem(p, Miniony_Stare.itemKopacz);
 	}
 	protected void _dajItem(List<String> lore) {}
 	

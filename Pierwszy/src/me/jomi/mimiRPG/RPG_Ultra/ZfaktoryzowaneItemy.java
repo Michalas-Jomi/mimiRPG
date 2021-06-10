@@ -125,9 +125,9 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				meta.addEnchant(Enchantment.ARROW_KNOCKBACK, 1, true);
 		}
 		
-		Ranga ranga = Ranga.ranga(tag);
 		lore.add(" ");
-		lore.add(ranga.toString());
+		lore.add("§8" + Func.enumToString(TypItemu.typ(tag)));
+		lore.add(Ranga.ranga(tag).toString());
 		
 		meta.setLore(lore);
 		
@@ -290,12 +290,6 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		ranga.team.addEntry(ev.getEntity().getUniqueId().toString());
 		ev.getEntity().setGlowing(true);
 	}
-	/*@EventHandler
-	public void podnoszenieItemów(EntityPickupItemEvent ev) {
-		if (!(ev.getEntity() instanceof Player)) return;
-		
-		przerób(ev.getItem().getItemStack());
-	}*/
 
 
 	@Override
@@ -339,6 +333,10 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			case "ranga":
 				Ranga ranga = Func.StringToEnum(Ranga.class, args[1]);
 				Ranga.ustawRangę(tag, ranga);
+				break;
+			case "typ":
+				TypItemu typ = Func.StringToEnum(TypItemu.class, args[1]);
+				TypItemu.ustawTyp(tag, typ);
 				break;
 			case "boost":
 				NBTTagCompound boosty = tag.getCompound("boosty");
@@ -388,6 +386,21 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			nRanga.dodaj(" ");
 			
 			n.dodaj(nRanga);
+		});
+		n.dodaj("\n\n");
+		
+		TypItemu typItemu = TypItemu.typ(tag);
+		n.dodaj(new Napis("\n\n\n§6ranga§8: "));
+		Func.forEach(TypItemu.values(), typ -> {
+			Napis nTyp = new Napis(
+					(typItemu == typ ? "§n" : "") + typ,
+					"§bKliknij aby ustawić " + typ,
+					"/edytujitemrpg typ " + typ.name()
+					);
+			
+			nTyp.dodaj(" ");
+			
+			n.dodaj(nTyp);
 		});
 		n.dodaj("\n\n");
 

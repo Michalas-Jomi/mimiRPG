@@ -44,6 +44,9 @@ public class NMS {
 			return null;
 		}
 	}
+	public static BlockPosition nms(Location loc) {
+		return new BlockPosition(loc.getX(), loc.getY(), loc.getZ());
+	}
 	
 	public static void wyślij(Player p, Packet<?> packet) {
 		nms(p).playerConnection.sendPacket(packet);

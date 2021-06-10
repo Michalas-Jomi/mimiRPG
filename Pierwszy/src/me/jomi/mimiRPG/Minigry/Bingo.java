@@ -46,8 +46,8 @@ import org.bukkit.potion.PotionEffectType;
 import net.minecraft.server.v1_16_R3.PacketPlayOutMap;
 
 import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Customizacja.CustomoweMapy;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG_Ultra.CustomoweMapy;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
 
@@ -192,9 +192,15 @@ public class Bingo extends Minigra {
 			mapa = null;
 		}
 		
+		@Override
+		public boolean wygrana(Player p) {
+			Func.wykonajDlaNieNull(inst.staty(p), staty -> staty.wygraneAreny++);
+			return super.wygrana(p);
+		}
 
 		public void podniósł(Player p, Material mat) {
-			if (materiały.contains(mat) && znalezione.get(p.getName()).add(mat)) {
+			Set<Material> znalezione = this.znalezione.get(p.getName());
+			if (materiały.contains(mat) && znalezione.add(mat)) {
 				napiszGraczom("%s znalazł %s! (%s/%s)", p.getDisplayName(), Func.enumToString(mat), znalezione.size(), materiały.size());
 				wyślijMape(p);
 				
@@ -340,7 +346,7 @@ public class Bingo extends Minigra {
 	@EventHandler
 	public void śmierć(PlayerDeathEvent ev) {
 		super.śmierć(ev);
-		Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.opuść(ev.getEntity()));
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.odpada(ev.getEntity(), ev.getDeathMessage())));
 	}
 	
 	@Override @SuppressWarnings("unchecked") Arena 		arena(Entity p) { return super.arena(p); }

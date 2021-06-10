@@ -56,7 +56,6 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		int minuty;
 		int sekundy;
 		boolean zasłonięty;
-		boolean loaded = true;
 		
 		Panel(ArmorStand napis) {
 			Main.log(prefix + "loadowany panel na %s", Func.locBlockToString(napis.getLocation()));
@@ -72,7 +71,9 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 			this.tytuł = _tytuł;
 			
 			locParticle = napis.getLocation().add(0, .3, 0);
-			napis.getLocation().getBlock().setType(Material.DAYLIGHT_DETECTOR, false);
+			
+			if (napis.getLocation().getBlock().getType() != Material.DAYLIGHT_DETECTOR)
+				Bukkit.getScheduler().runTask(Main.plugin, this::usuń);
 		}
 		void sprawdzPattern() {
 			Matcher matcher = pattern.matcher(napis.getCustomName());
@@ -96,17 +97,6 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		public void czas() {
 			if (energia >= maxEnergia) return;
 			if (!napis.getLocation().getChunk().isLoaded()) {
-				loaded = false;
-				return;
-			}
-			if (!loaded) {
-				loaded = true;
-				Bukkit.getScheduler().runTask(Main.plugin, () -> {
-					napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
-					tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
-					sprawdzPattern();
-					czas();
-				});
 				return;
 			}
 			
@@ -119,6 +109,11 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 					odświeżNapis();
 				}
 				
+				Bukkit.getScheduler().runTask(Main.plugin, () -> {
+					napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
+					tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
+					sprawdzPattern();
+				});
 			}
 			
 			if (zasłonięty)

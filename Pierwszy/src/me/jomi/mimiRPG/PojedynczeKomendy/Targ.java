@@ -96,8 +96,8 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		menu.put(p.getName(), lista);
 		
 		ItemStack brak = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§6§2 ", null);
-		inv.setItem(49, Func.dajGłówkę("§6Odśwież", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0=", null));
-		inv.setItem(46, Func.dajGłówkę("§6Pokaż tylko własne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0=", null));
+		inv.setItem(49, Func.dajGłówkę("§6Odśwież", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0="));
+		inv.setItem(46, Func.dajGłówkę("§6Pokaż tylko własne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0="));
 		inv.setItem(45, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Poprzednia strona", null));
 		inv.setItem(53, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Następna strona",	  null));
 		for (int i=47; i<9*6-1; i++)
@@ -236,7 +236,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 				i++;
 			}
 		}
-		inv.setItem(17, Func.dajGłówkę("§6Powrót do targu", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0=", null));
+		inv.setItem(17, Func.dajGłówkę("§6Powrót do targu", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0="));
 		p.openInventory(inv);
 	}
 	

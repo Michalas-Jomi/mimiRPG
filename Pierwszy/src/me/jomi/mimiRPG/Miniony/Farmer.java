@@ -64,7 +64,7 @@ public class Farmer extends Minion {
 	
 	@Override
 	protected void dajItem(Player p) {
-		dajItem(p, Miniony.itemFarmer);
+		dajItem(p, Miniony_Stare.itemFarmer);
 	}
 	@Override
 	protected void _dajItem(List<String> lore) {

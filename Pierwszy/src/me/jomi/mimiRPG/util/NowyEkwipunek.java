@@ -92,10 +92,14 @@ public class NowyEkwipunek {
 		
 		p.setGameMode(dane.gm);
 		
-		p.setAllowFlight(dane.możeLatać);
-		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie gdyby inny plugin sprawdzał Player.isFlying to przy teleportacji
-		p.teleport(dane.loc);
-		if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie jakby inny plugin wyłączył przy teleportacji
+		try {
+			p.setAllowFlight(dane.możeLatać);
+			if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie gdyby inny plugin sprawdzał Player.isFlying to przy teleportacji
+			p.teleport(dane.loc);
+			if (p.getAllowFlight()) p.setFlying(dane.lata);// w razie jakby inny plugin wyłączył przy teleportacji
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 		
 		p.giveExp(dane.exp);	
 		

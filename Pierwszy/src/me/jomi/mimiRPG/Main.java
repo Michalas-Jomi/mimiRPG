@@ -37,7 +37,7 @@ import me.jomi.mimiRPG.Chat.Mimi;
 import me.jomi.mimiRPG.Chat.Raport;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Minigry.Paintball;
-import me.jomi.mimiRPG.Miniony.Miniony;
+import me.jomi.mimiRPG.Miniony.Miniony_Stare;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
@@ -141,8 +141,8 @@ public class Main extends JavaPlugin implements Listener {
 		
 		for (Player p : Bukkit.getOnlinePlayers())
 			p.closeInventory();
-		if (włączonyModół(Miniony.class))
-			Miniony.zapiszMiniony();
+		if (włączonyModół(Miniony_Stare.class))
+			Miniony_Stare.zapiszMiniony();
 		if (ZabezpieczGracza.gracze.size() > 0) {
 			log("Odbezpieczanie graczy z bezpiecznego gm");
 			while (ZabezpieczGracza.gracze.size() > 0)

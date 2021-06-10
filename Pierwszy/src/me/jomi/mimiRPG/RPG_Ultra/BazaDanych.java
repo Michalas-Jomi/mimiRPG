@@ -53,6 +53,7 @@ public class BazaDanych {
 				+ "id varchar(32) PRIMARY KEY UNIQUE NOT NULL,"
 				+ "opis TEXT,"
 				+ "ranga TEXT NOT NULL DEFAULT ZWYCZAJNY,"
+				+ "typ_itemu TEXT NOT NULL DEFAULT BRAK,"
 				+ "bazowy_item TEXT NOT NULL DEFAULT STONE,"
 				+ "bonusy BLOB"
 				+ ")");

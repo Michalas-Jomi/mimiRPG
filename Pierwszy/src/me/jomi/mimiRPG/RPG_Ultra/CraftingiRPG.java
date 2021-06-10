@@ -7,11 +7,15 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -24,6 +28,7 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 @Moduł
 public class CraftingiRPG implements Przeładowalny, Listener {
 	private static final Map<Integer, Recepta> mapaZId = new HashMap<>();
+	private static final Map<String, Recepta> mapaZRezultu = new HashMap<>();
 	public static class Recepta {
 		public final boolean domyślna; // false oznacza że musi być w pamięci gracza aby być wycratowaną
 		
@@ -39,10 +44,25 @@ public class CraftingiRPG implements Przeładowalny, Listener {
 			this.ilości = ilości;
 			
 			mapaZId.put(id(matrix), this);
+			mapaZRezultu.put(rezult, this);
 		}
 
 		public boolean możeWycrafować(GraczRPG gracz) {
-			return domyślna; // TODO pamięć receptór
+			return domyślna ? true : gracz.dataPamięć.getCompound("craftingi").hasKey(rezult);
+		}
+		public boolean możnaWycraftować(int[][] ilości) {
+			if (ilości.length != this.ilości.length || ilości[0].length != this.ilości[0].length)
+				throw new IllegalArgumentException("Niepoprawna tablica na wejściu ilości w craftingach RPG");
+			
+			for (int y=0; y < ilości.length; y++)
+				for (int x=0; x < ilości[0].length; x++)
+					if (ilości[y][x] < this.ilości[y][x])
+						return false;
+			return true;
+		}
+	
+		public ItemStack rezult() {
+			return ZfaktoryzowaneItemy.dajItem(rezult);
 		}
 	}
 	
@@ -56,11 +76,17 @@ public class CraftingiRPG implements Przeładowalny, Listener {
 		return strB.toString().hashCode();
 	}
 	
+	public static void odblokuj(GraczRPG gracz, String item) {
+		RPG.dataDajUtwórz(gracz.dataPamięć, "craftingi").setBoolean(item, true);
+	}
+	
 	Panel panel = new Panel(false);
 	public CraftingiRPG() {
 		panel.ustawClick(ev -> {
 			if (ev.getRawSlot() == 23) {
-				// klikanie rezultu
+				for (int y = 1; y < 4; y++)
+					for (int x = 1; x < 4; x++)
+						ev.getInventory().setItem(y * 9 + x, null);
 				return;
 			} else {
 				int r = ev.getRawSlot() / 9;
@@ -80,21 +106,71 @@ public class CraftingiRPG implements Przeładowalny, Listener {
 			odświeżRezult(ev);
 		}
 	}
-	private static void odświeżRezult(InventoryClickEvent ev) {
+	private static void odświeżRezult(InventoryInteractEvent ev) {
 		Bukkit.getScheduler().runTask(Main.plugin, () -> {
 			String[][] matrix = new String[3][3];
 			Inventory inv = ev.getInventory();
 			for (int y=0; y < 3; y++)
 				for (int x=0; x < 3; x++)
 					matrix[y][x] = ZfaktoryzowaneItemy.id(inv.getItem((y + 1) * 9 + x + 1));
-			// TODO usunąć puste lewe i górne paski
+			
+			boolean x1 = matrix[0][0] == null && matrix[0][1] == null && matrix[0][2] == null;
+			boolean x2 = matrix[1][0] == null && matrix[1][1] == null && matrix[1][2] == null;
+			boolean x3 = matrix[2][0] == null && matrix[2][1] == null && matrix[2][2] == null;
+			
+			if (x1 && x2 && x3) {
+				inv.setItem(23, null);
+				return;
+			}
+			
+			boolean y1 = matrix[0][0] == null && matrix[1][0] == null && matrix[2][0] == null;
+			boolean y2 = matrix[0][1] == null && matrix[1][1] == null && matrix[2][1] == null;
+			boolean y3 = matrix[0][2] == null && matrix[1][2] == null && matrix[2][2] == null;
+			
+			int x = x1 ? (x2 ? 2 : 1) : 0;
+			int y = y1 ? (y2 ? 2 : 1) : 0;
+			int X = x3 ? (x2 ? 2 : 1) : 0;
+			int Y = y3 ? (y2 ? 2 : 1) : 0;
+			
+			String[][] m = new String[3 - y - Y][3 - x - X];
+			for (int my = 0; my < m.length; my++)
+				for (int mx = 0; mx < m[0].length; mx++)
+					m[my][mx] = matrix[my + y][mx + x];
+			
+			int id = id(m);
+			Func.wykonajDlaNieNull(getRecepta(id), recepta -> {
+				boolean możeWycraftować = recepta.możeWycrafować(GraczRPG.gracz((Player) ev.getWhoClicked()));
+				
+				if (możeWycraftować) {
+					int[][] ilości = new int[m.length][m[0].length];
+					for (int my = 0; my < m.length; my++)
+						for (int mx = 0; mx < m[0].length; mx++)
+							ilości[my][mx] = inv.getItem((my + y + 1) * 9 + (mx + x + 1)).getAmount();
+					
+					inv.setItem(23, recepta.możnaWycraftować(ilości) ? recepta.rezult() : null);
+				} else
+					inv.setItem(23, null);
+			}, () -> inv.setItem(23, null));
 		});
+	}
+	@EventHandler
+	public void przeciągnie(InventoryDragEvent ev) {
+		if (panel.jestPanelem(ev.getInventory()))
+			odświeżRezult(ev);
+	}
+	
+	public static Recepta getRecepta(int id) {
+		return mapaZId.get(id);
+	}
+	public static Recepta getRecepta(String rezult) {
+		return mapaZRezultu.get(rezult);
 	}
 	
 	
 	@Override
 	public void przeładuj() {
 		MultiConfig config = new MultiConfig("craftingi");
+		mapaZRezultu.clear();
 		mapaZId.clear();
 		
 		config.klucze().forEach(klucz -> {

@@ -35,7 +35,7 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
-public class Miniony extends Komenda implements Listener, Przeładowalny {
+public class Miniony_Stare extends Komenda implements Listener, Przeładowalny {
 	public static ItemStack itemKopacz  = stwórzItem(Material.COBBLESTONE,		"§1§lMinion §1Kopacz§9",	Arrays.asList("&aUżyj tego narzędzia (PPM)", "&aAby zespawnować swojego miniona", "&bid: &dnowy"));
 	public static ItemStack itemFarmer  = stwórzItem(Material.HAY_BLOCK, 		"§1§lMinion §aFarmer§9",	Arrays.asList("&aUżyj tego narzędzia (PPM)", "&aAby zespawnować swojego miniona", "&bid: &dnowy"));
 	public static ItemStack itemRzeznik = stwórzItem(Material.BONE_BLOCK, 		"§1§lMinion §cRzeźnik§9",	Arrays.asList("&aUżyj tego narzędzia (PPM)", "&aAby zespawnować swojego miniona", "&bid: &dnowy"));
@@ -70,7 +70,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 		}, odświeżanieMinionówTicki);
 	}
 	
-	public Miniony() {
+	public Miniony_Stare() {
 		super("minion");
 		Main.dodajPermisje("minion.bypass");
 		Statystyka.ZainicjujStatystyki();
@@ -249,19 +249,19 @@ public class Miniony extends Komenda implements Listener, Przeładowalny {
 		if (args.length < 1) return false;
 		switch(args[0]) {
 		case "włącz":
-			if (Miniony.włączone)
-				sender.sendMessage(Miniony.prefix + "Miniony są już włączone");
+			if (Miniony_Stare.włączone)
+				sender.sendMessage(Miniony_Stare.prefix + "Miniony są już włączone");
 			else {
-				Miniony.wczytajMiniony();
-				sender.sendMessage(Miniony.prefix + "Włączono miniony");
+				Miniony_Stare.wczytajMiniony();
+				sender.sendMessage(Miniony_Stare.prefix + "Włączono miniony");
 			}
 			return true;
 		case "wyłącz":
-			if (Miniony.włączone) {
-				Miniony.zapiszMiniony();
-				sender.sendMessage(Miniony.prefix + "Wyłączono miniony");
+			if (Miniony_Stare.włączone) {
+				Miniony_Stare.zapiszMiniony();
+				sender.sendMessage(Miniony_Stare.prefix + "Wyłączono miniony");
 			} else
-				sender.sendMessage(Miniony.prefix + "Miniony są już wyłączone");
+				sender.sendMessage(Miniony_Stare.prefix + "Miniony są już wyłączone");
 			return true;
 		}
 		Player p;

@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.RPG_Ultra;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -95,12 +97,13 @@ public class RPG implements Listener {
 		PlayerInventory inv = ev.getPlayer().getInventory();
 		GraczRPG gracz = GraczRPG.gracz(ev.getPlayer());
 		
-		Func.wykonajDlaNieNull(inv.getItem(ev.getPreviousSlot()),
-				item -> Boost.getBoosty(item).forEach(
-						boost -> boost.odaplikuj(gracz)));
-		Func.wykonajDlaNieNull(inv.getItem(ev.getNewSlot()),
-				item -> Boost.getBoosty(item).forEach(
-						boost -> boost.zaaplikuj(gracz)));
+		BiConsumer<Integer, BiConsumer<Boost, GraczRPG>> cons = (slot, bic) ->
+				Func.wykonajDlaNieNull(inv.getItem(slot),
+					item -> Boost.getBoosty(item).forEach(
+							boost -> bic.accept(boost, gracz)));
+		
+		cons.accept(ev.getPreviousSlot(), Boost::odaplikuj);
+		cons.accept(ev.getNewSlot(),      Boost::zaaplikuj);
 	}
 	@EventHandler
 	public void disconnect(PlayerQuitEvent ev) {
@@ -108,12 +111,24 @@ public class RPG implements Listener {
 		ev.getPlayer().removeMetadata("mimiGraczRPG", Main.plugin);
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void dmg(EntityDamageEvent ev) {
+	public void dmgMonitor(EntityDamageEvent ev) {
 		if (ev.isCancelled()) return;
 		if (ev.getDamage() == 0) return;
 		
 		if (ev.getEntity() instanceof Player)
 			actionBar(GraczRPG.gracz((Player) ev.getEntity()));
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void dmg(EntityDamageEvent ev) {
+		if (ev.getEntity() instanceof Player)
+			ev.setDamage(ev.getDamage() - GraczRPG.gracz((Player) ev.getEntity()).defNiezależny.wartość());
+	}
+	@EventHandler
+	public void dmgEntity(EntityDamageByEntityEvent ev) {
+		if (ev.getEntity() instanceof Player && Func.losuj(GraczRPG.gracz((Player) ev.getEntity()).unik.wartość())) {
+			ev.setCancelled(true);
+			PokazywanyDmg.zrespDmg(ev.getEntity(), "§f§lUNIK");
+		}
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void heal(EntityRegainHealthEvent ev) {
@@ -129,20 +144,6 @@ public class RPG implements Listener {
 		GraczRPG gracz = GraczRPG.gracz(p);
 		
 		p.setHealthScaled(true);
-		
-		//String url = "http://textures.minecraft.net/texture/1445c3def689427fd8df8cad824c0a6b553d4f847eb03705196a69c7eed946af";
-//		String url = "http://gorzycets.pl/michalas/1445c3def689427fd8df8cad824c0a6b553d4f847eb03705196a69c7eed946af";
-	//	String nbt = "{\"textures\":{\"SKIN\":{\"url\":\"" + url + "\"}}}";
-		//String value = Base64.encodeBase64String(nbt.getBytes());
-		
-		//ev.getPlayer().getInventory().addItem(Func.dajGłówkę(value));
-		
-		
-		//byte[] base64 = Base64.decodeBase64("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzA2MTVjMzgzZmMxZTQxNTQ0NGI5NjRlODhlOTk5YTNjN2ZhODk1MjYzYmUxYWJmZjE0Y2FmZTRkZDY4ODEifX19");
-		//Main.log(new String(base64));
-		
-		
-		
 		
 		PlayerInventory inv = p.getInventory();
 		for (ItemStack item : new ItemStack[] {inv.getItemInMainHand(), inv.getHelmet(), inv.getChestplate(), inv.getLeggings(), inv.getBoots()})
@@ -164,9 +165,18 @@ public class RPG implements Listener {
 		return bazowy.getCompound(klucz);
 	}
 	
-	public static void actionBar(GraczRPG gracz) {
+	public final static void actionBar(GraczRPG gracz) {
+		actionBar(gracz, null);
+	}
+	public static void actionBar(GraczRPG gracz, Consumer<StringBuilder> cons) {
+		synchronized(gracz) {
+			if (System.currentTimeMillis() - gracz.ostActionBar < 1_500)
+				return;
+		}
+		
 		double maxHp = gracz.p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		double hp = gracz.p.getHealth();
+		
 		
 		StringBuilder strB = new StringBuilder();
 		
@@ -174,8 +184,15 @@ public class RPG implements Listener {
 		strB.append(Func.IntToString((int) Math.min(hp, maxHp)));
 		strB.append(" / ");
 		strB.append(Func.IntToString((int) maxHp));
-		strB.append(" ❤");
+		strB.append(" ❤ ");
+		
+		if (cons != null)
+			cons.accept(strB);
 		
 		gracz.p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(strB.toString()));
+		
+		synchronized(gracz) {
+			gracz.ostActionBar = System.currentTimeMillis();
+		}
 	}
 }

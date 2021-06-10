@@ -147,6 +147,15 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			return true;
 		}
 		
+		void odpada(Player p, String formatMsg, Object... uzupełnienia) {
+			napiszGraczom(formatMsg, uzupełnienia);
+			odpada(p);
+		}
+		void odpada(Player p) {
+			Func.wykonajDlaNieNull(getInstMinigra().staty(p), staty -> ((Statystyki) staty).przegraneAreny++);
+			opuść(p);
+		}
+		
 		final boolean opuść(Player p) {
 			String nick = p.getName();
 			for (int i=0; i<gracze.size(); i++)
@@ -240,7 +249,6 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				}));
 			} catch (IllegalPluginAccessException e) {}
 		}
-		
 		
 		
 		// util

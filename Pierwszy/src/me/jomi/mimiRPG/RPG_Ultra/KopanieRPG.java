@@ -52,9 +52,11 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 	public static class Api {
 		public static class WykopanyBlokEvent extends BlockBreakEvent {
 			public final List<Drop> dropy = new ArrayList<>();
+			public final Blok blok;
 			
 			public WykopanyBlokEvent(Player p, Block block) {
 				super(block, p);
+				this.blok = Blok.daj(block.getType());
 			}
 			
 			private static final HandlerList handlers = new HandlerList();
@@ -83,10 +85,14 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		public final Material mat;
 		public final Drop drop;
 		public final int wytrzymałośćBloku;
+		public final int exp;
+		public final int exp_kopacza;
 
-		public Blok(Material mat, Drop drop, int wytrzymałośćBloku) {
+		public Blok(Material mat, Drop drop, int wytrzymałośćBloku, int exp, int exp_kopacza) {
+			this.exp = exp;
 			this.mat = mat;
 			this.drop = drop;
+			this.exp_kopacza = exp_kopacza;
 			this.wytrzymałośćBloku = wytrzymałośćBloku;
 			bloki.put(mat, this);
 		}
@@ -224,7 +230,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		
 		ev2.setCancelled(ev.isCancelled());
 		ev2.setDropItems(ev.isDropItems());
-		ev2.setExpToDrop(ev.getExpToDrop());
+		ev2.setExpToDrop(ev2.blok == null ? ev.getExpToDrop() : ev2.blok.exp);
 		
 		ev.getBlock().getDrops(ev.getPlayer().getInventory().getItemInMainHand(), ev.getPlayer()).forEach(item -> ev2.dropy.add(new Drop(item)));
 		
@@ -238,7 +244,11 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			ev2.dropy.forEach(drop -> drop.dropnij(ev.getBlock().getLocation().add(.5, .5, .5)));
 		ev.setDropItems(false);
 	}
-	
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void wykopany(WykopanyBlokEvent ev) {
+		if (!ev.isCancelled() && ev.blok != null)
+			GraczRPG.gracz(ev.getPlayer()).ścieżka_kopacz.zwiększExp(ev.blok.exp_kopacza);
+	}
 	
 	@Override
 	public void przeładuj() {
@@ -250,7 +260,13 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			ConfigurationSection sekcja = config.sekcja(klucz);
 			
-			new Blok(mat, Config.drop(sekcja.get("drop")), sekcja.getInt("wytrzymałość", 2000));
+			new Blok(
+					mat,
+					Config.drop(sekcja.get("drop")),
+					sekcja.getInt("wytrzymałość", 2000),
+					sekcja.getInt("exp", 0),
+					sekcja.getInt("exp_kopacza", 1)
+					);
 		});
 	}
 	@Override

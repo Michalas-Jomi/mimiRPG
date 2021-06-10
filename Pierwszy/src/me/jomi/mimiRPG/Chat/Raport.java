@@ -16,7 +16,7 @@ import me.jomi.mimiRPG.Timming;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.Maszyny.Budownik;
 import me.jomi.mimiRPG.Miniony.Minion;
-import me.jomi.mimiRPG.Miniony.Miniony;
+import me.jomi.mimiRPG.Miniony.Miniony_Stare;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
@@ -92,8 +92,8 @@ public class Raport extends Komenda {
 		sender.sendMessage("§6Ekonomia: §e" + Func.BooleanToString(Main.ekonomia, "§aJest", "§cNie ma"));
 		if (Main.włączonyModół(ChatGrupowy.class))
 			sender.sendMessage("§6Czaty Grupowe: §e" + ChatGrupowy.inst.mapa.keySet().size());
-		if (Main.włączonyModół(Miniony.class))
-			if (Miniony.włączone) sender.sendMessage("§6Miniony: §e" + Minion.mapa.size());
+		if (Main.włączonyModół(Miniony_Stare.class))
+			if (Miniony_Stare.włączone) sender.sendMessage("§6Miniony: §e" + Minion.mapa.size());
 			else 				  sender.sendMessage("§6Miniony: §cWyłączone");	
 		if (Main.włączonyModół(Glosowanie.class))
 			sender.sendMessage("§6Głosowania: §e" + Glosowanie.mapa.size());

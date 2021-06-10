@@ -646,10 +646,13 @@ public abstract class Func {
         return item;
 	}	
 	public static ItemStack dajGłówkę(String url) {
-		return dajGłówkę(null, url, null);
+		return dajGłówkę(null, url);
 	}
 	public static ItemStack dajGłówkę(String nazwa, String url) {
-		return dajGłówkę(nazwa, url, null);
+		return dajGłówkę(nazwa, url, (List<String>) null);
+	}
+	public static ItemStack dajGłówkę(String nazwa, String url, String... lore) {
+		return dajGłówkę(nazwa, url, Lists.newArrayList(lore));
 	}
 	public static ItemStack dajGłówkę(String nazwa, String url, List<String> lore) {
 		Config config = new Config("configi/głowy uuid");

@@ -1,0 +1,373 @@
+package me.jomi.mimiRPG.SkyBlock;
+
+import static me.jomi.mimiRPG.util.NMS.nms;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.EulerAngle;
+
+import net.minecraft.server.v1_16_R3.EntityArmorStand;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.NBTTagList;
+import net.minecraft.server.v1_16_R3.Packet;
+import net.minecraft.server.v1_16_R3.PacketPlayOutBlockBreakAnimation;
+
+import me.jomi.mimiRPG.Baza;
+import me.jomi.mimiRPG.Main;
+import me.jomi.mimiRPG.Mapowany;
+import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
+import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.KolorRGB;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.NMS;
+import me.jomi.mimiRPG.util.Panel;
+import me.jomi.mimiRPG.util.Przeładowalny;
+import me.jomi.mimiRPG.util.Zegar;
+
+@Moduł
+public class Miniony implements Listener, Przeładowalny, Zegar {
+	public static final String prefix = Func.prefix(Miniony.class);
+	static final NamespacedKey kluczMiniona = new NamespacedKey(Main.plugin, "mimiSkyblockMinion");
+	static final String metaMiniona = "mimiSkyblockMinion";
+	public static class MinionDaneLvl extends Mapowany {
+		@Mapowane int czas; // w sekundach
+		@Mapowane int slotyEq;
+		
+		@Mapowane Material narzędzie;
+		
+		@Mapowane ItemStack potrzebnyItemUpgradu;
+		@Mapowane int ilośćPotrzebnegoItemuUpgradu;
+	}
+	public static class MinionDane extends Mapowany {
+		static final Map<String, MinionDane> mapa = new HashMap<>();
+		
+		@Mapowane List<MinionDaneLvl> lvle;
+		@Mapowane String skinurl;
+		@Mapowane KolorRGB ubranko;
+		@Mapowane String nazwa;
+		@Mapowane(nieTwórz = true) Material wymaganyBlok;
+		
+		@Override
+		protected void Init() {
+			if (skinurl == null) return;
+			
+			itemLvl0 = Func.dajGłówkę("§6Minion §c" + nazwa, skinurl, "§7Minion pracuje nawet", "§7gdy jesteś offline!");
+			itemLvl0 = CraftItemStack.asCraftMirror(CraftItemStack.asNMSCopy(itemLvl0));
+			
+			NBTTagCompound tag = new NBTTagCompound();
+			tag.setString("dane", nazwa);
+			tag.setByte("lvl", (byte) 0);
+			tag.set("itemy", new NBTTagList());
+			NMS.nms(itemLvl0).getTag().set("minion", tag);
+		}
+		ItemStack itemLvl0;
+		public ItemStack itemLvl0() {
+			return itemLvl0;
+		}
+		
+		public static MinionDane daj(String nazwa) {
+			return mapa.get(nazwa);
+		}
+		
+		public Minion postaw(Location loc, NBTTagCompound tag) {
+			EntityArmorStand as = new EntityArmorStand(NMS.nms(loc.getWorld()), loc.getX(), loc.getY(), loc.getZ());
+			as.setInvulnerable(true);
+			as.setNoGravity(true);
+			as.setBasePlate(true);
+			as.setSmall(true);
+			as.setArms(true);
+			
+			tag.setLong("ost", System.currentTimeMillis());
+			as.getBukkitEntity().getPersistentDataContainer().set(kluczMiniona, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer(tag));
+			
+			
+			Minion minion = new Minion((ArmorStand) as.getBukkitEntity());
+			
+			minion.ubierz();
+
+			NMS.nms(loc.getWorld()).addEntity(as, SpawnReason.CUSTOM);
+			
+			return minion;
+		}
+	}
+	public static class Minion {
+		static final Map<UUID, Minion> miniony = new HashMap<>();
+		final Inventory inv;
+		final MinionDane dane;
+		final ArmorStand as;
+		int timer;
+		int lvl;
+		
+		int wyprodukowane;
+		
+		Minion(ArmorStand as) {
+			this.as = as;
+			
+			miniony.put(this.as.getUniqueId(), this);
+			Func.ustawMetadate(this.as, metaMiniona, this);
+			
+			NBTTagCompound tag = tag();
+			this.lvl = tag.getByte("lvl");
+			this.dane = MinionDane.daj(tag.getString("dane"));
+			this.wyprodukowane = tag.getInt("wyprodukowane");
+			
+			timer = dane.lvle.get(lvl).czas;
+			
+			inv = panelMiniona.stwórz(this, 6, "§4Minion §1" + dane.nazwa);
+			Func.ustawPuste(inv, Baza.pustySlotCzarny);
+			
+			inv.setItem(slotMinionInfo, item());
+			inv.setItem(slotMinionZbierzWszystko, itemMinionZbierzWszystko);
+			inv.setItem(slotMinionUlepsz, itemMinionUlepsz); // TODO info o ulepszeniu
+			inv.setItem(slotMinionPodnieś, itemMinionPodnieś);
+			
+			NBTTagList itemy = (NBTTagList) tag.get("itemy");
+			for (int i = 0; i < itemy.size(); i++) {
+				NBTTagCompound item = itemy.getCompound(i);
+				inv.setItem(item.getByte("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(item)));
+			}
+			
+			int dostępneSloty = dane.lvle.get(lvl).slotyEq;
+			for (int i = dostępneSloty; i < 15; i++)
+				inv.setItem((i / 5 + 2) * 9 + i % 5 + 3, Func.stwórzItem(Material.WHITE_STAINED_GLASS_PANE, "§cSlot niedostępny"));
+		}
+		
+		public void ubierz() {
+			EntityEquipment eq = as.getEquipment();
+			
+			eq.setHelmet		(dane.itemLvl0());
+			eq.setChestplate	(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_CHESTPLATE), dane.ubranko.kolor()));
+			eq.setLeggings		(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_LEGGINGS), 	dane.ubranko.kolor()));
+			eq.setBoots			(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_BOOTS), 		dane.ubranko.kolor()));
+			eq.setItemInMainHand(Func.stwórzItem(dane.lvle.get(lvl).narzędzie));
+		}
+		
+		private NBTTagCompound tag() {
+			return NMS.tag(as.getPersistentDataContainer().get(kluczMiniona, PersistentDataType.TAG_CONTAINER));
+		}
+		void zapisz() {
+			NBTTagCompound tag = tag();
+			tag.setByte("lvl", (byte) lvl);
+			tag.setString("dane", dane.nazwa);
+			tag.setLong("ost", System.currentTimeMillis());
+			NBTTagList itemy = new NBTTagList();
+			for (int y=2; y < 5; y++)
+				for (int x=3; x < 8; x++) {
+					int slot = y * 9 + x;
+					ItemStack item = inv.getItem(slot);
+					if (item == null) continue;
+					if (zablokowanySlot(item))
+						break;
+					
+					NBTTagCompound tagItemu = new NBTTagCompound();
+					NMS.nms(item).save(tagItemu);
+					tagItemu.setByte("Slot", (byte) slot);
+					itemy.add(tagItemu);
+				}
+			tag.set("itemy", itemy);
+			tag.setInt("wyprodukowane", wyprodukowane);
+			
+			as.getPersistentDataContainer().set(kluczMiniona, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer(tag));
+		}
+	
+		void czas() {
+			if (timer-- <= 0) {
+				timer = dane.lvle.get(lvl).czas;
+				wyprodukowane++;
+				
+				if (as.isDead()) {
+					Bukkit.getScheduler().runTask(Main.plugin, () -> miniony.remove(as.getUniqueId()));
+					return;
+				}
+				
+				int x, z;
+				do {
+					x = Func.losuj(-2, 2);
+					z = Func.losuj(-2, 2);
+				} while(x == 0 && z == 0);
+				Location loc = as.getLocation().add(x, -.5, z);
+				spójrz(loc);
+				kop(loc, 0);
+			}
+		}
+		public void spójrz(Block blok) {
+			spójrz(blok.getLocation().add(.5, .5, .5));
+		}
+		public void spójrz(Location loc) {
+			Location głowa = as.getEyeLocation();
+			double a, b, c, sin;
+			float kąt;
+			
+			a = loc.getX() - głowa.getX();
+			b = loc.getZ() - głowa.getZ();
+			c = Math.sqrt(a*a + b*b);
+			sin = Math.abs(a) / c;
+			kąt = (float) Math.toDegrees(Math.asin(sin));
+			
+			if (a * b > 0)
+				kąt *= -1;
+			if (b < 0 || (b == 0 && a > 0))
+				kąt += 180;
+				
+			as.setRotation(kąt, 0f);
+			
+			a = loc.getY() - głowa.getY();
+			c = loc.distance(głowa);
+			sin = Math.abs(a) / c;
+			as.setHeadPose(new EulerAngle((a > 0 ? -1 : 1) * Math.asin(sin), 0, 0));
+		}
+		
+		public void kop(Location loc, int progress) {
+			if (progress >= 20) {
+				loc.getBlock().setType(Material.AIR);
+				// TODO dodawać item do inv
+				return;
+			}
+
+			double zasięg = 10;
+			Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), (int) (progress / 20d * 10));
+			as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
+					e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).playerConnection.sendPacket(packet));
+			
+			int x = progress % 10;
+			// pi -> pi / 2
+			as.setRightArmPose(new EulerAngle((Math.PI / 20) * x + Math.PI / 10 * 13, 0, -Math.PI / 10));
+			Func.opóznij(2, () -> kop(loc, progress + 1));
+		}
+		
+		
+		public boolean poprawneMiejsce() {
+			if (dane.wymaganyBlok == null)
+				return true;
+			
+			for (int z = -2; z < 3; z++)
+				for (int x = -2; x < 3; x++) {
+					if (x == 0 && z == 0)
+						continue;
+					if (as.getLocation().clone().add(x, -1, z).getBlock().getType() != dane.wymaganyBlok)
+						return false;
+				}
+			
+			return true;
+		}
+		
+		public ItemStack item() {
+			return dane.itemLvl0();
+		}
+	}
+	
+	static int slotMinionInfo = 4;
+	static int slotMinionPodnieś = 53;
+	static ItemStack itemMinionPodnieś = Func.stwórzItem(Material.BEDROCK, "§aPodnieś Miniona");
+	static int slotMinionZbierzWszystko = 48;
+	static ItemStack itemMinionZbierzWszystko = Func.stwórzItem(Material.CHEST, "§aZbierz wszystko");
+	static int slotMinionUlepsz = 50;
+	static ItemStack itemMinionUlepsz = Func.stwórzItem(Material.DIAMOND, "§aUlepsz");
+	static Panel panelMiniona = new Panel(true);
+	
+	static boolean zablokowanySlot(ItemStack item) {
+		// TODO sprawdzać czy slot zablokowany
+		return item.getType() == Material.WHITE_STAINED_GLASS_PANE;
+	}
+	
+	
+	@EventHandler
+	public void klikanieMiniona(PlayerInteractAtEntityEvent ev) {
+		if (ev.getRightClicked().hasMetadata(metaMiniona))
+			ev.getPlayer().openInventory(((Minion) ev.getRightClicked().getMetadata(metaMiniona).get(0).value()).inv);// TODO permisje
+	}
+	@EventHandler
+	public void wczytywanieChunka(ChunkLoadEvent ev) {
+		Func.forEach(ev.getChunk().getEntities(), e -> {
+			if (e.getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
+				new Minion((ArmorStand) e);
+		});
+	}
+	@EventHandler
+	public void unloadChunka(ChunkUnloadEvent ev) {
+		Func.forEach(ev.getChunk().getEntities(), e -> {
+			if (e.hasMetadata(metaMiniona)) {
+				Minion.miniony.remove(e.getUniqueId());
+				((Minion) e.getMetadata(metaMiniona).get(0).value()).zapisz();
+			}
+		});
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void stawianieMiniona(BlockPlaceEvent ev) {
+		if (ev.isCancelled()) return;
+		Func.wykonajDlaNieNull(NMS.nms(ev.getItemInHand()), nms ->
+				Func.wykonajDlaNieNull(nms.getTag(), itemTag -> {
+					NBTTagCompound tag = itemTag.getCompound("minion");
+					if (tag.isEmpty()) return;
+					
+					MinionDane minion = MinionDane.daj(tag.getString("dane"));
+					if (minion == null) {
+						ev.setCancelled(true);
+						return;
+					}
+					
+					Bukkit.getScheduler().runTask(Main.plugin, () -> {
+						if (ev.isCancelled()) return;
+						
+						ev.getBlock().setType(Material.AIR, false);
+						
+						minion.postaw(ev.getBlock().getLocation().add(.5, 0, .5), tag);
+					});
+				}));
+	}
+	
+	
+	@Override
+	public void przeładuj() {
+		Config config = new Config("configi/Miniony");
+		
+		MinionDane.mapa.values().forEach(minion -> CustomoweItemy.customoweItemy.remove("Minion_" + minion.nazwa));
+		MinionDane.mapa.clear();
+		
+		config.klucze().forEach(klucz -> {
+			MinionDane minion = config.wczytajPewny(klucz);
+			if (!klucz.equals(minion.nazwa)) {
+				Main.warn(prefix + Func.msg("Nazwa miniona %s jest różna z jego kluczem %s", minion.nazwa, klucz));
+				return;
+			}
+			MinionDane.mapa.put(klucz, minion);
+			CustomoweItemy.customoweItemy.put("Minion_" + minion.nazwa, minion.itemLvl0());
+		});
+	}
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Wczytane miniony", MinionDane.mapa.size());
+	}
+
+
+	@Override
+	public int czas() {
+		Minion.miniony.values().forEach(Minion::czas);
+		return 20;
+	}
+}

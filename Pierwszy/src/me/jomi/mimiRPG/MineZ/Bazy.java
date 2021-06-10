@@ -1,7 +1,9 @@
 package me.jomi.mimiRPG.MineZ;
 
+import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -607,6 +609,22 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Main.dodajPermisje(permBypass);
 		inst = this;
 		regiony = WorldGuard.getInstance().getPlatform().getRegionContainer();
+		
+		Bukkit.getScheduler().runTask(Main.plugin, () -> {
+			Pattern pattern = Pattern.compile("zniszczonabaza-?\\d+x-?\\d+y-?\\d+z");
+			if (ZonedDateTime.now().getDayOfWeek() == DayOfWeek.MONDAY) {
+				Bukkit.getWorlds().forEach(world -> {
+					RegionManager manager = regiony.get(BukkitAdapter.adapt(world));
+					
+					Set<String> doUsunięcia = new HashSet<>();
+					manager.getRegions().keySet().forEach(id ->{
+						if (pattern.matcher(id).matches())
+							doUsunięcia.add(id);
+					});
+					doUsunięcia.forEach(manager::removeRegion);
+				});
+			}
+		});
 	}
 	public static boolean warunekModułu() {
 		return _WorldGuard.rg != null;
