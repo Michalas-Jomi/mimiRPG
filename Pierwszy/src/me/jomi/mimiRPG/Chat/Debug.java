@@ -163,7 +163,9 @@ public class Debug extends Komenda {
 						for (int i=0; i < args.length; i++)
 							args[i] = typ(p, met.getParameters()[i], parametry.get(i));
 						return met.invoke(naCzym, args);
-					} catch (Throwable e) {}
+					} catch (Throwable e) {
+						Func.throwEx(e);
+					}
 			throw new Error("Nie odnaleziono takiej metody");
 		} else
 			return Func.dajField(klasa, co).get(naCzym);

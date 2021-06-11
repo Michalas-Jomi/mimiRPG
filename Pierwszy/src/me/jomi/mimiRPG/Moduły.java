@@ -104,11 +104,12 @@ public class Moduły implements Przeładowalny {
 			mapa.put(nazwa, new Klasa(klasa));
 		boolean warunek;
 		try {
-			warunek = (boolean) klasa.getMethod("warunekModułu").invoke(null);
+			warunek = (boolean) Func.dajMetode(klasa, "warunekModułu").invoke(null);
 		} catch (NoSuchMethodException e) {
 			warunek = true;
 		} catch (Throwable e) {
 			warunek = false;
+			e.printStackTrace();
 		}
 		
 		if (warunek) {
@@ -119,7 +120,8 @@ public class Moduły implements Przeładowalny {
 				Main.error("Problem przy tworzeniu:", klasa.getSimpleName());
 				e.printStackTrace();
 			}
-		}
+		} else
+			Main.log("Moduł %s nie spełnia warunku, aby zostać włączonym", nazwa);
 	}
 	public void włącz(ConfigurationSection sekcja) {
 		włączone = 0;

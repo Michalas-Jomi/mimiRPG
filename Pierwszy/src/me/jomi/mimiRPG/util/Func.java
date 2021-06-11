@@ -1507,7 +1507,7 @@ public abstract class Func {
 			if (clazz.isEnum())
 				return Func.dajMetode(clazz, "name").invoke(obj);
 			if (clazz.isAssignableFrom(ItemStack.class))
-				return Config._item(obj);
+				return Config.zserializujItem(obj);
 			if (clazz.isAssignableFrom(Drop.class))
 				return Config._drop(obj);
 			if (clazz.isAssignableFrom(SelektorItemów.class))

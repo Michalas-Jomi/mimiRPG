@@ -54,15 +54,15 @@ public class Config {
 	
 	
 	public void ustaw(String sciezka, Object obj) {
-		plik.set(sciezka, _item(obj));
+		plik.set(sciezka, zserializujItem(obj));
 	}
 	@SuppressWarnings("unchecked")
-	protected static Object _item(Object item) {
+	public static Object zserializujItem(Object item) {
 		if (item == null) return null;
 		if (item instanceof List) {
 			List<Object> lista = Lists.newArrayList();
 			for (Object _obj : (List<Object>) item)
-				lista.add(_item(_obj));
+				lista.add(zserializujItem(_obj));
 			return lista;
 		}
 		if (item instanceof ItemStack) {

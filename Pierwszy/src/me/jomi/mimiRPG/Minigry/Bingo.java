@@ -46,8 +46,8 @@ import org.bukkit.potion.PotionEffectType;
 import net.minecraft.server.v1_16_R3.PacketPlayOutMap;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.Customizacja.CustomoweMapy;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.Customizacja.CustomoweMapy;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
 
@@ -105,11 +105,13 @@ public class Bingo extends Minigra {
 			border.setSize(10, 60 * 60);
 			border.setDamageAmount(2d);
 			
+			world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
 			world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
 			world.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
 			world.setGameRule(GameRule.SHOW_DEATH_MESSAGES, true);
 			world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
 			world.setGameRule(GameRule.RANDOM_TICK_SPEED, 20);
+			world.setGameRule(GameRule.DISABLE_RAIDS, true);
 			world.setGameRule(GameRule.DO_FIRE_TICK, false);
 			world.setGameRule(GameRule.SPAWN_RADIUS, 0);
 			world.setDifficulty(Difficulty.HARD);
@@ -183,12 +185,15 @@ public class Bingo extends Minigra {
 		@Override
 		public void koniec() {
 			super.koniec();
-			Bukkit.unloadWorld(world, false);
-			Func.usuń(world.getWorldFolder());
+			world.getPlayers().forEach(p -> Func.tpSpawn(p));
+			Bukkit.getScheduler().runTask(Main.plugin, () -> {
+				Bukkit.unloadWorld(world, false);
+				Func.usuń(world.getWorldFolder());
+				world = null;
+			});
 
 			materiały.clear();
 			znalezione.clear();
-			world = null;
 			mapa = null;
 		}
 		
@@ -210,7 +215,7 @@ public class Bingo extends Minigra {
 					wygrana(p);
 			}
 		}
-		private void wyślijMape(Player p) {
+		public void wyślijMape(Player p) {
 			byte[] mapa = new byte[this.mapa.length];
 			for (int i=0; i < mapa.length; i++)
 				mapa[i] = this.mapa[i];
@@ -330,6 +335,7 @@ public class Bingo extends Minigra {
 		Func.wykonajDlaNieNull(arena(ev.getPlayer()), arena -> {
 			if (ev.getItemDrop().getItemStack().getType() == Material.FILLED_MAP) {
 				Func.powiadom(getPrefix(), ev.getPlayer(), "Nie wyrzucaj, to ci się jeszcze może przydać");
+				arena.wyślijMape(ev.getPlayer());
 				ev.setCancelled(true);
 			}
 		});

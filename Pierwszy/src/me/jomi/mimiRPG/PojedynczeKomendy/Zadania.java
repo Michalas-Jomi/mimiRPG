@@ -299,6 +299,11 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		edytor.zarejestrójWyjątek("/zadaniaadmin edytor kryteria <int> czego", (zadanie, ścieżka) -> {
 			int index = Func.Int(Func.tnij(ścieżka, " ").get(3));
 			Kryterium k = zadanie.kryteria.get(index);
+			try {
+				k.Init();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 			switch (k.rodzaj) {
 			case ZDOBĄDZ:
 			case DOSTARCZ:
@@ -307,23 +312,45 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 								.clickEvent(Action.RUN_COMMAND, ścieżka + "() org.bukkit.inventory.ItemStack >>"));
 			case WYKOP:
 				return new Napis("§6blok§8: ").dodaj(new Napis(
-						"§e" + (k.getCzego() instanceof Material ? k.getCzego() : "null"),
+						"§e" + (k.getCzego() instanceof Material ? (Material) k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.Material >> "
 						));
 			case ZABIJ:
 				return new Napis("§6mob§8: ").dodaj(new Napis(
-						"§e" + (k.getCzego() instanceof EntityType ? k.getCzego() : "null"),
+						"§e" + (k.getCzego() instanceof EntityType ? (EntityType) k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.entity.EntityType >> "
 						));
 			}
 			return null;
 		});
-		
+
 		edytor.zarejestrójWyjątek("/zadaniaadmin edytor id", (zadanie, ścieżka) -> null);
-		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> zadanie.id = ścieżka);
+		edytor.zarejestrójWyjątek("/zadaniaadmin edytor id", (zadanie, ścieżka) -> null);
+		edytor.zarejestrujOnZatwierdz((zadanie, ścieżka) -> {
+			zadanie.id = ścieżka;
+			zadanie.kryteria.forEach(Zadania::sprawdzKryterium);
+		});
 		edytor.zarejestrujPoZatwierdz((dawneZadanie, zadanie) -> przeładuj());
+	}
+	private static void sprawdzKryterium(Kryterium k) {
+		if (k.czego == null)
+			return;
+		
+		switch (k.rodzaj) {
+		case DOSTARCZ:
+		case ZDOBĄDZ:
+			k.czego = Config.zserializujItem(k.czego);
+			break;
+		case WYKOP:
+		case ZABIJ:
+			k.czego = k.czego.toString();
+			break;
+		default:
+			break;
+		
+		}
 	}
 	
 	

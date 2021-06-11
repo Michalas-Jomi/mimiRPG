@@ -150,7 +150,7 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 		if (tylkoJeden) 		mapa.put("tylko jeden", tylkoJeden);
 		if (rollePerPoziom != 0)mapa.put("rollePerPoziom",  rollePerPoziom);
 		if (szansaPerPoziom!= 0)mapa.put("szansaPerPoziom", szansaPerPoziom);
-		if (item != null) 		mapa.put("item", Config._item(item));
+		if (item != null) 		mapa.put("item", Config.zserializujItem(item));
 		else 					mapa.put("drop", drop);
 		return mapa;
 	}
