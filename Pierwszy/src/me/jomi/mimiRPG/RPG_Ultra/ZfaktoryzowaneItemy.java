@@ -79,13 +79,38 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		przerób(item, null);
 	}
 	public static void przerób(ItemStack item, String opis) {
-		if (item == null) return;
-		przerób(item, NMS.nms(item), opis);
+		przerób(item, null, opis);
 	}
-	private static void przerób(ItemStack bukkit, net.minecraft.server.v1_16_R3.ItemStack nms, String opis) {
+	public static void przerób(ItemStack item, String nazwa, String opis) {
+		przerób(item, nazwa, opis, false);
+	}
+	public static void przerób(ItemStack item, String nazwa, String opis, boolean niePobieraj) {
+		if (item == null) return;
+		przerób(item, NMS.nms(item), nazwa, opis, niePobieraj);
+	}
+	private static void przerób(ItemStack bukkit, net.minecraft.server.v1_16_R3.ItemStack nms, String nazwa, String opis, boolean niePobieraj) {
 		NBTTagCompound tag = tag(bukkit);
 		ItemMeta meta = bukkit.getItemMeta();
 		List<String> lore = new ArrayList<>();
+		
+		if (!niePobieraj && (opis == null || nazwa == null)) {
+			String id = id(tag);
+			if (id != null) {
+				ResultSet set = BazaDanych.executeQuery("Select nazwa, opis FROM itemy WHERE id='" + id + "'");
+				
+				try {
+					if (set.next()) {
+						if (opis == null)
+							opis = set.getString("opis");
+						if (nazwa == null)
+							nazwa = set.getString("nazwa");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		}
 		
 		Func.tnij(opis, "\\n").forEach(lore::add);
 		
@@ -116,7 +141,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				if (!ench12)
 					wLini.set(!wLini.get());
 				else if (ench5)
-					Func.tnij(Enchant.getEnchant(enchant).opis, "\\n").forEach(lore::add);
+					Func.tnij(Enchant.getEnchant(enchant).opis(lvl), "\\n").forEach(lore::add);
 				
 				lore.add(strB.toString());
 			});
@@ -130,6 +155,8 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		lore.add(Ranga.ranga(tag).toString());
 		
 		meta.setLore(lore);
+		if (nazwa != null)
+			meta.setDisplayName(nazwa);
 		
 		meta.setUnbreakable(true);
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_DYE);
@@ -137,12 +164,16 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		bukkit.setItemMeta(meta);
 	}
 
+	@SuppressWarnings("resource")
 	public static void exportujDoBazy(ItemStack item, String id) {
 		tag(item).setString("id", id);
 		
 		String opis = null;
+		String nazwa = null;
 		if (item.hasItemMeta() && item.getItemMeta().hasLore())
 			opis = Func.listToString(item.getItemMeta().getLore(), 0, "\\n");
+		if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
+			nazwa = item.getItemMeta().getDisplayName();
 		
 		List<Boost> boosty = Boost.getBoosty(item);
 		ByteArrayOutputStream blobStream = new ByteArrayOutputStream();
@@ -175,13 +206,35 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			}
 		}
 		
-		PreparedStatement stat = BazaDanych.prepare("INSERT INTO itemy(id, opis, ranga, bazowy_item, bonusy) VALUES (?, ?, ?, ?, ?)");
+		ResultSet set = BazaDanych.executeQuery("SELECT * FROM itemy WHERE id='" + id + "' LIMIT 1");
+		boolean istnieje;
 		try {
-			stat.setString(1, id);
+			istnieje = set.isBeforeFirst();
+		} catch (SQLException e) {
+			throw Func.throwEx(e);
+		}
+		
+		PreparedStatement stat;
+		if (istnieje)
+			stat = BazaDanych.prepare("UPDATE itemy SET "
+					+ "nazwa=?, "
+					+ "opis=?, "
+					+ "ranga=?, "
+					+ "typ_itemu=?, "
+					+ "bazowy_item=?, "
+					+ "bonusy=? "
+					+ "WHERE id=?");
+		else
+			stat = BazaDanych.prepare("INSERT INTO itemy(nazwa, opis, ranga, typ_itemu, bazowy_item, bonusy, id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		
+		try {
+			stat.setString(1, nazwa);
 			stat.setString(2, opis);
 			stat.setString(3, Ranga.ranga(item).name());
-			stat.setString(4, item.getType().name());
-			stat.setBytes (5, blobOut == null ? null : blobStream.toByteArray());
+			stat.setString(4, TypItemu.typ(item).name());
+			stat.setString(5, item.getType().name());
+			stat.setBytes (6, blobOut == null ? null : blobStream.toByteArray());
+			stat.setString(7, id);
 			stat.execute();
 			if (blobOut != null)
 				blobOut.close();
@@ -214,6 +267,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				
 				tag.setString("id", set.getString("id"));
 				Ranga.ustawRangę(tag, Func.StringToEnum(Ranga.class, set.getString("ranga")));
+				TypItemu.ustawTyp(tag, Func.StringToEnum(TypItemu.class, set.getString("typ_itemu")));
 				
 				Func.wykonajDlaNieNull(BazaDanych.readBlob(set, "bonusy"), in -> {
 					try {
@@ -234,7 +288,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				
 				ustawTag(item, tag);
 				
-				przerób(item, set.getString("opis"));
+				przerób(item, set.getString("nazwa"), set.getString("opis"), true);
 				
 				return item;
 			}
@@ -245,8 +299,10 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	}
 	
 	public static String id(ItemStack item) {
-		if (item == null) return null;
-		String id = tag(item).getString("id");
+		return item == null ? null : id(tag(item));
+	}
+	static String id(NBTTagCompound tag) {
+		String id = tag.getString("id");
 		return id.isEmpty() ? null : id;
 	}
 	
@@ -323,7 +379,8 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				return false;
 			String id = args[0];
 			exportujDoBazy(item, id);
-			return Func.powiadom(sender, prefix + "wyexportowano item pod id " + id);
+			p.getInventory().setItemInMainHand(dajItem(id));
+			return Func.powiadom(sender, prefix + "wyexportowano item pod id %s", id);
 		}
 		
 		NBTTagCompound tag = tag(item);
@@ -356,6 +413,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				}
 			}
 			ustawTag(item, tag);
+		} catch (IndexOutOfBoundsException e) {
 		} catch (Throwable e) {
 			p.sendMessage("§4" + e.getMessage());
 		}
@@ -365,14 +423,14 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		return true;
 	}
 	private void edytor(Player p) {
-		Napis n = new Napis();
+		Napis n = new Napis("\n\n\n§e~~ §9Edytor RPG §e~~\n\n");
 		
 		ItemStack item = p.getInventory().getItemInMainHand();
 		
 		NBTTagCompound tag = tag(item);
 		
 		Ranga aktRanga = Ranga.ranga(tag);
-		n.dodaj(new Napis("\n\n\n§6ranga§8: "));
+		n.dodaj(new Napis("\n\n§6ranga§8: "));
 		Func.forEach(Ranga.values(), ranga -> {
 			Napis nRanga;
 			if (aktRanga == ranga)
@@ -387,16 +445,19 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			
 			n.dodaj(nRanga);
 		});
-		n.dodaj("\n\n");
+		n.dodaj("\n");
 		
 		TypItemu typItemu = TypItemu.typ(tag);
-		n.dodaj(new Napis("\n\n\n§6ranga§8: "));
+		n.dodaj(new Napis("\n§6ranga§8: "));
+		AtomicBoolean ab = new AtomicBoolean();
 		Func.forEach(TypItemu.values(), typ -> {
 			Napis nTyp = new Napis(
-					(typItemu == typ ? "§n" : "") + typ,
+					"§" + (ab.get() ? "f" : "7") + (typItemu == typ ? "§n§o" : "") + typ,
 					"§bKliknij aby ustawić " + typ,
 					"/edytujitemrpg typ " + typ.name()
 					);
+			
+			ab.set(!ab.get());
 			
 			nTyp.dodaj(" ");
 			
@@ -419,6 +480,8 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 			n.dodaj("\n");
 		});
 		n.dodaj(new Napis("§a[dodaj]", "§bKliknij aby dodać boost", "/edytujitemrpg boost dodaj <Atrybut wartość(%)> >> "));
+		n.dodaj("\n\n");
+		n.dodaj(new Napis("§a[exportuj]", "§bKliknij aby wyexportować item do bazy\n§8/exportujitemrpg <id>", "/exportujitemrpg ", Action.SUGGEST_COMMAND));
 		n.dodaj("\n\n");
 		
 		n.wyświetl(p);

@@ -4,11 +4,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -57,7 +59,7 @@ public class RPG implements Listener {
 		switch (ev.statystyka.atrybut) {
 		case PRĘDKOŚĆ_CHODZENIA:	
 			EntityPlayer nms = NMS.nms(ev.getPlayer());
-			nms.abilities.walkSpeed = (float) (ev.statystyka.wartość() / 2.0F);
+			nms.abilities.walkSpeed = (float) (ev.statystyka.wartość() / 10f);
 			nms.updateAbilities();
 			nms.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(nms.abilities.walkSpeed);
 			break;
@@ -141,17 +143,28 @@ public class RPG implements Listener {
 	@EventHandler
 	public void join(PlayerJoinEvent ev) {
 		Player p = ev.getPlayer();
-		GraczRPG gracz = GraczRPG.gracz(p);
-		
 		p.setHealthScaled(true);
+		
+		GraczRPG gracz = GraczRPG.gracz(p);
 		
 		PlayerInventory inv = p.getInventory();
 		for (ItemStack item : new ItemStack[] {inv.getItemInMainHand(), inv.getHelmet(), inv.getChestplate(), inv.getLeggings(), inv.getBoots()})
 			if (item != null && !item.getType().isAir())
 				Boost.getBoosty(item).forEach(boost -> boost.zaaplikuj(gracz));
+		
+		if (!p.hasPlayedBefore())
+			p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 	}
 	@EventHandler
 	public void jedzenie(FoodLevelChangeEvent ev) {
+		ev.setCancelled(true);
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void stawianie(BlockPlaceEvent ev) {
+		if (ev.isCancelled()) return;
+		if (ev.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+		if (TypItemu.typ(ev.getItemInHand()) == TypItemu.BLOK) return;
+		
 		ev.setCancelled(true);
 	}
 	
@@ -170,7 +183,7 @@ public class RPG implements Listener {
 	}
 	public static void actionBar(GraczRPG gracz, Consumer<StringBuilder> cons) {
 		synchronized(gracz) {
-			if (System.currentTimeMillis() - gracz.ostActionBar < 1_500)
+			if (cons == null && System.currentTimeMillis() - gracz.ostActionBar < 1_500)
 				return;
 		}
 		

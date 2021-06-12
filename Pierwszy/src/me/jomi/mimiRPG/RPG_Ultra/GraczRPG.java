@@ -64,7 +64,7 @@ public class GraczRPG {
 			
 			this.mnożnik = mnożnik;
 			
-			Bukkit.getPluginManager().callEvent(new ZmianaStatystykiGraczaEvent(p, this));
+			wyślijEvent();
 		}
 		public void zwiększMnożnik(double mnożnik) {
 			if (mnożnik >= 0) setMnożnik(getMnożnik() * mnożnik);
@@ -80,10 +80,14 @@ public class GraczRPG {
 			
 			this.baza = baza;
 			
-			Bukkit.getPluginManager().callEvent(new ZmianaStatystykiGraczaEvent(p, this));
+			wyślijEvent();
 		}
 		public void zwiększBaza(double dodatek) {
 			setBaza(getBaza() + dodatek);
+		}
+		
+		void wyślijEvent() {
+			Bukkit.getPluginManager().callEvent(new ZmianaStatystykiGraczaEvent(p, this));
 		}
 		
 		@Override
@@ -213,7 +217,7 @@ public class GraczRPG {
 	public final Statystyka dmgKryt				= new Statystyka(Atrybut.KRYT_DMG,			100);
 	public final Statystyka zdrowie				= new Statystyka(Atrybut.HP,				100);
 	public final Statystyka def					= new Statystyka(Atrybut.DEF,				0);
-	public final Statystyka dmg					= new Statystyka(Atrybut.SIŁA,				1);
+	public final Statystyka siła				= new Statystyka(Atrybut.SIŁA,				1);
 	public final Statystyka prędkośćAtaku		= new Statystyka(Atrybut.PRĘDKOŚĆ_ATAKU,	4);
 	public final Statystyka inteligencja		= new Statystyka(Atrybut.INTELIGENCJA,		100);
 	public Statystyka statystyka(Atrybut attr) {
@@ -227,7 +231,7 @@ public class GraczRPG {
 		case PRĘDKOŚĆ_ATAKU:	return prędkośćAtaku;
 		case PRĘDKOŚĆ_CHODZENIA:return prędkośćChodzenia;
 		case PRĘDKOŚĆ_KOPANIA:	return prędkośćKopania;
-		case SIŁA:				return dmg;
+		case SIŁA:				return siła;
 		case SZCZĘŚCIE:			return szczęście;
 		case UNIK:				return unik;
 		}
@@ -265,14 +269,6 @@ public class GraczRPG {
 		dataBestie				= RPG.dataDajUtwórz(dataRPG, "bestie");
 		dataPamięć				= RPG.dataDajUtwórz(dataRPG, "pamięć");
 		
-		dataTrwałeBuffy.getKeys().forEach(attr -> {
-			Statystyka statystyka = statystyka(Func.StringToEnum(Atrybut.class, attr));
-			int[] baza_mnożnik = dataTrwałeBuffy.getIntArray(attr);
-			
-			statystyka.zwiększBaza	 (baza_mnożnik[0] / 1000d);
-			statystyka.zwiększMnożnik(baza_mnożnik[1] / 1000d);
-		});
-		
 		ścieżka_farmer		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.farmer);
 		ścieżka_łowca		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.łowca);
 		ścieżka_kopacz		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.kopacz);
@@ -281,6 +277,17 @@ public class GraczRPG {
 		ścieżka_mag			= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.mag);
 		ścieżka_alchemik	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.alchemik);
 		ścieżka_budowniczy	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.budowniczy);
+		
+		
+		Bukkit.getScheduler().runTask(Main.plugin, () -> getStaty().forEach(Statystyka::wyślijEvent));
+		
+		dataTrwałeBuffy.getKeys().forEach(attr -> {
+			Statystyka statystyka = statystyka(Func.StringToEnum(Atrybut.class, attr));
+			int[] baza_mnożnik = dataTrwałeBuffy.getIntArray(attr);
+			
+			statystyka.zwiększBaza	 (baza_mnożnik[0] / 1000d);
+			statystyka.zwiększMnożnik(baza_mnożnik[1] / 1000d);
+		});
 	}
 	
 	public void zwiększTrwałyBuff(Atrybut attr, double oIle, boolean baza) {

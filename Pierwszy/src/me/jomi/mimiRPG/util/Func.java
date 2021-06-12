@@ -224,7 +224,13 @@ public abstract class Func {
 		return meta.hasDisplayName() ? meta.getDisplayName() : Func.enumToString(item.getType());
 	}
 	public static String enumToString(Enum<?> en) {
-		return en.toString().toLowerCase().replace("_", " ");
+		StringBuilder strB = new StringBuilder();
+		boolean duża = true;
+		for (char c : en.toString().toLowerCase().replace("_", " ").toCharArray()) {
+			strB.append(duża ? Character.toUpperCase(c) : c);
+			duża = c == ' ';
+		}
+		return strB.toString();
 	}
 	public static String DoubleToString(double liczba) {
 		String całości = IntToString((int) liczba);

@@ -109,8 +109,15 @@ public class Panel {
 		return new Holder(dane, rzędy, nazwa, pustySlot).getInventory();
 	}
 	
+	@SuppressWarnings("unchecked")
+	public <T> T dajDanePaneluPewny(Inventory inv) {
+		return (T) dajDanePanelu(inv);
+	}
 	public Object dajDanePanelu(Inventory inv) {
 		return ((Holder) inv.getHolder()).dane;
+	}
+	public void ustawDanePanelu(Inventory inv, Object dane) {
+		((Holder) inv.getHolder()).dane = dane;
 	}
 	
 	public void ustawOpen(Consumer<InventoryOpenEvent> open) {

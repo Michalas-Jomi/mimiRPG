@@ -16,16 +16,12 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-
-import com.sun.imageio.plugins.gif.GIFImageReader;
-import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
 
 import net.minecraft.server.v1_16_R3.PacketPlayOutMap;
 
@@ -194,23 +190,6 @@ public class CustomoweMapy extends Komenda implements Listener {
 	    return dimg;
 	} 
 	
-	public static List<byte[]> przeróbGif(File gif) throws IOException {
-	    List<byte[]> wynik = new ArrayList<>();
-	    BufferedImage master = new BufferedImage(128, 128, BufferedImage.TYPE_4BYTE_ABGR);
-
-	    ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
-	    ir.setInput(ImageIO.createImageInputStream(gif));
-	    for (int i = 0; i < ir.getNumImages(true); i++) {
-	    	BufferedImage img = new BufferedImage(128, 128, BufferedImage.TYPE_4BYTE_ABGR);
-	        master.getGraphics().drawImage(ir.read(i), 0, 0, null);
-	        img.setData(master.getData());
-	        
-	        wynik.add(przerób(img));
-	    }
-	    
-	    return wynik;
-	}
-
 	@SuppressWarnings("resource")
 	public static byte[] wczytaj(String nazwa) throws FileNotFoundException, IOException {
 		return new DataInputStream(new FileInputStream(new File(dir, nazwa))).readAllBytes();

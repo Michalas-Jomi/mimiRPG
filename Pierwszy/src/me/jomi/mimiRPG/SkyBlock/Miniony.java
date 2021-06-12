@@ -620,7 +620,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			}
 		});
 	}
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGH)
 	public void stawianieMiniona(BlockPlaceEvent ev) {
 		if (ev.isCancelled()) return;
 		Func.wykonajDlaNieNull(NMS.nms(ev.getItemInHand()), nms ->

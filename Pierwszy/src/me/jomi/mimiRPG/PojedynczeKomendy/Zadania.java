@@ -312,13 +312,13 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 								.clickEvent(Action.RUN_COMMAND, ścieżka + "() org.bukkit.inventory.ItemStack >>"));
 			case WYKOP:
 				return new Napis("§6blok§8: ").dodaj(new Napis(
-						"§e" + (k.getCzego() instanceof Material ? (Material) k.getCzego() : "null"),
+						"§e" + (k.getCzego() instanceof Material ? k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.Material >> "
 						));
 			case ZABIJ:
 				return new Napis("§6mob§8: ").dodaj(new Napis(
-						"§e" + (k.getCzego() instanceof EntityType ? (EntityType) k.getCzego() : "null"),
+						"§e" + (k.getCzego() instanceof EntityType ? k.getCzego() : "null"),
 						"§bKliknij aby ustawić",
 						ścieżka + "() org.bukkit.entity.EntityType >> "
 						));

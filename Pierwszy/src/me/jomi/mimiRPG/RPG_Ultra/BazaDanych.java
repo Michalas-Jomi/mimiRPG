@@ -51,6 +51,7 @@ public class BazaDanych {
 	private static void utwórz() {
 		execute("CREATE TABLE IF NOT EXISTS itemy ("
 				+ "id varchar(32) PRIMARY KEY UNIQUE NOT NULL,"
+				+ "nazwa TEXT,"
 				+ "opis TEXT,"
 				+ "ranga TEXT NOT NULL DEFAULT ZWYCZAJNY,"
 				+ "typ_itemu TEXT NOT NULL DEFAULT BRAK,"
@@ -74,6 +75,15 @@ public class BazaDanych {
 			throw Func.throwEx(e);
 		}
 	}
+	public static ResultSet executeQuery1(String sql) {
+		ResultSet set = executeQuery(sql);
+		try {
+			set.next();
+		} catch (SQLException e) {
+			Func.throwEx(e);
+		}
+		return set;
+	}
 	public static PreparedStatement prepare(String sql) {
 		try {
 			return connection.prepareStatement(sql);
@@ -93,5 +103,21 @@ public class BazaDanych {
 		} catch (SQLException e) {
 			throw Func.throwEx(e);
 		}
+	}
+
+
+	public static void onDisable() {
+		if (stat != null)
+			try {
+				stat.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		if (connection != null)
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 	}
 }

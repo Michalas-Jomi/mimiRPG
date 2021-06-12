@@ -10,6 +10,7 @@ import me.jomi.mimiRPG.util.Func;
 @Moduł
 public enum TypItemu {
 	BRAK,
+	BLOK,
 	NARZĘDZIE,
 	ARMOR,
 	BROŃ,
