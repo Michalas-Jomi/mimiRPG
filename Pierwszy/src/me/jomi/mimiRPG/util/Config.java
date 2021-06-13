@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 
-public class Config {
+public class Config implements IConfig {
 	public File f;
 	private YamlConfiguration plik;
 	private final YamlConfiguration domyślne;
@@ -28,6 +28,9 @@ public class Config {
 	private final String sciezkaJarDomyślny;
 	private final String sciezka;
 	
+	public static Config stwórz(String nazwa) {
+		return new Config(nazwa);
+	}
 	public Config(String nazwa) {
 		this(Main.path + nazwa.replace('\\', '/') + (nazwa.endsWith(".yml") ? "" : ".yml"),
 				"Configi/" + nazwa.substring(nazwa.replace('\\', '/').lastIndexOf("/")+1) + ".yml");
@@ -53,6 +56,7 @@ public class Config {
 	}
 	
 	
+	@Override
 	public void ustaw(String sciezka, Object obj) {
 		plik.set(sciezka, zserializujItem(obj));
 	}
@@ -99,10 +103,12 @@ public class Config {
 		}
 	}
 
+	@Override
 	public Set<String> klucze(){
 		return plik.getKeys(false);
 	}
 	
+	@Override
 	public ConfigurationSection sekcja(String sciezka) {
 		return plik.getConfigurationSection(sciezka);
 	}
@@ -117,6 +123,7 @@ public class Config {
 
 	@SuppressWarnings("unchecked")
 	public <T> T   wczytajPewny  (String sciezka) {return (T) plik.get(sciezka);}
+	@Override
 	public Object  wczytaj		 (String sciezka) {return plik.get(sciezka);}
 	public int 	   wczytajInt	 (String sciezka) {return plik.getInt(sciezka);}
 	public boolean wczytajBoolean(String sciezka) {return plik.getBoolean(sciezka);}
@@ -176,6 +183,7 @@ public class Config {
 	public ItemStack wczytajItemD(String sciezka) {
 		return item(wczytajD(sciezka));
 	}
+	@Override
 	public ItemStack wczytajItem(String sciezka) {
 		return item(wczytaj(sciezka));
 	}
@@ -351,6 +359,7 @@ public class Config {
 		}
 	}
 	
+	@Override
 	public void przeładuj() {
 		stwórz();
 		plik = YamlConfiguration.loadConfiguration(f);

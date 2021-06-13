@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -30,7 +31,7 @@ import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
+import me.jomi.mimiRPG.RPG.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.MimiThread;
 import me.jomi.mimiRPG.util.NMS;
@@ -42,9 +43,16 @@ public class RPG implements Listener {
 	public RPG() {
 		new MimiThread(() -> {
 			while (true) {
-				Bukkit.getOnlinePlayers().forEach(p -> actionBar(GraczRPG.gracz(p)));
+				Bukkit.getOnlinePlayers().forEach(p -> {
+					GraczRPG gracz = GraczRPG.gracz(p);
+					synchronized(gracz) {
+						if (System.currentTimeMillis() - gracz.ostActionBar < 1_500)
+							return;
+					}
+					actionBar(gracz);
+				});
 				try {
-					Thread.sleep(2_000L);
+					Thread.sleep(1_600L);
 				} catch (InterruptedException e) {
 					Func.throwEx(e);
 				}
@@ -69,20 +77,20 @@ public class RPG implements Listener {
 		case SZCZĘŚCIE: 			attr.accept(Attribute.GENERIC_LUCK); 			break;
 		case HP:
 			attr.accept(Attribute.GENERIC_MAX_HEALTH);
-			actionBar(GraczRPG.gracz(ev.getPlayer()));
 			int scale;
 			double hp = ev.statystyka.wartość();
-			if		(hp < 60) 	scale = 2;
-			else if (hp < 100)	scale = 4;
+			if		(hp <  60) 	scale = 2;
+			else if (hp <  100)	scale = 4;
 			else if (hp == 100)	scale = 6;
-			else if (hp < 140)	scale = 8;
-			else if (hp < 200)	scale = 10;
-			else if (hp < 300)	scale = 12;
-			else if (hp < 500)	scale = 14;
-			else if (hp < 750)	scale = 16;
-			else if (hp < 1000)	scale = 18;
+			else if (hp <  140)	scale = 8;
+			else if (hp <  200)	scale = 10;
+			else if (hp <  300)	scale = 12;
+			else if (hp <  500)	scale = 14;
+			else if (hp <  750)	scale = 16;
+			else if (hp <  1000)scale = 18;
 			else				scale = 20;
 			ev.getPlayer().setHealthScale(scale);
+			Bukkit.getScheduler().runTask(Main.plugin, () -> actionBar(GraczRPG.gracz(ev.getPlayer())));
 			break;
 		case PRĘDKOŚĆ_KOPANIA: 	break;
 		case DEF_NIEZALEŻNY: 	break;
@@ -118,7 +126,7 @@ public class RPG implements Listener {
 		if (ev.getDamage() == 0) return;
 		
 		if (ev.getEntity() instanceof Player)
-			actionBar(GraczRPG.gracz((Player) ev.getEntity()));
+			Bukkit.getScheduler().runTask(Main.plugin, () -> actionBar(GraczRPG.gracz((Player) ev.getEntity())));
 	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void dmg(EntityDamageEvent ev) {
@@ -138,7 +146,7 @@ public class RPG implements Listener {
 		if (ev.getAmount() == 0) return;
 		
 		if (ev.getEntity() instanceof Player)
-			actionBar(GraczRPG.gracz((Player) ev.getEntity()));
+			Bukkit.getScheduler().runTask(Main.plugin, () -> actionBar(GraczRPG.gracz((Player) ev.getEntity())));
 	}
 	@EventHandler
 	public void join(PlayerJoinEvent ev) {
@@ -167,6 +175,11 @@ public class RPG implements Listener {
 		
 		ev.setCancelled(true);
 	}
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void zgon(PlayerDeathEvent ev) {
+		ev.setKeepInventory(true);
+		ev.setKeepLevel(true);
+	}
 	
 	// util
 	public static String monety(double ile) {
@@ -182,11 +195,6 @@ public class RPG implements Listener {
 		actionBar(gracz, null);
 	}
 	public static void actionBar(GraczRPG gracz, Consumer<StringBuilder> cons) {
-		synchronized(gracz) {
-			if (cons == null && System.currentTimeMillis() - gracz.ostActionBar < 1_500)
-				return;
-		}
-		
 		double maxHp = gracz.p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
 		double hp = gracz.p.getHealth();
 		

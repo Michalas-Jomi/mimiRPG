@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.Bukkit;
@@ -70,7 +71,6 @@ import me.jomi.mimiRPG.util.Zegar;
 public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar {
 	public static final String prefix = Func.prefix(Miniony.class);
 	static final NamespacedKey kluczMiniona = new NamespacedKey(Main.plugin, "mimiSkyblockMinion");
-	static final String tagAnimowanego = "mimiSkyblockMinionAnimowany";
 	static final String metaMiniona = "mimiSkyblockMinion";
 	public static class DropMiniona extends Mapowany {
 		@Mapowane ItemStack item;
@@ -163,6 +163,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		int timer;
 		int lvl;
 		
+		boolean pełny = false;
+		
 		int wyprodukowane;
 		
 		Minion(ArmorStand as) {
@@ -184,6 +186,9 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			inv.setItem(slotMinionZbierzWszystko, itemMinionZbierzWszystko);
 			inv.setItem(slotMinionPodnieś, itemMinionPodnieś);
 			ustawItemUlepszeniaIInfo();
+			
+			for (int i = 10; i < 10 + 4*9; i += 9)
+				inv.setItem(i, itemMinionUlepszenia);
 			
 			int dostępneSloty = dane.lvle.get(lvl).slotyEq;
 			for (int i=0; i < 15; i++)
@@ -224,8 +229,10 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 					if (Func.losuj(drop.szansa))
 						if (!inv.addItem(drop.item).isEmpty()) {
 							pełne.add(i);
-							if (pełne.size() == dane.produkowaneItemy.size())
+							if (pełne.size() == dane.produkowaneItemy.size()) {
+								ustawPełny(true);
 								return;
+							}
 						}
 				}
 		}
@@ -263,6 +270,12 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		void czas() {
 			if (timer-- <= 0) {
 				timer = dane.lvle.get(lvl).czas;
+				
+				if (pełny)
+					if (inv.firstEmpty() == -1)
+						return;
+					else
+						ustawPełny(false);
 				
 				if (as.isDead()) {
 					Bukkit.getScheduler().runTask(Main.plugin, () -> miniony.remove(as.getUniqueId()));
@@ -439,12 +452,17 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), -1);
 				as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
 						e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).playerConnection.sendPacket(packet));
+				AtomicBoolean pełny = new AtomicBoolean(true);
+				AtomicBoolean cośDropnięte = new AtomicBoolean(false);
 				dane.produkowaneItemy.forEach(drop -> {
 					if (Func.losuj(drop.szansa)) {
-						inv.addItem(drop.item);
+						cośDropnięte.set(true);
+						pełny.set(pełny.get() && !inv.addItem(drop.item).isEmpty());
 						wyprodukowane += drop.item.getAmount();
 					}
 				});
+				if (cośDropnięte.get() && pełny.get())
+					ustawPełny(true);
 				Func.opóznij(5, this::resetAnimacji);
 				return;
 			}
@@ -477,7 +495,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			
 			ArmorStand as = Func.zrespNietykalnyArmorStand(this.as.getLocation());
 			as.getEquipment().setHelmet(new ItemStack(dane.wymaganyBlok));
-			as.addScoreboardTag(tagAnimowanego);
+			as.addScoreboardTag(Main.tagTempMoba);
 			
 			double x = B.getX() - A.getX();
 			double y = B.getY() - A.getY();
@@ -542,6 +560,12 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			eq.setItemInMainHand(Func.stwórzItem(dane.lvle.get(lvl).narzędzie));
 		}
 		
+		public void ustawPełny(boolean pełny) {
+			this.pełny = pełny;
+			as.setCustomNameVisible(pełny);
+			as.setCustomName(pełny ? "§cMój Ekwipunek jest pełny!" : null);
+		}
+		
 		public MinionDaneLvl lvl() {
 			return dane.lvle.get(lvl);
 		}
@@ -554,6 +578,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	static ItemStack itemMinionUlepsz = Func.stwórzItem(Material.DIAMOND, "§aUlepsz");
 	static ItemStack itemMinionPodnieś = Func.stwórzItem(Material.BEDROCK, "§aPodnieś Miniona");
 	static ItemStack itemMinionZbierzWszystko = Func.stwórzItem(Material.CHEST, "§aZbierz wszystko");
+	static ItemStack itemMinionUlepszenia = Func.stwórzItem(Material.GRAY_STAINED_GLASS_PANE, "§aBoostery", "§4Dostępne niebawem!");
+	// TODO boostery miniona
 	
 	static Panel panelMiniona = new Panel(true);
 	
@@ -574,6 +600,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			else if (slot == slotMinionPodnieś) {
 				Minion minion = ((Minion) panelMiniona.dajDanePanelu(ev.getInventory()));
 				Func.dajItem(p, minion.item());
+				minion.zbierzWszystko(p);
 				minion.as.remove();
 				while (!minion.inv.getViewers().isEmpty())
 					minion.inv.getViewers().get(0).closeInventory();
@@ -595,8 +622,6 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		Func.forEach(chunk.getEntities(), e -> {
 			if (e.getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
 				new Minion((ArmorStand) e);
-			if (e.getScoreboardTags().contains(tagAnimowanego))
-				e.remove();
 		});
 	}
 

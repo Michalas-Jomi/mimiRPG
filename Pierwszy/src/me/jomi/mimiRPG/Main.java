@@ -24,6 +24,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
@@ -40,7 +41,7 @@ import me.jomi.mimiRPG.Minigry.Paintball;
 import me.jomi.mimiRPG.Miniony.Miniony_Stare;
 import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
-import me.jomi.mimiRPG.RPG_Ultra.BazaDanych;
+import me.jomi.mimiRPG.RPG.BazaDanych;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.Multi.MultiSkyBlock;
@@ -351,6 +352,8 @@ public class Main extends JavaPlugin implements Listener {
 	}
 	
 	
+	// Wszystkie moby oznaczone tym tagiem zostaną usunięte z chunka chy jest on loadowany
+	public static final String tagTempMoba = "mimiTempMob";
 	// Nie pozwala wymować nic z aktualnie, bądz dopiero będącego otwartym eq, aż do jego zamknięcia
 	public static final String tagBlokWyciąganiaZEq = "mimiBlokadaWyciąganiaZEq";
 	// Zamknie pierwsze otwarte menu i zniknie
@@ -372,7 +375,14 @@ public class Main extends JavaPlugin implements Listener {
 		if (ev.getPlayer().removeScoreboardTag(tagBlokOtwarciaJednorazowy))
 			ev.setCancelled(true);
 	}
-
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void chunkLoad(ChunkLoadEvent ev) {
+		Func.forEach(ev.getChunk().getEntities(), mob -> {
+			if (mob.getScoreboardTags().contains(tagTempMoba))
+				mob.remove();
+		});
+	}
+	
 	static final String permBlokowanieKomend = "mimirpg.blokadakomend.bypass";
 	public static final String tagBlokowanieKomendy = "mimiBlokowanieKomend";
 	@EventHandler

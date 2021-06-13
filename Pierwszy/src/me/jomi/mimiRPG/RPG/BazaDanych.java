@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.io.DataInputStream;
 import java.io.InputStream;

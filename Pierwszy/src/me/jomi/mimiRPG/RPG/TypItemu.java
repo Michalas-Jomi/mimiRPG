@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -26,6 +26,7 @@ public enum TypItemu {
 	WĘDKA	(NARZĘDZIE, BROŃ_BIAŁA),
 	SIEKIERA(NARZĘDZIE, BROŃ_BIAŁA),
 	MIECZ	(BROŃ_BIAŁA),
+	RÓŻDZKA	(BROŃ_DYSTANSOWA),
 	ŁUK		(BROŃ_DYSTANSOWA),
 	KUSZA	(BROŃ_DYSTANSOWA),
 	
@@ -67,5 +68,17 @@ public enum TypItemu {
 	}
 	static void ustawTyp(NBTTagCompound tag, TypItemu typ) {
 		tag.setString("typ_itemu", typ.name());
+	}
+
+	public boolean końcowa() {
+		if (this == SPRZĘT)
+			return false;
+		for (TypItemu typ : TypItemu.values()) {
+			if (typ == this)
+				continue;
+			if (typ.pasuje(this))
+				return false;
+		}
+		return true;
 	}
 }

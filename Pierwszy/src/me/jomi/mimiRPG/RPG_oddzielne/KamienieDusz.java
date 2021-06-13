@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG;
+package me.jomi.mimiRPG.RPG_oddzielne;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,9 +24,9 @@ import net.minecraft.server.v1_16_R3.WorldServer;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
-import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Statystyka;
-import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.StatystykaProcentowa;
+import me.jomi.mimiRPG.RPG.GraczRPG.Statystyka;
+import me.jomi.mimiRPG.RPG.GraczRPG.StatystykaProcentowa;
+import me.jomi.mimiRPG.RPG.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
 

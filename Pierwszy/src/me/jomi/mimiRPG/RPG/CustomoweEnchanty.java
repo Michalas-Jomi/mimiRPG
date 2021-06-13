@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -23,9 +23,9 @@ import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG_Ultra.Enchant.PE;
-import me.jomi.mimiRPG.RPG_Ultra.Enchant.PESW;
-import me.jomi.mimiRPG.RPG_Ultra.Enchant.PEW;
+import me.jomi.mimiRPG.RPG.Enchant.PE;
+import me.jomi.mimiRPG.RPG.Enchant.PESW;
+import me.jomi.mimiRPG.RPG.Enchant.PEW;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Panel;

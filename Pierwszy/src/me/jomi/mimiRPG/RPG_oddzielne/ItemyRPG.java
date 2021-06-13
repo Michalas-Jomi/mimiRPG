@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG;
+package me.jomi.mimiRPG.RPG_oddzielne;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG.ItemyRPG.Rozwój;
+import me.jomi.mimiRPG.RPG_oddzielne.ItemyRPG.Rozwój;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Funkcje.TriConsumer;

@@ -224,11 +224,17 @@ public abstract class Func {
 		return meta.hasDisplayName() ? meta.getDisplayName() : Func.enumToString(item.getType());
 	}
 	public static String enumToString(Enum<?> en) {
+		return title(en.toString());
+	}
+	public static String title(String str) {
 		StringBuilder strB = new StringBuilder();
 		boolean duża = true;
-		for (char c : en.toString().toLowerCase().replace("_", " ").toCharArray()) {
+		char ost = ' ';
+		for (char c : str.toLowerCase().replace("_", " ").toCharArray()) {
 			strB.append(duża ? Character.toUpperCase(c) : c);
-			duża = c == ' ';
+			if (c != '§' && ost != '§')
+				duża = c == ' ';
+			ost = c;
 		}
 		return strB.toString();
 	}

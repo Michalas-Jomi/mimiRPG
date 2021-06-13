@@ -1,5 +1,6 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -9,7 +10,11 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -21,6 +26,7 @@ import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_16_R3.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -37,8 +43,11 @@ import net.minecraft.server.v1_16_R3.EntityLiving;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
 import me.jomi.mimiRPG.Baza;
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
+import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.util.AutoString;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
@@ -55,8 +64,10 @@ import lombok.Getter;
 
 @Moduł
 public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
+	public static final String prefix = Func.prefix(Bestie.class);
 	public Bestie() {
 		super("bestie");
+		ustawKomende("edytujspawnerbesti", null, null);
 
 		panelKategorie.ustawClick(ev -> {
 			ItemStack item = ev.getCurrentItem();
@@ -73,13 +84,15 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			String grupa = NMS.nms(item).getTag().getString("mimiBestiaInfo");
 			otwórzPanel((Player) ev.getWhoClicked(), kategoria, grupa);
 		});
+		
+		Bukkit.getWorlds().forEach(world -> Func.forEach(world.getLoadedChunks(), this::chunkLoad));
 	}
 	
 	public static final String tagBesti = "mimiBestia";
 	public static final String metaBesti = "mimiBestia";
 	public static final String metaSpawnera = "mimiBestiaSpawner";
 	
-	public static class Grupa<T> {
+	public static class Grupa<T> extends AutoString {
 		public final Map<String, T> mapa = new HashMap<>();
 		
 		public final String nazwa;
@@ -107,7 +120,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			this.item = item;
 		}
 	}
-	public static class DropRPG {
+	public static class DropRPG extends AutoString {
 		public final ItemStack item;
 		public final double szansa;
 		public final int min_ilość;
@@ -134,27 +147,30 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		private String str;
 		@Override
 		public String toString() {
-			if (str != null)
-				return str;
-			
-			StringBuilder strB = new StringBuilder();
-			
-			strB.append("§2");
-			strB.append(Func.nazwaItemku(item));
-			strB.append(" §a");
-			boolean nierówne = min_ilość != max_ilość;
-			if (min_ilość != 1 || nierówne)
-				strB.append('x').append(min_ilość);
-			if (nierówne)
-				strB.append('-').append(max_ilość);
-			
-			if (szansa < 1)
-				strB.append(' ').append(Func.DoubleToString(Func.zaokrąglij(szansa * 100, 2))).append('%');
-			
-			return str = strB.toString();
+			if (str == null) {
+				StringBuilder strB = new StringBuilder();
+				
+				strB.append(Ranga.ranga(item).kolor);
+				strB.append(Func.nazwaItemku(item));
+				strB.append("§a");
+				boolean nierówne = min_ilość != max_ilość;
+				if (min_ilość != 1 || nierówne)
+					strB.append(" x").append(min_ilość);
+				if (nierówne)
+					strB.append('-').append(max_ilość);
+				
+				if (szansa < 1)
+					strB.append(' ').append(Func.DoubleToString(Func.zaokrąglij(szansa * 100, 2))).append('%');
+				
+				str = strB.toString();
+				if (str.contains("&%"))
+					str = Func.koloruj(str);
+				
+			}
+			return str;
 		}
 	}
-	public static class Bestia {
+	public static class Bestia extends AutoString{
 		static final Map<String, Grupa<Grupa<Bestia>>> mapa = new HashMap<>();
 		
 		public static Bestia bestia(String kategoria, String grupa, String nazwa) {
@@ -182,8 +198,16 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		public final ItemStack ikona;
 		public final int slot;
 		
+		public final ItemStack hełm;
+		public final ItemStack klata;
+		public final ItemStack spodnie;
+		public final ItemStack buty;
+		public final ItemStack broń;
+		public final ItemStack broń_lewa;
+		
 		Bestia(List<DropRPG> dropy, double kasa, int exp, int exp_łowcy, String kategoria, String grupa, String nazwa,
-				EntityType mob, double hp, double dmg, double def, double speed, ItemStack ikona, int slot) {
+				EntityType mob, double hp, double dmg, double def, double speed, ItemStack ikona, int slot,
+				ItemStack hełm, ItemStack klata, ItemStack spodnie, ItemStack buty, ItemStack broń, ItemStack broń_lewa) {
 			this.dropy = Func.nieNull(dropy);
 			this.exp_łowcy = exp_łowcy;
 			this.kasa = kasa;
@@ -199,10 +223,18 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			this.grupa		= grupa 	== null ? nazwa : grupa;
 			this.kategoria	= kategoria == null ? grupa : kategoria;
 			
+			this.hełm = hełm;
+			this.klata = klata;
+			this.spodnie = spodnie;
+			this.buty = buty;
+			this.broń = broń;
+			this.broń_lewa = broń_lewa;
+			
 			this.ikona = ikona != null ? ikona : Func.stwórzItem(Material.BONE, "&c" + nazwa);
 			if (!this.ikona.hasItemMeta() || !this.ikona.getItemMeta().hasDisplayName())
 				Func.nazwij(this.ikona, "&c" + nazwa);
 			this.slot = slot;
+			
 			
 			if (!mapa.containsKey(kategoria))
 				mapa.put(kategoria, new Grupa<>(kategoria));
@@ -226,18 +258,25 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			((CraftWorld) loc.getWorld()).addEntity(mob, SpawnReason.CUSTOM, null);
 
-			Func.ustawMetadate(mob.getBukkitEntity(), metaBesti, this);
+			LivingEntity bukkit = (LivingEntity) mob.getBukkitEntity();
+			
+			Func.ustawMetadate(bukkit, metaBesti, this);
 			mob.addScoreboardTag(tagBesti);
 			
-			return mob.getBukkitEntity();
+			Func.wykonajDlaNieNull(hełm,	 bukkit.getEquipment()::setHelmet);
+			Func.wykonajDlaNieNull(klata,	 bukkit.getEquipment()::setChestplate);
+			Func.wykonajDlaNieNull(spodnie,	 bukkit.getEquipment()::setLeggings);
+			Func.wykonajDlaNieNull(buty,	 bukkit.getEquipment()::setBoots);
+			Func.wykonajDlaNieNull(broń,	 bukkit.getEquipment()::setItemInMainHand);
+			Func.wykonajDlaNieNull(broń_lewa,bukkit.getEquipment()::setItemInOffHand);
+			
+			return bukkit;
 		}
 	
-	
-		public boolean zabił(GraczRPG gracz) {
-			return gracz.getBestie(this).hasKey("kill");
+		public int getKille(GraczRPG gracz) {
+			return gracz.getBestie(this).getInt("kill");
 		}
 	}
-	
 	
 	
 	public Bestia bestia(Entity mob) {
@@ -247,12 +286,15 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			return null;
 	}
 	
-	@EventHandler(priority = EventPriority.LOW)
-	public void chunkLoad(ChunkLoadEvent ev) {
-		Func.forEach(ev.getChunk().getEntities(), e -> {
+	private void chunkLoad(Chunk chunk) {
+		Func.forEach(chunk.getEntities(), e -> {
 			if (e.getScoreboardTags().contains(tagBesti) && !e.hasMetadata(metaBesti))
 				e.remove();
 		});
+	}
+	@EventHandler(priority = EventPriority.LOW)
+	public void chunkLoad(ChunkLoadEvent ev) {
+		chunkLoad(ev.getChunk());
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void śmierćMoba(EntityDeathEvent ev) {
@@ -287,7 +329,12 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 				gracz.dodajKase(bestia.kasa);
 
 				NBTTagCompound data = gracz.getBestie(bestia);
-				data.setInt("kill", data.getInt("kill") + 1);
+				int kille = data.getInt("kill");
+				if (kille == 0) {
+					Func.powiadom(prefix, killer, "Pokonałeś %s! Od znajdziesz go pod §a/bestie", bestia.nazwa);
+					Main.log(prefix + "%s zabił po raz pierwszy bestie %s", killer.getName(), bestia.nazwa);
+				}
+				data.setInt("kill", kille + 1);
 				
 				dropnięte.forEach(drop -> {
 					int[] dropy = data.getIntArray("dropy");
@@ -302,7 +349,11 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 							nowe[i] = dropy[i];
 						nowe[dropy.length] = hash;
 						data.setIntArray("dropy", nowe);
-					}
+						Func.powiadom(prefix, killer, "Zdobyłeś %s z bestii %s, od teraz będziesz widzieć to pod /bestie!", Func.nazwaItemku(drop.item), bestia.nazwa);
+						Main.log(prefix + "%s wydropił %s z besti %s po raz pierwszy", killer.getName(), Func.nazwaItemku(drop.item), bestia.nazwa);
+					} else
+						if (Ranga.ranga(drop.item).ordinal() > 1)
+							Func.powiadom(prefix, killer, "Znalazłeś %s!", Func.nazwaItemku(drop.item));
 				});
 			});
 		}, () -> ev.setDroppedExp(0));
@@ -324,6 +375,9 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		@Override
 		protected void Init() {
+			if (locRóg1 == null || locRóg2 == null || kategoria == null)
+				return;
+			
 			double[][] w = new double[3][2];
 
 			BiConsumer<Integer, Function<Location, Double>> bic = (i, func) -> {
@@ -365,8 +419,13 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			Location loc = null;
 			for (int i=0; i < 10; i++) {
 				loc = losuj();
-				if (loc.getBlock().isPassable() && loc.clone().add(0, 1, 0).getBlock().isPassable())
+				if (loc.getBlock().isPassable() && loc.clone().add(0, 1, 0).getBlock().isPassable()) {
+					if (loc.clone().add(0, -1, 0).getBlock().getType().isAir()) {
+						while (loc.add(0, -1, 0).getBlock().getType().isAir());
+						loc.add(0, 1, 0);
+					}
 					break;
+				}
 				loc = null;
 			}
 			if (loc == null)
@@ -386,7 +445,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 	
-
+	EdytorOgólny<Spawner> edytor = new EdytorOgólny<>("edytujspawnerbesti", Spawner.class);
 	Panel panelKategorie = new Panel(true);
 	Panel panelGrupy  = new Panel(true);
 	Panel panelBestie = new Panel(true);
@@ -415,14 +474,25 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			List<String> lore = Func.nieNull(meta.getLore());
 			
 			AtomicInteger odblokowane = new AtomicInteger();
+			AtomicInteger kille = new AtomicInteger();
+			AtomicInteger zgony = new AtomicInteger();
 			
 			grupa.mapa.values().forEach(bestia -> {
-				if (bestia.zabił(gracz))
+				NBTTagCompound dane = gracz.getBestie(bestia);
+				int kile = dane.getInt("kill");
+				if (kile > 0)
 					odblokowane.getAndIncrement();
+				kille.getAndAdd(kile);
+				zgony.getAndAdd(dane.getInt("zgon"));
 			});
 			
+			lore.add("§7Kille§8:§a " + kille.get());
+			lore.add("§7Zgony§8:§a " + zgony.get());
+			lore.add(" ");
+			
 			lore.add(Func.msg("Odblokowano %s/%s", odblokowane.get(), grupa.mapa.size()));
-			lore.add("§a|" + Func.progres(odblokowane.get(), grupa.mapa.size(), 20, "-", "§a", "§7") + " (" + Func.zaokrąglij(odblokowane.get() / (double) grupa.mapa.size(), 1) + "%)");
+			lore.add("§a|" + Func.progres(odblokowane.get(), grupa.mapa.size(), 20, "-", "§a", "§7") + "| (" +
+						Func.zaokrąglij(odblokowane.get() / (double) grupa.mapa.size() * 100, 1) + "%)");
 			lore.add(" ");
 			
 
@@ -446,44 +516,46 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			ItemMeta meta = item.getItemMeta();
 			List<String> lore = Func.nieNull(meta.getLore());
 			
-			if (bestia.zabił(gracz)) {
-				NBTTagCompound dane = gracz.getBestie(bestia);
+			NBTTagCompound dane = gracz.getBestie(bestia);
+			int kille = dane.getInt("kill");
+			if (kille > 0) {
 				
 				if (bestia.kasa		 != 0) lore.add("§7Monety§8: §6"	+ RPG.monety(bestia.kasa));
-				if (bestia.exp		 != 0) lore.add("§7Exp§8: §6"		+ Func.IntToString(bestia.exp));
 				if (bestia.exp_łowcy != 0) lore.add("§7Exp Łowcy§8: §6"	+ Func.IntToString(bestia.exp_łowcy));
+				if (bestia.exp		 != 0) lore.add("§7Exp§8: §6"		+ Func.IntToString(bestia.exp));
 				lore.add(" ");
 				
-				lore.add("§7Kille§8: §a" + dane.getInt("kill"));
+				lore.add("§7Kille§8: §a" + kille);
 				lore.add("§7Zgony§8: §a" + dane.getInt("zgon"));
 				lore.add(" ");
 				
-				
-				Map<Ranga, List<DropRPG>> mapaDropów = new EnumMap<>(Ranga.class);
-				bestia.dropy.forEach(drop -> {
-					Ranga ranga = Ranga.ranga(drop.item);
-					List<DropRPG> lista = mapaDropów.get(ranga);
-					if (lista == null)
-						mapaDropów.put(ranga, lista = new ArrayList<>());
-					lista.add(drop);
-				});
-				
-				Func.forEach(Ranga.values(), ranga -> {
-					Func.wykonajDlaNieNull(mapaDropów.get(ranga), lista -> {
-						lore.add(ranga.toString());
-						lista.forEach(drop -> {
-							String nazwa = Func.nazwaItemku(drop.item);
-							int hash = nazwa.hashCode();
-							boolean był = false;
-							for (int dropnięte : dane.getIntArray("dropy"))
-								if (był = (dropnięte == hash))
-									break;
-							lore.add(był ? drop.toString() : "§7???");
+				if (!bestia.dropy.isEmpty()) {
+					lore.add("§6§lDropy:");
+					Map<Ranga, List<DropRPG>> mapaDropów = new EnumMap<>(Ranga.class);
+					bestia.dropy.forEach(drop -> {
+						Ranga ranga = Ranga.ranga(drop.item);
+						List<DropRPG> lista = mapaDropów.get(ranga);
+						if (lista == null)
+							mapaDropów.put(ranga, lista = new ArrayList<>());
+						lista.add(drop);
+					});
+					
+					Func.forEach(Ranga.values(), ranga -> {
+						Func.wykonajDlaNieNull(mapaDropów.get(ranga), lista -> {
+							lore.add(Func.enumToString(ranga));
+							lista.forEach(drop -> {
+								String nazwa = Func.nazwaItemku(drop.item);
+								int hash = nazwa.hashCode();
+								boolean był = false;
+								for (int dropnięte : dane.getIntArray("dropy"))
+									if (był = (dropnięte == hash))
+										break;
+								lore.add(był ? "§b- " + drop.toString() : "§7???");
+							});
+							lore.add(" ");
 						});
 					});
-				});
-				
-				
+				}
 			} else {
 				item.setType(Material.GRAY_DYE);
 				lore.add("§7????");
@@ -498,33 +570,34 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		p.openInventory(inv);
 	}
 	
-	List<Spawner> spawnery = new ArrayList<>();
+	static List<Spawner> spawnery = new ArrayList<>();
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public void przeładuj() {
-		Config config = new Config("Bestie");
 		Bestia.mapa.clear();
 		
 		List<Runnable> odłożone = new ArrayList<>();
 		
-		config.klucze().forEach(kategoria -> {
-			ConfigurationSection sekcjaKategori = config.sekcja(kategoria);
-			sekcjaKategori.getKeys(false).forEach(grupa -> {
-				ConfigurationSection sekcjaGrupy = sekcjaKategori.getConfigurationSection(grupa);
+		File dir = new File(Main.path + "Bestie");
+		dir.mkdirs();
+		Func.forEach(dir.listFiles(), dirKategoria-> {
+			String kategoria = dirKategoria.getName();
+			Func.forEach(dirKategoria.listFiles(), fConfigGrupy -> {
+				Config config = new Config(fConfigGrupy);
 
-				if (grupa.equals("info")) {
+				if (fConfigGrupy.getName().equals("info.yml")) {
 					odłożone.add(() -> {
 						Grupa<Grupa<Bestia>> grp = Bestia.mapa.get(kategoria);
-						grp.setItem(Config.item(sekcjaGrupy.get("item")));
-						grp.slot = sekcjaGrupy.getInt("slot");
+						grp.setItem(config.wczytajItem("item"));
+						grp.slot = config.wczytajInt("slot");
 					});
 					return;
 				}
 				
-				sekcjaGrupy.getKeys(false).forEach(nazwa -> {
-					ConfigurationSection sekcja = sekcjaGrupy.getConfigurationSection(nazwa);
-
+				String grupa = fConfigGrupy.getName().substring(0, fConfigGrupy.getName().length() - 4);
+				config.klucze().forEach(nazwa -> {
+					ConfigurationSection sekcja = config.sekcja(nazwa);
+					
 					if (nazwa.equals("info")) {
 						odłożone.add(() -> {
 							Grupa<Bestia> grp = Bestia.mapa.get(kategoria).mapa.get(grupa);
@@ -539,12 +612,33 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 						List<String> części = Func.tnij(drop, " ");
 						List<String> min_max = Func.tnij(części.get(2), "-");
 						dropy.add(new DropRPG(
-								Config.item(części.get(0)),
+								ZfaktoryzowaneItemy.dajItem(części.get(0)),
 								Func.Double(części.get(1)),
 								Func.Int(min_max.get(0)),
 								Func.Int(min_max.get(1))
 								));
 					});
+					
+					Function<String, ItemStack> func = str -> {
+						if (str == null)
+							return null;
+						
+						List<String> części = Func.tnij(str, " ");
+						
+						ItemStack item = Func.stwórzItem(Func.StringToEnum(Material.class, części.remove(0)));
+						
+						for (String część : części) {
+							if (część.equalsIgnoreCase("ench"))
+								Func.połysk(item);
+							else if (część.startsWith("#")) {
+								UnaryOperator<Integer> parse = i -> Integer.parseInt(część.substring(i, i+2), 16);
+								Func.pokolorujZbroje(item, Color.fromRGB(parse.apply(1), parse.apply(3), parse.apply(5)));
+							} else
+								Main.warn(prefix + "Niepoprawny argument \"" + część + "\" w dropie bestii " + nazwa);
+						}
+						
+						return item;
+					};
 					
 					new Bestia(
 							dropy,
@@ -559,8 +653,14 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 							sekcja.getDouble("dmg", 1d),
 							sekcja.getDouble("def", 0d),
 							sekcja.getDouble("speed", .21d),
-							Config.item(sekcja.get("ikona")),
-							sekcja.getInt("slot")
+							Config.item(sekcja.get("info.item")),
+							sekcja.getInt("info.slot"),
+							func.apply(sekcja.getString("itemy.hełm")),
+							func.apply(sekcja.getString("itemy.zbroja")),
+							func.apply(sekcja.getString("itemy.spodnie")),
+							func.apply(sekcja.getString("itemy.buty")),
+							func.apply(sekcja.getString("itemy.broń")),
+							func.apply(sekcja.getString("itemy.broń_lewa"))
 							);
 				});
 			});
@@ -574,20 +674,29 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			}
 		});
 		
-		spawnery = Func.nieNull((List<Spawner>) new Config("configi/Bestie Spawnery").wczytajPewny("spawnery"));
+		spawnery.clear();
+		Config config = new Config("configi/Bestie Spawnery");
+		config.klucze().forEach(klucz -> spawnery.add(config.wczytajPewny(klucz)));
+		
 	}
 	@Override
 	public Krotka<String, Object> raport() {
-		return Func.r("wczytane Bestie", Bestia.mapa.size());
+		return Func.r("wczytane Bestie/Spawnery", Bestia.mapa.size() + "/" + spawnery.size());
 	}
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		if (cmd.getName().equals("edytujspawnerbesti"))
+			return edytor.wymuśConfig_onTabComplete(new Config("configi/Bestie Spawnery"), sender, label, args);
 		return null;
 	}
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) throws MsgCmdError {
-		if (!(sender instanceof Player)) return Func.powiadom(sender, "Musisz być graczem żeby tego użyć");
+		if (cmd.getName().equals("edytujspawnerbesti"))
+			return edytor.wymuśConfig_onCommand(prefix, "configi/Bestie Spawnery", sender, label, args);
+		
+		if (!(sender instanceof Player))
+			throwFormatMsg("Musisz być graczem żeby tego użyć");
 		
 		otwórzPanel((Player) sender);
 		

@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import static me.jomi.mimiRPG.util.NMS.nms;
 
@@ -39,7 +39,7 @@ import net.minecraft.server.v1_16_R3.SoundCategory;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG_Ultra.KopanieRPG.Api.WykopanyBlokEvent;
+import me.jomi.mimiRPG.RPG.KopanieRPG.Api.WykopanyBlokEvent;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
@@ -54,9 +54,9 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			public final List<Drop> dropy = new ArrayList<>();
 			public final Blok blok;
 			
-			public WykopanyBlokEvent(Player p, Block block) {
+			public WykopanyBlokEvent(Player p, Blok blok, Block block) {
 				super(block, p);
-				this.blok = Blok.daj(block.getType());
+				this.blok = blok;
 			}
 			
 			private static final HandlerList handlers = new HandlerList();
@@ -82,23 +82,29 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		}
 	}
 	public static class Blok {
-		public final Material mat;
-		public final Drop drop;
-		public final int wytrzymałośćBloku;
+		static final Map<Material, Blok> bloki = new EnumMap<>(Material.class);
+		
 		public final int exp;
+		public final Drop drop;
+		public final Material mat;
+		public final int exp_drwala;
 		public final int exp_kopacza;
-
-		public Blok(Material mat, Drop drop, int wytrzymałośćBloku, int exp, int exp_kopacza) {
+		public final int wytrzymałośćBloku;
+		public final TypItemu efektywneNarzędzie;
+		
+		public Blok(Material mat, TypItemu efektywneNarzędzie, Drop drop, int wytrzymałośćBloku, int exp, int exp_kopacza, int exp_drwala) {
 			this.exp = exp;
 			this.mat = mat;
 			this.drop = drop;
+			this.exp_drwala = exp_drwala;
 			this.exp_kopacza = exp_kopacza;
 			this.wytrzymałośćBloku = wytrzymałośćBloku;
+			this.efektywneNarzędzie = efektywneNarzędzie;
+			
 			bloki.put(mat, this);
 		}
 		
 		
-		static final Map<Material, Blok> bloki = new EnumMap<>(Material.class);
 		public static Blok daj(Material mat) {
 			return bloki.get(mat);
 		}
@@ -161,18 +167,19 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			Blok blok = Blok.daj(NMS.loc(p.getWorld(), pos).getBlock().getType());
 			int mocBloku  = blok == null ? -1 : blok.wytrzymałośćBloku;
 			int kontrolny = this.kontrolny++;
+			boolean efektywne = blok == null ? false : TypItemu.typ(p.getInventory().getItemInMainHand()).pasuje(blok.efektywneNarzędzie);
 			
 			Func.ustawMetadate(p, metaKontrolny, kontrolny);
-			niszczenie(p, pos, GraczRPG.gracz(p), mocBloku, mocBloku == -1 ? Integer.MAX_VALUE : mocBloku, kontrolny);
+			niszczenie(p, blok, efektywne, pos, GraczRPG.gracz(p), mocBloku, mocBloku == -1 ? Integer.MAX_VALUE : mocBloku, kontrolny);
 		}
 	}
-	private void niszczenie(Player p, BlockPosition pos, GraczRPG graczRPG, int wytrzymałość, int pozostało, int kontrolny) {
+	private void niszczenie(Player p, Blok blok, boolean efektywneNarzędzie, BlockPosition pos, GraczRPG graczRPG, int wytrzymałość, int pozostało, int kontrolny) {
 		if (!p.hasMetadata(metaKontrolny) || p.getMetadata(metaKontrolny).get(0).asInt() != kontrolny) return;
 		
 		if (pozostało <= 0) {
 			Location loc = new Location(p.getWorld(), pos.getX(), pos.getY(), pos.getZ());
 			
-			WykopanyBlokEvent ev = new WykopanyBlokEvent(p, loc.getBlock());
+			WykopanyBlokEvent ev = new WykopanyBlokEvent(p, blok, loc.getBlock());
 			Bukkit.getPluginManager().callEvent(ev);
 			
 			if (ev.isCancelled()) return;
@@ -195,11 +202,11 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			
 			niszcz(p, pos, (int) ((1 - procent) * 11) - 1);
 			
-			double prędkośćKopania = graczRPG.prędkośćKopania.wartość();
+			double prędkośćKopania = efektywneNarzędzie ? graczRPG.prędkośćKopania.wartość() : 100;
 			Func.opóznij(pozostało > prędkośćKopania ? 5 : (int) (5 * (1 - pozostało / prędkośćKopania)),
-					() -> niszczenie(p, pos, graczRPG, wytrzymałość, (int) (pozostało - prędkośćKopania), kontrolny));
+					() -> niszczenie(p, blok, efektywneNarzędzie, pos, graczRPG, wytrzymałość, (int) (pozostało - prędkośćKopania), kontrolny));
 		} else
-			Func.opóznij(5, () -> niszczenie(p, pos, graczRPG, wytrzymałość, pozostało, kontrolny));
+			Func.opóznij(5, () -> niszczenie(p, blok, efektywneNarzędzie, pos, graczRPG, wytrzymałość, pozostało, kontrolny));
 	}
 
 	public static void niszcz(Player p, BlockPosition pos, int lvl) {
@@ -226,7 +233,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		}
 		
 		
-		WykopanyBlokEvent ev2 = new WykopanyBlokEvent(ev.getPlayer(), ev.getBlock());
+		WykopanyBlokEvent ev2 = new WykopanyBlokEvent(ev.getPlayer(), Blok.daj(ev.getBlock().getType()), ev.getBlock());
 		
 		ev2.setCancelled(ev.isCancelled());
 		ev2.setDropItems(ev.isDropItems());
@@ -246,8 +253,11 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void wykopany(WykopanyBlokEvent ev) {
-		if (!ev.isCancelled() && ev.blok != null)
-			GraczRPG.gracz(ev.getPlayer()).ścieżka_kopacz.zwiększExp(ev.blok.exp_kopacza);
+		if (!ev.isCancelled() && ev.blok != null) {
+			GraczRPG gracz = GraczRPG.gracz(ev.getPlayer());
+			gracz.ścieżka_kopacz.zwiększExp(ev.blok.exp_kopacza);
+			gracz.ścieżka_drwal .zwiększExp(ev.blok.exp_drwala);
+		}
 	}
 	
 	@Override
@@ -259,13 +269,16 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		config.klucze().forEach(klucz -> {
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			ConfigurationSection sekcja = config.sekcja(klucz);
+			TypItemu narzędzie = Func.StringToEnum(TypItemu.class, sekcja.getString("efektywne narzędzie", "BRAK"));
 			
 			new Blok(
 					mat,
+					narzędzie,
 					Config.drop(sekcja.get("drop")),
 					sekcja.getInt("wytrzymałość", 2000),
 					sekcja.getInt("exp", 0),
-					sekcja.getInt("exp_kopacza", 1)
+					sekcja.getInt("exp kopacza", 1),
+					sekcja.getInt("exp drwala", 0)
 					);
 		});
 	}

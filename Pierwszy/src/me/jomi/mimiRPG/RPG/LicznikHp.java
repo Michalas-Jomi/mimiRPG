@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;

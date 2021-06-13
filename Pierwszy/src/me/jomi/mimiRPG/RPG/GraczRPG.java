@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +15,10 @@ import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import net.minecraft.server.v1_16_R3.NBTTagIntArray;
 
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.RPG_Ultra.Bestie.Bestia;
-import me.jomi.mimiRPG.RPG_Ultra.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
+import me.jomi.mimiRPG.RPG.Bestie.Bestia;
+import me.jomi.mimiRPG.RPG.GraczRPG.Api.ZmianaStatystykiGraczaEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
-
-import lombok.Getter;
 
 public class GraczRPG {
 	private static final NamespacedKey kluczGraczRPG = new NamespacedKey(Main.plugin, "mimiGraczRPG");
@@ -125,33 +123,10 @@ public class GraczRPG {
 		}
 	}
 
-	public static class ŚcieżkaDoświadczenia {
-		public static final ŚcieżkaDoświadczenia farmer		= new ŚcieżkaDoświadczenia("Farmer",	"Zbieraj plony i zabijaj zwięrzęta", new int[]{20, 100,250,500});
-		public static final ŚcieżkaDoświadczenia łowca		= new ŚcieżkaDoświadczenia("Łowca",		"Zabijaj moby", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
-		public static final ŚcieżkaDoświadczenia kopacz		= new ŚcieżkaDoświadczenia("Kopacz",	"Kop rudy i kamień", new int[]{20, 100, 250, 500, 1000, 2500});
-		public static final ŚcieżkaDoświadczenia drwal		= new ŚcieżkaDoświadczenia("Drwal",		"Zcinaj drzewa", new int[]{20, 100, 250, 500, 1000, 2500,5000});
-		public static final ŚcieżkaDoświadczenia rybak		= new ŚcieżkaDoświadczenia("Rybak",		"Łów ryby", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
-		public static final ŚcieżkaDoświadczenia mag		= new ŚcieżkaDoświadczenia("Mag",		"Enchantuj", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
-		public static final ŚcieżkaDoświadczenia alchemik	= new ŚcieżkaDoświadczenia("Alchemik",	"warz potki", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
-		public static final ŚcieżkaDoświadczenia budowniczy	= new ŚcieżkaDoświadczenia("Budowniczy","stawiaj bloki", new int[]{20, 100, 250, 500, 1000, 2500, 5000});
-		
-
-		// 0 - lvl 0 -> 1
-		// 1 - lvl 1 -> 2
-		public final int[] potrzebyExp;
-		public final String nazwa;
-		public final String opis;
-		
-		private ŚcieżkaDoświadczenia(String nazwa, String opis, int[] potrzebyExp) {
-			this.potrzebyExp = potrzebyExp;
-			this.nazwa = nazwa;
-			this.opis = opis;
-		}
-	}
 	public class ŚcieżkaDoświadczeniaGracz {
-		@Getter private int exp;
-		@Getter private int lvl;
-		private final transient ŚcieżkaDoświadczenia ścieżka;
+		private int exp;
+		private int lvl;
+		public final transient ŚcieżkaDoświadczenia ścieżka;
 		
 		ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia ścieżka) {
 			this.ścieżka = ścieżka;
@@ -159,13 +134,13 @@ public class GraczRPG {
 		}
 		
 		public void zwiększExp(int oIle) {
-			if (exp == -1)
+			if (oIle == 0 || exp == -1)
 				return;
 			exp += oIle;
 			while (exp != -1 && exp >= ścieżka.potrzebyExp[lvl]) {
 				exp -= ścieżka.potrzebyExp[lvl++];
-				p.sendMessage(RPG.prefix + Func.msg("Awansowałeś w ścieżce %s %s -> %s §alvl§c!", ścieżka.nazwa, lvl - 1, lvl));
-				Main.log(RPG.prefix + "%s awansował w ścieżce rozwoju %s %s -> %s lvl", p.getName(), ścieżka.nazwa, lvl - 1, lvl);
+				p.sendMessage(RPG.prefix + Func.msg("Awansowałeś w ścieżce %s %s -> %s §alvl§c!", ścieżka.nazwa, lvl, lvl + 1));
+				Main.log(RPG.prefix + "%s awansował w ścieżce rozwoju %s %s -> %s lvl", p.getName(), ścieżka.nazwa, lvl, lvl + 1);
 				if (lvl >= ścieżka.potrzebyExp.length)
 					exp = -1;
 			}
@@ -181,9 +156,9 @@ public class GraczRPG {
 					strB.append(" / ");
 					strB.append(ścieżka.potrzebyExp[lvl]);
 					strB.append(" +");
-					strB.append(exp);
+					strB.append(oIle);
 					strB.append(" (");
-					strB.append(Func.zaokrąglij(exp / (double) ścieżka.potrzebyExp[lvl], 1));
+					strB.append(Func.zaokrąglij(exp / (double) ścieżka.potrzebyExp[lvl] * 100, 1));
 					strB.append("%)");
 				});
 		}
@@ -198,6 +173,18 @@ public class GraczRPG {
 				exp = exp_lvl[0];
 				lvl = exp_lvl[1];
 			}
+		}
+	
+		public int getExp() {
+			return exp;
+		}
+		public int getLvl() {
+			return lvl + 1;
+		}
+		public int getPotrzebnyExp() {
+			if (exp == -1)
+				return 0;
+			return ścieżka.potrzebyExp[lvl];
 		}
 	}
 	
@@ -220,29 +207,12 @@ public class GraczRPG {
 	public final Statystyka siła				= new Statystyka(Atrybut.SIŁA,				1);
 	public final Statystyka prędkośćAtaku		= new Statystyka(Atrybut.PRĘDKOŚĆ_ATAKU,	4);
 	public final Statystyka inteligencja		= new Statystyka(Atrybut.INTELIGENCJA,		100);
-	public Statystyka statystyka(Atrybut attr) {
-		switch (attr) {
-		case DEF:				return def;
-		case DEF_NIEZALEŻNY:	return defNiezależny;
-		case HP:				return zdrowie;
-		case INTELIGENCJA:		return inteligencja;
-		case KRYT_DMG:			return dmgKryt;
-		case KRYT_SZANSA:		return szansaKryta;
-		case PRĘDKOŚĆ_ATAKU:	return prędkośćAtaku;
-		case PRĘDKOŚĆ_CHODZENIA:return prędkośćChodzenia;
-		case PRĘDKOŚĆ_KOPANIA:	return prędkośćKopania;
-		case SIŁA:				return siła;
-		case SZCZĘŚCIE:			return szczęście;
-		case UNIK:				return unik;
-		}
-		throw new IllegalArgumentException("Brak statystyki graczaRPG " + attr);
-	}
 	
 	protected long ostActionBar; // zmienna dla actionBaru
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_farmer;
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_łowca; // w bestie
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_kopacz; // w kopanieRPG
-	public final ŚcieżkaDoświadczeniaGracz ścieżka_drwal;
+	public final ŚcieżkaDoświadczeniaGracz ścieżka_drwal; // w kopanieRPG
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_rybak;
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_mag;
 	public final ŚcieżkaDoświadczeniaGracz ścieżka_alchemik;
@@ -269,14 +239,14 @@ public class GraczRPG {
 		dataBestie				= RPG.dataDajUtwórz(dataRPG, "bestie");
 		dataPamięć				= RPG.dataDajUtwórz(dataRPG, "pamięć");
 		
-		ścieżka_farmer		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.farmer);
-		ścieżka_łowca		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.łowca);
-		ścieżka_kopacz		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.kopacz);
-		ścieżka_drwal		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.drwal);
-		ścieżka_rybak		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.rybak);
-		ścieżka_mag			= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.mag);
-		ścieżka_alchemik	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.alchemik);
-		ścieżka_budowniczy	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.budowniczy);
+		ścieżka_farmer		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.FARMER);
+		ścieżka_łowca		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.ŁOWCA);
+		ścieżka_kopacz		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.KOPACZ);
+		ścieżka_drwal		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.DRWAL);
+		ścieżka_rybak		= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.RYBAK);
+		ścieżka_mag			= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.MAG);
+		ścieżka_alchemik	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.ALCHEMIK);
+		ścieżka_budowniczy	= new ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia.BUDOWNICZY);
 		
 		
 		Bukkit.getScheduler().runTask(Main.plugin, () -> getStaty().forEach(Statystyka::wyślijEvent));
@@ -329,10 +299,6 @@ public class GraczRPG {
 		// TODO ekonomia rpg
 	}
 
-	public void zapisz() {
-		p.getPersistentDataContainer().set(kluczGraczRPG, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer(dataRPG));
-	}
-	
 	public List<Statystyka> getStaty() {
 		List<Statystyka> lista = new ArrayList<>();
 		
@@ -340,4 +306,41 @@ public class GraczRPG {
 		
 		return lista;
 	}
+	public Statystyka statystyka(Atrybut attr) {
+		switch (attr) {
+		case DEF:				return def;
+		case DEF_NIEZALEŻNY:	return defNiezależny;
+		case HP:				return zdrowie;
+		case INTELIGENCJA:		return inteligencja;
+		case KRYT_DMG:			return dmgKryt;
+		case KRYT_SZANSA:		return szansaKryta;
+		case PRĘDKOŚĆ_ATAKU:	return prędkośćAtaku;
+		case PRĘDKOŚĆ_CHODZENIA:return prędkośćChodzenia;
+		case PRĘDKOŚĆ_KOPANIA:	return prędkośćKopania;
+		case SIŁA:				return siła;
+		case SZCZĘŚCIE:			return szczęście;
+		case UNIK:				return unik;
+		}
+		throw new IllegalArgumentException("Brak statystyki graczaRPG " + attr);
+	}
+
+	public ŚcieżkaDoświadczeniaGracz ścieżka(ŚcieżkaDoświadczenia ścieżka) {
+		switch (ścieżka) {
+		case ALCHEMIK:	return ścieżka_alchemik;
+		case BUDOWNICZY:return ścieżka_budowniczy;
+		case DRWAL:		return ścieżka_drwal;
+		case FARMER:	return ścieżka_farmer;
+		case KOPACZ:	return ścieżka_kopacz;
+		case MAG:		return ścieżka_mag;
+		case RYBAK:		return ścieżka_rybak;
+		case ŁOWCA:		return ścieżka_łowca;
+		}
+		throw new IllegalArgumentException("Brak ścieżki graczaRPG " + ścieżka);
+	}
+	
+	
+	public void zapisz() {
+		p.getPersistentDataContainer().set(kluczGraczRPG, PersistentDataType.TAG_CONTAINER, NMS.utwórzDataContainer(dataRPG));
+	}
+	
 }

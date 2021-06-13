@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -17,6 +17,7 @@ import org.bukkit.util.Vector;
 import net.minecraft.server.v1_16_R3.EntityArmorStand;
 import net.minecraft.server.v1_16_R3.World;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.NMS;
@@ -105,6 +106,8 @@ public class PokazywanyDmg implements Listener {
 		as.setNoGravity(true);
 		as.setInvisible(true);
 		as.setInvulnerable(true);
+		
+		as.addScoreboardTag(Main.tagTempMoba);
 		
 		world.addEntity(as, SpawnReason.CUSTOM);
 		Func.opóznij(10, () -> as.getBukkitEntity().remove());

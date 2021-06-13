@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -293,7 +294,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 				return item;
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw Func.throwEx(e);
 		}
 		return null;
 	}
@@ -350,17 +351,8 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1 && cmd.getName().equals("exportujitemrpg")) {
-			List<String> lista = new ArrayList<>();
-			ResultSet set = BazaDanych.executeQuery("SELECT id FROM itemy");
-			try {
-				while (set.next())
-					lista.add(set.getString("id"));
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			return utab(args, lista);
-		}
+		if (args.length <= 1 && cmd.getName().equals("exportujitemrpg"))
+			return utab(args, itemy());
 		return null;
 	}
 	@Override
@@ -423,7 +415,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		return true;
 	}
 	private void edytor(Player p) {
-		Napis n = new Napis("\n\n\n§e~~ §9Edytor RPG §e~~\n\n");
+		Napis n = new Napis("\n\n\n§e~~ §9Edytor RPG §e~~\n");
 		
 		ItemStack item = p.getInventory().getItemInMainHand();
 		
@@ -434,9 +426,9 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		Func.forEach(Ranga.values(), ranga -> {
 			Napis nRanga;
 			if (aktRanga == ranga)
-				nRanga = new Napis(ranga.kolor + "§n" + ranga.name());
+				nRanga = new Napis(ranga.kolor + "§n" + Func.title(ranga.name()));
 			else
-				nRanga = new Napis(ranga.toString());
+				nRanga = new Napis(Func.enumToString(ranga));
 			
 			nRanga.clickEvent(Action.RUN_COMMAND, "/edytujitemrpg ranga " + ranga.name());
 			nRanga.hover("§bKliknij aby ustawić " + ranga);
@@ -448,18 +440,18 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		n.dodaj("\n");
 		
 		TypItemu typItemu = TypItemu.typ(tag);
-		n.dodaj(new Napis("\n§6ranga§8: "));
-		AtomicBoolean ab = new AtomicBoolean();
+		n.dodaj(new Napis("\n§6rodzaj§8:\n"));
+		AtomicInteger licznik = new AtomicInteger();
+		String[] kolory = new String[] {"a", "e", "d", "b"};
 		Func.forEach(TypItemu.values(), typ -> {
+			if (!typ.końcowa()) return;
 			Napis nTyp = new Napis(
-					"§" + (ab.get() ? "f" : "7") + (typItemu == typ ? "§n§o" : "") + typ,
+					"§" + kolory[licznik.getAndIncrement() % kolory.length] + (typItemu == typ ? "§n§o" : "") + Func.enumToString(typ),
 					"§bKliknij aby ustawić " + typ,
 					"/edytujitemrpg typ " + typ.name()
 					);
 			
-			ab.set(!ab.get());
-			
-			nTyp.dodaj(" ");
+			nTyp.dodaj(licznik.get() % kolory.length == 0 ? "\n" : " ");
 			
 			n.dodaj(nTyp);
 		});

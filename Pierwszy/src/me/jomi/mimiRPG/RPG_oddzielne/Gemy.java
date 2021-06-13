@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG;
+package me.jomi.mimiRPG.RPG_oddzielne;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -18,7 +18,7 @@ import net.minecraft.server.v1_16_R3.NBTTagString;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG.Gemy.Gem;
+import me.jomi.mimiRPG.RPG_oddzielne.Gemy.Gem;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KomendaZMapowanymiItemami;

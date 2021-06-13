@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
 
-public class MultiConfig {
+public class MultiConfig implements IConfig {
 	final Map<String, Config> mapaConfigów = new HashMap<>();
 	final Map<String, Config> mapaNazwConfigów = new HashMap<>();
 	final File dir;

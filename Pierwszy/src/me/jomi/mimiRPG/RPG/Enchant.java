@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.RPG_Ultra;
+package me.jomi.mimiRPG.RPG;
 
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 
-import me.jomi.mimiRPG.RPG_Ultra.Enchant.PE;
+import me.jomi.mimiRPG.RPG.Enchant.PE;
 import me.jomi.mimiRPG.util.Func;
 
 public class Enchant<T extends PE> {
