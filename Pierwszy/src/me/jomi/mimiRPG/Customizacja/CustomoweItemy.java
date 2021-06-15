@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -16,27 +18,82 @@ import com.google.common.collect.Lists;
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
-import me.jomi.mimiRPG.RPG.ZfaktoryzowaneItemy;
 import me.jomi.mimiRPG.MineZ.AbstractKarabiny;
 import me.jomi.mimiRPG.MineZ.Bazy;
 import me.jomi.mimiRPG.MineZ.Karabiny;
+import me.jomi.mimiRPG.RPG.ZfaktoryzowaneItemy;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Funkcje.TriPredicate;
 import me.jomi.mimiRPG.util.Komenda;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Panel;
 
 @Moduł
 public class CustomoweItemy extends Komenda {
 	public static final String prefix = Func.prefix("Customowe Itemy");
 	
 	public CustomoweItemy() {
-		super("customowyitem", prefix + "/citem [[baza | custom] <nick> <item> | bazy <item> | karabin [broń | ammo] <item>]", "citem");
+		super("customowyitem", prefix + "/citem [[baza | custom] <nick> <item> | bazy <item> | karabin [broń | ammo] <item> | rpg <item> | panel]", "citem");
+		panel.ustawClick(ev -> {
+			if (ev.getCurrentItem() == null)
+				return;
+			if (ev.getCurrentItem().isSimilar(Baza.pustySlot)) {
+				ev.setCancelled(true);
+				return;
+			}
+			
+			int plus;
+			if (ev.getRawSlot() == 45)
+				plus = -1;
+			else if (ev.getRawSlot() == 53)
+				plus = 1;
+			else
+				return;
+			ev.setCancelled(true);
+
+			Krotka<Integer, List<ItemStack>> krotka = panel.dajDanePaneluPewny(ev.getInventory());
+			if (krotka.a + plus >= 0) {
+				panel.ustawDanePanelu(ev.getInventory(), new Krotka<>(krotka.a + plus, krotka.b));
+				odświeżPanel(ev.getInventory());
+			}
+		});
 	}
 	
+	
+	public static final HashMap<String, ItemStack> customoweItemy = new HashMap<>();
+	
+	static final Panel panel = new Panel(false);
+	public static void otwórzPanel(Player p) {
+		List<ItemStack> itemy = Lists.newArrayList(Baza.itemy.values());
+		Func.posortuj(itemy, item -> Func.stringToDouble(Func.nazwaItemku(item)));
+		
+		Inventory inv = panel.stwórz(new Krotka<>(0, itemy), 6, "§1Baza Itemów");
+		Func.ustawPuste(inv);
+		
+		odświeżPanel(inv);
+		
+		p.openInventory(inv);
+	}
+	static void odświeżPanel(Inventory inv) {
+		Krotka<Integer, List<ItemStack>> krotka = panel.dajDanePaneluPewny(inv);
+		krotka.wykonaj((strona, itemy) -> {
+			inv.setItem(45, Func.stwórzItem(Material.WRITTEN_BOOK, "§cStrona " + (strona - 1)));
+			inv.setItem(53, Func.stwórzItem(Material.WRITTEN_BOOK, "§cStrona " + (strona + 1)));
+
+			int start = (9 * 6 - 2) * strona;
+			for (int i = 0; i < 9 * 6 - 1; i++) {
+				if (i == 45) continue;
+				
+				inv.setItem(i, itemy.size() <= i + start ? Baza.pustySlot : itemy.get(i + start));
+			}
+		});
+	}
+
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length <= 1) {
-			List<String> lista = Lists.newArrayList("baza");
+			List<String> lista = Lists.newArrayList("baza", "panel");
 			if (!customoweItemy.isEmpty())
 				lista.add("custom");
 			if (Main.włączonyModół(Bazy.class))
@@ -74,13 +131,12 @@ public class CustomoweItemy extends Komenda {
 		}
 		return null;
 	}
-
-	
-	public static final HashMap<String, ItemStack> customoweItemy = new HashMap<>();
-	
-	
 	@Override
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
+		if (args.length >= 1 && args[0].equalsIgnoreCase("panel") && sender instanceof Player) {
+			otwórzPanel((Player) sender);
+			return true;
+		}
 		if (args.length < 2) return false;
 		
 		if (sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("ustaw")) {

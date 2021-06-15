@@ -1019,7 +1019,7 @@ public abstract class Func {
 	public static double stringToDouble(String str) {
 		double w = 0;
 		double dzielnik = 1;
-		for (char znak : Func.odpolszcz(str).toCharArray()) {
+		for (char znak : Func.usuńKolor(Func.odpolszcz(str)).toCharArray()) {
 			w += znak / dzielnik;
 			dzielnik *= znak;
 		}
