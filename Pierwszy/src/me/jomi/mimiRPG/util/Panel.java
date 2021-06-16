@@ -19,6 +19,8 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Komenda.MsgCmdError;
 
 public class Panel {
+	public static final Panel prostyPanel = new Panel(true);
+	
 	public static class PanelListener implements Listener {
 		private static List<WeakReference<Panel>> odwołania;
 		@EventHandler public void open(InventoryOpenEvent ev)   { wykonaj(p -> p.open,  ev); }

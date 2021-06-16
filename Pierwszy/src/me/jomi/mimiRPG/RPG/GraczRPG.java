@@ -1,7 +1,9 @@
 package me.jomi.mimiRPG.RPG;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -123,29 +125,90 @@ public class GraczRPG {
 		}
 	}
 
-	public class ŚcieżkaDoświadczeniaGracz {
-		private int exp;
-		private int lvl;
-		public final transient ŚcieżkaDoświadczenia ścieżka;
+	private abstract class AbstractŚcieżkaGracz<T extends IŚcieżka> {
+		int exp;
+		int lvl;
+		public final T ścieżka;
 		
-		ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia ścieżka) {
+		AbstractŚcieżkaGracz(T ścieżka) {
 			this.ścieżka = ścieżka;
 			wczytaj();
+		}
+		
+		public int getExp() {
+			return exp;
+		}
+		public int getLvl() {
+			return lvl + 1;
 		}
 		
 		public void zwiększExp(int oIle) {
 			if (oIle == 0 || exp == -1)
 				return;
 			exp += oIle;
-			while (exp != -1 && exp >= ścieżka.potrzebyExp[lvl]) {
-				exp -= ścieżka.potrzebyExp[lvl++];
-				p.sendMessage(RPG.prefix + Func.msg("Awansowałeś w ścieżce %s %s -> %s §alvl§c!", ścieżka.nazwa, lvl, lvl + 1));
-				Main.log(RPG.prefix + "%s awansował w ścieżce rozwoju %s %s -> %s lvl", p.getName(), ścieżka.nazwa, lvl, lvl + 1);
-				if (lvl >= ścieżka.potrzebyExp.length)
+			while (exp != -1 && exp >= ścieżka.getPotrzebnyExp()[lvl]) {
+				exp -= ścieżka.getPotrzebnyExp()[lvl++];
+				p.sendMessage(RPG.prefix + Func.msg("Awansowałeś w ścieżce %s %s -> %s §alvl§c!", ścieżka.getNazwa(), lvl, lvl + 1));
+				Main.log(RPG.prefix + "%s awansował w ścieżce rozwoju %s %s -> %s lvl", p.getName(), ścieżka.getNazwa(), lvl, lvl + 1);
+				if (lvl >= ścieżka.getPotrzebnyExp().length)
 					exp = -1;
 			}
 			
 			zapisz();
+		}
+		
+		public void zapisz() {
+			getData().setIntArray(ścieżka.getNazwa(), new int[] {exp, lvl});
+		}
+		public void wczytaj() {
+			int[] exp_lvl = getData().getIntArray(ścieżka.getNazwa());
+			
+			if (exp_lvl.length == 2) {
+				exp = exp_lvl[0];
+				lvl = exp_lvl[1];
+			}
+		}
+		
+		public abstract NBTTagCompound getData();
+
+		public int getPotrzebnyExp() {
+			if (exp == -1)
+				return 0;
+			return ścieżka.getPotrzebnyExp()[lvl];
+		}
+	}
+	public class KolekcjaGracz extends AbstractŚcieżkaGracz<Kolekcja> {
+		KolekcjaGracz(Kolekcja kolekcja) {
+			super(kolekcja);
+		}
+
+		@Override
+		public NBTTagCompound getData() {
+			return dataKolekcje;
+		}
+	
+		public boolean odblokowana() {
+			return exp > 0 || lvl > 0;
+		}
+		
+		@Override
+		public void zwiększExp(int oIle) {
+			boolean odblokowana = odblokowana();
+			super.zwiększExp(oIle);
+			if (!odblokowana) {
+				Func.powiadom(Kolekcja.prefix, p, "Odblokowałeś kolekcję %s!", ścieżka.nazwa);
+				Main.log(Kolekcja.prefix + "%s odblokował kolekcję %s", p.getName(), ścieżka.nazwa);
+			}
+		}
+	}
+	public class ŚcieżkaDoświadczeniaGracz extends AbstractŚcieżkaGracz<ŚcieżkaDoświadczenia> {
+		ŚcieżkaDoświadczeniaGracz(ŚcieżkaDoświadczenia ścieżka) {
+			super(ścieżka);
+		}
+		
+		@Override
+		public void zwiększExp(int oIle) {
+			super.zwiększExp(oIle);
 			
 			if (exp != -1)
 				RPG.actionBar(GraczRPG.this, strB -> {
@@ -154,37 +217,18 @@ public class GraczRPG {
 					strB.append(' ');
 					strB.append(exp);
 					strB.append(" / ");
-					strB.append(ścieżka.potrzebyExp[lvl]);
+					strB.append(ścieżka.potrzebnyExp[lvl]);
 					strB.append(" +");
 					strB.append(oIle);
 					strB.append(" (");
-					strB.append(Func.zaokrąglij(exp / (double) ścieżka.potrzebyExp[lvl] * 100, 1));
+					strB.append(Func.zaokrąglij(exp / (double) ścieżka.potrzebnyExp[lvl] * 100, 1));
 					strB.append("%)");
 				});
 		}
-		
-		public void zapisz() {
-			dataŚcieżkiDoświadczenia.setIntArray(ścieżka.nazwa, new int[] {exp, lvl});
-		}
-		public void wczytaj() {
-			int[] exp_lvl = dataŚcieżkiDoświadczenia.getIntArray(ścieżka.nazwa);
-			
-			if (exp_lvl.length == 2) {
-				exp = exp_lvl[0];
-				lvl = exp_lvl[1];
-			}
-		}
-	
-		public int getExp() {
-			return exp;
-		}
-		public int getLvl() {
-			return lvl + 1;
-		}
-		public int getPotrzebnyExp() {
-			if (exp == -1)
-				return 0;
-			return ścieżka.potrzebyExp[lvl];
+
+		@Override
+		public NBTTagCompound getData() {
+			return dataŚcieżkiDoświadczenia;
 		}
 	}
 	
@@ -224,6 +268,7 @@ public class GraczRPG {
 	public final NBTTagCompound dataRPG;
 	public final NBTTagCompound dataBestie;
 	public final NBTTagCompound dataŚcieżkiDoświadczenia;
+	public final NBTTagCompound dataKolekcje;
 	public final NBTTagCompound dataTrwałeBuffy;
 	public final NBTTagCompound dataPamięć;
 	
@@ -236,6 +281,7 @@ public class GraczRPG {
 		
 		dataŚcieżkiDoświadczenia= RPG.dataDajUtwórz(dataRPG, "ścieżkiDoświadczenia");
 		dataTrwałeBuffy			= RPG.dataDajUtwórz(dataRPG, "trwałeBuffy");
+		dataKolekcje			= RPG.dataDajUtwórz(dataRPG, "kolekcje");
 		dataBestie				= RPG.dataDajUtwórz(dataRPG, "bestie");
 		dataPamięć				= RPG.dataDajUtwórz(dataRPG, "pamięć");
 		
@@ -295,8 +341,23 @@ public class GraczRPG {
 	}
 	
 	
+	private Map<Kolekcja, KolekcjaGracz> mapaKolekcji = new EnumMap<>(Kolekcja.class);
+	public KolekcjaGracz getKolekcja(Kolekcja kolekcja) {
+		if (kolekcja == null)
+			return null;
+		KolekcjaGracz kolekcjaGracza = mapaKolekcji.get(kolekcja);
+		if (kolekcjaGracza == null)
+			mapaKolekcji.put(kolekcja, kolekcjaGracza = new KolekcjaGracz(kolekcja));
+		return kolekcjaGracza;
+	}
+	
+	
 	public void dodajKase(double ile) {
-		// TODO ekonomia rpg
+		if (Main.ekonomia)
+			if (ile >= 0)
+				Main.econ.depositPlayer(p, ile);
+			else
+				Main.econ.withdrawPlayer(p, -ile);
 	}
 
 	public List<Statystyka> getStaty() {

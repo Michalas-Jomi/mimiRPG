@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,12 +19,15 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.PojedynczeKomendy.Sklep;
 import me.jomi.mimiRPG.PojedynczeKomendy.Targ;
+import me.jomi.mimiRPG.RPG.GraczRPG.KolekcjaGracz;
 import me.jomi.mimiRPG.RPG.GraczRPG.ŚcieżkaDoświadczeniaGracz;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.util.Func;
@@ -45,6 +49,7 @@ public class PanelRPG implements Listener {
 	static final ItemStack itemWarpy = Func.stwórzItem(Material.ENDER_EYE, "&aWarpy", "&4Dostępne niebawem!");
 	static final ItemStack itemTarg = Func.stwórzItem(Material.EMERALD, "&aTarg");
 	static final ItemStack itemSkyblock = Func.stwórzItem(Material.GRASS_BLOCK, "&aSkyblock");
+	static final ItemStack itemBestie = Func.stwórzItem(Material.TOTEM_OF_UNDYING, "&aBestie");
 	
 	static final int slotProfil = 13;
 	static final int slotUmiejętności = 10;
@@ -57,51 +62,71 @@ public class PanelRPG implements Listener {
 	static final int slotWarpy = 40;
 	static final int slotTarg = 25;
 	static final int slotSkyblock = 31;
+	static final int slotBestie = 44;
 	
 	static final Panel panel = new Panel(true);
+	static final Panel panelKolekcji = new Panel(true);
 	static final Panel panelUmiejętności = new Panel(true);
 	
 	public PanelRPG() {
-		panel.ustawClick(ev -> {
-			switch (ev.getRawSlot()) {
-			case slotProfil:
-				// TODO profil, niebawem
-				break;
-			case slotUmiejętności:
-				otwórzPanelUmiejętności((Player) ev.getWhoClicked());
-				break;
-			case slotKolekcje:
-				// TODO kolekcje
-				break;
-			case slotKsięgaReceptór:
-				// TODO księga receptór, niebawem
-				break;
-			case slotSklep:
-				ev.getWhoClicked().closeInventory();
-				((Player) ev.getWhoClicked()).chat("/sklep");
-				break;
-			case slotMagazyn:
-				// TODO magazyn, niebawem
-				break;
-			case slotCrafting:
-				ev.getWhoClicked().openWorkbench(ev.getWhoClicked().getLocation(), true);
-				break;
-			case slotSzafa:
-				// TODO szada, niebawem
-				break;
-			case slotWarpy:
-				// TODO warpy, niebawem
-				break;
-			case slotTarg:
-				ev.getWhoClicked().closeInventory();
-				((Player) ev.getWhoClicked()).chat("/targ");
-				break;
-			case slotSkyblock:
-				ev.getWhoClicked().closeInventory();
-				((Player) ev.getWhoClicked()).chat("/is");
-				break;
-			}
-		});
+		panel.ustawClick(this::panelClick);
+		panelKolekcji.ustawClick(this::panelKolekcjiClick);
+	}
+	private void panelClick(InventoryClickEvent ev) {
+		switch (ev.getRawSlot()) {
+		case slotProfil:
+			// TODO profil, niebawem
+			break;
+		case slotUmiejętności:
+			otwórzPanelUmiejętności((Player) ev.getWhoClicked());
+			break;
+		case slotKolekcje:
+			otwórzPanelKolekcji((Player) ev.getWhoClicked());
+			break;
+		case slotKsięgaReceptór:
+			// TODO księga receptór, niebawem
+			break;
+		case slotSklep:
+			ev.getWhoClicked().closeInventory();
+			((Player) ev.getWhoClicked()).chat("/sklep");
+			break;
+		case slotMagazyn:
+			// TODO magazyn, niebawem
+			break;
+		case slotCrafting:
+			ev.getWhoClicked().openWorkbench(ev.getWhoClicked().getLocation(), true);
+			break;
+		case slotSzafa:
+			// TODO szada, niebawem
+			break;
+		case slotWarpy:
+			// TODO warpy, niebawem
+			break;
+		case slotTarg:
+			ev.getWhoClicked().closeInventory();
+			((Player) ev.getWhoClicked()).chat("/targ");
+			break;
+		case slotSkyblock:
+			ev.getWhoClicked().closeInventory();
+			((Player) ev.getWhoClicked()).chat("/is");
+			break;
+		case slotBestie:
+			ev.getWhoClicked().closeInventory();
+			((Player) ev.getWhoClicked()).chat("/bestie");
+			break;
+		}
+	}
+	private void panelKolekcjiClick(InventoryClickEvent ev) {
+		KolekcjaKategoria kat;
+		try {
+			NamespacedKey klucz = new NamespacedKey(Main.plugin, "kolekcja_kategoria");
+			String name = ev.getCurrentItem().getItemMeta().getPersistentDataContainer().get(klucz, PersistentDataType.STRING);
+			kat = Func.StringToEnum(KolekcjaKategoria.class, name);
+		} catch (Throwable e) {
+			return;
+		}
+		
+		otwórzPanelKolekcji((Player) ev.getWhoClicked(), kat);
 	}
 	
 	
@@ -145,21 +170,19 @@ public class PanelRPG implements Listener {
 		inv.setItem(slotKolekcje,		itemKolekcje);
 		inv.setItem(slotKsięgaReceptór,	itemKsięgaReceptór);
 		inv.setItem(slotMagazyn,		itemMagazyn);
-		inv.setItem(slotCrafting,		itemCrafting);
 		inv.setItem(slotSzafa,			itemSzafa);
 		inv.setItem(slotWarpy,			itemWarpy);
-		if (Main.włączonyModół(Sklep.class))
-			inv.setItem(slotSklep,			itemSklep);
-		if (Main.włączonyModół(Targ.class))
-			inv.setItem(slotTarg,			itemTarg);
-		if (Main.włączonyModół(SkyBlock.class))
-			inv.setItem(slotSkyblock,		itemSkyblock);
+		if (Main.włączonyModół(Targ.class))			inv.setItem(slotTarg,		itemTarg);
+		if (Main.włączonyModół(Sklep.class))		inv.setItem(slotSklep,		itemSklep);
+		if (Main.włączonyModół(Bestie.class))		inv.setItem(slotBestie, 	itemBestie);
+		if (Main.włączonyModół(SkyBlock.class))		inv.setItem(slotSkyblock,	itemSkyblock);
+		if (Main.włączonyModół(CraftingiRPG.class))	inv.setItem(slotCrafting,	itemCrafting);
 		
 		p.openInventory(inv);
 	}
-	
+
 	public static void otwórzPanelUmiejętności(Player p) {
-		Inventory inv = panelUmiejętności.stwórz(null, 4, "§cUmiejętności");
+		Inventory inv = panelUmiejętności.stwórz(null, 4, "§cUmiejętności", Baza.pustySlotCzarny);
 		GraczRPG gracz = GraczRPG.gracz(p);
 		
 		Func.forEach(ŚcieżkaDoświadczenia.values(), ścieżka -> {
@@ -169,10 +192,14 @@ public class PanelRPG implements Listener {
 			List<String> lore = new ArrayList<>();
 			lore.addAll(Func.tnij(ścieżka.opis, "\n"));
 			lore.add(" ");
-			lore.add("§7Poziom§8: §a" + ścieżkaGracza.getLvl());
-			if (ścieżkaGracza.getExp() != -1)
+			lore.add("§6Poziom§8: §a" + ścieżkaGracza.getLvl());
+			if (ścieżkaGracza.getExp() != -1) {
 				lore.add(Func.progres(ścieżkaGracza.getExp(), ścieżkaGracza.getPotrzebnyExp(), 20, "-", "§2", "§7") +
 						" §8(§7" + Func.zaokrąglij(ścieżkaGracza.getExp() / (double) ścieżkaGracza.getPotrzebnyExp() * 100, 1)  + "%§8)");
+				lore.add("§7" + Func.IntToString(ścieżkaGracza.getExp()) + "§3 / §7" + Func.IntToString(ścieżkaGracza.getPotrzebnyExp()) + " expa");
+			} else {
+				lore.add("§7Lvl §4§l§oMAX");
+			}
 			lore.add(" ");
 			
 			Func.ustawLore(item, lore);
@@ -181,6 +208,57 @@ public class PanelRPG implements Listener {
 		
 		p.openInventory(inv);
 	}
+	public static void otwórzPanelKolekcji(Player p) {
+		Inventory inv = panelKolekcji.stwórz(null, 4, "§cKolekcje", Baza.pustySlotCzarny);
+		
+		Func.forEach(KolekcjaKategoria.values(), kat -> {
+			ItemStack item = Func.stwórzItem(kat.ikona, "§b" + kat.nazwa, Func.tnij(kat.opis, "\n"));
+			ItemMeta meta = item.getItemMeta();
+			
+			meta.getPersistentDataContainer().set(new NamespacedKey(Main.plugin, "kolekcja_kategoria"), PersistentDataType.STRING, kat.name());
+			
+			item.setItemMeta(meta);
+			inv.setItem(kat.slotWPanelu, item);
+		});
+		
+		p.openInventory(inv);
+	}
+	public static void otwórzPanelKolekcji(Player p, KolekcjaKategoria kat) {
+		Inventory inv = Panel.prostyPanel.stwórz(null, 5, "§cKolekcja §4" + kat.nazwa, Baza.pustySlotCzarny);
+		GraczRPG gracz = GraczRPG.gracz(p);
+		
+		int[] sloty = Func.sloty(kat.kolekcje.size(), 3);
+		for (int i = 0; i < kat.kolekcje.size(); i++) {
+			Kolekcja kolekcja = kat.kolekcje.get(i);
+			KolekcjaGracz kolekcjaGracza = gracz.getKolekcja(kolekcja);
+			
+			ItemStack item = Func.stwórzItem(Material.GRAY_DYE, "§c" + kolekcja.nazwa);
+			List<String> lore = new ArrayList<>();
+			
+			if (kolekcjaGracza.odblokowana()) {
+				Func.typ(item, kolekcja.mat);
+				lore.addAll(Func.tnij(kolekcja.opis, "\n"));
+				lore.add(" ");
+
+				lore.add("§6Poziom§8: §a" + kolekcjaGracza.getLvl());
+				if (kolekcjaGracza.getExp() != -1) {
+					lore.add(Func.progres(kolekcjaGracza.getExp(), kolekcjaGracza.getPotrzebnyExp(), 20, "-", "§2", "§7") +
+							" §8(§7" + Func.zaokrąglij(kolekcjaGracza.getExp() / (double) kolekcjaGracza.getPotrzebnyExp() * 100, 1)  + "%§8)");
+					lore.add("§7" + Func.IntToString(kolekcjaGracza.getExp()) + "§3 / §7" + Func.IntToString(kolekcjaGracza.getPotrzebnyExp()) + " expa");
+				} else {
+					lore.add("§7Lvl §4§l§oMAX");
+				}
+				lore.add(" ");
+			} else
+				lore.add("§7???");
+			
+			Func.ustawLore(item, lore);
+			inv.setItem(sloty[i] + 9, item);
+		}
+		
+		p.openInventory(inv);
+	}
+	
 	
 	
 	/// util

@@ -2,7 +2,7 @@ package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.Material;
 
-public enum ŚcieżkaDoświadczenia {
+public enum ŚcieżkaDoświadczenia implements IŚcieżka {
 	FARMER		("Farmer",		"Zbieraj plony i zabijaj zwięrzęta",15, Material.WHEAT,					20, 100, 250, 500, 1_000, 2_500, 5_000, 7_500, 12_000, 20_000, 30_000, 50_000, 75_000, 150_000, 500_000),
 	ŁOWCA		("Łowca",		"Zabijaj moby",						25, Material.BOW,					20, 100, 250, 500, 1_000, 2_500, 5_000, 7_500, 12_000, 20_000, 30_000, 50_000, 75_000, 150_000, 500_000),
 	KOPACZ		("Kopacz",		"Kop rudy i kamień",				20, Material.IRON_PICKAXE,			20, 100, 250, 500, 1_000, 2_500, 5_000, 7_500, 12_000, 20_000, 30_000, 50_000, 75_000, 150_000, 500_000),
@@ -15,7 +15,7 @@ public enum ŚcieżkaDoświadczenia {
 
 	// 0 - lvl 0 -> 1
 	// 1 - lvl 1 -> 2
-	public final int[] potrzebyExp;
+	public final int[] potrzebnyExp;
 	public final String nazwa;
 	public final String opis;
 	
@@ -24,9 +24,30 @@ public enum ŚcieżkaDoświadczenia {
 	
 	ŚcieżkaDoświadczenia(String nazwa, String opis, int slotWPanelu, Material ikona, int... potrzebyExp) {
 		this.slotWPanelu = slotWPanelu;
-		this.potrzebyExp = potrzebyExp;
+		this.potrzebnyExp = potrzebyExp;
 		this.ikona = ikona;
 		this.nazwa = nazwa;
 		this.opis = opis;
 	}
+
+	@Override
+	public int[] getPotrzebnyExp() {
+		return potrzebnyExp;
+	}
+	@Override
+	public String getNazwa() {
+		return nazwa;
+	}
+	@Override
+	public String getOpis() {
+		return opis;
+	}
+	public int getSlotWPanelu() {
+		return slotWPanelu;
+	}
+	@Override
+	public Material getIkona() {
+		return ikona;
+	}
+
 }

@@ -135,7 +135,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		public ItemStack dropnij() {
 			if (Func.losuj(szansa))
-				return Func.ilość(item.clone(), Func.losuj(min_ilość, max_ilość));
+				return Kolekcja.oznakujItem(Func.ilość(item.clone(), Func.losuj(min_ilość, max_ilość)));
 			return null;
 		}
 		public boolean dropnij(List<ItemStack> dropy) {

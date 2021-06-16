@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -179,6 +180,11 @@ public class RPG implements Listener {
 	public void zgon(PlayerDeathEvent ev) {
 		ev.setKeepInventory(true);
 		ev.setKeepLevel(true);
+	}
+	@EventHandler
+	public void podnoszenie(EntityPickupItemEvent ev) {
+		if (ev.getEntity() instanceof Player)
+			Kolekcja.podniósł((Player) ev.getEntity(), ev.getItem().getItemStack());
 	}
 	
 	// util
