@@ -18,7 +18,6 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
-import me.jomi.mimiRPG.RPG.Kolekcja;
 
 public class Drop implements ConfigurationSerializable, Cloneable {
 	public List<Drop> drop;
@@ -198,8 +197,6 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 				itemy.remove(Func.losujWZasięgu(itemy.size()));
 		} else
 			itemy.addAll(subDropnij(poziom));
-		
-		itemy.forEach(Kolekcja::oznakujItem);
 		
 		return itemy;
 	}

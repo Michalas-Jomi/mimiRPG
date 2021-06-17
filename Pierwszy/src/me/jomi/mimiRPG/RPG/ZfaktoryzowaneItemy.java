@@ -329,6 +329,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	public ZfaktoryzowaneItemy() {
 		super("edytujitemrpg");
 		ustawKomende("exportujitemrpg", "/exportujitemrpg <id>", null);
+		ustawKomende("usuńwyexportowanyitemepr", "/usuńwyexportowanyitemepr <id>", null);
 		BazaDanych.otwórz();
 	}
 		
@@ -351,7 +352,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-		if (args.length <= 1 && cmd.getName().equals("exportujitemrpg"))
+		if (args.length <= 1 && Func.multiEquals(cmd.getName(), "usuńwyexportowanyitemepr", "exportujitemrpg"))
 			return utab(args, itemy());
 		return null;
 	}
@@ -360,6 +361,14 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		if (!(sender instanceof Player)) return Func.powiadom(sender, prefix + "Musisz być graczem aby tego użyć");
 		
 		Player p = (Player) sender;
+		
+		if (cmd.getName().equals("usuńwyexportowanyitemepr")) {
+			if (args.length < 1)
+				return false;
+			String id = args[0];
+			BazaDanych.execute("DELETE FROM itemy WHERE id='" + id + "'");
+			return Func.powiadom(sender, prefix + "usunołeś item rpg z bazy, item pod id %s", id);
+		}
 		
 		ItemStack item = p.getInventory().getItemInMainHand();
 		

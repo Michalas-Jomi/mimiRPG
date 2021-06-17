@@ -66,7 +66,13 @@ public class CustomoweItemy extends Komenda {
 	static final Panel panel = new Panel(false);
 	public static void otwórzPanel(Player p) {
 		List<ItemStack> itemy = Lists.newArrayList(Baza.itemy.values());
-		Func.posortuj(itemy, item -> Func.stringToDouble(Func.nazwaItemku(item)));
+		Func.posortuj(itemy, item -> {
+			try {
+				return Func.stringToDouble(Func.nazwaItemku(item));
+			} catch (Throwable e) {
+				return Double.MAX_VALUE;
+			}
+		});
 		
 		Inventory inv = panel.stwórz(new Krotka<>(0, itemy), 6, "§1Baza Itemów");
 		Func.ustawPuste(inv);
