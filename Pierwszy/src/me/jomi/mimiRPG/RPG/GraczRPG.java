@@ -210,7 +210,7 @@ public class GraczRPG {
 		public void zwiększExp(int oIle) {
 			super.zwiększExp(oIle);
 			
-			if (exp != -1)
+			if (exp != -1 && oIle != 0)
 				RPG.actionBar(GraczRPG.this, strB -> {
 					strB.append("§3");
 					strB.append(ścieżka.nazwa);

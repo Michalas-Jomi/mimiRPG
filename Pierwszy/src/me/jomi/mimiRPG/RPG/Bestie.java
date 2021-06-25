@@ -120,56 +120,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			this.item = item;
 		}
 	}
-	public static class DropRPG extends AutoString {
-		public final ItemStack item;
-		public final double szansa;
-		public final int min_ilość;
-		public final int max_ilość;
-
-		public DropRPG(ItemStack item, double szansa, int min_ilość, int max_ilość) {
-			this.max_ilość = max_ilość;
-			this.min_ilość = min_ilość;
-			this.szansa = szansa;
-			this.item = Objects.requireNonNull(item);
-		}
-		
-		public ItemStack dropnij() {
-			if (Func.losuj(szansa))
-				return Kolekcja.oznakujItem(Func.ilość(item.clone(), Func.losuj(min_ilość, max_ilość)));
-			return null;
-		}
-		public boolean dropnij(List<ItemStack> dropy) {
-			ItemStack item = dropnij();
-			Func.wykonajDlaNieNull(item, dropy::add);
-			return item != null;
-		}
 	
-		private String str;
-		@Override
-		public String toString() {
-			if (str == null) {
-				StringBuilder strB = new StringBuilder();
-				
-				strB.append(Ranga.ranga(item).kolor);
-				strB.append(Func.nazwaItemku(item));
-				strB.append("§a");
-				boolean nierówne = min_ilość != max_ilość;
-				if (min_ilość != 1 || nierówne)
-					strB.append(" x").append(min_ilość);
-				if (nierówne)
-					strB.append('-').append(max_ilość);
-				
-				if (szansa < 1)
-					strB.append(' ').append(Func.DoubleToString(Func.zaokrąglij(szansa * 100, 2))).append('%');
-				
-				str = strB.toString();
-				if (str.contains("&%"))
-					str = Func.koloruj(str);
-				
-			}
-			return str;
-		}
-	}
 	public static class Bestia extends AutoString{
 		static final Map<String, Grupa<Grupa<Bestia>>> mapa = new HashMap<>();
 		
@@ -608,16 +559,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 					}
 					
 					List<DropRPG> dropy = new ArrayList<>();
-					sekcja.getStringList("dropy").forEach(drop -> {
-						List<String> części = Func.tnij(drop, " ");
-						List<String> min_max = Func.tnij(części.get(2), "-");
-						dropy.add(new DropRPG(
-								ZfaktoryzowaneItemy.dajItem(części.get(0)),
-								Func.Double(części.get(1)),
-								Func.Int(min_max.get(0)),
-								Func.Int(min_max.get(1))
-								));
-					});
+					sekcja.getStringList("dropy").forEach(drop -> dropy.add(DropRPG.parse(drop)));
 					
 					Function<String, ItemStack> func = str -> {
 						if (str == null)

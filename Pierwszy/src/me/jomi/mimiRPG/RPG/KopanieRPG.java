@@ -13,15 +13,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.craftbukkit.v1_16_R3.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -41,8 +45,8 @@ import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.RPG.KopanieRPG.Api.WykopanyBlokEvent;
 import me.jomi.mimiRPG.util.Config;
-import me.jomi.mimiRPG.util.Drop;
 import me.jomi.mimiRPG.util.Func;
+import me.jomi.mimiRPG.util.ItemCreator;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.NMS;
 import me.jomi.mimiRPG.util.Przeładowalny;
@@ -51,12 +55,13 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class KopanieRPG extends PacketAdapter implements Listener, Przeładowalny {
 	public static class Api {
 		public static class WykopanyBlokEvent extends BlockBreakEvent {
-			public final List<Drop> dropy = new ArrayList<>();
+			public final List<DropRPG> dropy = new ArrayList<>();
 			public final Blok blok;
 			
 			public WykopanyBlokEvent(Player p, Blok blok, Block block) {
 				super(block, p);
 				this.blok = blok;
+				dropy.add(blok.drop);
 			}
 			
 			private static final HandlerList handlers = new HandlerList();
@@ -85,17 +90,19 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		static final Map<Material, Blok> bloki = new EnumMap<>(Material.class);
 		
 		public final int exp;
-		public final Drop drop;
+		public final DropRPG drop;
 		public final Material mat;
 		public final int exp_drwala;
 		public final int exp_kopacza;
+		public final DropRPG dropSilk;
 		public final int wytrzymałośćBloku;
 		public final TypItemu efektywneNarzędzie;
 		
-		public Blok(Material mat, TypItemu efektywneNarzędzie, Drop drop, int wytrzymałośćBloku, int exp, int exp_kopacza, int exp_drwala) {
+		public Blok(Material mat, TypItemu efektywneNarzędzie, DropRPG drop, DropRPG dropSilk, int wytrzymałośćBloku, int exp, int exp_kopacza, int exp_drwala) {
 			this.exp = exp;
 			this.mat = mat;
 			this.drop = drop;
+			this.dropSilk = dropSilk;
 			this.exp_drwala = exp_drwala;
 			this.exp_kopacza = exp_kopacza;
 			this.wytrzymałośćBloku = wytrzymałośćBloku;
@@ -175,6 +182,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 	}
 	private void niszczenie(Player p, Blok blok, boolean efektywneNarzędzie, BlockPosition pos, GraczRPG graczRPG, int wytrzymałość, int pozostało, int kontrolny) {
 		if (!p.hasMetadata(metaKontrolny) || p.getMetadata(metaKontrolny).get(0).asInt() != kontrolny) return;
+		niszcz(p, p.getEntityId(), pos, -1);
 		
 		if (pozostało <= 0) {
 			Location loc = new Location(p.getWorld(), pos.getX(), pos.getY(), pos.getZ());
@@ -186,12 +194,15 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			
 			nms(p).getWorld().playSound(null, pos, ((CraftBlock) ev.getBlock()).getNMS().getStepSound().breakSound, SoundCategory.BLOCKS, 1f, 1f);
 			
-			if (ev.isDropItems())
+			if (ev.isDropItems()) {
 				ev.getBlock().breakNaturally(p.getInventory().getItemInMainHand());
-			else
+				ev.dropy.forEach(drop -> drop.dropnij(ev.getBlock().getLocation().add(.5, .5, .5)));
+			} else
 				ev.getBlock().setType(Material.AIR);
 			
 			mapaNiszczących.remove(p.getUniqueId(), pos);
+			
+			niszcz(p, pos, -1);
 			return;
 		}
 		
@@ -210,7 +221,10 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 	}
 
 	public static void niszcz(Player p, BlockPosition pos, int lvl) {
-		Packet<?> packet = new PacketPlayOutBlockBreakAnimation(p.getEntityId() + 1, pos, lvl);
+		niszcz(p, p.getEntityId() + 1, pos, lvl);
+	}
+	public static void niszcz(Player p, int entityId, BlockPosition pos, int lvl) {
+		Packet<?> packet = new PacketPlayOutBlockBreakAnimation(entityId, pos, lvl);
 		double zasięg = 10;
 		
 		Runnable wyślij = () -> p.getWorld().getNearbyEntities(new Location(p.getWorld(), pos.getX(), pos.getY(), pos.getZ()), zasięg, zasięg, zasięg,
@@ -239,7 +253,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		ev2.setDropItems(ev.isDropItems());
 		ev2.setExpToDrop(ev2.blok == null ? ev.getExpToDrop() : ev2.blok.exp);
 		
-		ev.getBlock().getDrops(ev.getPlayer().getInventory().getItemInMainHand(), ev.getPlayer()).forEach(item -> ev2.dropy.add(new Drop(item)));
+		ev.getBlock().getDrops(ev.getPlayer().getInventory().getItemInMainHand(), ev.getPlayer()).forEach(item -> ev2.dropy.add(new DropRPG(item, 1, item.getAmount(), item.getAmount())));
 		
 		Bukkit.getPluginManager().callEvent(ev2);
 
@@ -271,10 +285,13 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			ConfigurationSection sekcja = config.sekcja(klucz);
 			TypItemu narzędzie = Func.StringToEnum(TypItemu.class, sekcja.getString("efektywne narzędzie", "BRAK"));
 			
+			DropRPG drop = DropRPG.parse(sekcja.getString("drop"));
+			
 			new Blok(
 					mat,
 					narzędzie,
-					Config.drop(sekcja.get("drop")),
+					drop,
+					sekcja.contains("drop silk") ? DropRPG.parse(sekcja.getString("drop silk")) : drop,
 					sekcja.getInt("wytrzymałość", 2000),
 					sekcja.getInt("exp", 0),
 					sekcja.getInt("exp kopacza", 1),
@@ -285,5 +302,84 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 	@Override
 	public Krotka<String, Object> raport() {
 		return Func.r("Bloki RPG", Blok.bloki.size());
+	}
+
+
+
+	// DEBUG
+	static void generowanieConfiga() {
+		Config config = new Config("BlokiRPG");
+		Func.forEach(Material.values(), mat -> {
+			if (mat.toString().contains("shulker_box".toUpperCase()))
+				return;
+			
+			if (mat.isBlock() && !mat.isAir()) {
+				String sc = Func.enumToString(mat) + ".";
+				config.ustaw(sc + "wytrzymałość", mat.getHardness() == -1 ? -1 : mat.getHardness() * 2000);
+				config.ustaw(sc + "exp " + (mat.name().contains("_LOG") || mat.name().contains("_WOOD") ? "drwala" : "kopacza"), 1);
+				
+				World w = Bukkit.getWorlds().get(0);
+				Location loc = new Location(w, 0, 1, 0);
+				Block blok = loc.getBlock();
+				blok.setType(mat, false);
+				
+				
+
+				float[] speed = new float[] {0F};
+				ItemStack item0[] = new ItemStack[1];
+				Func.forEach(Material.values(), mat2 -> {
+					if (mat2.isItem()) {
+						ItemStack tool = Func.stwórzItem(mat2);
+						net.minecraft.server.v1_16_R3.ItemStack nms = CraftItemStack.asNMSCopy(tool);
+						float _speed = nms.getItem().getDestroySpeed(nms, NMS.nms(blok));
+						if (_speed > speed[0]) {
+							speed[0] = _speed;
+							item0[0] = tool;
+						}
+					}
+				});
+				
+				String eff = null;
+				switch (item0[0].getType()) {
+				case AIR:	eff = "Brak";			break;
+				case GOLDEN_AXE: eff = "Siekiera";	break;
+				case GOLDEN_PICKAXE: eff = "Kilof";	break;
+				case GOLDEN_HOE: eff = "Motyka";	break;
+				case GOLDEN_SHOVEL: eff = "Łopata";	break;
+				case SHEARS: eff = "Norzyce";		break;
+				case WOODEN_SWORD: eff = "Miecz";	break;
+				default:
+					Main.log("%s %s %s", item0[0], speed[0], mat);
+				}
+				
+				if (eff != null)
+					config.ustaw(sc + "efektywne narzędzie", eff);
+				
+				
+				
+				ItemStack itemK = item0[0];
+				
+				StringBuilder strB = new StringBuilder();
+				blok.getDrops(itemK).forEach(item -> {
+					if (!item.getType().isAir())
+						strB.append(item.getType().toString().toLowerCase()).append(" 1.0 1-1 ");
+				});
+				if (!strB.toString().isEmpty())
+					config.ustaw(sc + "drop", strB.toString().substring(0, strB.toString().length() - 1));
+				
+				StringBuilder strB2 = new StringBuilder();
+				blok.getDrops(itemK.getType().isAir() ? itemK : ItemCreator.nowy(itemK).enchant(Enchantment.SILK_TOUCH, 1).stwórz()).forEach(item -> {
+					if (!item.getType().isAir())
+						strB2.append(item.getType().toString().toLowerCase()).append(" 1.0 1-1 ");
+				});
+				if (!strB2.toString().isEmpty())
+					config.ustaw(sc + "drop silk", strB2.toString().substring(0, strB2.toString().length() - 1));
+				
+				
+				
+				
+			}
+		});
+		config.zapisz();
 	}
 }

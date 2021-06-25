@@ -1,5 +1,6 @@
 package me.jomi.mimiRPG.Customizacja;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class CustomoweItemy extends Komenda {
 	public static final String prefix = Func.prefix("Customowe Itemy");
 	
 	public CustomoweItemy() {
-		super("customowyitem", prefix + "/citem [[baza | custom] <nick> <item> | bazy <item> | karabin [broń | ammo] <item> | rpg <item> | panel]", "citem");
+		super("customowyitem", prefix + "/citem [[baza | custom] <nick> <item> | bazy <item> | karabin [broń | ammo] <item> | rpg <item> | panel | panelrpg]", "citem");
 		panel.ustawClick(ev -> {
 			if (ev.getCurrentItem() == null)
 				return;
@@ -65,7 +66,16 @@ public class CustomoweItemy extends Komenda {
 	
 	static final Panel panel = new Panel(false);
 	public static void otwórzPanel(Player p) {
-		List<ItemStack> itemy = Lists.newArrayList(Baza.itemy.values());
+		otwórzPanel(p, Lists.newArrayList(Baza.itemy.values()));
+	}
+	public static void otwórzPanelRPG(Player p) {
+		Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> {
+			List<ItemStack> itemy = new ArrayList<>();
+			ZfaktoryzowaneItemy.itemy().forEach(id -> itemy.add(ZfaktoryzowaneItemy.dajItem(id)));
+			Bukkit.getScheduler().runTask(Main.plugin, () -> otwórzPanel(p, itemy));
+		});
+	}
+	private static void otwórzPanel(Player p, List<ItemStack> itemy) {
 		Func.posortuj(itemy, item -> {
 			try {
 				return Func.stringToDouble(Func.nazwaItemku(item));
@@ -106,8 +116,10 @@ public class CustomoweItemy extends Komenda {
 				lista.add("bazy");
 			if (Main.włączonyModół(Karabiny.class))
 				lista.add("karabin");
-			if (Main.włączonyModół(ZfaktoryzowaneItemy.class))
+			if (Main.włączonyModół(ZfaktoryzowaneItemy.class)) {
 				lista.add("rpg");
+				lista.add("panelrpg");
+			}
 			lista.add("ustaw");
 			return utab(args, lista);
 		}
@@ -143,6 +155,11 @@ public class CustomoweItemy extends Komenda {
 			otwórzPanel((Player) sender);
 			return true;
 		}
+		if (args.length >= 1 && args[0].equalsIgnoreCase("panelrpg") && sender instanceof Player) {
+			otwórzPanelRPG((Player) sender);
+			return true;
+		}
+		
 		if (args.length < 2) return false;
 		
 		if (sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("ustaw")) {

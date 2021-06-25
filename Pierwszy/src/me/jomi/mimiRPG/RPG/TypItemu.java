@@ -52,6 +52,8 @@ public enum TypItemu {
 
 
 	public static TypItemu typ(ItemStack item) {
+		if (item == null || item.getType().isAir())
+				return TypItemu.BRAK;
 		return typ(ZfaktoryzowaneItemy.tag(item));
 	}
 	static TypItemu typ(NBTTagCompound tag) {
