@@ -108,13 +108,9 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 					this.zasłonięty = zasłonięty;
 					odświeżNapis();
 				}
-				
-				Bukkit.getScheduler().runTask(Main.plugin, () -> {
-					napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
-					tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
-					sprawdzPattern();
-				});
 			}
+			if (doSprawdzenia % 30 == 0)
+				Bukkit.getScheduler().runTask(Main.plugin, this::odświeżEntityNapisów);
 			
 			if (zasłonięty)
 				return;
@@ -190,6 +186,12 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 			napis.getLocation().getBlock().setType(Material.AIR);
 			napis.remove();
 			tytuł.remove();
+		}
+	
+		public void odświeżEntityNapisów() {
+			napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
+			tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
+			odświeżNapis();
 		}
 	}
 	

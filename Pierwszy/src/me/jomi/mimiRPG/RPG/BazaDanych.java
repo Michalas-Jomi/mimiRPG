@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Func;
@@ -47,6 +49,15 @@ public class BazaDanych {
         	e.printStackTrace();
         }
         
+        synchronized (odłożone) {
+        	while (!odłożone.isEmpty())
+				try {
+        			stat.execute(odłożone.remove(0));
+        		} catch (Throwable e) {
+        			e.printStackTrace();
+        		}
+        }
+        
 	}
 	private static void utwórz() {
 		execute("CREATE TABLE IF NOT EXISTS itemy ("
@@ -60,13 +71,18 @@ public class BazaDanych {
 				+ ")");
 	}
 	
-	
+	private static final List<String> odłożone = new ArrayList<>();
 	public static void execute(String sql) {
-		try {
-			stat.execute(sql);
-		} catch (SQLException e) {
-			Func.throwEx(e);
-		}
+		if (stat == null)
+			synchronized (odłożone) {
+				odłożone.add(sql);
+			}
+		else
+			try {
+				stat.execute(sql);
+			} catch (SQLException e) {
+				Func.throwEx(e);
+			}
 	}
 	public static ResultSet executeQuery(String sql) {
 		try {

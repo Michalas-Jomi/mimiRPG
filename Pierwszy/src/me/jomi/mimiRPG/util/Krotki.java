@@ -1,5 +1,7 @@
 package me.jomi.mimiRPG.util;
 
+import me.jomi.mimiRPG.util.Funkcje.QuadConsumer;
+
 public class Krotki {
 	public static class Box<T> {
 		public T a;
@@ -34,6 +36,10 @@ public class Krotki {
 			this.b = b;
 			this.c = c;
 			this.d = d;
+		}
+		
+		public void wykonaj(QuadConsumer<T1, T2, T3, T4> cons) {
+			cons.accept(a, b, c, d);
 		}
 	}
 	public static class PentKrotka<T1, T2, T3, T4, T5> extends Krotka<Krotka<T1, T2>, TriKrotka<T3, T4, T5>> {

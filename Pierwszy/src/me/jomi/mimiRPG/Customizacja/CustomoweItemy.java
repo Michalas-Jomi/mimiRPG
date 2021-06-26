@@ -49,8 +49,10 @@ public class CustomoweItemy extends Komenda {
 				plus = -1;
 			else if (ev.getRawSlot() == 53)
 				plus = 1;
-			else
+			else {
+				ev.setCancelled(false);
 				return;
+			}
 			ev.setCancelled(true);
 
 			Krotka<Integer, List<ItemStack>> krotka = panel.dajDanePaneluPewny(ev.getInventory());
