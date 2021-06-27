@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,9 +30,9 @@ import com.google.common.collect.Lists;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-import net.minecraft.server.v1_16_R3.NBTBase;
-import net.minecraft.server.v1_16_R3.NBTNumber;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTNumber;
+import net.minecraft.nbt.NBTTagCompound;
 
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Config;
@@ -89,7 +89,7 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		if (item == null) return;
 		przerób(item, NMS.nms(item), nazwa, opis, niePobieraj);
 	}
-	private static void przerób(ItemStack bukkit, net.minecraft.server.v1_16_R3.ItemStack nms, String nazwa, String opis, boolean niePobieraj) {
+	private static void przerób(ItemStack bukkit, net.minecraft.world.item.ItemStack nms, String nazwa, String opis, boolean niePobieraj) {
 		NBTTagCompound tag = tag(bukkit);
 		ItemMeta meta = bukkit.getItemMeta();
 		List<String> lore = new ArrayList<>();
@@ -310,11 +310,11 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	static NBTTagCompound tag(ItemStack item) {
 		return tag(NMS.nms(item));
 	}
-	static NBTTagCompound tag(net.minecraft.server.v1_16_R3.ItemStack item) {
+	static NBTTagCompound tag(net.minecraft.world.item.ItemStack item) {
 		return item.getOrCreateTag().getCompound("mimiFactor");
 	}
 	static void ustawTag(ItemStack item, NBTTagCompound tag) {
-		net.minecraft.server.v1_16_R3.ItemStack nms = NMS.nms(item);
+		net.minecraft.world.item.ItemStack nms = NMS.nms(item);
 		
 		boolean miał = nms.hasTag();
 		

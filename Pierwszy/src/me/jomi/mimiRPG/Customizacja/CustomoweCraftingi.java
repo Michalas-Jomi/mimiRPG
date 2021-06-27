@@ -28,7 +28,6 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 public class CustomoweCraftingi implements Przeładowalny {
 	public static final Config config = new Config("Customowe Craftingi");
 	
-	@SuppressWarnings("deprecation")
 	public static ShapedRecipe shaped(NamespacedKey nms, ItemStack item, String[] linie, HashMap<Character, String> mapa, String grupa) {
 		ShapedRecipe rec = new ShapedRecipe(nms, item);
 		

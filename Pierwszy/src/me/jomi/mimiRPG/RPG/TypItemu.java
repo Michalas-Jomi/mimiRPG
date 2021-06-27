@@ -2,7 +2,7 @@ package me.jomi.mimiRPG.RPG;
 
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTTagCompound;
 
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;

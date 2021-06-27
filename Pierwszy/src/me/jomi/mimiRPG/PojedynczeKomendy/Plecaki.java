@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,9 +19,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.server.v1_16_R3.NBTBase;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
-import net.minecraft.server.v1_16_R3.NBTTagList;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -47,7 +47,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			for (NBTBase nbt : (NBTTagList) tag.get("itemy"))
 				inv.setItem(
 						((NBTTagCompound) nbt).getInt("Slot"),
-						CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a((NBTTagCompound) nbt))
+						CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.a((NBTTagCompound) nbt))
 						);
 		}
 	}
@@ -78,7 +78,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 			return mapa.getOrDefault(id, staryPlecak);
 		}
 		public ItemStack item() {
-			net.minecraft.server.v1_16_R3.ItemStack item = CraftItemStack.asNMSCopy(Func.stwórzItem(Material.CLAY_BALL, nazwa));
+			net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(Func.stwórzItem(Material.CLAY_BALL, nazwa));
 			NBTTagCompound nmsTag = item.getOrCreateTag();
 			
 			NBTTagCompound tag = new NBTTagCompound();
@@ -116,7 +116,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 		if (ev.getEntity() instanceof Player) {
 			Func.wykonajDlaNieNull(((Player) ev.getEntity()).getOpenInventory().getTopInventory().getHolder(),  Holder.class, holder -> {
 				ItemStack item = ev.getItem().getItemStack();
-				net.minecraft.server.v1_16_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+				net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 				NBTTagCompound tag = nmsItem.getOrCreateTag().getCompound("plecak");
 				if (tag == null || tag.isEmpty())
 					return;
@@ -142,7 +142,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 				itemWRęce.setAmount(1);
 			}
 			
-			net.minecraft.server.v1_16_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemWRęce);
+			net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemWRęce);
 			NBTTagCompound nmstag = nmsItem.getOrCreateTag();
 			
 			int maxSlot = -1;
@@ -182,7 +182,7 @@ public class Plecaki extends Komenda implements Przeładowalny, Listener {
 	public void użycie(PlayerInteractEvent ev) {
 		if(ev.getPlayer().hasPermission(premOtwieranie) && Func.multiEquals(ev.getAction(), Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK)) {
 			ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
-			net.minecraft.server.v1_16_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
 			NBTTagCompound tag = nmsItem.getOrCreateTag().getCompound("plecak");
 			if (tag == null || tag.isEmpty())
 				return;

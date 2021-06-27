@@ -26,9 +26,11 @@ import org.bukkit.inventory.PlayerInventory;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-import net.minecraft.server.v1_16_R3.EntityPlayer;
-import net.minecraft.server.v1_16_R3.GenericAttributes;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.entity.ai.attributes.GenericAttributes;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.entity.player.PlayerAbilities;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -68,9 +70,15 @@ public class RPG implements Listener {
 		switch (ev.statystyka.atrybut) {
 		case PRĘDKOŚĆ_CHODZENIA:	
 			EntityPlayer nms = NMS.nms(ev.getPlayer());
-			nms.abilities.walkSpeed = (float) (ev.statystyka.wartość() / 10f);
+			PlayerAbilities abilities = null;
+			try {
+				abilities = (PlayerAbilities) Func.dajField(EntityHuman.class, "cq").get(nms);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			abilities.g = (float) (ev.statystyka.wartość() / 10f);
 			nms.updateAbilities();
-			nms.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(nms.abilities.walkSpeed);
+			nms.getAttributeInstance(GenericAttributes.d).setValue(abilities.g);
 			break;
 		case SIŁA: 					attr.accept(Attribute.GENERIC_ATTACK_DAMAGE); 	break;
 		case PRĘDKOŚĆ_ATAKU: 		attr.accept(Attribute.GENERIC_ATTACK_SPEED); 	break;

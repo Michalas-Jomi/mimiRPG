@@ -11,9 +11,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.server.v1_16_R3.EntityHuman;
-import net.minecraft.server.v1_16_R3.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
+import net.minecraft.world.entity.ai.goal.PathfinderGoalLookAtPlayer;
+import net.minecraft.world.entity.ai.goal.PathfinderGoalSelector;
+import net.minecraft.world.entity.player.EntityHuman;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Config;
@@ -58,8 +58,8 @@ public class Farmer extends Minion {
 	@Override
 	protected void zrespMoba() {
 		super.zrespMoba();
-		goalSelector 	= new PathfinderGoalSelector(getWorld().getMethodProfilerSupplier());
-		goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
+		bO 	= new PathfinderGoalSelector(getWorld().getMethodProfilerSupplier());
+		bO.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
 	}
 	
 	@Override

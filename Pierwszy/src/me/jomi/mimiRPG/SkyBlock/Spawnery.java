@@ -15,9 +15,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.block.CraftCreatureSpawner;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.block.CraftCreatureSpawner;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -39,10 +39,10 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.server.v1_16_R3.BlockPosition;
-import net.minecraft.server.v1_16_R3.MojangsonParser;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
-import net.minecraft.server.v1_16_R3.TileEntityMobSpawner;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.nbt.MojangsonParser;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.level.block.entity.TileEntityMobSpawner;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
@@ -354,7 +354,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		
 		BlockPosition blockPos = new BlockPosition(ev.getBlock().getX(), ev.getBlock().getY(), ev.getBlock().getZ());
 		TileEntityMobSpawner _spawner = (TileEntityMobSpawner) ((CraftWorld) spawner.getWorld()).getHandle().getTileEntity(blockPos);
-		_spawner.load(_spawner.getBlock(), tag);
+		_spawner.load(tag);
 	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void niszczenie(BlockBreakEvent ev) {
@@ -386,7 +386,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		tag.setInt("Count", 1);
 		tag.setString("id", "spawner");
 		
-		ItemStack item = CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(tag));
+		ItemStack item = CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.a(tag));
 		
 		Func.nazwij(item, "§2Spawner §a" + mob);
 		Func.dodajLore(item, "§bLiczebność: §e"	+ spawnCount	+ "lvl");

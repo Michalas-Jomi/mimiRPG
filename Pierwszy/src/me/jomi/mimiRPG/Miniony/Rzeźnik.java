@@ -12,15 +12,15 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.server.v1_16_R3.EntityChicken;
-import net.minecraft.server.v1_16_R3.EntityCow;
-import net.minecraft.server.v1_16_R3.EntityHuman;
-import net.minecraft.server.v1_16_R3.EntityPig;
-import net.minecraft.server.v1_16_R3.EntityPolarBear;
-import net.minecraft.server.v1_16_R3.EntityRabbit;
-import net.minecraft.server.v1_16_R3.EntitySheep;
-import net.minecraft.server.v1_16_R3.PathfinderGoalLookAtPlayer;
-import net.minecraft.server.v1_16_R3.PathfinderGoalNearestAttackableTarget;
+import net.minecraft.world.entity.ai.goal.PathfinderGoalLookAtPlayer;
+import net.minecraft.world.entity.ai.goal.target.PathfinderGoalNearestAttackableTarget;
+import net.minecraft.world.entity.animal.EntityChicken;
+import net.minecraft.world.entity.animal.EntityCow;
+import net.minecraft.world.entity.animal.EntityPig;
+import net.minecraft.world.entity.animal.EntityPolarBear;
+import net.minecraft.world.entity.animal.EntityRabbit;
+import net.minecraft.world.entity.animal.EntitySheep;
+import net.minecraft.world.entity.player.EntityHuman;
 
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
@@ -55,13 +55,13 @@ public class Rzeźnik extends Minion{
 	@Override
 	protected void zrespMoba() {
 		super.zrespMoba();
-		goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityPig>(this, EntityPig.class, true));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityCow>(this, EntityCow.class, true));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntitySheep>(this, EntitySheep.class, true));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityRabbit>(this, EntityRabbit.class, true));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityChicken>(this, EntityChicken.class, true));
-		targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityPolarBear>(this, EntityPolarBear.class, true));
+		bO.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityPig>(this, EntityPig.class, true));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityCow>(this, EntityCow.class, true));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntitySheep>(this, EntitySheep.class, true));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityRabbit>(this, EntityRabbit.class, true));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityChicken>(this, EntityChicken.class, true));
+		bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityPolarBear>(this, EntityPolarBear.class, true));
 		ustawDmg();
 	}
 	

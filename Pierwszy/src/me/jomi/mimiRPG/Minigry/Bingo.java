@@ -43,7 +43,7 @@ import org.bukkit.map.MapView.Scale;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import net.minecraft.server.v1_16_R3.PacketPlayOutMap;
+import net.minecraft.network.protocol.game.PacketPlayOutMap;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;

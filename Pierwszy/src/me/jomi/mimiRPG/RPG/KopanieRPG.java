@@ -16,8 +16,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_16_R3.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,11 +35,11 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 
-import net.minecraft.server.v1_16_R3.BlockPosition;
-import net.minecraft.server.v1_16_R3.Packet;
-import net.minecraft.server.v1_16_R3.PacketPlayInBlockDig;
-import net.minecraft.server.v1_16_R3.PacketPlayOutBlockBreakAnimation;
-import net.minecraft.server.v1_16_R3.SoundCategory;
+import net.minecraft.core.BlockPosition;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayInBlockDig;
+import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
+import net.minecraft.sounds.SoundCategory;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -146,16 +146,16 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		
 		if (p.getGameMode() == GameMode.CREATIVE) return;
 		if (NMS.loc(p.getWorld(), packet.b()).getBlock().getType().getHardness() == 0) return;
-		
+
 		switch (packet.d()) {
-		case DROP_ITEM:
-		case DROP_ALL_ITEMS:
+		case e:
+		case d:
 			niszcz(p, packet.b(), -1);
-		case START_DESTROY_BLOCK:
+		case a:
 			niszczenie(p, packet.b());
 			break;
-		case STOP_DESTROY_BLOCK:
-		case ABORT_DESTROY_BLOCK:
+		case c:
+		case b:
 			p.removeMetadata(metaKontrolny, Main.plugin);
 			niszcz(p, packet.b(), -1);
 			break;
@@ -192,7 +192,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			
 			if (ev.isCancelled()) return;
 			
-			nms(p).getWorld().playSound(null, pos, ((CraftBlock) ev.getBlock()).getNMS().getStepSound().breakSound, SoundCategory.BLOCKS, 1f, 1f);
+			nms(p).getWorld().playSound(null, pos, ((CraftBlock) ev.getBlock()).getNMS().getStepSound().aA, SoundCategory.e, 1f, 1f);
 			
 			if (ev.isDropItems()) {
 				ev.getBlock().breakNaturally(p.getInventory().getItemInMainHand());
@@ -228,7 +228,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		double zasięg = 10;
 		
 		Runnable wyślij = () -> p.getWorld().getNearbyEntities(new Location(p.getWorld(), pos.getX(), pos.getY(), pos.getZ()), zasięg, zasięg, zasięg,
-				e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).playerConnection.sendPacket(packet));
+				e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).b.sendPacket(packet));
 		
 		if (Bukkit.isPrimaryThread())
 			wyślij.run();
@@ -330,7 +330,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 				Func.forEach(Material.values(), mat2 -> {
 					if (mat2.isItem()) {
 						ItemStack tool = Func.stwórzItem(mat2);
-						net.minecraft.server.v1_16_R3.ItemStack nms = CraftItemStack.asNMSCopy(tool);
+						net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(tool);
 						float _speed = nms.getItem().getDestroySpeed(nms, NMS.nms(blok));
 						if (_speed > speed[0]) {
 							speed[0] = _speed;

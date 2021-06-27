@@ -18,11 +18,11 @@ import org.bukkit.Statistic;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
-import org.bukkit.craftbukkit.v1_16_R3.advancement.CraftAdvancement;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_16_R3.util.CraftNamespacedKey;
+import org.bukkit.craftbukkit.v1_17_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_17_R1.advancement.CraftAdvancement;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.util.CraftNamespacedKey;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,19 +39,19 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import net.minecraft.server.v1_16_R3.Advancement;
-import net.minecraft.server.v1_16_R3.AdvancementDataPlayer;
-import net.minecraft.server.v1_16_R3.AdvancementDataWorld;
-import net.minecraft.server.v1_16_R3.AdvancementDisplay;
-import net.minecraft.server.v1_16_R3.AdvancementFrameType;
-import net.minecraft.server.v1_16_R3.AdvancementProgress;
-import net.minecraft.server.v1_16_R3.AdvancementRewards;
-import net.minecraft.server.v1_16_R3.Criterion;
-import net.minecraft.server.v1_16_R3.CriterionTriggerImpossible;
-import net.minecraft.server.v1_16_R3.CustomFunction;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent.ChatSerializer;
-import net.minecraft.server.v1_16_R3.MinecraftKey;
-import net.minecraft.server.v1_16_R3.PacketPlayOutAdvancements;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementDisplay;
+import net.minecraft.advancements.AdvancementFrameType;
+import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.critereon.CriterionTriggerImpossible;
+import net.minecraft.commands.CustomFunction;
+import net.minecraft.network.chat.IChatBaseComponent.ChatSerializer;
+import net.minecraft.network.protocol.game.PacketPlayOutAdvancements;
+import net.minecraft.resources.MinecraftKey;
+import net.minecraft.server.AdvancementDataPlayer;
+import net.minecraft.server.AdvancementDataWorld;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
@@ -243,7 +243,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		@Mapowane public String namespacedKey;
 		@Mapowane public List<Kryterium> kryteria;
 
-		@Mapowane public AdvancementFrameType ramka = AdvancementFrameType.TASK;
+		@Mapowane public AdvancementFrameType ramka = AdvancementFrameType.a;
 		@Mapowane public boolean show_toast = true;
 		@Mapowane public boolean announce_to_chat = true;
 		@Mapowane public boolean hidden = false;
@@ -366,7 +366,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		Advancement adv = new Advancement(key, parent, display, AdvStałe.reward, mapaKryteriów, wymaganeKryteria);
 		
-		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements.put(key, adv);
+		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().c.b.put(key, adv);
 		
 		return adv;
 	}
@@ -574,8 +574,8 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	
 	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {
-		Map<MinecraftKey, Advancement> advs = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().REGISTRY.advancements;
-		Map<Advancement, AdvancementProgress> data = ((CraftPlayer) p).getHandle().getAdvancementData().data;
+		Map<MinecraftKey, Advancement> advs = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().c.b;
+		Map<Advancement, AdvancementProgress> data = ((CraftPlayer) p).getHandle().getAdvancementData().h;
 		Set<Advancement> doUsunięcia = Sets.newConcurrentHashSet();
 		data.forEach((adv, nmsprog) -> {
 			if (!advs.containsKey(adv.getName())) {
@@ -600,7 +600,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	public void preReloadBukkitData() {
 		Bukkit.getOnlinePlayers().forEach(p -> {
 			Map<MinecraftKey, AdvancementProgress> mapa = new HashMap<>();
-			((CraftPlayer) p).getHandle().getAdvancementData().data.forEach((adv, prog) -> {
+			((CraftPlayer) p).getHandle().getAdvancementData().h.forEach((adv, prog) -> {
 				if (Osiągnięcie.mapa.containsKey(CraftNamespacedKey.fromMinecraft(adv.getName())))
 					mapa.put(adv.getName(), prog);
 			});
@@ -702,7 +702,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		});
 		
 		AdvancementDataWorld dataWorld = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData();
-		Map<MinecraftKey, Advancement> advs = dataWorld.REGISTRY.advancements;
+		Map<MinecraftKey, Advancement> advs = dataWorld.c.b;
 		
 		preReload.forEach((nick, mapa) ->
 				Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p -> {
@@ -729,14 +729,14 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 					}));
 
 					Map<MinecraftKey, AdvancementProgress> m = new HashMap<>();
-					data.data.forEach((adv, prog) -> m.put(adv.getName(), prog));
+					data.h.forEach((adv, prog) -> m.put(adv.getName(), prog));
 					
 					PacketPlayOutAdvancements packet = new PacketPlayOutAdvancements(
 							true,// czy ukryty, czy przyznać bez powiadomienia
 							setAdvs, // osiągnięcia które mają być pokazane w drzewku
 							setKluczy,
 							m);// mapa z progresem
-					((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+					((CraftPlayer) p).getHandle().b.sendPacket(packet);
 				}));
 		preReload.clear();
 

@@ -21,7 +21,7 @@ import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Player;
@@ -45,11 +45,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
-import net.minecraft.server.v1_16_R3.EntityArmorStand;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
-import net.minecraft.server.v1_16_R3.NBTTagList;
-import net.minecraft.server.v1_16_R3.Packet;
-import net.minecraft.server.v1_16_R3.PacketPlayOutBlockBreakAnimation;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
+import net.minecraft.world.entity.decoration.EntityArmorStand;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
@@ -197,7 +197,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			NBTTagList itemy = (NBTTagList) tag.get("itemy");
 			for (int i = 0; i < itemy.size(); i++) {
 				NBTTagCompound item = itemy.getCompound(i);
-				inv.setItem(item.getByte("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(item)));
+				inv.setItem(item.getByte("Slot"), CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.a(item)));
 			}
 			
 			odrób((int) ((System.currentTimeMillis() - tag.getLong("ost")) / 1_000));
@@ -451,7 +451,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				loc.getBlock().setType(Material.AIR);
 				Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), -1);
 				as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
-						e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).playerConnection.sendPacket(packet));
+						e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).b.sendPacket(packet));
 				AtomicBoolean pełny = new AtomicBoolean(true);
 				AtomicBoolean cośDropnięte = new AtomicBoolean(false);
 				dane.produkowaneItemy.forEach(drop -> {
@@ -469,7 +469,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 
 			Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), (int) (progress / 20d * 10));
 			as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
-					e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).playerConnection.sendPacket(packet));
+					e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).b.sendPacket(packet));
 			
 			int x = progress % 10;
 			// pi -> pi / 2

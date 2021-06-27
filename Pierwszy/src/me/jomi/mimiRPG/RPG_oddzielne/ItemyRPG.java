@@ -12,7 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -26,7 +26,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTTagCompound;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Main;
@@ -57,7 +57,7 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 		}
 		
 		public ItemStack stwórzNowy() {
-			net.minecraft.server.v1_16_R3.ItemStack item = CraftItemStack.asNMSCopy(podstawowyItem);
+			net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(podstawowyItem);
 			
 			NBTTagCompound tag = new NBTTagCompound();
 			tag.setInt("lvl", lvle.isEmpty() ? -1 : 0);
@@ -181,9 +181,9 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 			e.printStackTrace();
 		}
 	}
-	static net.minecraft.server.v1_16_R3.ItemStack nmsItem(ItemStack item) {
+	static net.minecraft.world.item.ItemStack nmsItem(ItemStack item) {
 		try {
-			return (net.minecraft.server.v1_16_R3.ItemStack) fieldHandle.get(item);
+			return (net.minecraft.world.item.ItemStack) fieldHandle.get(item);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;

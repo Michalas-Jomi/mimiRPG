@@ -10,8 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftItem;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftItem;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -28,9 +28,9 @@ import org.bukkit.util.Vector;
 
 import com.google.common.collect.Lists;
 
-import net.minecraft.server.v1_16_R3.EntityZombie;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent.ChatSerializer;
-import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
+import net.minecraft.network.chat.IChatBaseComponent.ChatSerializer;
+import net.minecraft.world.entity.ai.goal.PathfinderGoalSelector;
+import net.minecraft.world.entity.monster.EntityZombie;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.util.Config;
@@ -198,7 +198,7 @@ public abstract class Minion extends EntityZombie {
 		getBukkitEntity().teleport(loc);
 		addScoreboardTag("mimiMinion");
 		addScoreboardTag("mimiMinion_" + id);
-		world.addEntity(this);
+		t.addEntity(this);
 
 		((LivingEntity) getBukkitEntity()).setRemoveWhenFarAway(false);
 		((LivingEntity) getBukkitEntity()).getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(15);
@@ -210,7 +210,7 @@ public abstract class Minion extends EntityZombie {
 		setCustomNameVisible(true);
 		setCustomName(ChatSerializer.a("{\"text\":\"" + imie + "\"}"));
 		
-		targetSelector 	= new PathfinderGoalSelector(getWorld().getMethodProfilerSupplier());
+		bP 	= new PathfinderGoalSelector(getWorld().getMethodProfilerSupplier());
 
 		ustawNarzędzie(narzędzie);
     	ubierz();

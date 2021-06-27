@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -12,9 +12,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
-import net.minecraft.server.v1_16_R3.NBTTagList;
-import net.minecraft.server.v1_16_R3.NBTTagString;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -38,7 +38,7 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 			Func.dodajLore(item, "§6Gem§8: §e" + Func.koloruj(nazwaGemu));
 			
 			try {
-				net.minecraft.server.v1_16_R3.ItemStack nmsItem = ((net.minecraft.server.v1_16_R3.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item));
+				net.minecraft.world.item.ItemStack nmsItem = ((net.minecraft.world.item.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item));
 				NBTTagCompound tag = nmsItem.getOrCreateTag();
 				NBTTagList gemy = (NBTTagList) tag.get("mimiAktywneGemy");
 				if (gemy == null)
@@ -53,7 +53,7 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 		public boolean możnaNałożyć(ItemStack item) {
 			if (akceptowalneTypyItemów.contains(item.getType()) && gemId(item) == null)
 				try {
-					net.minecraft.server.v1_16_R3.ItemStack nmsItem = ((net.minecraft.server.v1_16_R3.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item));
+					net.minecraft.world.item.ItemStack nmsItem = ((net.minecraft.world.item.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item));
 					NBTTagList gemy = (NBTTagList) nmsItem.getOrCreateTag().get("mimiAktywneGemy");
 					if (gemy == null)
 						return true;
@@ -76,7 +76,7 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 		}
 		
 		public ItemStack dajGem() {
-			net.minecraft.server.v1_16_R3.ItemStack item = CraftItemStack.asNMSCopy(itemGemu);
+			net.minecraft.world.item.ItemStack item = CraftItemStack.asNMSCopy(itemGemu);
 			
 			NBTTagCompound tag = item.getOrCreateTag();
 			tag.setString("mimiGem", id);
@@ -89,7 +89,7 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 			if (item == null || item.getType() == Material.AIR)
 				return null;
 			try {
-				return ((net.minecraft.server.v1_16_R3.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item)).getTag().getString("mimiGem");
+				return ((net.minecraft.world.item.ItemStack) Func.dajField(CraftItemStack.class, "handle").get(item)).getTag().getString("mimiGem");
 			} catch (NullPointerException e) {
 			} catch (Throwable e) {
 				e.printStackTrace();

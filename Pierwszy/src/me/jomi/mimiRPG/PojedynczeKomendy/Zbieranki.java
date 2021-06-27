@@ -12,8 +12,8 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftArmorStand;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
@@ -28,10 +28,10 @@ import org.bukkit.util.EulerAngle;
 
 import com.mojang.datafixers.util.Pair;
 
-import net.minecraft.server.v1_16_R3.EnumItemSlot;
-import net.minecraft.server.v1_16_R3.ItemStack;
-import net.minecraft.server.v1_16_R3.Packet;
-import net.minecraft.server.v1_16_R3.PacketPlayOutEntityEquipment;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
+import net.minecraft.world.entity.EnumItemSlot;
+import net.minecraft.world.item.ItemStack;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -58,18 +58,18 @@ public class Zbieranki extends Komenda implements Listener, Przeładowalny, Zega
 	void ukryj(Player p, Entity armorStand) {
 		Packet<?> packet = new PacketPlayOutEntityEquipment(
 				armorStand.getEntityId(),
-				Arrays.asList(new Pair<>(EnumItemSlot.HEAD, ItemStack.b))
+				Arrays.asList(new Pair<>(EnumItemSlot.f, ItemStack.b))
 				);
 		
-		((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+		((CraftPlayer) p).getHandle().b.sendPacket(packet);
 	}
 	void pokaż(Player p, Entity armorStand) {
 		Packet<?> packet = new PacketPlayOutEntityEquipment(
 				armorStand.getEntityId(),
-				Arrays.asList(new Pair<>(EnumItemSlot.HEAD, ((CraftArmorStand) armorStand).getHandle().getEquipment(EnumItemSlot.HEAD)))
+				Arrays.asList(new Pair<>(EnumItemSlot.f, ((CraftArmorStand) armorStand).getHandle().getEquipment(EnumItemSlot.f)))
 				);
 		
-		((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+		((CraftPlayer) p).getHandle().b.sendPacket(packet);
 	}
 	ArmorStand zresp(Location loc, org.bukkit.inventory.ItemStack item) {
 		loc.add(0, -1.8, 0);

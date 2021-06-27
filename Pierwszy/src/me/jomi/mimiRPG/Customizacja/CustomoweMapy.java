@@ -23,7 +23,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
-import net.minecraft.server.v1_16_R3.PacketPlayOutMap;
+import net.minecraft.network.protocol.game.PacketPlayOutMap;
+import net.minecraft.world.level.saveddata.maps.WorldMap;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -199,7 +200,7 @@ public class CustomoweMapy extends Komenda implements Listener {
 		return packet(idMapy, wczytaj(nazwa));
 	}
 	public static PacketPlayOutMap packet(int idMapy, byte[] dane) {
-		return new PacketPlayOutMap(idMapy, (byte) 0, false, true, new ArrayList<>(), dane, 0, 0, 128, 128);
+		return new PacketPlayOutMap(idMapy, (byte) 0, false, new ArrayList<>(), new WorldMap.b(0, 0, 128, 128, dane));
 	}
 	
 	public static void umieść(BufferedImage image, byte[] mapa, int X, int Y) {

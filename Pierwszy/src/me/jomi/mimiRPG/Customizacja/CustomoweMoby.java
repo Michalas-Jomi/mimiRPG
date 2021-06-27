@@ -16,7 +16,7 @@ import org.bukkit.World;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftEntity;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -38,12 +38,12 @@ import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
 
-import net.minecraft.server.v1_16_R3.EntityInsentient;
-import net.minecraft.server.v1_16_R3.EntityPlayer;
-import net.minecraft.server.v1_16_R3.MojangsonParser;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
-import net.minecraft.server.v1_16_R3.PathfinderGoalNearestAttackableTarget;
-import net.minecraft.server.v1_16_R3.PathfinderGoalSelector;
+import net.minecraft.nbt.MojangsonParser;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.world.entity.EntityInsentient;
+import net.minecraft.world.entity.ai.goal.PathfinderGoalSelector;
+import net.minecraft.world.entity.ai.goal.target.PathfinderGoalNearestAttackableTarget;
 
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
@@ -187,8 +187,8 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			
 			if (atakujGraczy) {
 				EntityInsentient ei = (EntityInsentient) ((CraftEntity) mob).getHandle();
-				ei.targetSelector = new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
-				ei.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<EntityPlayer>(ei, EntityPlayer.class, true));
+				ei.bP = new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
+				ei.bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityPlayer>(ei, EntityPlayer.class, true));
 			}
 			
 			

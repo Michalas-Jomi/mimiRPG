@@ -38,8 +38,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
@@ -87,8 +86,11 @@ import com.google.common.collect.Sets;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
-import net.minecraft.server.v1_16_R3.PacketPlayOutWorldBorder;
-import net.minecraft.server.v1_16_R3.WorldBorder;
+import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
+import net.minecraft.network.protocol.game.ClientboundSetBorderSizePacket;
+import net.minecraft.world.level.border.WorldBorder;
 
 import me.jomi.mimiRPG.Baza;
 import me.jomi.mimiRPG.Gracz;
@@ -110,6 +112,7 @@ import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
+import me.jomi.mimiRPG.util.NMS;
 import me.jomi.mimiRPG.util.Napis;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
@@ -2271,8 +2274,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			wb.setWarningDistance(0);
 			wb.setWarningTime(0);
 
-			((CraftPlayer) p).getHandle().playerConnection.sendPacket(
-					new PacketPlayOutWorldBorder(wb, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
+			ClientboundInitializeBorderPacket p1 = new ClientboundInitializeBorderPacket(wb);
+			ClientboundSetBorderCenterPacket p2 = new ClientboundSetBorderCenterPacket(wb);
+			ClientboundSetBorderSizePacket p3 = new ClientboundSetBorderSizePacket(wb);
+			ClientboundSetBorderLerpSizePacket p4 = new ClientboundSetBorderLerpSizePacket(wb);
+			
+			NMS.wyślij(p, p1);
+			NMS.wyślij(p, p2);
+			NMS.wyślij(p, p3);
+			NMS.wyślij(p, p4);
 		}
 		public void odświeżBorder() {
 			Bukkit.getOnlinePlayers().forEach(p -> {
