@@ -84,7 +84,7 @@ public abstract class Komenda implements TabExecutor {
 	}
 	private PluginCommand komenda(String nazwa, String użycie, List<String> aliasy) throws Exception {
 		Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
-		c.setAccessible(true);
+		Func.ustawAccessible(c);
 		PluginCommand komenda = c.newInstance(nazwa, Main.plugin);
 		String prefix;
 		try { 

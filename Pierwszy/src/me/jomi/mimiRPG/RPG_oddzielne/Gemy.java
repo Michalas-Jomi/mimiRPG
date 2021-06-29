@@ -67,7 +67,7 @@ public class Gemy extends KomendaZMapowanymiItemami<Gem> implements Listener {
 		private NBTTagString nbtStr() {
 			try {
 				Constructor<NBTTagString> constructor = NBTTagString.class.getDeclaredConstructor(String.class);
-				constructor.setAccessible(true);
+				Func.ustawAccessible(constructor);
 				return constructor.newInstance(id);
 			} catch (Throwable e) {
 				e.printStackTrace();

@@ -99,7 +99,7 @@ public abstract class Mapowany extends MimiObject implements ConfigurationSerial
 			for (Field f : c.getDeclaredFields())
 				if (f.isAnnotationPresent(Mapowane.class))
 					try {
-						f.setAccessible(true);
+						Func.ustawAccessible(f);
 						mapa.put(f.getName(), f.get(this));
 					} catch (Throwable e) {
 						e.printStackTrace();

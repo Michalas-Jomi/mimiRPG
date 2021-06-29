@@ -65,7 +65,7 @@ import me.jomi.mimiRPG.util.Napis;
 public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 	public static final String prefix = Func.prefix(ZfaktoryzowaneItemy.class);
 	
-	private static final Field NBTMap = Func.dajField(NBTTagCompound.class, "map");
+	private static final Field NBTMap = Func.dajField(NBTTagCompound.class, "x");
 	@SuppressWarnings("unchecked")
 	private static Map<String, NBTBase> mapa(NBTTagCompound tag) {
 		try {

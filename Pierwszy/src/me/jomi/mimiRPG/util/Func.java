@@ -14,9 +14,12 @@ import java.io.OutputStream;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -689,11 +692,10 @@ public abstract class Func {
 		GameProfile profile = new GameProfile(uuid, null);
         profile.getProperties().put("textures", new Property("textures", url));
         try {
-            Field profileField = meta.getClass().getDeclaredField("profile");
-            profileField.setAccessible(true);
+            Field profileField = Func.dajField(meta.getClass(), "profile");
             profileField.set(meta, profile);
         }
-        catch (IllegalArgumentException|NoSuchFieldException|SecurityException | IllegalAccessException error) {
+        catch (Throwable error) {
             error.printStackTrace();
         }
 		
@@ -1431,7 +1433,7 @@ public abstract class Func {
 
 		try {
 			for (Field field : dajFields(clazz)) {
-				field.setAccessible(true);
+				Func.ustawAccessible(field);
 				if (field.isAnnotationPresent(Mapowane.class) && !field.getDeclaredAnnotation(Mapowane.class).nieTwórz() && field.get(obj) == null) {
 					if (List.class.isAssignableFrom(field.getType()))
 						field.set(obj, Lists.newArrayList());
@@ -1455,7 +1457,7 @@ public abstract class Func {
 		for (Field field : dajFields(clazz))
 			try {
 				if (!field.isAnnotationPresent(Mapowane.class)) continue;
-				field.setAccessible(true);
+				Func.ustawAccessible(field);
 				String name = field.getName();
 				mapa.put(name, zmapuj_wez(field.getGenericType(), field.get(obj)));
 			} catch (Throwable e) {
@@ -1673,7 +1675,19 @@ public abstract class Func {
 		}
 		return false;
 	}
-	
+
+	public static void ustawAccessible(AccessibleObject ao) {
+		ustawAccessible(ao, true);
+	}
+	public static void ustawAccessible(AccessibleObject ao, boolean accessible) {
+		if (System.getSecurityManager() == null)
+			ao.setAccessible(accessible);
+		else
+			AccessController.doPrivileged((PrivilegedAction<?>) () -> {
+				ao.setAccessible(accessible);
+				return null;
+			});
+	}
 	public static Object dajZField(Object obj, String nazwa) throws Throwable {
 		return dajField(obj.getClass(), nazwa).get(obj);
 	}
@@ -1697,7 +1711,7 @@ public abstract class Func {
 	private static <T extends AccessibleObject> T dajZKlasy(Class<?> clazz, Class<?> error, dajZKlasyInterface<T> getDeclared) {
 		try {
 			T obj = getDeclared.call(clazz);
-			obj.setAccessible(true);
+			Func.ustawAccessible(obj);
 			return obj;
 		} catch (Throwable e) {
 			if (e.getClass().isAssignableFrom(error))
@@ -1725,8 +1739,11 @@ public abstract class Func {
 		
 		for (T obj : getDeclared.apply(clazz))
 			if (nazwy == null || nazwy.add(name.apply(obj))) {
-				obj.setAccessible(true);
-				lista.add(obj);
+				try {
+					Func.ustawAccessible(obj);
+					lista.add(obj);
+				} catch (InaccessibleObjectException e) {
+				}
 			}
 
 		if (!clazz.getName().equals(Object.class.getName()))

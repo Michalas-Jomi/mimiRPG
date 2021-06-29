@@ -227,7 +227,6 @@ public class EdytorOgólny<T> {
 						obj = ((List<?>) obj).get(Integer.parseInt(klucz));
 					} else {
 						field = Func.dajField(obj.getClass(), klucz);
-						field.setAccessible(true);
 						obj = field.get(obj);
 					}
 					continue;
@@ -308,7 +307,6 @@ public class EdytorOgólny<T> {
 				pref += "-";
 				Napis n = new Napis((wLiście ? "\n" : "")).dodaj(new Napis(pref, "§bKliknij aby ustawić null\n§3" + nazwa, scieżka + ">> null")).dodaj("§9" + nazwa);
 				for (Field field : Func.dajFields(objekt.getClass())) {
-					field.setAccessible(true);
 					if (field.isAnnotationPresent(Mapowane.class)) {
 						n.dodaj("\n");
 						n.dodaj(edytor(field.get(objekt), pref, field.getName(), scieżka, false));

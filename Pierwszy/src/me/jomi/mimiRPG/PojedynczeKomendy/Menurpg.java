@@ -1,6 +1,5 @@
 package me.jomi.mimiRPG.PojedynczeKomendy;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -118,11 +117,8 @@ public class Menurpg extends Komenda implements Listener {
 			GameProfile profile = new GameProfile(UUID.randomUUID(), null);
 	        profile.getProperties().put("textures", new Property("textures", url));
 	        try {
-	            Field profileField = meta.getClass().getDeclaredField("profile");
-	            profileField.setAccessible(true);
-	            profileField.set(meta, profile);
-	        }
-	        catch (IllegalArgumentException|NoSuchFieldException|SecurityException | IllegalAccessException error) {
+	        	Func.dajField(meta.getClass(), "profile").set(meta, profile);
+	        } catch (Throwable error) {
 	            error.printStackTrace();
 	        }
 			this.setItemMeta(meta);

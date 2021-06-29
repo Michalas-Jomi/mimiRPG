@@ -53,6 +53,8 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class KopanieRPG extends PacketAdapter implements Listener, Przeładowalny {
+	public static final String prefix = Func.prefix(KopanieRPG.class);
+	
 	public static class Api {
 		public static class WykopanyBlokEvent extends BlockBreakEvent {
 			public final List<DropRPG> dropy = new ArrayList<>();
@@ -61,7 +63,8 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 			public WykopanyBlokEvent(Player p, Blok blok, Block block) {
 				super(block, p);
 				this.blok = blok;
-				dropy.add(blok.drop);
+				if (blok != null)
+					dropy.add(blok.drop);
 			}
 			
 			private static final HandlerList handlers = new HandlerList();
@@ -281,22 +284,26 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 		Config config = new Config("BlokiRPG");
 		
 		config.klucze().forEach(klucz -> {
-			Material mat = Func.StringToEnum(Material.class, klucz);
-			ConfigurationSection sekcja = config.sekcja(klucz);
-			TypItemu narzędzie = Func.StringToEnum(TypItemu.class, sekcja.getString("efektywne narzędzie", "BRAK"));
-			
-			DropRPG drop = DropRPG.parse(sekcja.getString("drop"));
-			
-			new Blok(
-					mat,
-					narzędzie,
-					drop,
-					sekcja.contains("drop silk") ? DropRPG.parse(sekcja.getString("drop silk")) : drop,
-					sekcja.getInt("wytrzymałość", 2000),
-					sekcja.getInt("exp", 0),
-					sekcja.getInt("exp kopacza", 1),
-					sekcja.getInt("exp drwala", 0)
-					);
+			try {
+				Material mat = Func.StringToEnum(Material.class, klucz);
+				ConfigurationSection sekcja = config.sekcja(klucz);
+				TypItemu narzędzie = Func.StringToEnum(TypItemu.class, sekcja.getString("efektywne narzędzie", "BRAK"));
+				
+				DropRPG drop = DropRPG.parse(sekcja.getString("drop"));
+				
+				new Blok(
+						mat,
+						narzędzie,
+						drop,
+						sekcja.contains("drop silk") ? DropRPG.parse(sekcja.getString("drop silk")) : drop,
+								sekcja.getInt("wytrzymałość", 2000),
+								sekcja.getInt("exp", 0),
+								sekcja.getInt("exp kopacza", 1),
+								sekcja.getInt("exp drwala", 0)
+						);
+			} catch (Throwable e) {
+				Main.warn(prefix + Func.msg("%s problem z %s", e.getMessage(), klucz));
+			}
 		});
 	}
 	@Override
@@ -306,7 +313,7 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 
 
 
-	// DEBUG
+	// DEBUG mdebug RPG.KopanieRPG generowanieConfiga()
 	static void generowanieConfiga() {
 		Config config = new Config("BlokiRPG");
 		Func.forEach(Material.values(), mat -> {
@@ -324,7 +331,6 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 				blok.setType(mat, false);
 				
 				
-
 				float[] speed = new float[] {0F};
 				ItemStack item0[] = new ItemStack[1];
 				Func.forEach(Material.values(), mat2 -> {
@@ -356,7 +362,6 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 					config.ustaw(sc + "efektywne narzędzie", eff);
 				
 				
-				
 				ItemStack itemK = item0[0];
 				
 				StringBuilder strB = new StringBuilder();
@@ -374,10 +379,6 @@ public class KopanieRPG extends PacketAdapter implements Listener, Przeładowaln
 				});
 				if (!strB2.toString().isEmpty())
 					config.ustaw(sc + "drop silk", strB2.toString().substring(0, strB2.toString().length() - 1));
-				
-				
-				
-				
 			}
 		});
 		config.zapisz();

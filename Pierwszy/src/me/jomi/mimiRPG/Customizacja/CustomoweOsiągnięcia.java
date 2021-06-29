@@ -1,7 +1,6 @@
 package me.jomi.mimiRPG.Customizacja;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -749,12 +748,9 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				if (pat.matcher(klucz.toString()).matches()) {
 					doUsunięcia.add(klucz);
 					try {
-						Field requirements = Advancement.class.getDeclaredField("requirements");
-						requirements.setAccessible(true);
-						requirements.set(adv, AdvStałe.strs);
-						Field criteria = Advancement.class.getDeclaredField("criteria");
-						criteria.setAccessible(true);
-						criteria.set(adv, AdvStałe.mapa);
+						// FIXME nms 1.17
+						Func.dajField(Advancement.class, "requirements").set(adv, AdvStałe.strs);
+						Func.dajField(Advancement.class, "criteria").set(adv, AdvStałe.mapa);
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}

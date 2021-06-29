@@ -83,7 +83,7 @@ public class NMS {
 	@SuppressWarnings("unchecked")
 	public static Map<String, NBTBase> getRaw(NBTTagCompound tag) {
 		try {
-			return (Map<String, NBTBase>) Func.dajZField(tag, "map");
+			return (Map<String, NBTBase>) Func.dajZField(tag, "x");
 		} catch (Throwable e) {
 			throw Func.throwEx(e);
 		}

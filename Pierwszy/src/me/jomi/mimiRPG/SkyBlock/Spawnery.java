@@ -478,8 +478,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 			else {
 				Consumer<String> cons = str -> {
 					try {
-						Field f = Ulepszenie.Ulepszenia.class.getDeclaredField(str);
-						f.setAccessible(true);
+						Field f = Func.dajField(Ulepszenie.Ulepszenia.class, str);
 						
 						if (f.get(upgr.ulepszenia) == null)
 							f.set(upgr.ulepszenia, f.get(krotka.a));
