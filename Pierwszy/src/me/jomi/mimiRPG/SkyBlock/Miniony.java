@@ -384,6 +384,11 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				}
 				this.lvl++;
 				ustawItemUlepszeniaIInfo();
+				
+				Minion.miniony.remove(as.getUniqueId());
+				zapisz();
+				new Minion(as);
+				
 				Func.powiadom(prefix, p, "Ulepszyłeś Swojego Miniona %s na poziom %s!", dane.nazwa, this.lvl + 1);
 				Main.log(prefix + "%s ulepszył miniona %s na poziom %s", p.getName(), dane.nazwa, this.lvl + 1);
 			} else
@@ -553,7 +558,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		public void ubierz() {
 			EntityEquipment eq = as.getEquipment();
 			
-			eq.setHelmet		(dane.itemLvl0());
+			eq.setHelmet		(item());
 			eq.setChestplate	(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_CHESTPLATE), dane.ubranko.kolor()));
 			eq.setLeggings		(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_LEGGINGS), 	dane.ubranko.kolor()));
 			eq.setBoots			(Func.pokolorujZbroje(Func.stwórzItem(Material.LEATHER_BOOTS), 		dane.ubranko.kolor()));

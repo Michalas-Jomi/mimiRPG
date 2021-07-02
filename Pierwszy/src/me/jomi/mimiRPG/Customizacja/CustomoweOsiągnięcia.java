@@ -748,9 +748,8 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 				if (pat.matcher(klucz.toString()).matches()) {
 					doUsunięcia.add(klucz);
 					try {
-						// FIXME nms 1.17
-						Func.dajField(Advancement.class, "requirements").set(adv, AdvStałe.strs);
-						Func.dajField(Advancement.class, "criteria").set(adv, AdvStałe.mapa);
+						Func.dajField(Advancement.class, "f").set(adv, AdvStałe.strs);
+						Func.dajField(Advancement.class, "e").set(adv, AdvStałe.mapa);
 					} catch (Throwable e) {
 						e.printStackTrace();
 					}
