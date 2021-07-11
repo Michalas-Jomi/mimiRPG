@@ -1594,7 +1594,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		public void tpHome(Player p) {
 			p.teleport(locHome);
-			inst.throwFormatMsg("Zostałeś przeleportowany na swoją wyspę");
+			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
 		}
 
 		

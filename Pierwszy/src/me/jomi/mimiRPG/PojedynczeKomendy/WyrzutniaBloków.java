@@ -104,7 +104,7 @@ public class WyrzutniaBloków implements Listener, Przeładowalny {
 		wyrzutnia = Main.ust.wczytajItem  ("WyrzutniaBloków.item");
 		moc 	  = Main.ust.wczytajDouble("WyrzutniaBloków.moc");
 		
-		if (!wyrzutnia.equals(wyrzutnia)) {
+		if (!wyrzutnia.equals(stara)) {
 			InteractManager.wyrejestruj(stara, Sposób.PRAWY);
 			InteractManager.zarejestruj(wyrzutnia, Sposób.PRAWY, this::interackcja);
 		}

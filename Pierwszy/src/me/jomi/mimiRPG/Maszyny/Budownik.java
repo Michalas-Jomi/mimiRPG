@@ -50,7 +50,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 	public Budownik() {
 		super("budownik", prefix + "/budownik <gracz>");
 		ustawKomende("rógbudownika", null, null);
-		Main.plugin.getCommand("rógbudownika").setPermission(null);
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Main.plugin.getCommand("rógbudownika").setPermission(null));
 		for (String klucz : config.klucze())
 			budowniki.add(_Budownik.wczytaj(config, klucz));
 	}

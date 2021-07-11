@@ -24,12 +24,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ArmorStand.LockType;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -159,7 +161,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		static final Map<UUID, Minion> miniony = new HashMap<>();
 		final Inventory inv;
 		final MinionDane dane;
-		final ArmorStand as;
+		ArmorStand as;
 		int timer;
 		int lvl;
 		
@@ -169,6 +171,15 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		
 		Minion(ArmorStand as) {
 			this.as = as;
+			
+			if (miniony.containsKey(this.as.getUniqueId())) {
+				this.inv = null;
+				this.dane = null;
+				
+				Bukkit.getScheduler().runTask(Main.plugin, () -> miniony.get(as.getUniqueId()).as = (ArmorStand) Bukkit.getEntity(as.getUniqueId()));
+				
+				return;
+			}
 			
 			miniony.put(this.as.getUniqueId(), this);
 			Func.ustawMetadate(this.as, metaMiniona, this);
@@ -382,6 +393,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 						}
 					}
 				}
+				p.closeInventory();
 				this.lvl++;
 				ustawItemUlepszeniaIInfo();
 				
@@ -417,6 +429,18 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			Func.ustawLore(item, lore);
 			
 			return item;
+		}
+		
+		public void usuń(Player p) {
+			Func.dajItem(p, item());
+			zbierzWszystko(p);
+			Func.wykonajDlaNieNull(Bukkit.getEntity(as.getUniqueId()), Entity::remove);
+			as.remove();
+			
+			while (!inv.getViewers().isEmpty())
+				inv.getViewers().get(0).closeInventory();
+			
+			Main.log("%s podniósł miniona %s lvl %s z %s", p.getName(), dane.nazwa, lvl + 1, Func.locBlockToString(as.getLocation()));
 		}
 		
 		
@@ -604,12 +628,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				((Minion) panelMiniona.dajDanePanelu(ev.getInventory())).zbierzWszystko(p);
 			else if (slot == slotMinionPodnieś) {
 				Minion minion = ((Minion) panelMiniona.dajDanePanelu(ev.getInventory()));
-				Func.dajItem(p, minion.item());
-				minion.zbierzWszystko(p);
-				minion.as.remove();
-				while (!minion.inv.getViewers().isEmpty())
-					minion.inv.getViewers().get(0).closeInventory();
-				Main.log("%s podniósł miniona %s lvl %s z %s", p.getName(), minion.dane.nazwa, minion.lvl + 1, Func.locBlockToString(minion.as.getLocation()));
+				minion.usuń(p);
 			} else if (slot == slotMinionUlepsz)
 				((Minion) panelMiniona.dajDanePanelu(ev.getInventory())).ulepsz(p);
 		});
@@ -638,6 +657,11 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			ev.getPlayer().openInventory(((Minion) ev.getRightClicked().getMetadata(metaMiniona).get(0).value()).inv);// TODO permisje
 	}
 	@EventHandler
+	public void spawnMoba(EntitySpawnEvent ev) {
+		if (ev.getEntity().getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
+			new Minion((ArmorStand) ev.getEntity());
+	}
+	@EventHandler
 	public void wczytywanieChunka(ChunkLoadEvent ev) {
 		wczytywanieChunka(ev.getChunk());
 	}
@@ -648,6 +672,10 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				Minion.miniony.remove(e.getUniqueId());
 				((Minion) e.getMetadata(metaMiniona).get(0).value()).zapisz();
 			}
+		});
+		Func.opóznij(20, () -> {
+			if (ev.getChunk().isLoaded())
+				wczytywanieChunka(ev.getChunk());
 		});
 	}
 	@EventHandler(priority = EventPriority.HIGH)
