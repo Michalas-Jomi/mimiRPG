@@ -59,6 +59,7 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
+import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
@@ -74,6 +75,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	public static final String prefix = Func.prefix(Miniony.class);
 	static final NamespacedKey kluczMiniona = new NamespacedKey(Main.plugin, "mimiSkyblockMinion");
 	static final String metaMiniona = "mimiSkyblockMinion";
+	static final String permBypass = Func.permisja("miniony.bypass");
 	public static class DropMiniona extends Mapowany {
 		@Mapowane ItemStack item;
 		@Mapowane double szansa;
@@ -576,6 +578,9 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			meta.setLore(lore);
 			item.setItemMeta(meta);
 			
+			zapisz();
+			NMS.nms(item).getTag().set("minion", tag());
+			
 			return item;
 		}
 
@@ -615,6 +620,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	public Miniony() {
 		super("edytujminiony");
 		Bukkit.getScheduler().runTask(Main.plugin, () -> Bukkit.getWorlds().forEach(world -> Func.forEach(world.getLoadedChunks(), Miniony::wczytywanieChunka)));
+		Main.dodajPermisje(permBypass);
 		
 		panelMiniona.ustawClick(ev -> {
 			Player p = (Player) ev.getWhoClicked();
@@ -653,8 +659,17 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	/// EventHandler
 	@EventHandler
 	public void klikanieMiniona(PlayerInteractAtEntityEvent ev) {
-		if (ev.getRightClicked().hasMetadata(metaMiniona))
-			ev.getPlayer().openInventory(((Minion) ev.getRightClicked().getMetadata(metaMiniona).get(0).value()).inv);// TODO permisje
+		if (ev.getRightClicked().hasMetadata(metaMiniona)) {
+			Wyspa wyspa;
+			if (
+					ev.getPlayer().hasPermission(permBypass) ||
+					(
+						Main.włączonyModół(SkyBlock.class) &&
+						(wyspa = SkyBlock.Wyspa.wczytaj(ev.getRightClicked().getLocation())) != null &&
+						wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn
+					))
+				ev.getPlayer().openInventory(((Minion) ev.getRightClicked().getMetadata(metaMiniona).get(0).value()).inv);
+		}
 	}
 	@EventHandler
 	public void spawnMoba(EntitySpawnEvent ev) {
