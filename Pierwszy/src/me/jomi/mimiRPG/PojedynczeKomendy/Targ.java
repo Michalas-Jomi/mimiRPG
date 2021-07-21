@@ -249,6 +249,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		case "§6§lTarg":
 			if (slot >= 6*9 || slot < 0) return;
 			ev.setCancelled(true);
+			
 			String nazwa = item.getItemMeta().getDisplayName();
 			if (nazwa.equals("§6§2 ")) return;
 			if (slot < 5*9) {kup(p, item); return;}

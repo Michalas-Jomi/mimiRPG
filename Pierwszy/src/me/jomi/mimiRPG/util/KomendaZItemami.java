@@ -48,7 +48,7 @@ public abstract class KomendaZItemami<T> extends Komenda {
 		Player gracz = p;
 		Func.wykonajDlaNieNull(getItem(args[0]), obj -> {
 				Func.dajItem(gracz, getItem(obj));
-				Func.powiadom(sender, getPrefix() + "dano %s %s", gracz.getDisplayName(), args[0]);
+				Func.powiadom(sender, getPrefix() + "dano %s %s", Func.getDisplayName(gracz), args[0]);
 			}, () -> Func.powiadom(sender, getPrefix() + "Nieprawidłowa nazwa: %s", args[0]));
 		
 		return true;

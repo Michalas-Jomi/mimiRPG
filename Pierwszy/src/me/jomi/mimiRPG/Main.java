@@ -43,6 +43,7 @@ import me.jomi.mimiRPG.PojedynczeKomendy.Koniki;
 import me.jomi.mimiRPG.PojedynczeKomendy.ZabezpieczGracza;
 import me.jomi.mimiRPG.RPG.BazaDanych;
 import me.jomi.mimiRPG.SkyBlock.AutoEventy;
+import me.jomi.mimiRPG.SkyBlock.Miniony;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.Multi.MultiSkyBlock;
 import me.jomi.mimiRPG.util.Config;
@@ -162,6 +163,8 @@ public class Main extends JavaPlugin implements Listener {
 			Paintball.wyłącz();
 		if (włączonyModół(SkyBlock.class))
 			SkyBlock.onDisable();
+		if (włączonyModół(Miniony.class))
+			Miniony.onDisable();
 
 		Func.onDisable();
 		MimiThread.onDisable();

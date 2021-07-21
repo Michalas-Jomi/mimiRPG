@@ -145,7 +145,7 @@ public class Przyjaciele extends Komenda implements Przeładowalny {
 			case "w":
 			case "wszyscy":
 				String msg = Func.listToString(args, 1);
-				msg = prefix + "§2[§aW§2] §e" + p.getDisplayName() + "§7: §f" + msg;
+				msg = prefix + "§2[§aW§2] §e" + Func.getDisplayName(p) + "§7: §f" + msg;
 				for (String gracz : _gracz.przyjaciele) {
 					Player p2 = Bukkit.getPlayer(gracz);
 					if (p2 != null && p2.isOnline())

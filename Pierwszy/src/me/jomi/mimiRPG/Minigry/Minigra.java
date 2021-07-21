@@ -121,7 +121,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Func.ustawMetadate(p, getInstMinigra().getMetaId(), this);
 			NowyEkwipunek.dajNowy(p, zbiorka, GameMode.ADVENTURE);
 			gracze.add(p);
-			napiszGraczom("%s dołączył do poczekalni %s/%s", p.getDisplayName(), gracze.size(), strMaxGracze());
+			napiszGraczom("%s dołączył do poczekalni %s/%s", Func.getDisplayName(p), gracze.size(), strMaxGracze());
 
 			Statystyki staty = Gracz.wczytaj(p.getName()).staty.getOrDefault(getInstMinigra().getClass().getName(), getInstMinigra().noweStaty().get());
 			Func.ustawMetadate(p, getInstMinigra().getMetaStatystyki(), staty);
@@ -189,16 +189,16 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			if (info)
 				if (!grane)
-					napiszGraczom("%s opuścił pokój", p.getDisplayName());
+					napiszGraczom("%s opuścił pokój", Func.getDisplayName(p));
 				else {
-					napiszGraczom("%s opuścił rozgrywkę", p.getDisplayName());
+					napiszGraczom("%s opuścił rozgrywkę", Func.getDisplayName(p));
 					sprawdzKoniec();
 				}
 			p.sendMessage(getInstMinigra().getPrefix() + "Nie jesteś już w Minigrze");
 			
 			if (timer != -1 && policzGotowych() < min_gracze) {
 				timer = -1;
-				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
+				Func.broadcast(getInstMinigra().getPrefix() + Func.msg("Wstrzymano odliczanie areny %s , z powodu małej ilości graczy %s/%s",
 						nazwa, gracze.size(), strMaxGracze()));
 			}
 			
@@ -216,10 +216,10 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			Set<String> set = Sets.newConcurrentHashSet();
 			for (String nick : wszyscyGracze) {
 				Player gracz = Bukkit.getPlayer(nick);
-				set.add(gracz == null ? "§c" + nick : gracz.getDisplayName());
+				set.add(gracz == null ? "§c" + nick : Func.getDisplayName(gracz));
 			}
-			Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("%s Wygrał na arenie %s z %s",
-					p.getDisplayName(), nazwa, nazwa, Func.listToString(wszyscyGracze, 0, "§6, §e")));
+			Func.broadcast(getInstMinigra().getPrefix() + Func.msg("%s Wygrał na arenie %s z %s",
+					Func.getDisplayName(p), nazwa, nazwa, Func.listToString(wszyscyGracze, 0, "§6, §e")));
 			koniec();
 			return true;
 		}
@@ -315,7 +315,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			String czas = Func.czas(--timer);
 			
 			if (sekundyPowiadomien.contains(timer))
-				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Arena %s wystartuje za %s (%s/%s)",
+				Func.broadcast(getInstMinigra().getPrefix() + Func.msg("Arena %s wystartuje za %s (%s/%s)",
 						nazwa, czas, gracze.size(), strMaxGracze()));
 			
 			if (timer <= 0) {
@@ -462,7 +462,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 				}
 				String format = Main.ust.wczytaj("Minigry.CaveWars.format.wyświetlany nick", "%displayname%");
 				format = format.replace("%nick%", p.getName());
-				format = format.replace("%displayname%", p.getDisplayName());
+				format = format.replace("%displayname%", Func.getDisplayName(p));
 				if (Main.chat != null) {
 					format = format.replace("%prefix%", Func.koloruj(Main.chat.getPlayerPrefix(p)));
 					format = format.replace("%suffix%", Func.koloruj(Main.chat.getPlayerSuffix(p)));

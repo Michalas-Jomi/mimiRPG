@@ -78,7 +78,7 @@ public class Party extends Komenda implements Listener {
 			gracze.add(p);
 			
 			if (wyślijPowiadomienie)
-				powiadom(prefix + "%s dołączył do Party", p.getDisplayName());
+				powiadom(prefix + "%s dołączył do Party", Func.getDisplayName(p));
 			
 			mapaParty.put(p.getName(), this);
 			
@@ -91,7 +91,7 @@ public class Party extends Komenda implements Listener {
 			musiNależeć(p);
 			
 			if (wyślijPowiadomienie)
-				powiadom(prefix + "%s opuścił Party", p.getDisplayName());
+				powiadom(prefix + "%s opuścił Party", Func.getDisplayName(p));
 			
 			for (int i=0; i < gracze.size(); i++)
 				if (gracze.get(i).getName().equals(p.getName())) {
@@ -198,22 +198,22 @@ public class Party extends Komenda implements Listener {
 				if (gracz.getName().equals(p.getName()))
 					return Func.powiadom(sender, prefix + "Nie możesz zaprosić sam siebie do party");
 				if (dajParty(gracz) != null)
-					return Func.powiadom(sender, prefix + "%s posiada już party", gracz.getDisplayName());
+					return Func.powiadom(sender, prefix + "%s posiada już party", Func.getDisplayName(gracz));
 				
 				kod = p.getName() + " " + gracz.getName();
 				
 				zaproszenia.add(kod);
 				
-				Func.powiadom(p, prefix + "Zaprosiłeś gracz %s do party", gracz.getDisplayName());
-				new Napis(prefix + "Otrzymano zaproszenie od gracza " + p.getDisplayName() + ", kliknij ")
+				Func.powiadom(p, prefix + "Zaprosiłeś gracz %s do party", Func.getDisplayName(gracz));
+				new Napis(prefix + "Otrzymano zaproszenie od gracza " + Func.getDisplayName(p) + ", kliknij ")
 					.dodaj(new Napis("§a[dołącz]", " §bKliknij aby dołączyć", "/party dołącz " + p.getName()))
 					.dodaj(" aby dołączyć do jego party")
 					.wyświetl(gracz);
 				
 				Func.opóznij(20 * 120, () -> {
 					 if (zaproszenia.remove(kod)) {
-						 Func.powiadom(p, prefix + "Zaproszenie dla gracza %s wygasło", gracz.getDisplayName());
-						 Func.powiadom(gracz, prefix + "Zaproszenie od gracza %s wygasło", p.getDisplayName());
+						 Func.powiadom(p, prefix + "Zaproszenie dla gracza %s wygasło", Func.getDisplayName(gracz));
+						 Func.powiadom(gracz, prefix + "Zaproszenie od gracza %s wygasło", Func.getDisplayName(p));
 					 }
 				});
 				
@@ -239,7 +239,7 @@ public class Party extends Komenda implements Listener {
 							party -> party.dołącz(p),
 							() -> new Ekipa(gracz, p));
 				else
-					return Func.powiadom(sender, prefix + "Nie masz zaproszenia od %s", p.getDisplayName());
+					return Func.powiadom(sender, prefix + "Nie masz zaproszenia od %s", Func.getDisplayName(p));
 				return true;
 			case "opusc":
 			case "opusć":
@@ -265,7 +265,7 @@ public class Party extends Komenda implements Listener {
 										else if (wyrzucany.getName().equals(sender.getName())) 
 											sender.sendMessage(prefix + "Nie możesz się sam wyrzucić z party");
 										else {
-											party.powiadom("%s Został wyrzucony z party", wyrzucany.getDisplayName());
+											party.powiadom("%s Został wyrzucony z party", Func.getDisplayName(wyrzucany));
 											party.opuść(wyrzucany, false);
 										}
 									}, () -> Func.powiadom(sender, prefix + "Niepoprawny gracz %s", args[1]));
@@ -290,7 +290,7 @@ public class Party extends Komenda implements Listener {
 								else if (p.getName().equals(p2.getName()))
 									Func.powiadom(sender, prefix + "Nie możesz przekazać przywódctwa samemu sobie");
 								else {
-									party.powiadom("%s przekazał przywództwo %s", p.getDisplayName(), p2.getDisplayName());
+									party.powiadom("%s przekazał przywództwo %s", Func.getDisplayName(p), Func.getDisplayName(p2));
 									party.wyznaczPrzywódcę(p2);
 								}
 							}

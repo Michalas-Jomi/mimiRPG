@@ -51,6 +51,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutAdvancements;
 import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.AdvancementDataPlayer;
 import net.minecraft.server.AdvancementDataWorld;
+import net.minecraft.server.dedicated.DedicatedServer;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
@@ -332,7 +333,6 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			strs[0][0] = "i";
 		}
 	}
-	@SuppressWarnings("resource")
 	static Advancement stwórzNowe(MinecraftKey key, ItemStack ikona, String nazwa, String opis, AdvancementFrameType ramka, Advancement parent, String tło,
 			float x, float y, boolean show_toast, boolean announce_to_chat, boolean hidden, List<Kryterium> kryteria) {
 		AdvancementDisplay display = new AdvancementDisplay(
@@ -365,7 +365,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		
 		Advancement adv = new Advancement(key, parent, display, AdvStałe.reward, mapaKryteriów, wymaganeKryteria);
 		
-		((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().c.b.put(key, adv);
+		getAdvancementData().c.b.put(key, adv);
 		
 		return adv;
 	}
@@ -404,10 +404,19 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	}
 	
 	
+	public static AdvancementDataWorld getAdvancementData() {
+		DedicatedServer server = ((CraftServer) Bukkit.getServer()).getHandle().getServer();
+		try {
+			return (AdvancementDataWorld) Func.dajMetode(server.getClass(), "getAdvancementData").invoke(server);
+		} catch (Throwable e) {
+			throw Func.throwEx(e);
+		}
+	}
+	
 	// EventHandler
 	
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
+ 	public void osiągnięcia(PlayerAdvancementDoneEvent ev) {
 		Func.wykonajDlaNieNull(Osiągnięcie.mapa.get(ev.getAdvancement().getKey()), adv -> {
 			adv.nagroda.forEach(item -> Func.dajItem(ev.getPlayer(), item.clone()));
 			Func.dajWPremium(ev.getPlayer(), adv.nagrodaWalutaPremium);
@@ -571,9 +580,8 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 					krotka.a.odznacz(p, krotka.b))));
 	}
 	
-	@SuppressWarnings("resource")
 	void zapomnijUsunięte(Player p) {
-		Map<MinecraftKey, Advancement> advs = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData().c.b;
+		Map<MinecraftKey, Advancement> advs = getAdvancementData().c.b;
 		Map<Advancement, AdvancementProgress> data = ((CraftPlayer) p).getHandle().getAdvancementData().h;
 		Set<Advancement> doUsunięcia = Sets.newConcurrentHashSet();
 		data.forEach((adv, nmsprog) -> {
@@ -700,7 +708,7 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 			}
 		});
 		
-		AdvancementDataWorld dataWorld = ((CraftServer) Bukkit.getServer()).getHandle().getServer().getAdvancementData();
+		AdvancementDataWorld dataWorld = getAdvancementData();
 		Map<MinecraftKey, Advancement> advs = dataWorld.c.b;
 		
 		preReload.forEach((nick, mapa) ->

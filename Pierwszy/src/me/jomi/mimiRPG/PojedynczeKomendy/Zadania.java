@@ -155,7 +155,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		AktywneZadanie przyjmij(Player p) {
 			cmdsStart.forEach(cmd -> 
 			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-						cmd.replace("%nick%", p.getName()).replace("%displayname%", p.getDisplayName())));
+						cmd.replace("%nick%", p.getName()).replace("%displayname%", Func.getDisplayName(p))));
 			
 			Gracz g = Gracz.wczytaj(p);
 			
@@ -203,7 +203,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 						zadanie.nagroda.forEach(item -> Func.dajItem(p, item));
 						zadanie.cmdsKoniec.forEach(cmd -> 
 								Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-											cmd.replace("%nick%", p.getName()).replace("%displayname%", p.getDisplayName())));
+											cmd.replace("%nick%", p.getName()).replace("%displayname%", Func.getDisplayName(p))));
 					});
 					g.zapisz();
 					p.sendMessage(prefix + Func.msg("Ukończyłeś zadanie %s", zadanie));
@@ -562,7 +562,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			Func.wykonajDlaNieNull(Func.gracz(sender, args[1]), p -> {
 				Func.wykonajDlaNieNull(wczytaj(Func.listToString(args, 2)), zadanie -> {
 					Gracz g = Gracz.wczytaj(p);
-					sender.sendMessage(prefix + Func.msg("%s ukończył %s zadań", p.getDisplayName(), zadanie.debugUkończ(g, p)));
+					sender.sendMessage(prefix + Func.msg("%s ukończył %s zadań", Func.getDisplayName(p), zadanie.debugUkończ(g, p)));
 					g.zapisz();
 				},
 						() -> sender.sendMessage(prefix + "To zadanie nie istnieje"));
@@ -572,7 +572,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			Func.wykonajDlaNieNull(Func.gracz(sender, args[1]), p -> {
 				Func.wykonajDlaNieNull(wczytaj(Func.listToString(args, 2)), zadanie -> {
 					Gracz g = Gracz.wczytaj(p);
-					sender.sendMessage(prefix + Func.msg("%s zapomniał %s zadań", p.getDisplayName(), zadanie.debugZapomnij(g)));
+					sender.sendMessage(prefix + Func.msg("%s zapomniał %s zadań", Func.getDisplayName(p), zadanie.debugZapomnij(g)));
 					g.zapisz();
 				},
 						() -> sender.sendMessage(prefix + "To zadanie nie istnieje"));

@@ -85,7 +85,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 		public void upuść(Location loc, int lvl) {
 			double szansa = this.szansa + (lvl * bonusEnch);
 			for (int i=0; i<pełne; i++)
-				if (Math.random() <= szansa)
+				if (Func.losuj(szansa))
 					loc.getWorld().dropItem(loc, item);
 		}
 		

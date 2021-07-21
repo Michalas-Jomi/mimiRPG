@@ -507,7 +507,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 					baza.region.getOwners().getPlayers(), 0, "§6, §e")));
 			for (String owner : baza.region.getOwners().getPlayers()) {
 				Player p = Bukkit.getPlayer(owner);
-				if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", ev.getPlayer().getDisplayName());
+				if (p != null) Func.powiadom(prefix, p, "%s zniszczył twoją baze!", Func.getDisplayName(ev.getPlayer()));
 				Main.log(prefix + Func.msg("%s zniszczył baze gracza %s", ev.getPlayer().getName(), p == null ? owner : p.getName()));
 			}
 			
@@ -1235,7 +1235,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (args.length < 2 || !g.baza.nazwa.equals(args[1]))
 				return Func.powiadom(p, prefix + "Jesteś pewny że chcesz usunąć swoją baze? Jeśli tak wpisz /baza usuń " + g.baza.nazwa);
 			g.baza.usuń();
-			Main.log(prefix + Func.msg("%s usunął swoją bazę", p.getDisplayName()));
+			Main.log(prefix + Func.msg("%s usunął swoją bazę", Func.getDisplayName(p)));
 			return Func.powiadom(p, prefix + "Usunąłeś swoją bazę");
 		case "ulepsz":
 			if (((List<?>) config.wczytaj("ulepszenia bazy")).size() > g.baza.poziom + 1)

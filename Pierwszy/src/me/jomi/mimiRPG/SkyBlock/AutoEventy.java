@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -97,7 +96,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 			gracze.add(p);
 			NowyEkwipunek.dajNowy(p, loc_zbiórka, gamemode);
 			for (Player gracz : gracze)
-				gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", p.getDisplayName(), gracze.size(), max_gracze));
+				gracz.sendMessage(prefix + Func.msg("%s Dołącza do Eventu! %s/%s", Func.getDisplayName(p), gracze.size(), max_gracze));
 			if (gracze.size() >= max_gracze)
 				zbiórka = Math.max(zbiórka, 5);
 			return;
@@ -107,7 +106,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 				if (gracze.get(i).getName().equals(p.getName())) {
 					if (!koniec)
 						for (Player gracz : gracze)
-							gracz.sendMessage(prefix + "§e" + p.getDisplayName() + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + " §e" + gracze.size() + "§6/§e" + max_gracze);
+							gracz.sendMessage(prefix + "§e" + Func.getDisplayName(p) + " §6" + (zbiórka <= 0 ? "odpada!" : "opuścił event") + " §e" + gracze.size() + "§6/§e" + max_gracze);
 					gracze.remove(i);
 					NowyEkwipunek.wczytajStary(p);
 					if (grane && rodzaj.equals(RodzajEventu.OstatniNaArenie) && gracze.size() == 1)
@@ -118,7 +117,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 		void wygrał(Player p) {
 			Main.econ.depositPlayer(p, nagroda);
 			p.sendMessage(prefix + Func.msg("Na twoje konto wpłyneło %s§e$", nagroda));
-			Bukkit.broadcastMessage(prefix + Func.msg("%s wygrał event %s!", p.getName(), nazwa));
+			Func.broadcast(prefix + Func.msg("%s wygrał event %s!", p.getName(), nazwa));
 			koniec();
 		}
 		void koniec() {
@@ -131,7 +130,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 
 		void start() {
 			if (gracze.size() < min_gracze) {
-				Bukkit.broadcastMessage(Func.msg("Event %s nie wystartował przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
+				Func.broadcast(Func.msg("Event %s nie wystartował przez małą ilość graczy %s/%s", nazwa, gracze.size(), max_gracze));
 				koniec();
 				return;
 			}
@@ -142,7 +141,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 					p.getInventory().setItem(i++, item);
 			}
 			grane = true;
-			Bukkit.broadcastMessage(Func.msg("Event %s rozpoczął się %s/%s", nazwa, gracze.size(), max_gracze));
+			Func.broadcast(Func.msg("Event %s rozpoczął się %s/%s", nazwa, gracze.size(), max_gracze));
 		}
 		
 		// wykonuje się co sekunde
@@ -161,7 +160,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 					start();
 			} else if (--czas <= 0) {
 				// czas gry
-				Bukkit.broadcastMessage(prefix + Func.msg("Event %s dobiegł końca, nikt nie wygrał", nazwa));
+				Func.broadcast(prefix + Func.msg("Event %s dobiegł końca, nikt nie wygrał", nazwa));
 				koniec();
 			} else if (czas % 60 == 0 || (czas <= 60 && czas % 10 == 0))
 					for (Player p : gracze)
@@ -561,7 +560,7 @@ public class AutoEventy extends Komenda implements Listener, Przeładowalny, Zeg
 	}
 	
 	void infoStart() {
-		Bukkit.broadcastMessage(prefix + Func.msg("Za %s rozpocznie się Event %s", Func.czas(event.zbiórka), event.nazwa));
+		Func.broadcast(prefix + Func.msg("Za %s rozpocznie się Event %s", Func.czas(event.zbiórka), event.nazwa));
 	}
 	
 	Set<String> dajEventy(){

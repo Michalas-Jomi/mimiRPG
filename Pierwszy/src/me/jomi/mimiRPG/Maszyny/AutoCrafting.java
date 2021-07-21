@@ -199,7 +199,7 @@ public class AutoCrafting extends ModułMaszyny {
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
-			Bukkit.getScheduler().runTask(Main.plugin, ev.getWhoClicked()::closeInventory);
+			Bukkit.getScheduler().runTask(Main.plugin, (Runnable) ev.getWhoClicked()::closeInventory);
 		});
 	}
 	

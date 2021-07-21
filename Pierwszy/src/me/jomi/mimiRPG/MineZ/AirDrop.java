@@ -167,7 +167,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		void zbuduj() {
 			loc.setX(x);
 			loc.setZ(z);
-			Bukkit.broadcastMessage(Func.msg(prefix + "Air Drop spadł na koordynatach %sx %sy %sz", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+			Func.broadcast(Func.msg(prefix + "Air Drop spadł na koordynatach %sx %sy %sz", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
 			loc.add(0, 0, -1).getBlock().setType(Material.BEEHIVE);
 			loc.add(1, 0, 0).getBlock().setType(Material.BEEHIVE);
 			loc.add(0, 0, 1).getBlock().setType(Material.BEEHIVE);
@@ -311,7 +311,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		Predicate<Player> dajItem = p -> {
 			Func.dajItem(p, itemRespienia);
-			return Func.powiadom(prefix, sender, "%s otrzymał item respienia AirDropu", p.getDisplayName());
+			return Func.powiadom(prefix, sender, "%s otrzymał item respienia AirDropu", Func.getDisplayName(p));
 		};
 		
 		Player p = null;
@@ -334,10 +334,10 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		switch (args[0].toLowerCase()) {
 		case "przywołaj":
 			new Drop(p.getLocation());
-			return Func.powiadom(prefix, sender, "Przywołano air drop na pozycji gracza %s", p.getDisplayName());
+			return Func.powiadom(prefix, sender, "Przywołano air drop na pozycji gracza %s", Func.getDisplayName(p));
 		case "dajitem":
 			Func.dajItem(p, itemRespienia);
-			return Func.powiadom(prefix, sender, "%s otrzymał item respienia Air Dropu", p.getDisplayName());
+			return Func.powiadom(prefix, sender, "%s otrzymał item respienia Air Dropu", Func.getDisplayName(p));
 		}
 		
 		return true;
@@ -370,7 +370,7 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		Location loc = ev.getPlayer().getLocation().clone();
 		loc.setY(240);
 		new Drop(loc);
-		Bukkit.broadcastMessage(prefix + Func.msg("%s przywołał zrzut!", ev.getPlayer().getDisplayName()));
+		Func.broadcast(prefix + Func.msg("%s przywołał zrzut!", Func.getDisplayName(ev.getPlayer())));
 			
 		item.setAmount(item.getAmount() - 1);
 		if (item.getAmount() <= 0)

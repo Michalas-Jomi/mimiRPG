@@ -291,7 +291,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 				p.sendMessage(prefix + "Nie udało się Ewoluować Spawnera §b:(");
 			else {
 				if (upgr.broadcast)
-					Bukkit.broadcastMessage(Func.msg(prefix + "%s Wyeluował spawner | %s -> %s |", p.getDisplayName(), spawner.getSpawnedType(), upgr.mob));
+					Func.broadcast(Func.msg(prefix + "%s Wyeluował spawner | %s -> %s |", Func.getDisplayName(p), spawner.getSpawnedType(), upgr.mob));
 				else
 					p.sendMessage(prefix + Func.msg("Wyeluowałeś Spawner! | %s -> %s |", spawner.getSpawnedType(), upgr.mob));
 				Event event = new PlayerEwoluowałSpawnerEvent(p, spawner.getSpawnedType(), upgr.mob);

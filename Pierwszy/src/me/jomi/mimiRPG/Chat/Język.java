@@ -29,7 +29,7 @@ public class Język extends Komenda {
 	public boolean wykonajKomende(CommandSender sender, Command cmd, String label, String[] args) {
 		if (args.length >= 2 && args[0].equalsIgnoreCase("-p"))
 			Func.wykonajDlaNieNull(Bukkit.getPlayer(args[1]),
-					p  -> sender.sendMessage(prefix + Func.msg("Język gracza %s %s", p.getDisplayName(), Func.enumToString(Gracz.wczytaj(p).język))),
+					p  -> sender.sendMessage(prefix + Func.msg("Język gracza %s %s", Func.getDisplayName(p), Func.enumToString(Gracz.wczytaj(p).język))),
 					() -> sender.sendMessage(prefix + Func.msg("%s nie jest aktualnie na serwerze", args[1])));
 		else if (sender instanceof Player && args.length >= 1) {
 			try {

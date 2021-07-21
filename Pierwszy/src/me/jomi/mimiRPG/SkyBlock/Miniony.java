@@ -1,7 +1,5 @@
 package me.jomi.mimiRPG.SkyBlock;
 
-import static me.jomi.mimiRPG.util.NMS.nms;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +29,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -43,6 +41,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
@@ -156,6 +155,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 
 			NMS.nms(loc.getWorld()).addEntity(as, SpawnReason.CUSTOM);
 			
+			minion.dodajDoChunka();
+			
 			return minion;
 		}
 	}
@@ -200,8 +201,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			inv.setItem(slotMinionPodnieś, itemMinionPodnieś);
 			ustawItemUlepszeniaIInfo();
 			
-			for (int i = 10; i < 10 + 4*9; i += 9)
-				inv.setItem(i, itemMinionUlepszenia);
+			//for (int i = 10; i < 10 + 4*9; i += 9)
+			//	inv.setItem(i, itemMinionUlepszenia);
 			
 			int dostępneSloty = dane.lvle.get(lvl).slotyEq;
 			for (int i=0; i < 15; i++)
@@ -214,6 +215,11 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			}
 			
 			odrób((int) ((System.currentTimeMillis() - tag.getLong("ost")) / 1_000));
+			
+			as.getNearbyEntities(5d, 2d, 5d).forEach(e -> {
+				if (e.getScoreboardTags().contains(Main.tagTempMoba))
+					e.remove();
+			});
 		}
 		
 		// czas w sekundach
@@ -434,15 +440,27 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		}
 		
 		public void usuń(Player p) {
-			Func.dajItem(p, item());
 			zbierzWszystko(p);
+		
+			miniony.remove(as.getUniqueId());
+			
 			Func.wykonajDlaNieNull(Bukkit.getEntity(as.getUniqueId()), Entity::remove);
 			as.remove();
 			
 			while (!inv.getViewers().isEmpty())
 				inv.getViewers().get(0).closeInventory();
 			
+			usuńZChunka();
+			
+			Func.dajItem(p, item());
+			
 			Main.log("%s podniósł miniona %s lvl %s z %s", p.getName(), dane.nazwa, lvl + 1, Func.locBlockToString(as.getLocation()));
+		}
+		
+		public void otwórzInv(Player p) {
+			p.openInventory(inv);
+			if (!miniony.containsKey(as.getUniqueId()))
+				miniony.put(as.getUniqueId(), this);
 		}
 		
 		
@@ -482,7 +500,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				loc.getBlock().setType(Material.AIR);
 				Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), -1);
 				as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
-						e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).b.sendPacket(packet));
+						e -> e instanceof Player).forEach(gracz -> NMS.nms((Player) gracz).b.sendPacket(packet));
 				AtomicBoolean pełny = new AtomicBoolean(true);
 				AtomicBoolean cośDropnięte = new AtomicBoolean(false);
 				dane.produkowaneItemy.forEach(drop -> {
@@ -500,7 +518,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 
 			Packet<?> packet = new PacketPlayOutBlockBreakAnimation(as.getEntityId() + 1, NMS.nms(loc), (int) (progress / 20d * 10));
 			as.getWorld().getNearbyEntities(as.getLocation(), zasięg, zasięg, zasięg,
-					e -> e instanceof Player).forEach(gracz -> nms((Player) gracz).b.sendPacket(packet));
+					e -> e instanceof Player).forEach(gracz -> NMS.nms((Player) gracz).b.sendPacket(packet));
 			
 			int x = progress % 10;
 			// pi -> pi / 2
@@ -603,6 +621,39 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		public MinionDaneLvl lvl() {
 			return dane.lvle.get(lvl);
 		}
+	
+	
+		public void usuńZChunka() {
+			PersistentDataContainer data = as.getLocation().getChunk().getPersistentDataContainer();
+			
+			String uuids = Func.nieNull(data.get(kluczMiniona, PersistentDataType.STRING));
+			
+			
+			uuids = uuids.replace(as.getUniqueId().toString(), "");
+			
+			while (uuids.contains(",,"))
+				uuids = uuids.replace(",,", ",");
+			if (uuids.endsWith(","))
+				uuids = uuids.substring(0, uuids.length() - 1);
+			if (uuids.startsWith(","))
+				uuids = uuids.substring(1);
+			
+			if (uuids.isEmpty())
+				data.remove(kluczMiniona);
+			else
+				data.set(kluczMiniona, PersistentDataType.STRING, uuids);
+		}
+		public void dodajDoChunka() {
+			PersistentDataContainer data = as.getLocation().getChunk().getPersistentDataContainer();
+			
+			String uuids = Func.nieNull(data.get(kluczMiniona, PersistentDataType.STRING));
+			
+			
+			uuids = (uuids.isEmpty() ? "" : ",") + as.getUniqueId().toString();
+			
+			
+			data.set(kluczMiniona, PersistentDataType.STRING, uuids);
+		}
 	}
 	
 	static int slotMinionInfo = 4;
@@ -649,32 +700,58 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	}
 	
 	static void wczytywanieChunka(Chunk chunk) {
-		Func.forEach(chunk.getEntities(), e -> {
-			if (e.getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
-				new Minion((ArmorStand) e);
+		Func.opóznij(30, () -> {
+			String _uuids = chunk.getPersistentDataContainer().get(kluczMiniona, PersistentDataType.STRING);
+			List<String> uuids = Func.tnij(_uuids, ",");
+			
+			uuids.forEach(uuid -> {
+				if (uuid.isEmpty())
+					return;
+				ArmorStand as = (ArmorStand) Bukkit.getEntity(UUID.fromString(uuid));
+				if (as == null)
+					Main.warn("Nieodnaleziono miniona o uuid: " + uuid);
+				else
+					new Minion(as);
+			});
 		});
 	}
 
+	public static void onDisable() {
+		Minion.miniony.values().forEach(minion -> {
+			try {
+				minion.zapisz();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		});
+	}
+	
 	
 	/// EventHandler
 	@EventHandler
 	public void klikanieMiniona(PlayerInteractAtEntityEvent ev) {
-		if (ev.getRightClicked().hasMetadata(metaMiniona)) {
-			Wyspa wyspa;
-			if (
-					ev.getPlayer().hasPermission(permBypass) ||
-					(
-						Main.włączonyModół(SkyBlock.class) &&
-						(wyspa = SkyBlock.Wyspa.wczytaj(ev.getRightClicked().getLocation())) != null &&
-						wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn
-					))
-				ev.getPlayer().openInventory(((Minion) ev.getRightClicked().getMetadata(metaMiniona).get(0).value()).inv);
+		Entity e = ev.getRightClicked();
+		if (e instanceof ArmorStand) {
+			if (e.hasMetadata(metaMiniona)) {
+				Wyspa wyspa;
+				if (
+						ev.getPlayer().hasPermission(permBypass) ||
+						(
+								Main.włączonyModół(SkyBlock.class) &&
+								(wyspa = SkyBlock.Wyspa.wczytaj(e.getLocation())) != null &&
+								wyspa.permisje(ev.getPlayer()).dostęp_do_spawnerów_i_maszyn
+								))
+					((Minion) e.getMetadata(metaMiniona).get(0).value()).otwórzInv(ev.getPlayer());
+			} else if (e.getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
+				new Minion((ArmorStand) e);
 		}
 	}
 	@EventHandler
-	public void spawnMoba(EntitySpawnEvent ev) {
-		if (ev.getEntity().getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER))
-			new Minion((ArmorStand) ev.getEntity());
+	public void uderzanieMiniona(EntityDamageEvent ev) {
+		if (ev.getEntity().getPersistentDataContainer().has(kluczMiniona, PersistentDataType.TAG_CONTAINER)) {
+			ev.setDamage(0);
+			ev.setCancelled(true);
+		}
 	}
 	@EventHandler
 	public void wczytywanieChunka(ChunkLoadEvent ev) {
@@ -755,6 +832,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 	}
 	
 	EdytorOgólny<MinionDane> edytor = new EdytorOgólny<>("edytujminiony", MinionDane.class);
+	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		return edytor.wymuśConfig_onTabComplete(new Config("configi/Miniony"), sender, label, args);

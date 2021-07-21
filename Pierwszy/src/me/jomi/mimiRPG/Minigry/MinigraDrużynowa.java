@@ -127,10 +127,10 @@ public abstract class MinigraDrużynowa extends Minigra {
 			
 			Krotka<StringBuffer, Integer> zwycięskaKrotka = mapaDrużynDlaMsgWin.get(drużyna.nazwa);
 			if (zwycięskaKrotka.b > 1)
-				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
+				Func.broadcast(getInstMinigra().getPrefix() + Func.msg("Drużyna %s(%s) wygrała na arenie %s (z%s)",
 						drużyna, zwycięskaKrotka.a.substring(1), nazwa, przegrani));
 			else
-				Bukkit.broadcastMessage(getInstMinigra().getPrefix() + Func.msg("%s wygrał na arenie %s przeciwko %s",
+				Func.broadcast(getInstMinigra().getPrefix() + Func.msg("%s wygrał na arenie %s przeciwko %s",
 						zwycięskaKrotka.a.substring(1), nazwa, przegrani));
 			mapaDrużynDlaMsgWin.clear();
 			koniec();
@@ -236,7 +236,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 			
 			ubierz(p, drużyna);
 			
-			napiszGraczom("%s dołącza do drużyny %s", p.getDisplayName(), drużyna);
+			napiszGraczom("%s dołącza do drużyny %s", Func.getDisplayName(p), drużyna);
 		}
 		<D extends Drużyna> void ubierz(Player p, D drużyna) {
 			ubierz(p, drużyna, true, true, true, true);

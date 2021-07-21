@@ -194,7 +194,7 @@ class Automat {
 		}
 		if (gracz != null) {
 			if (!gracz.getName().equals(p.getName()))
-				p.sendMessage(prefix + "Aktualnie gra tu §e" + gracz.getDisplayName());
+				p.sendMessage(prefix + "Aktualnie gra tu §e" + Func.getDisplayName(gracz));
 			return;
 		}
 		double kasa = Main.econ.getBalance(p);
@@ -224,9 +224,9 @@ class Automat {
 		
 		for (Wygrana wygrana : wygrane)
 			if (wygrana.blok.equals(mat)) {
-				final String msg = gracz.getDisplayName() + "§a wygrał §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
+				final String msg = Func.getDisplayName(gracz) + "§a wygrał §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
 				if (broadcastWygrana)
-					Bukkit.broadcastMessage(prefix + msg);
+					Func.broadcast(prefix + msg);
 				else {
 					Main.log("[Automat] " + msg);
 					gracz.sendMessage(prefix + "Wygrałeś §e" + Func.DoubleToString(wygrana.wygrana) + "$");
@@ -242,9 +242,9 @@ class Automat {
 	private boolean przegrana() {
 		gracz.sendMessage(prefix + "§cPrzegrałeś");
 		
-		final String msg = gracz.getDisplayName() + "§c przegrał §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
+		final String msg = Func.getDisplayName(gracz) + "§c przegrał §6w kasynie §e" + Func.DoubleToString(koszt) + "$";
 		if (broadcastPrzegrana)
-			Bukkit.broadcastMessage(prefix + msg);
+			Func.broadcast(prefix + msg);
 		else
 			Main.log("[Automat] " + msg);
 		

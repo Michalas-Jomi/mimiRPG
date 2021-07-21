@@ -145,7 +145,7 @@ public abstract class Komenda implements TabExecutor {
 	protected void broadcastMsg(String lokalizacja, Object... args) {
 		String msg = preThrowMsg(lokalizacja, args);
 		if (!msg.isEmpty())
-			Bukkit.broadcastMessage(msg);
+			Func.broadcast(msg);
 	}
 	protected void throwMsg(String lokalizacja, Object... args) throws MsgCmdError {
 		throw new MsgCmdError(preThrowMsg(lokalizacja, args));

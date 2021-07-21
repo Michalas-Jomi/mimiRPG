@@ -43,7 +43,7 @@ public class CustomoweKomendy extends Komenda implements Przeładowalny {
 						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), 
 								komenda
 								.replace("%nick%", sender.getName())
-								.replace("%displayname%", sender instanceof Player ? ((Player) sender).getDisplayName() : sender.getName()));
+								.replace("%displayname%", sender instanceof Player ? Func.getDisplayName(((Player) sender)) : sender.getName()));
 					} catch (Throwable e) {
 						Main.error(prefix + "Problem z customową komendą " + cmd.getName());
 						errory.add(komenda);

@@ -52,7 +52,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
         	timer = maxTimer;
         	zbierz();
         } else if (!msgOstrzegawcze.isEmpty() && ostrzerzenia.contains(timer))
-    		Bukkit.broadcastMessage(msgOstrzegawcze.replace("{liczba}", "" + timer));
+        	Func.broadcast(msgOstrzegawcze.replace("{liczba}", "" + timer));
         return 20;
 	}
 	private static void zbierz() {
@@ -67,7 +67,7 @@ public class Kosz extends Komenda implements Przeładowalny, Zegar {
 						item.remove();
 					}
 		if (!msgPoCzyszczeniu.isEmpty())
-			Bukkit.broadcastMessage(msgPoCzyszczeniu.replace("{liczba}", "" + kolejka.size()));
+			Func.broadcast(msgPoCzyszczeniu.replace("{liczba}", "" + kolejka.size()));
 		wrzućItemy();
 	}
 	

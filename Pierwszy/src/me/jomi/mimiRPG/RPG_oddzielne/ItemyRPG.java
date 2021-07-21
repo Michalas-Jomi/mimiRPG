@@ -337,7 +337,7 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 									exp -= lvl.potrzebnyExp;
 									if (rozwoj.lvle.size() > ilvl) {
 										Func.powiadom(p, prefix + "Wylevelowałeś %s na poziom %s!", nmsItem.getName().getString(), ilvl + 1);
-										Main.log(prefix + Func.msg("Wylevelował %s na poziom %s w ścieżce rozwoju %s", p.getDisplayName(), ilvl + 1, rozwoj.id));
+										Main.log(prefix + Func.msg("Wylevelował %s na poziom %s w ścieżce rozwoju %s", Func.getDisplayName(p), ilvl + 1, rozwoj.id));
 										for (int i=0; i < 3; i++)
 											try {
 												p.getWorld().spawnParticle(Func.losuj(Particle.values()),

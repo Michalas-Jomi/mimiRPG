@@ -1,11 +1,11 @@
 package me.jomi.mimiRPG.RPG;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_17_R1.CraftServer;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -34,7 +34,12 @@ public class TabInfo implements Listener {
 	static final EntityPlayer[] fakeGracze = new EntityPlayer[80];
 	static {
         MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
-        WorldServer worldServer = server.R.values().iterator().next();
+        WorldServer worldServer = null;
+		try {
+			worldServer = (WorldServer) ((Map<?, ?>) Func.dajZField(server, "R")).values().iterator().next();
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
         
 		for (int i=0; i < 80; i++) {
 			GameProfile prof = new GameProfile(UUID.randomUUID(), i < 10 ? "!0" + i : "!" + i);
@@ -71,7 +76,7 @@ public class TabInfo implements Listener {
 			for (int i = 21; i < 40; i++) fakeGracze[i - 21]	  = TabInfo.fakeGracze[i];
 			for (int i = 41; i < 60; i++) fakeGracze[i - 41 + 19] = TabInfo.fakeGracze[i];
 			
-			List<String> gracze = Func.wykonajWszystkim(Bukkit.getOnlinePlayers(), Player::getDisplayName);
+			List<String> gracze = Func.wykonajWszystkim(Bukkit.getOnlinePlayers(), p -> Func.getDisplayName(p));
 			Func.posortuj(gracze, Func::stringToDouble);
 			for (int i = 0; i < fakeGracze.length; i++) {
 				String nick = gracze.isEmpty() ? "" : gracze.remove(0);

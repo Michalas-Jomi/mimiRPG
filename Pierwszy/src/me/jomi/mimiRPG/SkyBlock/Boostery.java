@@ -58,7 +58,7 @@ public class Boostery extends Komenda implements Listener {
 			if (latający.contains(p.getName()))
 				return Func.powiadom(sender, prefix + "Gracz już ma aktywny ten booster");
 			Func.powiadom(p, prefix + "Otrzymano booster %s na %s", args[0], Func.czas(sekundy));
-			Func.powiadom(sender, prefix + "Dano booster %s dla %s na %s", args[0], p.getDisplayName(), Func.czas(sekundy));
+			Func.powiadom(sender, prefix + "Dano booster %s dla %s na %s", args[0], Func.getDisplayName(p), Func.czas(sekundy));
 			latający.add(p.getName());
 			p.setAllowFlight(true);
 			p.setFlying(true);

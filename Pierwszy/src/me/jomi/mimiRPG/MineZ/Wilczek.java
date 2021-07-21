@@ -76,7 +76,7 @@ public class Wilczek extends Komenda implements Listener, Przeładowalny {
 			Func.multiTry(
 					() -> k.a = mob.getKiller().getName(),
 					() -> k.a = mob.getCustomName(),
-					() -> k.a = mob.getKiller().getDisplayName()
+					() -> k.a = Func.getDisplayName(mob.getKiller())
 			);
 			if (k.a == null)
 				p.sendMessage(prefix + "Twój wilk umarł!");

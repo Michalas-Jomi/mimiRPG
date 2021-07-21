@@ -87,7 +87,7 @@ public class Golf extends Minigra {
 			kolejka.remove(p.getName());
 			
 			if (msg && kolejka.size() > 0)
-				infoKolejka(Func.msg("Kolej gracza %s", Bukkit.getPlayer(kolejka.get(0)).getDisplayName()));
+				infoKolejka(Func.msg("Kolej gracza %s", Func.getDisplayName(Bukkit.getPlayer(kolejka.get(0)))));
 			
 			zapomnijKure(p);
 
@@ -111,7 +111,7 @@ public class Golf extends Minigra {
 					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Func.koloruj("&6" + Func.czas(--k.a))));
 					if (k.a <= 0) {
 						kolejka.add(kolejka.remove(0));
-						infoKolejka(Func.msg("%s stracił swoją szanse, kolej na ", p.getDisplayName(), Bukkit.getPlayer(kolejka.get(0)).getDisplayName()));
+						infoKolejka(Func.msg("%s stracił swoją szanse, kolej na ", Func.getDisplayName(p), Func.getDisplayName(Bukkit.getPlayer(kolejka.get(0)))));
 					} else
 						opóznijTask(20, k.b);
 				}
@@ -128,7 +128,8 @@ public class Golf extends Minigra {
 		void uderzenie() {
 			inst.staty(Bukkit.getPlayer(kolejka.get(0))).uderzenia++;
 			kolejka.add(kolejka.remove(0));
-			infoKolejka(Func.msg("%s uderzył kolej gracza %s", Bukkit.getPlayer(kolejka.get(kolejka.size() - 1)).getDisplayName(), Bukkit.getPlayer(kolejka.get(0)).getDisplayName()));
+			infoKolejka(Func.msg("%s uderzył kolej gracza %s", Func.getDisplayName(Bukkit.getPlayer(kolejka.get(kolejka.size() - 1))),
+					Func.getDisplayName(Bukkit.getPlayer(kolejka.get(0)))));
 		}
 		
 		void dołek(Player p) {
@@ -139,7 +140,7 @@ public class Golf extends Minigra {
 					if (!p2.getName().equals(p.getName()))
 						inst.staty(p2).przegraneAreny++;
 			}
-			Bukkit.broadcastMessage(prefix + Func.msg("%s zalicza Dołek na arenie %s!", p.getDisplayName(), nazwa));
+			Func.broadcast(prefix + Func.msg("%s zalicza Dołek na arenie %s!", Func.getDisplayName(p), nazwa));
 			inst.staty(p).dołki++;
 			opuść(p);
 		}
@@ -158,7 +159,7 @@ public class Golf extends Minigra {
 			kura.setAdult();
 			kura.setSilent(true);
 			kura.setCollidable(false);
-			kura.setCustomName(Func.koloruj("&6Piłka gracza &a" + p.getDisplayName()));
+			kura.setCustomName(Func.koloruj("&6Piłka gracza &a" + Func.getDisplayName(p)));
 			Func.ustawMetadate(kura, metaKury, new Krotka<>(p, this));
 			Func.ustawMetadate(p, metaKury, kura);
 			kura.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0);
@@ -248,7 +249,7 @@ public class Golf extends Minigra {
 						if (arena.kolejka.get(0).equals(ev.getPlayer().getName())) {
 							arena.zapomnijKure(ev.getPlayer());
 							arena.kolejka.add(arena.kolejka.remove(0));
-							arena.infoKolejka(Func.msg("%s Zresetował swoją piłkę, kolej gracza %s", ev.getPlayer().getDisplayName(), Bukkit.getPlayer(arena.kolejka.get(0)).getDisplayName()));
+							arena.infoKolejka(Func.msg("%s Zresetował swoją piłkę, kolej gracza %s", Func.getDisplayName(ev.getPlayer()), Func.getDisplayName(Bukkit.getPlayer(arena.kolejka.get(0)))));
 						} else
 							ev.getPlayer().sendMessage(prefix + "Piłke możesz zresetować tylko gdy jest twoja kolej");
 					};

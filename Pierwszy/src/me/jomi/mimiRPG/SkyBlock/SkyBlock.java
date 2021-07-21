@@ -1167,7 +1167,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			checker.checkFormat(permisje(p).zapraszanie_członków_i_coop, "Nie masz permisji do zakładania coopów");
 			
 			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(zKim),	"%s nie jest online", zKim);
-			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", kogoP.getDisplayName());
+			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", Func.getDisplayName(kogoP));
 
 			checker.checkFormat(!coop.contains(wyspa.id), "Kooperacja z tą wyspą jest już nawiązana");
 
@@ -1187,12 +1187,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			} else {
 				// zapraszanie do coopu
 				coopZaproszenia.add(kodJaTy);
-				powiadomCzłonków("%s wysłał zaproszenie do cooperacji z wyspą graczy %s, które wygaśnie za 5 minut", p.getDisplayName(), wyspa.infoCzłonkowie());
-				powiadomCzłonków("Otrzymano zaproszenie do cooperacji z wyspą graczy %s od %s, które wygaśnie za 5 minut", this.infoCzłonkowie(), p.getDisplayName());
+				powiadomCzłonków("%s wysłał zaproszenie do cooperacji z wyspą graczy %s, które wygaśnie za 5 minut", Func.getDisplayName(p), wyspa.infoCzłonkowie());
+				powiadomCzłonków("Otrzymano zaproszenie do cooperacji z wyspą graczy %s od %s, które wygaśnie za 5 minut", this.infoCzłonkowie(), Func.getDisplayName(p));
 				Func.opóznij(5*60*20, () -> {
 					if (coopZaproszenia.remove(kodJaTy)) {
-						wyspa.powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", this .infoCzłonkowie(), p.getDisplayName());
-						this .powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", wyspa.infoCzłonkowie(), p.getDisplayName());
+						wyspa.powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", this .infoCzłonkowie(), Func.getDisplayName(p));
+						this .powiadomCzłonków("Zaproszenie do cooperacji z wyspą graczy %s od %s wygasło", wyspa.infoCzłonkowie(), Func.getDisplayName(p));
 					}
 				});
 			}
@@ -1201,19 +1201,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			checker.checkFormat(permisje(p).wyrzucanie_członków_i_uncoop, "Nie masz permisji do zakładania coopów");
 			
 			Player kogoP = checker.nieNullFormat(Bukkit.getPlayer(zKim),	"%s nie jest online", zKim);
-			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", kogoP.getDisplayName());
+			Wyspa wyspa  = checker.nieNullFormat(Wyspa.wczytaj(kogoP),	"%s nie ma Wyspy", Func.getDisplayName(kogoP));
 			
 			boolean f1 = this .coop.remove((Integer) wyspa.id);
 			boolean f2 = wyspa.coop.remove((Integer) this .id);
 			if (f1 || f2) {
-				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", wyspa.infoCzłonkowie(), p.getDisplayName());
-				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", this .infoCzłonkowie(), p.getDisplayName());
+				this .powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", wyspa.infoCzłonkowie(), Func.getDisplayName(p));
+				wyspa.powiadomCzłonków("kooperacja z wyspą graczy %s została zerwana przez %s", this .infoCzłonkowie(), Func.getDisplayName(p));
 				
 				this.zapisz();
 				wyspa.zapisz();
 				return false;
 			} else
-				inst.throwFormatMsg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", kogoP.getDisplayName());
+				inst.throwFormatMsg("Między twoją wyspą a wyspą %s nie jest nawiązana kooperacja", Func.getDisplayName(kogoP));
 			return true;
 		}
 		private static String kodcoop(Wyspa wyspa1, Wyspa wyspa2) {
@@ -1643,7 +1643,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (maBypass(p) || ostatnieLiczenie.minąłToUstaw(strId)) {
 				p.sendMessage(prefix + "Liczenie wartości wyspy");
 				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> policzWartość(p, () -> {
-					Main.log(prefix + Func.msg("Wartość wyspy przeliczanej przez %s to %s", p.getDisplayName(),
+					Main.log(prefix + Func.msg("Wartość wyspy przeliczanej przez %s to %s", Func.getDisplayName(p),
 							Func.IntToString((int) pkt)));
 					if (Gracz.wczytaj(p).wyspa != id)
 						p.sendMessage(prefix + Func.msg("Aktualna wartość ich wyspy: %s", pkt));
@@ -1676,7 +1676,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			oczekujące = nether + overworld;
 			
 			pkt_start = System.currentTimeMillis();
-			Main.log(prefix + "Liczenie wartości wyspy (id: " + id + ") przeliczanej przez " + p.getDisplayName() + " na " + dostępne + " wątkach");
+			Main.log(prefix + "Liczenie wartości wyspy (id: " + id + ") przeliczanej przez " + Func.getDisplayName(p) + " na " + dostępne + " wątkach");
 
 			policz(Światy.nether, nether);
 			policz(Światy.overworld, overworld);
@@ -1748,16 +1748,16 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			checker.checkFormat(permisje(p).zapraszanie_członków_i_coop, "Nie masz uprawnień na zapraszanie ludzi na wyspe");
 			checker.checkFormat(cooldownZaproszeń.minął(p.getName() + kogo.getName()), "Musisz poczekać jeszcze %s zanim ponownie go zaprosisz",
 					cooldownZaproszeń.czas(p.getName() + kogo.getName()));
-			checker.checkFormat(Gracz.wczytaj(kogo).wyspa == -1, "%s ma już wyspę", kogo.getDisplayName());
+			checker.checkFormat(Gracz.wczytaj(kogo).wyspa == -1, "%s ma już wyspę", Func.getDisplayName(kogo));
 
 			Func.ustawMetadate(kogo, metaZaproszenie, p);
 
-			Main.panelTakNie(kogo, "&4Zaproszenie na wyspe " + p.getDisplayName(),
-					"&aDołącz do wyspy &7" + p.getDisplayName(),
-					"&cOdrzuć zaproszenie do wyspy &7" + p.getDisplayName(), () -> przyjmijZaproszenie(kogo),
+			Main.panelTakNie(kogo, "&4Zaproszenie na wyspe " + Func.getDisplayName(p),
+					"&aDołącz do wyspy &7" + Func.getDisplayName(p),
+					"&cOdrzuć zaproszenie do wyspy &7" + Func.getDisplayName(p), () -> przyjmijZaproszenie(kogo),
 					() -> odrzućZaproszenie(kogo));
 
-			inst.throwFormatMsg("Wysłano zaproszenie na wyspy do " + kogo.getDisplayName());
+			inst.throwFormatMsg("Wysłano zaproszenie na wyspy do " + Func.getDisplayName(kogo));
 		}
 		boolean przyjmijZaproszenie(Player p) {
 			if (członkowie.size() >= Ulepszenia.członkowie[poziomy.członkowie].wartość)
@@ -1783,8 +1783,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		void odrzućZaproszenie(Player p) {
 			Player zapraszający = (Player) p.getMetadata(metaZaproszenie).get(0).value();
 
-			Func.powiadom(prefix, p, "Odrzuciłeś zaproszenie do wyspy %s", zapraszający.getDisplayName());
-			Func.powiadom(prefix, p, "%s odrzucił twoje zaproszenie do wyspy", zapraszający.getDisplayName());
+			Func.powiadom(prefix, p, "Odrzuciłeś zaproszenie do wyspy %s", Func.getDisplayName(zapraszający));
+			Func.powiadom(prefix, p, "%s odrzucił twoje zaproszenie do wyspy", Func.getDisplayName(zapraszający));
 
 			cooldownZaproszeń.ustaw(zapraszający.getName() + p.getName());
 
@@ -1800,7 +1800,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (new OpuszczanieWyspyEvent(this, p.getName()).isCancelled())
 				return;
 
-			powiadomCzłonków("%s opuścił wyspę", p.getDisplayName());
+			powiadomCzłonków("%s opuścił wyspę", Func.getDisplayName(p));
 
 			członkowie.remove(p.getName());
 			zapisz();
@@ -1841,14 +1841,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (lubiący.remove(p.getName())) {
 				gracz.polubioneWyspy.remove(id);
 				Func.powiadom(p, prefix + "Już nie lubisz wyspy %s", nazwa);
-				powiadomCzłonków("%s przestał lubić twoją wyspę! masz teraz %s polubień", p.getDisplayName(), lubiący.size());
+				powiadomCzłonków("%s przestał lubić twoją wyspę! masz teraz %s polubień", Func.getDisplayName(p), lubiący.size());
 			} else {
 				lubiący.add(p.getName());
 				gracz.polubioneWyspy.add(id);
 			}
 			
 			Func.powiadom(p, prefix + "Polubiłeś wyspę %s", nazwa);
-			this.powiadomCzłonków("%s polubił twoją wyspę! Masz już %s polubień!", p.getDisplayName(), lubiący.size());
+			this.powiadomCzłonków("%s polubił twoją wyspę! Masz już %s polubień!", Func.getDisplayName(p), lubiący.size());
 
 			gracz.zapisz();
 			zapisz();
@@ -1870,7 +1870,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				p.sendMessage(prefix + "Ta wyspa jest prywatna");
 			else {
 				p.teleport(locHome);
-				powiadomCzłonków("%s Odwiedza twoją wyspę", p.getDisplayName());
+				powiadomCzłonków("%s Odwiedza twoją wyspę", Func.getDisplayName(p));
 				p.sendMessage(prefix + Func.msg("Odwiedzasz wyspę %s", nazwa));
 			}
 		}
@@ -1901,8 +1901,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					if (zawiera(kogoP.getLocation())) {
 						checker.checkFormat(!maBypass(kogoP), "Nie możesz wyprosić tego gracza");
 						Func.tpSpawn(kogoP);
-						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", kogoP.getDisplayName()));
-						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", p.getDisplayName()));
+						p.sendMessage(prefix + Func.msg("Wyprosiłeś %s ze swojej wyspy", Func.getDisplayName(kogoP)));
+						kogoP.sendMessage(prefix + Func.msg("%s wyprosił cie ze swojej wyspy", Func.getDisplayName(p)));
 					}
 					return;
 				}
@@ -2006,7 +2006,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			zapisz();
 
 			Func.wykonajDlaNieNull(Bukkit.getPlayer(nick2),
-					p2 -> p2.sendMessage(prefix + Func.msg("%s %s cię do rangi %s!", p.getDisplayName(),
+					p2 -> p2.sendMessage(prefix + Func.msg("%s %s cię do rangi %s!", Func.getDisplayName(p),
 							mn == -1 ? "Awansował" : "Zdegradował", nowaRanga)));
 			p.sendMessage(prefix + Func.msg("%s gracza %s do rangi %s!", mn == -1 ? "Awansowałeś" : "Zdegradowałeś",
 					nick2, nowaRanga));
@@ -2191,7 +2191,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					else if (slot == 22)
 						odświeżMagazyn();
 
-					powiadomCzłonków("%s zakupił ulepszenie %s", p.getDisplayName(), nazwaPola);
+					powiadomCzłonków("%s zakupił ulepszenie %s", Func.getDisplayName(p), nazwaPola);
 					
 					Bukkit.getOnlinePlayers().forEach(gracz ->
 						Func.wykonajDlaNieNull(gracz.getOpenInventory().getTopInventory().getHolder(),  Holder.class, holder -> {
@@ -2306,8 +2306,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (!maBypass(kogoP) && zawiera(kogoP.getLocation()))
 				Func.tpSpawn(kogoP);
 			
-			kogoP.sendMessage(prefix + Func.msg("%s zbanował cię na swojej wyspie", p.getDisplayName()));
-			powiadomCzłonków("%s zbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
+			kogoP.sendMessage(prefix + Func.msg("%s zbanował cię na swojej wyspie", Func.getDisplayName(p)));
+			powiadomCzłonków("%s zbanował %s na wsypie", Func.getDisplayName(p), Func.getDisplayName(kogoP));
 			
 			zapisz();
 		}
@@ -2318,8 +2318,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			
 			zbanowani.remove(kogoP.getName());
 			
-			kogoP.sendMessage(prefix + Func.msg("%s odbanował cię na swojej wyspie", p.getDisplayName()));
-			powiadomCzłonków("%s odbanował %s na wsypie", p.getDisplayName(), kogoP.getDisplayName());
+			kogoP.sendMessage(prefix + Func.msg("%s odbanował cię na swojej wyspie", Func.getDisplayName(p)));
+			powiadomCzłonków("%s odbanował %s na wsypie", Func.getDisplayName(p), Func.getDisplayName(kogoP));
 			
 			zapisz();
 		}

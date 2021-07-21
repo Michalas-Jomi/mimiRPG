@@ -105,7 +105,7 @@ public class Baza implements Listener {
 				Player p = (Player) obj;
 				msg = new Formater(placeholder + ".loc", p.getLocation()).formatuj(msg);
 				msg = new Formater(placeholder + ".inv", p.getInventory()).formatuj(msg);
-				msg = new Formater(placeholder + ".displayname", p.getDisplayName()).formatuj(msg);
+				msg = new Formater(placeholder + ".displayname", Func.getDisplayName(p)).formatuj(msg);
 			}
 			if (obj instanceof OfflinePlayer) {
 				OfflinePlayer p = (OfflinePlayer) obj;

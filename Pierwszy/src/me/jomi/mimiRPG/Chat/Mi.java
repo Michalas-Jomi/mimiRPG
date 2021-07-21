@@ -2,7 +2,6 @@ package me.jomi.mimiRPG.Chat;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -32,7 +31,7 @@ public class Mi extends Komenda {
 			throwFormatMsg("Tej komendy można używać tylko z konsoli");
 		if (args.length < 1) return false;
 		String pref = Main.ust.wczytajD("WiadomoscConsole" + (cmd.getName().equalsIgnoreCase("lis") ? " lis" : "")) + " ";
-		Bukkit.broadcastMessage(Func.koloruj(pref + Func.listToString(args, 0)));
+		Func.broadcast(Func.koloruj(pref + Func.listToString(args, 0)));
 		return true;
 	}
 

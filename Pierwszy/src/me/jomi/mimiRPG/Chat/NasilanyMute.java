@@ -75,7 +75,7 @@ public class NasilanyMute extends Komenda implements Przeładowalny {
 			Object[] format = new Object[] {"mutujący", sender, "mutowany", p, "czas", Func.czas(czas), "powód", powód == null ? "Nie ustawiono powodu" : powód};
 			if (p instanceof Player)
 				((Player) p).sendMessage(preThrowMsg("NasilanyMute.zmutowano.dla zmutowanego", format));
-			Bukkit.broadcast(preThrowMsg("NasilanyMute.zmutowano.dla uprawnionych", format), Func.permisja("nasilanymute"));
+			Func.broadcast(preThrowMsg("NasilanyMute.zmutowano.dla uprawnionych", format), Func.permisja("nasilanymute"));
 			broadcastMsg("NasilanyMute.zmutowano.broadcast", format);
 		};
 

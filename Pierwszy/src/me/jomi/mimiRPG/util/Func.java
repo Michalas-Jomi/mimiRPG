@@ -101,6 +101,9 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Mapowany.Mapowane;
 import me.jomi.mimiRPG.util.Funkcje.FunctionN;
 
+import io.papermc.paper.adventure.DisplayNames;
+import io.papermc.paper.adventure.PaperAdventure;
+
 public abstract class Func {
 	public static String prefix(String nazwa) {
 		return koloruj("§2[§a" + nazwa + "§2]§6 ");
@@ -126,6 +129,16 @@ public abstract class Func {
 	// podręczny raport
 	public static Krotka<String, Object> r(String info, Object stan) {
 		return new Krotka<>(info, stan);
+	}
+
+	public static void broadcast(String msg, String perm) {
+		Bukkit.broadcast(PaperAdventure.LEGACY_SECTION_UXRC.deserialize(msg), perm);
+	}
+	public static void broadcast(String msg) {
+		Bukkit.broadcast(PaperAdventure.LEGACY_SECTION_UXRC.deserialize(msg));
+	}
+	public static String getDisplayName(Player p) {
+		return DisplayNames.getLegacy(me.jomi.mimiRPG.util.NMS.nms(p));
 	}
 	
 	public static String odpolszcz(String text) {

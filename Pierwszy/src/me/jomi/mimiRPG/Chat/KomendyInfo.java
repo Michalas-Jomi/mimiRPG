@@ -79,6 +79,6 @@ public class KomendyInfo extends Komenda implements Listener {
 	@EventHandler
 	public void opuszczanieGry(PlayerQuitEvent ev) {
 		gracze.remove(ev.getPlayer());
-		Main.log(ev.getPlayer().getDisplayName() + "§f wyszedł z gry");
+		Main.log(Func.getDisplayName(ev.getPlayer()) + "§f wyszedł z gry");
 	}
 }

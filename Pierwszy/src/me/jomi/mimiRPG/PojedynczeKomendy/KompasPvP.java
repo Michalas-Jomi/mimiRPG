@@ -64,7 +64,7 @@ public class KompasPvP implements Zegar, Listener {
 			if (najbliższy == null)
 				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Nie odlaneziono żadnego nieprzyjaznego gracza"));
 			else		
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Najbliższy gracz: §a" + najbliższy.getDisplayName() + " " + (int) dystans + "m"));
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Najbliższy gracz: §a" + Func.getDisplayName(najbliższy) + " " + (int) dystans + "m"));
 	}
 
 	int getOdświeżanie() {

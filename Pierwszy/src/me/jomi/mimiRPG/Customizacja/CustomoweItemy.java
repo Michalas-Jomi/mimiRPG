@@ -248,7 +248,7 @@ public class CustomoweItemy extends Komenda {
 		Func.wykonajDlaNieNull(Bukkit.getPlayer(nick), p ->
 			Func.wykonajDlaNieNull(mapa.get(item), citem -> {
 				Func.dajItem(p, citem);
-				sender.sendMessage(prefix + Func.msg("Dano %s customowy item %s.", p.getDisplayName(), item));
+				sender.sendMessage(prefix + Func.msg("Dano %s customowy item %s.", Func.getDisplayName(p), item));
 			}, () -> sender.sendMessage(prefix + Func.msg("Niepoprawny item: %s.", item))),
 		() -> sender.sendMessage(prefix + Func.msg("Niepoprawna nazwa gracza: %s.", nick)));
 		return true;

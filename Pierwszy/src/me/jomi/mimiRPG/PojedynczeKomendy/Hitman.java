@@ -63,8 +63,8 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 			Func.wykonajDlaNieNull(zabity.getKiller(), p -> {
 				Player z = Bukkit.getPlayer(oferta.zleceniodawca);
 				
-				Bukkit.broadcastMessage(prefix + Func.msg("%s zabił gracza %s i otrzymał należną mu nagrodę od %s!",
-						p.getDisplayName(), zabity.getDisplayName(), z == null ? oferta.zleceniodawcaDisplayName : z.getDisplayName()));
+				Func.broadcast(prefix + Func.msg("%s zabił gracza %s i otrzymał należną mu nagrodę od %s!",
+						Func.getDisplayName(p), Func.getDisplayName(zabity), z == null ? oferta.zleceniodawcaDisplayName : Func.getDisplayName(z)));
 				
 				config.ustaw_zapisz(zabity.getName(), null);
 				
@@ -93,7 +93,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	public void zleć(Player kto, Player kogo, List<ItemStack> itemy) {
 		Oferta of = new Oferta();
 		of.zleceniodawca = kto.getName();
-		of.zleceniodawcaDisplayName = kto.getDisplayName();
+		of.zleceniodawcaDisplayName = Func.getDisplayName(kto);
 		of.itemy = itemy;
 		config.ustaw_zapisz(kogo.getName(), of);
 		
@@ -103,8 +103,8 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 		
 		dodajGłówke(of, kogo.getName());
 		
-		Bukkit.broadcastMessage(prefix + Func.msg("%s zlecił zabicie %s! Zabij i zdobądz nagrode!",
-				kto.getDisplayName(), kogo.getDisplayName()));
+		Func.broadcast(prefix + Func.msg("%s zlecił zabicie %s! Zabij i zdobądz nagrode!",
+				Func.getDisplayName(kto), Func.getDisplayName(kogo)));
 	}
 	
 	
@@ -203,7 +203,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	final HashMap<String, Player> wyznaczający = new HashMap<>();
 	void wyznaczNagrode(Player p, Player kogo) {
 		wyznaczający.put(p.getName(), kogo);
-		Inventory inv = Bukkit.createInventory(null, 5*9, Func.koloruj("&4&lNagroda za " + kogo.getDisplayName()));
+		Inventory inv = Bukkit.createInventory(null, 5*9, Func.koloruj("&4&lNagroda za " + Func.getDisplayName(kogo)));
 		p.openInventory(inv);
 	}
 	

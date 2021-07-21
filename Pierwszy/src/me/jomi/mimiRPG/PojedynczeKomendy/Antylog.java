@@ -148,11 +148,11 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		czasy.put(atakowany.getName(), 0);
 		
 		if (!gracze.containsKey(atakowany.getName())) {
-			atakowany.sendMessage(prefix + Func.msg("%s zaatakował cię, nie wychodz teraz z gry!", atakujący.getDisplayName()));
+			atakowany.sendMessage(prefix + Func.msg("%s zaatakował cię, nie wychodz teraz z gry!", Func.getDisplayName(atakujący)));
 			gracze.put(atakowany.getName(), Sets.newHashSet());
 		}
 		if (!gracze.containsKey(atakujący.getName())) {
-			atakujący.sendMessage(prefix + Func.msg("Zaatakowałeś gracza %s, nie wychodz teraz z gry!", atakowany.getDisplayName()));
+			atakujący.sendMessage(prefix + Func.msg("Zaatakowałeś gracza %s, nie wychodz teraz z gry!", Func.getDisplayName(atakowany)));
 			gracze.put(atakujący.getName(), Sets.newHashSet());
 		}
 		
@@ -180,7 +180,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	public void opuszczeniegry(PlayerQuitEvent ev) {
 		if (czasy.containsKey(ev.getPlayer().getName())) {
 			ev.getPlayer().setHealth(0);
-			Bukkit.broadcastMessage(prefix + Func.msg("%s uciekł z walki!", ev.getPlayer().getDisplayName()));
+			Func.broadcast(prefix + Func.msg("%s uciekł z walki!", Func.getDisplayName(ev.getPlayer())));
 		}
 	}
 	
@@ -193,7 +193,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 					return;
 			ev.setCancelled(true);
 			ev.getPlayer().sendMessage(prefix + "Ta komenda nie jest dozwola w trakcie walki");
-			Main.log(prefix + Func.msg("Anulowano graczowi %s komendę %s", ev.getPlayer().getDisplayName(), msg));
+			Main.log(prefix + Func.msg("Anulowano graczowi %s komendę %s", Func.getDisplayName(ev.getPlayer()), msg));
 		}
 	}
 	

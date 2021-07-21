@@ -32,7 +32,7 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
 	public static final String prefix = Func.prefix(PySocket.class);
 	public static class Taski {
 		void broadcast(DataInputStream in) throws IOException {
-			Bukkit.broadcastMessage(in.readUTF());
+			Func.broadcast(in.readUTF());
 		}
 		void log(DataInputStream in) throws IOException {
 			Main.log(in.readUTF());
@@ -146,7 +146,7 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
     public void pisanie(AsyncPlayerChatEvent ev) {
     	wyślij("log", out -> {
     		out.writeUTF("chat");
-    		out.writeUTF(Func.usuńKolor(String.format(ev.getFormat(), ev.getPlayer().getDisplayName(), ev.getMessage())));
+    		out.writeUTF(Func.usuńKolor(String.format(ev.getFormat(), Func.getDisplayName(ev.getPlayer()), ev.getMessage())));
     	});
     }
     

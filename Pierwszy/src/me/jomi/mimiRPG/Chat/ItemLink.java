@@ -34,7 +34,7 @@ public class ItemLink implements Listener {
 				return;
 			}
 			Napis itemLink = Napis.item(item);
-			String format = "§7" + ev.getPlayer().getDisplayName() + "§8:§r ";
+			String format = "§7" + Func.getDisplayName(ev.getPlayer()) + "§8:§r ";
 			Napis n = new Napis(format);
 			n.dodaj(części[0]);
 			n.dodaj(itemLink);

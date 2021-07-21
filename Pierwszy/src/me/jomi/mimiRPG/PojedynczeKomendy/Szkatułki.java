@@ -64,7 +64,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 			// 13 środek
 			
 			if (broadcast)
-				Bukkit.broadcastMessage(prefix + Func.msg("%s Otworzył Szkatułkę %s", p.getDisplayName(), Func.koloruj(nazwa)));
+				Func.broadcast(prefix + Func.msg("%s Otworzył Szkatułkę %s", Func.getDisplayName(p), Func.koloruj(nazwa)));
 			
 			Consumer<Supplier<Material>> ustawTło = sup -> {
 				for (int i=0; i<inv.getSize(); i++)

@@ -222,7 +222,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			
 			gracze.forEach(graczeStart::add);
 			
-			graczeStr = Func.listToString(Func.wykonajWszystkim(gracze, p -> "§e" + p.getDisplayName()));
+			graczeStr = Func.listToString(Func.wykonajWszystkim(gracze, p -> "§e" + Func.getDisplayName(p)));
 			
 			assert gracze.size() < arenaDane.minGracze : ("Potrzeba conajmniej " + arenaDane.minGracze + " graczy"); 
 			assert gracze.size() > arenaDane.maxGracze : ("Nie może być więcej niż " + arenaDane.maxGracze + "graczy");
@@ -255,7 +255,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 				areny.put(this.boss, this);
 				wystartowana = true;
 				if (arenaDane.broadcastStartu)
-					Bukkit.broadcastMessage(prefix + Func.msg("%s wyzwali na pojedynek %s!",
+					Func.broadcast(prefix + Func.msg("%s wyzwali na pojedynek %s!",
 							graczeStr, boss.getDisplayName()));
 				if (arenaDane.minutyWalki > 0)
 					timer();
@@ -306,14 +306,14 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			if (killer != null)
 				for (Player p : gracze)
 					if (p.getName().equals(killer.getName())) {
-						powiadomGraczy("%s zadał finalny cios bossowi %s!", p.getDisplayName(), boss.getDisplayName());
+						powiadomGraczy("%s zadał finalny cios bossowi %s!", Func.getDisplayName(p), boss.getDisplayName());
 						return;
 					}
 			powiadomGraczy("pokonaliście Bossa %s!", boss.getDisplayName());
 		}
 		public void zwycięstwo() {
 			if (arenaDane.broadcastZwycięstwa)
-				Bukkit.broadcastMessage(prefix + Func.msg("Drużyna szaleńców %s udowodniła swą wyższość przeciwko Bossowi %s!",
+				Func.broadcast(prefix + Func.msg("Drużyna szaleńców %s udowodniła swą wyższość przeciwko Bossowi %s!",
 						graczeStr, boss.getDisplayName()));
 			graczeStart.forEach(p -> {
 				Gracz g = Gracz.wczytaj(p);
@@ -325,7 +325,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		}
 		public void porażka() {
 			if (arenaDane.broadcastPorażki)
-				Bukkit.broadcastMessage(prefix + Func.msg("Drużyna szaleńców %s poległa na polu chwały przeciwko Bossowi %s",
+				Func.broadcast(prefix + Func.msg("Drużyna szaleńców %s poległa na polu chwały przeciwko Bossowi %s",
 						graczeStr, boss.getDisplayName()));
 			Bukkit.getPluginManager().callEvent(new PrzegranaBossArenaEvent(this));
 			zakończ();
@@ -349,7 +349,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			int zgony = mapaŚmierci.getOrDefault(p.getName(), 0) + 1;
 			mapaŚmierci.put(p.getName(), zgony);
 			
-			powiadomGraczy("%s umarł! życia %s/%s", p.getDisplayName(), arenaDane.życiaGraczy - zgony, arenaDane.życiaGraczy);
+			powiadomGraczy("%s umarł! życia %s/%s", Func.getDisplayName(p), arenaDane.życiaGraczy - zgony, arenaDane.życiaGraczy);
 			
 			if (arenaDane.życiaGraczy > 0 && zgony >= arenaDane.życiaGraczy)
 				odpada(p);
@@ -360,7 +360,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		void odpada(Player p) {
-			powiadomGraczy("%s odpadł z Areny!", p.getDisplayName());
+			powiadomGraczy("%s odpadł z Areny!", Func.getDisplayName(p));
 			zapomnij(p, true);
 			if (gracze.size() <= 0)
 				porażka();

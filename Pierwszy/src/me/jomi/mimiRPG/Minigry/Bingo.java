@@ -206,7 +206,7 @@ public class Bingo extends Minigra {
 		public void podniósł(Player p, Material mat) {
 			Set<Material> znalezione = this.znalezione.get(p.getName());
 			if (materiały.contains(mat) && znalezione.add(mat)) {
-				napiszGraczom("%s znalazł %s! (%s/%s)", p.getDisplayName(), Func.enumToString(mat), znalezione.size(), materiały.size());
+				napiszGraczom("%s znalazł %s! (%s/%s)", Func.getDisplayName(p), Func.enumToString(mat), znalezione.size(), materiały.size());
 				wyślijMape(p);
 				
 				Func.wykonajDlaNieNull(inst.staty(p), stat -> stat.znalezioneItemy++);

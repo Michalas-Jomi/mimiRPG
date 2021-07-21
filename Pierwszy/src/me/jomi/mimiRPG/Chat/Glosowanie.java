@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -33,7 +32,7 @@ public class Glosowanie extends Komenda implements Zegar {
 			this.potrzebneGłosy = potrzebneGłosy;
 			this.nazwa = nazwa;
 			Glosowanie.mapa.put(nazwa, this);
-			Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 Utworzył nowe głosowanie §e" + nazwa +
+			Func.broadcast(prefix + "§e" + p.getName() + "§6 Utworzył nowe głosowanie §e" + nazwa +
 					"§6, które wygaśnie za "+ _czas() +" użyj §e§o/vote " + nazwa + "§6 aby zagłosować");
 		}
 		
@@ -55,7 +54,7 @@ public class Glosowanie extends Komenda implements Zegar {
 			if (zakończone) 
 				return;
 			if (czas <= 0) {
-				Bukkit.broadcastMessage(prefix + "Głosowanie §e" + nazwa + "§6 dobiegło końca, §cnie uzyskano potrzebnej liczby głosów§6, " + głosujący.size() + "/" + potrzebneGłosy);
+				Func.broadcast(prefix + "Głosowanie §e" + nazwa + "§6 dobiegło końca, §cnie uzyskano potrzebnej liczby głosów§6, " + głosujący.size() + "/" + potrzebneGłosy);
 				Glosowanie.mapa.remove(nazwa);
 				return;
 			}
@@ -65,9 +64,9 @@ public class Glosowanie extends Komenda implements Zegar {
 				p.sendMessage(prefix + "Już zagłosowałeś na to");
 			} else {
 				głosujący.add(p.getName());
-				Bukkit.broadcastMessage(prefix + "§e" + p.getName() + "§6 zagłosował na §e" + this + " użyj §e§o/vote " + nazwa + "§6 aby zagłosować");
+				Func.broadcast(prefix + "§e" + p.getName() + "§6 zagłosował na §e" + this + " użyj §e§o/vote " + nazwa + "§6 aby zagłosować");
 				if (głosujący.size() >= potrzebneGłosy) {
-					Bukkit.broadcastMessage(prefix + "Głosowanie §e" + nazwa + " §6 zostało zakończone §aPomyślnie");
+					Func.broadcast(prefix + "Głosowanie §e" + nazwa + " §6 zostało zakończone §aPomyślnie");
 					Glosowanie.mapa.remove(nazwa);
 					zakończone = true;
 				}

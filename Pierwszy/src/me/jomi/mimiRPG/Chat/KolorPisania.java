@@ -55,7 +55,7 @@ public class KolorPisania extends Komenda implements Listener {
 		if (ev.isCancelled()) return;
 		String msg = ev.getMessage();
 			if (msg.contains("§x"))
-				Main.log(Func.usuńKolor(ev.getPlayer().getDisplayName()) + ": " + Func.usuńKolor(msg));
+				Main.log(Func.usuńKolor(Func.getDisplayName(ev.getPlayer())) + ": " + Func.usuńKolor(msg));
 	}
 	
 	@Override
