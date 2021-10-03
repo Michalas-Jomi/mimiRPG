@@ -126,7 +126,7 @@ public class SprawdzanieIP extends Komenda implements Listener {
 						msg = "§c" + nick + "§8: §cbrak danych";
 					else
 						msg = (op.isOnline() ? "§a" : "§c") + nick + "§8: §6gra od §e" + Func.data(op.getFirstPlayed()) + "§6 ostatnio §e"
-							+ Func.data(op.getLastPlayed()) + "§6 " + (op.isBanned() ? "§4Zbanowany " : "") +
+							+ Func.data(op.getLastSeen()) + "§6 " + (op.isBanned() ? "§4Zbanowany " : "") +
 							"§6czas online§8: §e" + Func.czas(op.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20) +
 							" §6craft/jump/deaths/mob kills/walk§8:§e " + String.join("§6/§e", Func.wykonajWszystkim(new Statistic[] {
 									Statistic.CRAFTING_TABLE_INTERACTION, Statistic.JUMP, Statistic.DEATHS, Statistic.MOB_KILLS, Statistic.WALK_ONE_CM},

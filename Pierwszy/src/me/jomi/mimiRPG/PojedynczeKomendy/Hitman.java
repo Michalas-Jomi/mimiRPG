@@ -72,7 +72,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 					Func.dajItem(p, item);
 				
 				for (int i=0; i<menu.getSize(); i++)
-					if (menu.getItem(i).getItemMeta().getDisplayName().substring(2).equals(zabity.getName())) {
+					if (Func.getDisplayName(menu.getItem(i).getItemMeta()).substring(2).equals(zabity.getName())) {
 						if (i == menu.getSize()-1)
 							menu.setItem(i, Baza.pustySlot);
 						else {
@@ -126,7 +126,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	
 	// gui
 	
-	Inventory menu = Bukkit.createInventory(null, 5*9, Func.koloruj("&4&lHitman"));
+	Inventory menu = Func.createInventory(null, 5*9, Func.koloruj("&4&lHitman"));
 	
 	final Set<String> otwarte = Sets.newConcurrentHashSet();
 	void otwórz(Player p) {
@@ -136,7 +136,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	}
 	void pokażNagrody(Player p, String kogo) {
 		Oferta of = (Oferta) config.wczytaj(kogo);
-		Inventory inv = Bukkit.createInventory(p, ((of.itemy.size() - 1) / 9 + 2) * 9, Func.koloruj("&4&lNagrody za &c&l&o" + kogo));
+		Inventory inv = Func.createInventory(p, ((of.itemy.size() - 1) / 9 + 2) * 9, Func.koloruj("&4&lNagrody za &c&l&o" + kogo));
 		int i=0;
 		for (ItemStack item : of.itemy)
 			inv.setItem(i++, item);
@@ -155,7 +155,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 		if (otwarte.contains(ev.getWhoClicked().getName())) {
 			switch (ev.getCurrentItem().getType()) {
 			case PLAYER_HEAD:
-				pokażNagrody((Player) ev.getWhoClicked(), ev.getCurrentItem().getItemMeta().getDisplayName().substring(2));
+				pokażNagrody((Player) ev.getWhoClicked(), Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2));
 				break;
 			case BARRIER:
 				otwórz((Player) ev.getWhoClicked());
@@ -203,7 +203,7 @@ public class Hitman extends Komenda implements Listener, Przeładowalny {
 	final HashMap<String, Player> wyznaczający = new HashMap<>();
 	void wyznaczNagrode(Player p, Player kogo) {
 		wyznaczający.put(p.getName(), kogo);
-		Inventory inv = Bukkit.createInventory(null, 5*9, Func.koloruj("&4&lNagroda za " + Func.getDisplayName(kogo)));
+		Inventory inv = Func.createInventory(null, 5*9, Func.koloruj("&4&lNagroda za " + Func.getDisplayName(kogo)));
 		p.openInventory(inv);
 	}
 	

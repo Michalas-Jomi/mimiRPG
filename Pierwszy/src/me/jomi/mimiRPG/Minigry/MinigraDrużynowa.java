@@ -37,6 +37,8 @@ import me.jomi.mimiRPG.util.ItemCreator;
 import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Krotka;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+
 public abstract class MinigraDrużynowa extends Minigra {
 	public abstract static class Arena extends Minigra.Arena {
 		private static final ItemStack itemWybórDrużyny = Func.stwórzItem(Material.COMPASS, "§9Wybierz Drużynę");
@@ -63,10 +65,10 @@ public abstract class MinigraDrużynowa extends Minigra {
 					team.setOption(Option.COLLISION_RULE, OptionStatus.FOR_OWN_TEAM);
 					team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
 					team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
-					team.setColor(drużyna.kolorRGB.zbliżony());
-					team.setDisplayName(drużyna.toString());
+					team.color(NamedTextColor.nearestTo(drużyna.kolorRGB.textColor()));
+					team.displayName(Func.toComponent(drużyna.toString()));
 					team.setCanSeeFriendlyInvisibles(true);
-					team.setPrefix(drużyna.napisy);
+					team.prefix(Func.toComponent(drużyna.napisy));
 					drużyna.team = team;
 				}
 			} catch (NullPointerException e) {
@@ -157,7 +159,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 		}
 		private void stwórzInv() {
 			Set<Integer> sloty = dajSloty();
-			inv = Bukkit.createInventory(null, Math.min((Func.max(sloty) / 9 + 2)*9, 6*9), nazwaInv);
+			inv = Func.createInventory(null, Math.min((Func.max(sloty) / 9 + 2)*9, 6*9), nazwaInv);
 			
 			for (int i=0; i<inv.getSize(); i++)
 				inv.setItem(i, pustySlot);
@@ -397,10 +399,10 @@ public abstract class MinigraDrużynowa extends Minigra {
 		int slot = ev.getRawSlot();
 		if (arena != null && !arena.grane) {
 			ev.setCancelled(true);
-			if (Arena.nazwaInv.equals(ev.getView().getTitle()) && slot >= 0 && slot < ev.getInventory().getSize()) {
+			if (Arena.nazwaInv.equals(Func.getTitle(ev.getView())) && slot >= 0 && slot < ev.getInventory().getSize()) {
 				ItemStack item = ev.getCurrentItem();
 				if (item.getType().equals(Material.LEATHER_CHESTPLATE)) {
-					Drużyna drużyna = arena.znajdzDrużyne(item.getItemMeta().getDisplayName());
+					Drużyna drużyna = arena.znajdzDrużyne(Func.getDisplayName(item.getItemMeta()));
 					arena.wybierzDrużyne((Player) ev.getWhoClicked(), drużyna);
 				}
 			}

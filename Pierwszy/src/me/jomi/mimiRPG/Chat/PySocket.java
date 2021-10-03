@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
@@ -26,6 +25,8 @@ import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.MimiThread;
 import me.jomi.mimiRPG.util.Przeładowalny;
+
+import io.papermc.paper.event.player.AsyncChatEvent;
 
 @Moduł
 public class PySocket extends Komenda implements Listener, Przeładowalny {
@@ -143,10 +144,10 @@ public class PySocket extends Komenda implements Listener, Przeładowalny {
 	
     
     @EventHandler(priority = EventPriority.MONITOR)
-    public void pisanie(AsyncPlayerChatEvent ev) {
+    public void pisanie(AsyncChatEvent ev) {
     	wyślij("log", out -> {
     		out.writeUTF("chat");
-    		out.writeUTF(Func.usuńKolor(String.format(ev.getFormat(), Func.getDisplayName(ev.getPlayer()), ev.getMessage())));
+    		out.writeUTF(Func.usuńKolor(Func.fromComponent(ev.message())));
     	});
     }
     

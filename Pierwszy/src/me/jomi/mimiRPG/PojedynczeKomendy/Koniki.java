@@ -163,7 +163,7 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 		
 		private Inventory stwórzInv(Horse kon) {
-			Inventory inv = Bukkit.createInventory(Bukkit.getPlayer(właściciel), 5*9, "§1§lTwój Konik");
+			Inventory inv = Func.createInventory(Bukkit.getPlayer(właściciel), 5*9, "§1§lTwój Konik");
 			for (int i=0; i<itemy.size(); i++) {
 				if (i >= slotyEq) continue;
 				inv.setItem(i, itemy.get(i));
@@ -447,14 +447,14 @@ public class Koniki extends Komenda implements Listener, Przeładowalny, Zegar {
 	
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (ev.getView().getTitle().equals("§1§lTwój Konik")) {
+		if (Func.getTitle(ev.getView()).equals("§1§lTwój Konik")) {
 			Gracz g = Gracz.wczytaj(((Player) ev.getInventory().getHolder()).getName());
 			g.kon.kliknięteEq(ev, g);
 		}
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (ev.getView().getTitle().equals("§1§lTwój Konik")) {
+		if (Func.getTitle(ev.getView()).equals("§1§lTwój Konik")) {
 			Gracz g = Gracz.wczytaj(((Player) ev.getInventory().getHolder()).getName());
 			g.kon.ustawItemy(ev.getInventory());
 			g.zapisz();

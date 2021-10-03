@@ -373,7 +373,7 @@ public class KamienieDusz implements Zegar, Przeładowalny, Listener {
 			
 			meta.getPersistentDataContainer().set(kluczKamieni, PersistentDataTypeCustom.stringArray, nowe);
 			
-			List<String> lore = meta.hasLore() ? Func.nieNull(meta.getLore()) : new ArrayList<>();
+			List<String> lore = meta.hasLore() ? Func.nieNull(Func.getLore(meta)) : new ArrayList<>();
 			
 			if (lore.isEmpty() || !lore.get(0).equals(linia0)) {
 				lore.add(0, linia0);
@@ -381,7 +381,7 @@ public class KamienieDusz implements Zegar, Przeładowalny, Listener {
 			}
 			lore.add(1, "§8§l- §d" + Func.koloruj(nazwa));
 			
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			
 		}
 		public void odaplikuj(ItemStack kopia, ItemMeta meta, int indexWLiście) {
@@ -389,9 +389,9 @@ public class KamienieDusz implements Zegar, Przeładowalny, Listener {
 				mechaniki[i].odaplikuj(kopia, meta);
 			
 
-			List<String> lore = meta.getLore();
+			List<String> lore = Func.getLore(meta);
 			lore.remove(indexWLiście);
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			
 			
 			List<String> nałożone = Lists.newArrayList(nałożone(meta));

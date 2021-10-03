@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.util.Vector;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -55,6 +56,8 @@ public class Karabiny extends AbstractKarabiny<Karabiny.Karabin> {
 		Location loc = pocisk.getLocation();
 		
 		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());	
+		if (karabin.zasięgC4 > 0 && Main.włączonyModół(Bazy.class))
+			Bazy.detonateC4(pocisk.getLocation(), (float) karabin.zasięgC4);
 		if (karabin.mocWybuchu > 0)
 			pocisk.getWorld().createExplosion(pocisk.getLocation(), (float) karabin.mocWybuchu, false, false, (Player) pocisk.getShooter());
 		if (karabin.particleWybuchu != null)

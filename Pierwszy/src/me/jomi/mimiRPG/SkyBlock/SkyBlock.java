@@ -879,7 +879,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			try {
 				Field[] pola = Permisje.class.getDeclaredFields();
 				if (slot < pola.length - 2) {
-					String permisja = item.getItemMeta().getDisplayName().substring(2).replace(" ", "_");
+					String permisja = Func.getDisplayName(item.getItemMeta()).substring(2).replace(" ", "_");
 					Permisje.class.getDeclaredField(permisja).set(perm, red);
 					if (!red)
 						Func.wykonajDlaNieNull(zamknijPanele(permisja), typ -> zamknijPanele(typ, permisja));
@@ -937,7 +937,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 							permisjeInv(p);
 						else if (holder.typ == TypInv.PERMISJE)
 							Func.wykonajDlaNieNull(
-									perms.get(p.getOpenInventory().getTitle()
+									perms.get(Func.getTitle(p.getOpenInventory())
 											.substring("&4Edytuj Uprawnienia &9".length())),
 									perm -> permisjeEdytuj(p, perm));
 				});
@@ -1285,7 +1285,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				wyłączoneDropy.add(mat);
 
 			Func.ustawLore(item, wyłączoneDropy.contains(mat) ? "&cWyłączony" : "&aWłączony",
-					item.getItemMeta().getLore().size() - 2);
+					Func.getLore(item.getItemMeta()).size() - 2);
 
 			zapisz();
 		}
@@ -1985,7 +1985,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					|| !permisje(p).awansowanie_i_degradowanie_członków)
 				return;
 
-			String nick2 = item.getItemMeta().getDisplayName().substring(4);
+			String nick2 = Func.getDisplayName(item.getItemMeta()).substring(4);
 			if (p.getName().equals(nick2))
 				return;
 
@@ -2168,7 +2168,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					if (!ulepszenia[pole.getInt(poziomy) + 1].cena.zabierzPremium(p)) {
 						p.sendMessage(prefix + "Nie posiadasz wystarczająco dużo " + 
 								(Baza.walutaPremium.getItemMeta().hasDisplayName() ?
-										Baza.walutaPremium.getItemMeta().getDisplayName() : Func.enumToString(Baza.walutaPremium.getType())));
+										Func.getDisplayName(Baza.walutaPremium.getItemMeta()) : Func.enumToString(Baza.walutaPremium.getType())));
 						return;
 					}
 					
@@ -2250,7 +2250,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		void klikanyInvBorder(Player p, ItemStack item) {
 			if (item.isSimilar(Baza.pustySlotCzarny))
 				return;
-			Border kolor = Border.valueOf(item.getItemMeta().getDisplayName().substring(4).toUpperCase());
+			Border kolor = Border.valueOf(Func.getDisplayName(item.getItemMeta()).substring(4).toUpperCase());
 			if (!kolor.dozwolony)
 				return;
 			border = kolor;
@@ -2468,7 +2468,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		static void klikanyPanelTworzeniaWyspy(Player p, ItemStack item) {
 			if (item.isSimilar(Baza.pustySlotCzarny))
 				return;
-			utwórzWyspę(p, TypWyspy.zNazwy(item.getItemMeta().getDisplayName().substring(4)));
+			utwórzWyspę(p, TypWyspy.zNazwy(Func.getDisplayName(item.getItemMeta()).substring(4)));
 		}
 		static void utwórzWyspę(Player p, TypWyspy typ) {
 			if (!maBypass(p) && !cooldownTworzenia.minąłToUstaw(p.getName())) {
@@ -2747,7 +2747,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		TWORZENIE_WYSPY((wyspa, p, slot, item, ev) -> Wyspa.klikanyPanelTworzeniaWyspy(p, item)),
 		CZŁONKOWIE((wyspa, p, slot, item, ev) -> wyspa.klikanyInvMembers(p, item, ev.getClick())),
 		DEL_WARP((wyspa, p, slot, item, ev) -> wyspa.klikaniyInvDelWarp(p, slot, item.getType())),
-		PERMISJE((wyspa, p, slot, item, ev) -> wyspa.klikanyPermisjeEdytujInv(p, slot, ev.getView().getTitle(), item));
+		PERMISJE((wyspa, p, slot, item, ev) -> wyspa.klikanyPermisjeEdytujInv(p, slot, Func.getTitle(ev.getView()), item));
 
 		private static interface TypInvConsumer {
 			void wykonaj(Wyspa wyspa, Player p, int slot, ItemStack item, InventoryClickEvent ev);

@@ -243,7 +243,7 @@ public class SkrzynieSkarbów extends Komenda implements Przeładowalny, Listene
 	public void stawianie(BlockPlaceEvent ev) {
 		if (ev.getItemInHand().hasItemMeta() && ev.getItemInHand().getItemMeta().hasCustomModelData() && ev.getItemInHand().getItemMeta().getCustomModelData() == 7345)
 			Func.wykonajDlaNieNull(ev.getBlock().getState(),  Container.class, container -> {
-				String nazwa = ev.getItemInHand().getItemMeta().getDisplayName();
+				String nazwa = Func.getDisplayName(ev.getItemInHand().getItemMeta());
 				String klucz = locToString(container.getLocation());
 				if (mapaSkrzyń.containsKey(nazwa) && !mapa.containsKey(klucz)) {
 					BlockData data = ev.getBlock().getBlockData();

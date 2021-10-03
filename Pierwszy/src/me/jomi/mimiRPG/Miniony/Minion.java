@@ -120,7 +120,7 @@ public abstract class Minion extends EntityZombie {
 		
 		loc = p.getLocation();
 		
-		List<String> lore = item.getItemMeta().getLore();
+		List<String> lore = Func.getLore(item.getItemMeta());
 		imie = lore.get(2);
 		gracze = Lists.newArrayList(lore.get(3).substring(15).split(", "));
 		gracze.remove(0);
@@ -296,7 +296,7 @@ public abstract class Minion extends EntityZombie {
 	}
 	
 	protected void ulepszenia(Player p) {
-		Inventory inv = Bukkit.createInventory(null, 4*9, "§4§lUlepszenia");
+		Inventory inv = Func.createInventory(null, 4*9, "§4§lUlepszenia");
 		for (int i=0; i<inv.getSize(); i++)
 			inv.setItem(i, ulepszeniaObwódka);
 		
@@ -337,7 +337,7 @@ public abstract class Minion extends EntityZombie {
 	}
 	
 	public void otwórz(Player p) {
-		Inventory inv = Bukkit.createInventory(null, 6*9, "§1§lMinion");
+		Inventory inv = Func.createInventory(null, 6*9, "§1§lMinion");
 		for (int i=0; i<6*9; i+=9)
 			inv.setItem(i, menuObwódka);
 		for (int i=3; i<6*9; i+=9)
@@ -387,18 +387,18 @@ public abstract class Minion extends EntityZombie {
 	protected ItemStack dajJedzenie() { 
 		ItemStack item = jedzenie.clone();
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		lore.set(0, "§3Zapas:§e " + Func.DoubleToString(stanJedzenia));
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	protected ItemStack dajWode() {
 		ItemStack item = woda.clone();
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		lore.set(0, "§3Aktualny stan:§e " + Func.IntToString(stanWody) + "§3mb");
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -435,7 +435,7 @@ public abstract class Minion extends EntityZombie {
 	protected void dajItem(Player p, ItemStack item) {
 		ItemStack _item = item.clone();
 		ItemMeta meta = _item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		lore.set(2, imie);
 		lore.add("Dodani Gracze: " + Func.listToString(gracze, 0, ", "));
 		lore.add("Podnoszenie: " + zakup(podnoszenie));		
@@ -447,7 +447,7 @@ public abstract class Minion extends EntityZombie {
 
 		_dajItem(lore);
 		
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		_item.setItemMeta(meta);
 		p.getInventory().addItem(_item);
 	}
@@ -492,11 +492,11 @@ public abstract class Minion extends EntityZombie {
 
 		Player p2;
 		String nick;
-		switch (ev.getView().getTitle()) {
+		switch (Func.getTitle(ev.getView())) {
 		case "§4§lUlepszenia":
 			if (slot >= 4*9 || slot < 0) return false;
 			List<String> lista;
-			switch(ev.getCurrentItem().getItemMeta().getDisplayName()) {
+			switch(Func.getDisplayName(ev.getCurrentItem().getItemMeta())) {
 			case "§2Pojemność":
 				if (ekwipunek.size() < 12) {
 					if (Main.econ.getBalance(p) >= ulepszanieEkwipunkuCena) {
@@ -561,7 +561,7 @@ public abstract class Minion extends EntityZombie {
 				}
 				return true;
 			}
-			nick = ev.getCurrentItem().getItemMeta().getDisplayName().substring(2);
+			nick = Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2);
 			p2 = Bukkit.getPlayer(nick);
 			if (p2 == null) return Func.powiadom(p, prefix + "Wskazany gracz niedawno wszedł w tryb offline");
 			gracze.add(nick);
@@ -582,7 +582,7 @@ public abstract class Minion extends EntityZombie {
 				}
 				return true;
 			}
-			nick = ev.getCurrentItem().getItemMeta().getDisplayName().substring(2);
+			nick = Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2);
 			p2 = Bukkit.getPlayer(nick);
 			gracze.remove(nick);
 			if (p.getName().equals(nick)) {

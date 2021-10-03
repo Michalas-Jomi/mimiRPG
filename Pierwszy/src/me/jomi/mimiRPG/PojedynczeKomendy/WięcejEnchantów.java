@@ -34,7 +34,7 @@ public class WięcejEnchantów implements Listener {
 		}
 		
 		public boolean posiadaEnchant(ItemStack item) {
-			return item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("§7" + nazwa);
+			return item.hasItemMeta() && item.getItemMeta().hasLore() && Func.getLore(item.getItemMeta()).contains("§7" + nazwa);
 		}
 		public boolean dodajEnchant(ItemStack item) {
 			if (posiadaEnchant(item))
@@ -47,7 +47,7 @@ public class WięcejEnchantów implements Listener {
 			if (!posiadaEnchant(item) || !item.getItemMeta().hasLore())
 				return false;
 			
-			List<String> lore = item.getItemMeta().getLore();
+			List<String> lore = Func.getLore(item.getItemMeta());
 			while (lore.contains("§7" + nazwa))
 				lore.remove("§7" + nazwa);
 			

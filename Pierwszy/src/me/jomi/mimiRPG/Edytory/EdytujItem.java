@@ -47,7 +47,7 @@ public class EdytujItem extends Komenda {
 			
 			n.dodaj("\n\n");
 			
-			opcjaGłówna(n, "nazwa", 		"ustawić",  true, Func.odkoloruj(meta.getDisplayName()), null);
+			opcjaGłówna(n, "nazwa", 		"ustawić",  true, Func.odkoloruj(Func.getDisplayName(meta)), null);
 			opcjaGłówna(n, "enchant", 		"edytować", false, null);
 			opcjaGłówna(n, "lore", 			"edytować", false, null);
 			opcjaGłówna(n, "modifire", 		"edytować", false, null);
@@ -80,7 +80,7 @@ public class EdytujItem extends Komenda {
 		static void lore(Player p, ItemMeta meta, String akt) {
 			Napis n = new Napis("\n\n\n\n\n\n\n\n§5§lLore\n");
 		
-			List<String> lore = Func.nieNull(meta.getLore());
+			List<String> lore = Func.nieNull(Func.getLore(meta));
 			if (!lore.isEmpty()) {
 				for (int i=0; i<lore.size(); i++)
 					n.dodaj(new Napis(
@@ -203,7 +203,7 @@ public class EdytujItem extends Komenda {
 				}
 				break;
 			case "nazwa":
-				meta.setDisplayName(Func.koloruj(Func.listToString(args, 2)));
+				Func.setDisplayName(meta, Func.koloruj(Func.listToString(args, 2)));
 				break;
 			case "enchant":
 			case "enchant-w":
@@ -226,7 +226,7 @@ public class EdytujItem extends Komenda {
 				return;
 			case "lore":
 				if (args.length != 1) {
-					List<String> lore = Func.nieNull(meta.getLore());
+					List<String> lore = Func.nieNull(Func.getLore(meta));
 					switch(args[1]) {
 					case "dodaj":
 						lore.add(Func.koloruj(Func.listToString(args, 3)));
@@ -250,7 +250,7 @@ public class EdytujItem extends Komenda {
 							break;
 						}
 					}
-					meta.setLore(lore);
+					Func.setLore(meta, lore);
 				}
 				item.setItemMeta(meta);
 				Edytor.lore(p, meta, "ustaw");

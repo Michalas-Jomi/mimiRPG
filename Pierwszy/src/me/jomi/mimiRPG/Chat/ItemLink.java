@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
 import me.jomi.mimiRPG.Main;
@@ -16,11 +15,14 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Napis;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.audience.Audience;
+
 @Moduł
 public class ItemLink implements Listener {
 	@EventHandler(priority=EventPriority.LOWEST)
-	private void itemLink(AsyncPlayerChatEvent ev) {
-		String msg = ev.getMessage();
+	private void itemLink(AsyncChatEvent ev) {
+		String msg = Func.fromComponent(ev.message());
 		
 		if (Main.essentials != null && Main.essentials.getUser(ev.getPlayer()).isMuted())
 			return;
@@ -39,8 +41,9 @@ public class ItemLink implements Listener {
 			n.dodaj(części[0]);
 			n.dodaj(itemLink);
 			n.dodaj(znajdzKolor(format + części[0]) + Func.listToString(części, 1, "[i]"));
-			for (Player p : ev.getRecipients())
-				n.wyświetl(p);
+			for (Audience p : ev.viewers())
+				if (p instanceof Player)
+					n.wyświetl((Player) p);
 			Bukkit.getConsoleSender().sendMessage(n.toString());
 			ev.setCancelled(true);
 		}

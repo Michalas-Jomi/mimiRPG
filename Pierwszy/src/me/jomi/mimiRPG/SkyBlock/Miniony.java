@@ -60,6 +60,7 @@ import me.jomi.mimiRPG.Customizacja.CustomoweItemy;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.Wyspa;
 import me.jomi.mimiRPG.util.Config;
+import me.jomi.mimiRPG.util.Cooldown;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.KolorRGB;
 import me.jomi.mimiRPG.util.Komenda;
@@ -586,14 +587,14 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			ItemStack item = dane.itemLvl0();
 			
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.getLore();
+			List<String> lore = Func.getLore(meta);
 			
 			lore.add(" ");
 			lore.add("§7Poziom§8: §e" + (lvl + 1));
 			lore.add("§7Pracuje co§8: §e" + lvl().slotyEq + "s");
 			lore.add("§7Ekwipunek§8: §e" + lvl().slotyEq + " slotów");
 			
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			item.setItemMeta(meta);
 			
 			zapisz();
@@ -696,9 +697,10 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		return	item != null &&
 				item.getType() == Material.WHITE_STAINED_GLASS_PANE &&
 				item.hasItemMeta() &&
-				"§cSlot niedostępny".equals(item.getItemMeta().getDisplayName());
+				"§cSlot niedostępny".equals(Func.getDisplayName(item.getItemMeta()));
 	}
 	
+	private static final Cooldown warnCooldown = new Cooldown(300);
 	static void wczytywanieChunka(Chunk chunk) {
 		Func.opóznij(30, () -> {
 			String _uuids = chunk.getPersistentDataContainer().get(kluczMiniona, PersistentDataType.STRING);
@@ -708,9 +710,10 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				if (uuid.isEmpty())
 					return;
 				ArmorStand as = (ArmorStand) Bukkit.getEntity(UUID.fromString(uuid));
-				if (as == null)
-					Main.warn("Nieodnaleziono miniona o uuid: " + uuid);
-				else
+				if (as == null) {
+					if (warnCooldown.minąłToUstaw(uuid))
+						Main.warn("Nieodnaleziono miniona o uuid: " + uuid);
+				} else
 					new Minion(as);
 			});
 		});

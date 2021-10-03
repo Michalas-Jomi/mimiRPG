@@ -114,7 +114,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			NMS.nms(item).setTag(tag);
 			
 			ItemMeta meta = item.getItemMeta();
-			meta.setDisplayName("§9" + nazwa);
+			Func.setDisplayName(meta, "§9" + nazwa);
 			item.setItemMeta(meta);
 			
 			this.item = item;
@@ -422,7 +422,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			ItemStack item = grupa.item.clone();
 			
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = Func.nieNull(meta.getLore());
+			List<String> lore = Func.nieNull(Func.getLore(meta));
 			
 			AtomicInteger odblokowane = new AtomicInteger();
 			AtomicInteger kille = new AtomicInteger();
@@ -447,7 +447,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			lore.add(" ");
 			
 
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			item.setItemMeta(meta);
 			
 			inv.setItem(grupa.slot, item);
@@ -465,7 +465,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			ItemStack item = bestia.ikona.clone();
 			
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = Func.nieNull(meta.getLore());
+			List<String> lore = Func.nieNull(Func.getLore(meta));
 			
 			NBTTagCompound dane = gracz.getBestie(bestia);
 			int kille = dane.getInt("kill");
@@ -512,7 +512,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 				lore.add("§7????");
 			}
 			
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			item.setItemMeta(meta);
 			
 			inv.setItem(bestia.slot, item);

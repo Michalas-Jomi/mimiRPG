@@ -3,7 +3,6 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,7 +35,7 @@ public class Plecak extends Komenda implements Listener {
 			itemy.add(null);
 		int sloty = itemy.size();
 		int do9 = sloty % 9 == 0 ? sloty : sloty / 9 * 9 + 9;
-		Inventory inv = Bukkit.createInventory(p, do9, "plecak");
+		Inventory inv = Func.createInventory(p, do9, "plecak");
 		for (int i=0	; i<sloty ; i++) inv.setItem(i, itemy.get(i));
 		for (int i=sloty; i<do9	  ; i++) inv.setItem(i, zablokowanySlot);
 		p.openInventory(inv);
@@ -44,7 +43,7 @@ public class Plecak extends Komenda implements Listener {
 	}
 	@EventHandler
 	public static void zamknij(InventoryCloseEvent ev) {
-		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
+		if (!Func.getTitle(ev.getView()).equalsIgnoreCase("plecak")) return;
 		Gracz gracz = Gracz.wczytaj(ev.getPlayer().getName());
 		Inventory inv = ev.getInventory();
 		for (int i=0; i<Math.max(gracz.plecak.size(), 3); i++)
@@ -53,7 +52,7 @@ public class Plecak extends Komenda implements Listener {
 	}
 	@EventHandler
 	public static void kliknięcie(InventoryClickEvent ev) {
-		if (!ev.getView().getTitle().equalsIgnoreCase("plecak")) return;
+		if (!Func.getTitle(ev.getView()).equalsIgnoreCase("plecak")) return;
 		
 		if (Func.porównaj(ev.getCurrentItem(), zablokowanySlot))
 			ev.setCancelled(true);

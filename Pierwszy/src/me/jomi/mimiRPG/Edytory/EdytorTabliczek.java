@@ -35,7 +35,7 @@ public class EdytorTabliczek extends Komenda implements Listener{
 		
 		Napis msg = new Napis("\n\n§6§l-----§6|§l> §1§lEdytor Tabliczek §6§l <§6|§l-----\n");
 		for (int i=0; i<4; i++) {
-			String linia = blok.getLine(i);
+			String linia = Func.fromComponent(blok.line(i));
 			Napis n = new Napis("§e§l-> §0" + dajLinie(linia) + "\n", Action.SUGGEST_COMMAND, "/edytujtabliczke " + i + " " + linia.replace("&", "&&").replace("§", "&"));
 			msg.dodaj(n);
 		}
@@ -104,7 +104,7 @@ public class EdytorTabliczek extends Komenda implements Listener{
 		String txt = "";
 		if (args.length > 1)
 			txt = Func.listToString(args, 1);
-		blok.setLine(nr, Func.koloruj(txt));
+		blok.line(nr, Func.toComponent(Func.koloruj(txt)));
 		blok.update();
 		ustaw(p, blok);
 		return true;

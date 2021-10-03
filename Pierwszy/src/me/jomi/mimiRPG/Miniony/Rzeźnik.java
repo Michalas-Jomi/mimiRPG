@@ -44,7 +44,7 @@ public class Rzeźnik extends Minion{
 	}
 	public Rzeźnik(Player p, ItemStack item) {
 		super(p, item);
-		staty.add(new Statystyka(item.getItemMeta().getLore().get(10)));
+		staty.add(new Statystyka(Func.getLore(item.getItemMeta()).get(10)));
 	}
 	@Override
 	protected void init() {
@@ -120,8 +120,8 @@ public class Rzeźnik extends Minion{
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))
 			return false;
-		if (ev.getView().getTitle().equals("§4§lUlepszenia"))
-			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("§2Atak"))
+		if (Func.getTitle(ev.getView()).equals("§4§lUlepszenia"))
+			if (Func.getDisplayName(ev.getCurrentItem().getItemMeta()).equals("§2Atak"))
 				if (staty.get(3).ulepsz(p)) {
 					ulepszeniaOdśwież(ev.getInventory());
 					ustawDmg();

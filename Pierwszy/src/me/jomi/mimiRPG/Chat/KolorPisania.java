@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import com.google.common.collect.Lists;
 
@@ -20,6 +19,8 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+
 @Moduł
 public class KolorPisania extends Komenda implements Listener {
 	public static String prefix = Func.prefix("Kolor Pisania");
@@ -30,9 +31,9 @@ public class KolorPisania extends Komenda implements Listener {
 	}
 	
 	@EventHandler(priority=EventPriority.LOW)
-	public void Pisanie(AsyncPlayerChatEvent ev) {
+	public void Pisanie(AsyncChatEvent ev) {
 		if (ev.isCancelled()) return;
-		String msg = ev.getMessage();
+		String msg = Func.fromComponent(ev.message());
 		StringBuilder msgB = new StringBuilder();
 		
 		if (Main.perms != null)
@@ -48,12 +49,12 @@ public class KolorPisania extends Komenda implements Listener {
 		msg = msgB.toString();
 		if (ev.getPlayer().hasPermission("mimirpg.przejściakolorów"))
 			msg = Func.przejścia(msg);
-		ev.setMessage(msg);
+		ev.message(Func.toComponent(msg));
 	}
 	@EventHandler(priority=EventPriority.MONITOR)
-	public void PisanieMonitor(AsyncPlayerChatEvent ev) {
+	public void PisanieMonitor(AsyncChatEvent ev) {
 		if (ev.isCancelled()) return;
-		String msg = ev.getMessage();
+		String msg = Func.fromComponent(ev.message());
 			if (msg.contains("§x"))
 				Main.log(Func.usuńKolor(Func.getDisplayName(ev.getPlayer())) + ": " + Func.usuńKolor(msg));
 	}

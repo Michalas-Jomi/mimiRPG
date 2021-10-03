@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -89,7 +88,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 			ustawPodgląd();
 		}
 		private void ustawPodgląd() {
-			inv = Bukkit.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "§1Lootbag §r" + nazwa);
+			inv = Func.createInventory(null, Math.min(54, (((wygrane.size()-1) / 9 + 1) * 9)), "§1Lootbag §r" + nazwa);
 			for (int i=0; i < wygrane.size() && i < 54; i++)
 				inv.setItem(i, wygrane.get(i));
 		}
@@ -158,7 +157,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		return	item != null &&
 				item.hasItemMeta() &&
 				item.getItemMeta().hasDisplayName() &&
-				item.getItemMeta().getDisplayName().startsWith("§6Lootbag ");
+				Func.getDisplayName(item.getItemMeta()).startsWith("§6Lootbag ");
 	}
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void użycie(PlayerInteractEvent ev) {
@@ -173,7 +172,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 		
 		if (!jestLootbagiem(item)) return;
 		
-		String nazwa = item.getItemMeta().getDisplayName();
+		String nazwa = Func.getDisplayName(item.getItemMeta());
 		nazwa = nazwa.substring(nazwa.indexOf(" ")+1);
 		
 		Lootbag lootbag = lootbagi.get(nazwa);
@@ -203,9 +202,9 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 	}
 	@EventHandler
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (!ev.getView().getTitle().startsWith("§1Edytuj Lootbag§7 ")) return;
+		if (!Func.getTitle(ev.getView()).startsWith("§1Edytuj Lootbag§7 ")) return;
 		final HumanEntity p = ev.getPlayer();
-		final String nazwa = ev.getView().getTitle().substring(19);
+		final String nazwa = Func.getTitle(ev.getView()).substring(19);
 		Lootbag lootbag = lootbagi.get(nazwa);
 		if (lootbag == null) {
 			p.sendMessage(prefix + "§cLootbag nie istnieje!");
@@ -230,17 +229,17 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 	
 	@EventHandler
 	public void interkacjaEq(InventoryInteractEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (Func.getTitle(ev.getView()).startsWith("§1Lootbag §r"))
 			ev.setCancelled(true);
 	}
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (Func.getTitle(ev.getView()).startsWith("§1Lootbag §r"))
 			ev.setCancelled(true);
 	}
 	@EventHandler
 	public void przeciaganieEq(InventoryDragEvent ev) {
-		if (ev.getView().getTitle().startsWith("§1Lootbag §r"))
+		if (Func.getTitle(ev.getView()).startsWith("§1Lootbag §r"))
 			ev.setCancelled(true);
 	}
 	
@@ -306,7 +305,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 
 			Inventory inv = itemy.get(nazwa);
 			if (inv == null) {
-				inv = Bukkit.createInventory(null, 9*6, "§1Edytuj Lootbag§7 " + lootbag.nazwa);
+				inv = Func.createInventory(null, 9*6, "§1Edytuj Lootbag§7 " + lootbag.nazwa);
 				itemy.put(nazwa, inv);
 				for (ItemStack item : lootbag.wygrane)
 					inv.setItem(inv.firstEmpty(), item);
@@ -329,7 +328,7 @@ public class Lootbagi extends Komenda implements Listener, Przeładowalny {
 			lootbag.item = item;
 			lootbag.item.setAmount(1);
 			ItemMeta meta = lootbag.item.getItemMeta();
-			meta.setDisplayName("§6Lootbag " + lootbag.nazwa);
+			Func.setDisplayName(meta, "§6Lootbag " + lootbag.nazwa);
 			lootbag.item.setItemMeta(meta);
 			lootbag.zapisz(config, true);
 			p.sendMessage(prefix + "Ustawiono item lootbaga §e" + lootbag.nazwa);

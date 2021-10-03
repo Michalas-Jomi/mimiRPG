@@ -427,7 +427,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 					ev.getCurrentItem().getItemMeta().hasCustomModelData() && ev.getCurrentItem().getItemMeta().getCustomModelData() == 441441)
 				return;
 			
-			String boss = ev.getCurrentItem().getItemMeta().getDisplayName().substring(2);
+			String boss = Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2);
 			try {
 				mapaArenDanych.get(boss).nowaArena(Party.dajGraczyParty((Player) ev.getWhoClicked()));
 			} catch (AssertionError e) {

@@ -2,7 +2,6 @@ package me.jomi.mimiRPG.util;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -21,7 +20,7 @@ public class MenuStronne {
 	public List<ItemStack> itemy = Lists.newArrayList();
 	
 	public MenuStronne(int rzędy, String nazwa) {
-		inv = Bukkit.createInventory(null, rzędy*9, Func.koloruj(nazwa));
+		inv = Func.createInventory(null, rzędy*9, Func.koloruj(nazwa));
 		wielkość = rzędy*9-9;
 		for (int i=wielkość+1; i<rzędy*9-1; i++)
 			inv.setItem(i, nic_dolne);

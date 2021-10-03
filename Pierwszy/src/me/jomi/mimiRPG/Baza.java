@@ -180,7 +180,7 @@ public class Baza implements Listener {
 		if (obj instanceof Player)
 			return ((Player) obj).getName();
 		if (obj instanceof ItemStack)
-			return (((ItemStack) obj).hasItemMeta() && ((ItemStack) obj).getItemMeta().hasDisplayName()) ? ((ItemStack) obj).getItemMeta().getDisplayName() : Func.enumToString(((ItemStack) obj).getType());
+			return (((ItemStack) obj).hasItemMeta() && ((ItemStack) obj).getItemMeta().hasDisplayName()) ? Func.getDisplayName(((ItemStack) obj).getItemMeta()) : Func.enumToString(((ItemStack) obj).getType());
 		if (obj.getClass().isEnum())
 			return Func.enumToString(Func.pewnyCast(obj));
 			

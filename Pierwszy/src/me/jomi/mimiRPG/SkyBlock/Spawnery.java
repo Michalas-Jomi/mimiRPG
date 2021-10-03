@@ -131,7 +131,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 			return inv != null ? inv : stwórzInv();
 		}
 		private Inventory stwórzInv() {
-			inv = Bukkit.createInventory(null, dane.sloty, "§9§lSpawner");
+			inv = Func.createInventory(null, dane.sloty, "§9§lSpawner");
 			for (int i=0; i<dane.sloty; i++)
 				inv.setItem(i, pustySlot);
 			
@@ -250,7 +250,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		
 		int licz = 0;
 		for (ItemStack item : inv.getContents())
-			if (testEnch(spawner, upgr, item.getItemMeta().getDisplayName(), item.getAmount())) {
+			if (testEnch(spawner, upgr, Func.getDisplayName(item.getItemMeta()), item.getAmount())) {
 				Func.połysk(item);
 				Func.ustawLore(item, "§aZakupiono", 0);
 				if (licz++ >= 3)
@@ -304,7 +304,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 				Bukkit.getPluginManager().callEvent(event);
 			}
 		} else {
-			List<String> lore = item.getItemMeta().getLore();
+			List<String> lore = Func.getLore(item.getItemMeta());
 			if (lore.get(0).equals("§aZakupiono"))
 				return;
 			cena = Func.Double(lore.get(0).substring(11, lore.get(0).length()-2), -1);
@@ -318,7 +318,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	
 			Ulepszenie upgr = znajdz(spawner.getSpawnedType());
 			
-			String nazwa = item.getItemMeta().getDisplayName();
+			String nazwa = Func.getDisplayName(item.getItemMeta());
 			switch (nazwa) {
 			case "§bLiczebność":
 				spawner.setSpawnCount(poziom);

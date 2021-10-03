@@ -132,7 +132,7 @@ public class SelektorItemów extends Mapowany {
 		int durability = meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0;
 		Integer customModelData = meta.hasCustomModelData() ? meta.getCustomModelData() : null;
 		Material typ = item.getType();
-		String nazwa = meta.hasDisplayName() ? meta.getDisplayName() : "";
+		String nazwa = meta.hasDisplayName() ? Func.getDisplayName(meta) : "";
 		
 		if (akceptowalne == null) {
 			if (	wymagane.spełniaUnbreakable(unbreakable) &&

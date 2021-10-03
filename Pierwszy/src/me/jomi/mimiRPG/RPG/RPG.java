@@ -23,9 +23,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.world.entity.ai.attributes.GenericAttributes;
@@ -224,7 +221,7 @@ public class RPG implements Listener {
 		if (cons != null)
 			cons.accept(strB);
 		
-		gracz.p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(strB.toString()));
+		Func.sendActionBar(gracz.p, strB.toString());
 		
 		synchronized(gracz) {
 			gracz.ostActionBar = System.currentTimeMillis();

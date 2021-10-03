@@ -29,9 +29,6 @@ import com.google.common.collect.Sets;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.api._WorldGuard;
@@ -95,7 +92,8 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		for (int i=czas; i<maxCzas/2; i++)
 			txt.append('|');
 		txt.append(' ').append(walka);
-		Bukkit.getPlayer(nick).spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(txt.toString()));
+
+		Func.sendActionBar(Bukkit.getPlayer(nick), txt.toString());
 	}
 	@EventHandler
 	public void dołączanieDoGry(PlayerJoinEvent ev) {

@@ -71,8 +71,8 @@ public class Poziom extends Komenda implements Listener{
 		ItemStack item = new ItemStack(Material.EXPERIENCE_BOTTLE, 1);
 		ItemMeta meta = item.getItemMeta();
 		meta.setCustomModelData(ile);
-		meta.setDisplayName("§6§lButelka z Expem");
-		meta.setLore(Arrays.asList("§2Posiada §a" + Func.IntToString(ile) + "§2 doświadczenia"));
+		Func.setDisplayName(meta, "§6§lButelka z Expem");
+		Func.setLore(meta, Arrays.asList("§2Posiada §a" + Func.IntToString(ile) + "§2 doświadczenia"));
 		item.setItemMeta(meta);
 		return item;
 	}

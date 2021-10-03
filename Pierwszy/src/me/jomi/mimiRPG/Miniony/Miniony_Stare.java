@@ -137,7 +137,7 @@ public class Miniony_Stare extends Komenda implements Listener, Przeładowalny {
 		if (!włączone) return;
 		Player p = (Player) ev.getPlayer();
 		if (otwarte.containsKey(p.getName()))
-			Minion.mapa.get(otwarte.get(p.getName())).zamknij(p, ev.getInventory(), ev.getView().getTitle().equals("§1§lMinion"));
+			Minion.mapa.get(otwarte.get(p.getName())).zamknij(p, ev.getInventory(), Func.getTitle(ev.getView()).equals("§1§lMinion"));
 	}
 	
 	@EventHandler
@@ -199,7 +199,7 @@ public class Miniony_Stare extends Komenda implements Listener, Przeładowalny {
 		ItemStack item = ev.getPlayer().getInventory().getItemInMainHand();
 		if (item == null || item.getType().equals(Material.AIR)) return;
 		if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
-		String nazwa = item.getItemMeta().getDisplayName();
+		String nazwa = Func.getDisplayName(item.getItemMeta());
 		switch(nazwa) {
 		case "§1§lMinion §1Kopacz§9":
 		case "§1§lMinion §aFarmer§9":
@@ -210,7 +210,7 @@ public class Miniony_Stare extends Komenda implements Listener, Przeładowalny {
 		}
 		Player p = ev.getPlayer();
 
-		if (item.getItemMeta().getLore().size() > 5)
+		if (Func.getLore(item.getItemMeta()).size() > 5)
 			switch (nazwa) {
 			case "§1§lMinion §1Kopacz§9":
 				new Kopacz(p, item);

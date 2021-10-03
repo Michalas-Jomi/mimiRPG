@@ -71,7 +71,7 @@ public class Baterie implements Listener, Przeładowalny {
 		}
 		public int getPoziomNaładowania(ItemStack item) {
 			if (item.hasItemMeta() && item.getItemMeta().hasLore())
-				for (String linia : item.getItemMeta().getLore()) {
+				for (String linia : Func.getLore(item.getItemMeta())) {
 					Matcher matcher = patternLore.matcher(linia);
 					if (!matcher.matches())
 						continue;
@@ -91,7 +91,7 @@ public class Baterie implements Listener, Przeładowalny {
 			boolean podmienione = false;
 			
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = meta.hasLore() ? meta.getLore() : null;
+			List<String> lore = meta.hasLore() ? Func.getLore(meta) : null;
 			if (lore == null) lore = new ArrayList<>();
 			
 			UnaryOperator<String> func = linia -> {
@@ -115,7 +115,7 @@ public class Baterie implements Listener, Przeładowalny {
 			if (!podmienione)
 				lore.add(func.apply(domyślnyLore));
 			
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			item.setItemMeta(meta);
 			
 			return item;

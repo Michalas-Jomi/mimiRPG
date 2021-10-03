@@ -64,23 +64,23 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 	
 	private static ItemStack przetwórzItem(ItemStack item, double cena, String gracz) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		if (lore == null)
 			lore = Lists.newArrayList();
 		lore.add("");
 		lore.add("§6Cena: §e" + cena + "$");
 		lore.add("§6Sprzedawca: §e" + gracz);
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	private static ItemStack odtwórzItem(ItemStack item) {
 		if (item == null) return null;
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		int len = lore.size();
 		lore = lore.subList(0, len-3);
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -90,7 +90,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			p.sendMessage(prefix + "Ta komenda nie działa poprawnie! wpisz §e/raport §6aby dowiedzieć się więcej");
 			return true;
 		}
-		Inventory inv = Bukkit.createInventory(p, 6*9,"§6§lTarg");
+		Inventory inv = Func.createInventory(p, 6*9,"§6§lTarg");
 		List<ItemStack> lista = Lists.newArrayList();
 		lista.addAll(Itemy);
 		menu.put(p.getName(), lista);
@@ -214,7 +214,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		Itemy.remove(item);
 		p.sendMessage(prefix + "Wycofano item");
 		p.getInventory().addItem(odtwórzItem(item));
-		if (p.getOpenInventory().getTitle().equals("§6§lTwoje oferty"))
+		if (Func.getTitle(p.getOpenInventory()).equals("§6§lTwoje oferty"))
 			pokażSwojeOferty(p);
 		else
 			odświeżOferte(p);
@@ -224,7 +224,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 	}
 	@SuppressWarnings("unchecked")
 	private void pokażSwojeOferty(Player p) {
-		Inventory inv = Bukkit.createInventory(p, 18, "§6§lTwoje oferty");
+		Inventory inv = Func.createInventory(p, 18, "§6§lTwoje oferty");
 		ItemStack nic = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§aKliknij item aby go wycofać", null);
 		for (int i=0; i<17; i++)
 			inv.setItem(i, nic);
@@ -245,12 +245,12 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		Player p = (Player) ev.getWhoClicked();
 		ItemStack item = ev.getCurrentItem();
 		int slot = ev.getRawSlot();
-		switch (ev.getView().getTitle()) {
+		switch (Func.getTitle(ev.getView())) {
 		case "§6§lTarg":
 			if (slot >= 6*9 || slot < 0) return;
 			ev.setCancelled(true);
 			
-			String nazwa = item.getItemMeta().getDisplayName();
+			String nazwa = Func.getDisplayName(item.getItemMeta());
 			if (nazwa.equals("§6§2 ")) return;
 			if (slot < 5*9) {kup(p, item); return;}
 			switch(nazwa) {
@@ -273,7 +273,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			ev.setCancelled(true);
 			if (slot == 17) 
 				dajMenu(p);
-			else if (!item.getItemMeta().getDisplayName().equals("§aKliknij item aby go wycofać"))
+			else if (!Func.getDisplayName(item.getItemMeta()).equals("§aKliknij item aby go wycofać"))
 				wycofajItem(p, item);
 			return;
 		}

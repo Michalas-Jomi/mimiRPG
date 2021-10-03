@@ -84,8 +84,8 @@ public class Wyplac extends Komenda implements Listener {
 		ItemStack item = p.getInventory().getItemInMainHand();
 		if (!item.hasItemMeta()) return;
 		ItemMeta meta = item.getItemMeta();
-		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && meta.getDisplayName().equals("§9§lBanknot§2") && meta.hasLore()) {
-			List<String> lore = meta.getLore();
+		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && Func.getDisplayName(meta).equals("§9§lBanknot§2") && meta.hasLore()) {
+			List<String> lore = Func.getLore(meta);
 			if (lore.size() == 2 && lore.get(0).equals("§bUżyj Prawym Przyciskiem Myszy")) {
 				double ile = Func.Double(lore.get(1).split(" ")[1].replace(",", ""), 0);
 				if (ile == 0) return;

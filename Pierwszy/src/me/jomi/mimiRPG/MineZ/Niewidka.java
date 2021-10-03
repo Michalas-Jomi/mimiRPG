@@ -34,7 +34,7 @@ public class Niewidka extends Komenda implements Listener {
 		team.setOption(Option.DEATH_MESSAGE_VISIBILITY, OptionStatus.NEVER);
 		team.setOption(Option.NAME_TAG_VISIBILITY, OptionStatus.FOR_OTHER_TEAMS);
 		team.setCanSeeFriendlyInvisibles(true);
-		team.setDisplayName("Niewidka");
+		team.displayName(Func.toComponent("Niewidka"));
 	}
 
 	Team team;

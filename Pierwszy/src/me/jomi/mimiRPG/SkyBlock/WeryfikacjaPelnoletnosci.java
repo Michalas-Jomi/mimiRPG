@@ -1,6 +1,5 @@
 package me.jomi.mimiRPG.SkyBlock;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,7 +15,7 @@ import me.jomi.mimiRPG.util.Func;
 @Moduł
 public class WeryfikacjaPelnoletnosci implements Listener{
 	
-	private static Inventory inv = Bukkit.createInventory(null, 27, "§4Wstęp tylko dla §ldorosłych!");
+	private static Inventory inv = Func.createInventory(null, 27, "§4Wstęp tylko dla §ldorosłych!");
 	private static String prefix = "§2[§a18+§2] §6";
 	
 	public WeryfikacjaPelnoletnosci() {
@@ -29,12 +28,12 @@ public class WeryfikacjaPelnoletnosci implements Listener{
 	
 	@EventHandler
 	public void wybor(InventoryClickEvent ev) {
-		if (ev.getView().getTitle().equals("§4Wstęp tylko dla §ldorosłych!")) {
+		if (Func.getTitle(ev.getView()).equals("§4Wstęp tylko dla §ldorosłych!")) {
 			ev.setCancelled(true);
 			ItemStack item = ev.getCurrentItem();
 			if (item == null) return;
 			Player p = (Player) ev.getWhoClicked();
-			switch(item.getItemMeta().getDisplayName()) {
+			switch(Func.getDisplayName(item.getItemMeta())) {
 			case "§a§lTAK":
 				p.closeInventory();
 				p.sendMessage(prefix + "Przyznano dostęp");

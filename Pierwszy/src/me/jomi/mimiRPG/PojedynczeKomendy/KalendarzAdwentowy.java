@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -77,7 +76,7 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 	
 	Set<String> odbierający = Sets.newConcurrentHashSet();
 	void odbierz(Player p) {
-		Inventory inv = Bukkit.createInventory(null, ((itemy.size() - 1) / 9 + 1) * 9, Func.koloruj("&4&lKalendarz Adwentowy"));
+		Inventory inv = Func.createInventory(null, ((itemy.size() - 1) / 9 + 1) * 9, Func.koloruj("&4&lKalendarz Adwentowy"));
 		Gracz g = Gracz.wczytaj(p);
 		int i = -1;
 		int dziś = ZonedDateTime.now().getDayOfMonth();
@@ -120,7 +119,7 @@ public class KalendarzAdwentowy extends Komenda implements Przeładowalny, Liste
 
 	Set<String> edytujący = Sets.newConcurrentHashSet();
 	void edytuj(Player p) {
-		Inventory inv = Bukkit.createInventory(null, 6*9, Func.koloruj("&4&lEdytor Kalendarza Adventowego"));
+		Inventory inv = Func.createInventory(null, 6*9, Func.koloruj("&4&lEdytor Kalendarza Adventowego"));
 		int i=0;
 		for (ItemStack item : itemy)
 			inv.setItem(i++, item);

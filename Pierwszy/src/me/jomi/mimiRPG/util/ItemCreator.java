@@ -29,17 +29,17 @@ public class ItemCreator {
 			return this;
 		}
 		public Creator<T> nazwa(String nazwa) {
-			meta.setDisplayName(Func.koloruj(nazwa));
+			Func.setDisplayName(meta, Func.koloruj(nazwa));
 			return this;
 		}
 		public Creator<T> lore(String... lore) {
-			meta.setLore(Func.koloruj(Lists.newArrayList(lore)));
+			Func.setLore(meta, Func.koloruj(Lists.newArrayList(lore)));
 			return this;
 		}
 		public Creator<T> dodajLore(String linia) {
 			if (!meta.hasLore())
-				meta.setLore(new ArrayList<>());
-			meta.getLore().add(Func.koloruj(linia));
+				Func.setLore(meta, new ArrayList<>());
+			Func.getLore(meta).add(Func.koloruj(linia));
 			return this;
 		}
 		public Creator<T> customModelData(int model) {

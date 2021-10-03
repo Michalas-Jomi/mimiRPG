@@ -167,7 +167,7 @@ public class Enchant<T extends PE> {
 		
 		ItemStack item = Func.stwórzItem(Material.ENCHANTED_BOOK, "§c" + nazwa, Func.tnij(opis(poziom), "\n"));
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		
 		if (pokażKoszt) {
 			lore.add(" ");
@@ -176,7 +176,7 @@ public class Enchant<T extends PE> {
 		
 		meta.setCustomModelData(lvl);
 		
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		
 		return item;

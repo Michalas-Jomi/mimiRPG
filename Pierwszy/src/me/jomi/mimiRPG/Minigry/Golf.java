@@ -28,9 +28,6 @@ import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.Lists;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
@@ -108,7 +105,7 @@ public class Golf extends Minigra {
 			Krotka<Integer, Runnable> k = new Krotka<>(Main.ust.wczytaj("Minigry.Golf.czas na uderzenie", 300)+1, null);
 			k.b = () -> {
 				if (!kolejka.isEmpty() && kolejka.get(0).equals(p.getName())) {
-					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(Func.koloruj("&6" + Func.czas(--k.a))));
+					Func.sendActionBar(p, Func.koloruj("&6" + Func.czas(--k.a)));
 					if (k.a <= 0) {
 						kolejka.add(kolejka.remove(0));
 						infoKolejka(Func.msg("%s stracił swoją szanse, kolej na ", Func.getDisplayName(p), Func.getDisplayName(Bukkit.getPlayer(kolejka.get(0)))));

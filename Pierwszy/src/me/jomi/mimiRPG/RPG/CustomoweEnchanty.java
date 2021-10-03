@@ -159,7 +159,7 @@ public class CustomoweEnchanty implements Listener {
 						return;
 					
 					ItemStack item = inv.getItem(slotItemku);
-					Enchant<?> ench = Enchant.getEnchant(ev.getCurrentItem().getItemMeta().getDisplayName().substring(2));
+					Enchant<?> ench = Enchant.getEnchant(Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2));
 					
 					inv.setItem(slotItemku, null);
 					otwórzEnchant((Player) ev.getWhoClicked(), item, ench);

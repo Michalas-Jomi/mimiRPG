@@ -98,7 +98,7 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 		private void wczytajZwykłą(Config config) {
 			int sloty = config.wczytaj("rzędy", 6);
 			
-			inv = Bukkit.createInventory(null, sloty*9, nazwaInv);
+			inv = Func.createInventory(null, sloty*9, nazwaInv);
 			for (int i=0; i<inv.getSize(); i++)
 				inv.setItem(i, pustySlot);
 			
@@ -148,10 +148,10 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 					};
 					
 					ItemMeta meta = item.getItemMeta();
-					List<String> lore = Func.nieNull(meta.getLore());
+					List<String> lore = Func.nieNull(Func.getLore(meta));
 					lore.add(0, cena.apply("sprzedarzy", "sprzedaży", "LPM"));
 					lore.add(0, cena.apply("kupna", "kupna", "PPM"));
-					meta.setLore(lore);
+					Func.setLore(meta, lore);
 					item.setItemMeta(meta);
 				}
 				
@@ -201,14 +201,14 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 			
 			ItemStack finalnyItem = klikanyItem.clone();
 			ItemMeta meta = finalnyItem.getItemMeta();
-			List<String> lore = meta.getLore();
+			List<String> lore = Func.getLore(meta);
 			lore = lore.subList(2, lore.size());
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			finalnyItem.setItemMeta(meta);
 			
 			PlayerInventory pinv = p.getInventory();
 			Function<Integer, Double> kwota = nrLini -> {
-				String linia = klikanyItem.getItemMeta().getLore().get(nrLini);
+				String linia = Func.getLore(klikanyItem.getItemMeta()).get(nrLini);
 				return Func.Double(linia.substring(linia.lastIndexOf(' ')+1), 0) / finalnyItem.getAmount();
 			};
 			Consumer<Integer> sprzedaj = limit -> {

@@ -100,9 +100,9 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 			else {
 				ItemMeta meta = item.getItemMeta();
 				if (nazwa != null)
-					meta.setDisplayName(Func.koloruj(nazwa));
+					Func.setDisplayName(meta, Func.koloruj(nazwa));
 				if (lore != null)
-					meta.setLore(lore);
+					Func.setLore(meta, lore);
 				item.setItemMeta(meta);
 			}
 			MenuItem menuItem = new MenuItem(slot, item, komenda, permisja);
@@ -158,7 +158,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	ItemStack zablokowany = Func.stwórzItem(Material.GRAY_STAINED_GLASS_PANE, 1, "&cPodaj Liczbę", null);
 	private void wybórLiczby(Player p, String liczba) {
 		//Inventory inv = Bukkit.createInventory(p, InventoryType.ANVIL, "Wartość");
-		Inventory inv = Bukkit.createInventory(p, 36, "§2§l§oLiczba:§4§l " + liczba);
+		Inventory inv = Func.createInventory(p, 36, "§2§l§oLiczba:§4§l " + liczba);
 		int nr = 0;
 		for (int y=0; y<36; y+=9)
 			for (int x=3; x<6; x++)
@@ -172,13 +172,12 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 	@SuppressWarnings("deprecation")
 	private void wybórGracza(Player p) {
 		MenuStronne menu = new MenuStronne(4, "§e§lWybierz Gracza");
-		SkullMeta Cmeta;
 		ItemStack item;
 		for (Player gracz : Bukkit.getOnlinePlayers()) {
 			if (p.equals(gracz)) continue;
 			item = new ItemStack(Material.PLAYER_HEAD);
-			Cmeta = (SkullMeta) item.getItemMeta();
-			Cmeta.setOwner(gracz.getName());
+			SkullMeta Cmeta = (SkullMeta) item.getItemMeta();
+			new Thread(() -> Cmeta.setOwner(gracz.getName())).start();
 			Cmeta.setDisplayName(ChatColor.BLUE + gracz.getName());
 			item.setItemMeta(Cmeta);
 			menu.itemy.add(item);
@@ -213,7 +212,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 		if (ev.getAction().toString().startsWith("LEFT")) return;
 		ItemStack item = ev.getItem();
 		if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) return;
-		if (item.getItemMeta().getDisplayName().equalsIgnoreCase("§2Menu")) {
+		if (Func.getDisplayName(item.getItemMeta()).equalsIgnoreCase("§2Menu")) {
 			ev.getPlayer().chat("/menu");
 			ev.setCancelled(true);
 		}
@@ -223,7 +222,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 		int slot = ev.getRawSlot();
 		if (slot >= ev.getInventory().getSize() || slot < 0) return;
 		Player p = (Player) ev.getWhoClicked();
-		String tytuł = ev.getView().getTitle();
+		String tytuł = Func.getTitle(ev.getView());
 		String[] tytułSplited = tytuł.split(" ");
 		Inventory inv = ev.getInventory();
 		if (tytułSplited[0].equals("Menu")) {
@@ -260,7 +259,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 				return;				
 			}
 			if (item.getType().equals(Material.PLAYER_HEAD)) {
-				String gracz = item.getItemMeta().getDisplayName().substring(2);
+				String gracz = Func.getDisplayName(item.getItemMeta()).substring(2);
 				String komenda = mapaKomend.get(p.getName());
 				wykonaj(p, zamienPierwsze(komenda, "{gracz}", gracz));
 			}
@@ -270,7 +269,7 @@ public class Menu extends Komenda implements Listener, Przeładowalny {
 				ev.setCancelled(true);
 				ItemStack item = ev.getCurrentItem();
 				if (item.getType().equals(Material.PLAYER_HEAD)) {
-					String wyraz = item.getItemMeta().getDisplayName().substring(2);
+					String wyraz = Func.getDisplayName(item.getItemMeta()).substring(2);
 					switch (wyraz) {
 					case "Anuluj":
 						if (tytuł.split(" ").length == 1)
@@ -326,12 +325,12 @@ class MenuInv {
 		
 		for (int i=0; i<itemy.size(); i++) {
 			ItemMeta meta = itemy.get(i).item.getItemMeta();
-			if (meta.hasDisplayName() && sprawdzZawartość(meta.getDisplayName())) {
+			if (meta.hasDisplayName() && sprawdzZawartość(Func.getDisplayName(meta))) {
 				specjalne.add(i);
 				continue;
 			}
 			if (meta.hasLore()) 
-				for (String linia : meta.getLore())
+				for (String linia : Func.getLore(meta))
 					if (sprawdzZawartość(linia)) {
 						specjalne.add(i);
 						continue;
@@ -340,7 +339,7 @@ class MenuInv {
 	}
 	
 	public void otwórz(Player p) {
-		Inventory inv = Bukkit.createInventory(null, wielkosc, "Menu " + menu);
+		Inventory inv = Func.createInventory(null, wielkosc, "Menu " + menu);
 		for (int i=1; i<itemy.size(); i++)
 			umieśćItem(p, inv, i);
 		for (int i=0; i<wielkosc; i++)
@@ -368,12 +367,12 @@ class MenuInv {
 		ItemStack w = item.clone();
 		ItemMeta meta = w.getItemMeta();
 		if (meta.hasDisplayName())
-			meta.setDisplayName(podmieńLinie(p, meta.getDisplayName()));
+			Func.setDisplayName(meta, podmieńLinie(p, Func.getDisplayName(meta)));
 		if (meta.hasLore()) {
-			List<String> lore = meta.getLore();
+			List<String> lore = Func.getLore(meta);
 			for (int i=0; i<lore.size(); i++) 
 				lore.set(i, podmieńLinie(p, lore.get(i)));
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 		}
 		w.setItemMeta(meta);
 		return w;

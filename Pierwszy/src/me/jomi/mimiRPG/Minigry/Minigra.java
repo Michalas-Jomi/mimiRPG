@@ -40,9 +40,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import me.jomi.mimiRPG.Gracz;
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
@@ -128,7 +125,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 			
 			Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 			p.setScoreboard(scoreboard);
-			Objective obj = scoreboard.registerNewObjective("staty", "dummy", "§6§lStatystyki");
+			Objective obj = scoreboard.registerNewObjective("staty", "dummy", Func.toComponent("§6§lStatystyki"));
 			if (rangingowe) {
 				obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 				staty.rozpisz(obj, getInstMinigra());
@@ -328,7 +325,7 @@ public abstract class Minigra implements Listener, Przeładowalny, Zegar  {
 					p.sendTitle("§a" + czas, "§bStart areny " + nazwa, 30, 40, 30);
 			
 			for (Player p : gracze)
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§aStart za " + czas));
+				Func.sendActionBar(p, "§aStart za " + czas);
 		}
 		
 		@Override

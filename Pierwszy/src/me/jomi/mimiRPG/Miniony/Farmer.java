@@ -49,7 +49,7 @@ public class Farmer extends Minion {
 	}
 	public Farmer(Player p, ItemStack item) {
 		super(p, item);
-		sadzenie = item.getItemMeta().getLore().get(10).split(" ")[1].startsWith("§a");
+		sadzenie = Func.getLore(item.getItemMeta()).get(10).split(" ")[1].startsWith("§a");
 	}
 	@Override
 	protected void init() {}
@@ -163,8 +163,8 @@ public class Farmer extends Minion {
 		ItemStack item = ev.getCurrentItem();
 		if (item == null || item.getType().equals(Material.AIR))
 			return false;
-		if (ev.getView().getTitle().equals("§4§lUlepszenia")) {
-			if (ev.getCurrentItem().getItemMeta().getDisplayName().equals("§2Sadzenie")) {
+		if (Func.getTitle(ev.getView()).equals("§4§lUlepszenia")) {
+			if (Func.getDisplayName(ev.getCurrentItem().getItemMeta()).equals("§2Sadzenie")) {
 				if (sadzenie) return true;
 				if (Main.econ.getBalance(p) >= ulepszanieSadzenieCena) {
 					Main.econ.withdrawPlayer(p, ulepszanieSadzenieCena);

@@ -61,7 +61,7 @@ public abstract class Bonusy extends Mapowany {
 		bonusyEnch.forEach(bonus -> bonus.dodajDoItemu(meta));
 		bonusyAttr.forEach(bonus -> bonus.dodajDoItemu(meta));
 		if (nazwa != null)
-			meta.setDisplayName(Func.koloruj(nazwa));
+			Func.setDisplayName(meta, Func.koloruj(nazwa));
 		flagi.forEach(meta::addItemFlags);
 		Func.wykonajDlaNieNull(unbreakable, meta::setUnbreakable);
 		Func.wykonajDlaNieNull(customModelData, meta::setCustomModelData);

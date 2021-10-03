@@ -66,6 +66,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -103,6 +104,8 @@ import me.jomi.mimiRPG.util.Funkcje.FunctionN;
 
 import io.papermc.paper.adventure.DisplayNames;
 import io.papermc.paper.adventure.PaperAdventure;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {
@@ -132,14 +135,51 @@ public abstract class Func {
 	}
 
 	public static void broadcast(String msg, String perm) {
-		Bukkit.broadcast(PaperAdventure.LEGACY_SECTION_UXRC.deserialize(msg), perm);
+		Bukkit.broadcast(Func.toComponent(msg), perm);
 	}
 	public static void broadcast(String msg) {
-		Bukkit.broadcast(PaperAdventure.LEGACY_SECTION_UXRC.deserialize(msg));
+		Bukkit.broadcast(Func.toComponent(msg));
 	}
 	public static String getDisplayName(Player p) {
 		return DisplayNames.getLegacy(me.jomi.mimiRPG.util.NMS.nms(p));
 	}
+	public static String getDisplayName(ItemMeta meta) {
+		return fromComponent(meta.displayName());
+	}
+	public static ItemMeta setDisplayName(ItemMeta meta, String name) {
+		meta.displayName(Func.toComponent(name));
+		return meta;
+	}
+	public static Inventory createInventory(InventoryHolder holder, int size, String name) {
+		return Bukkit.createInventory(holder, size, toComponent(name));
+	}
+	public static List<String> getLore(ItemMeta meta) {
+		if (meta.lore() == null) return null;
+		return Func.wykonajWszystkim(meta.lore(), Func::fromComponent);
+	}
+	public static ItemMeta setLore(ItemMeta meta, List<String> lore) {
+		meta.lore(Func.wykonajWszystkim(lore, Func::toComponent));
+		return meta;
+	}
+	public static String getTitle(InventoryView inv) {
+		return fromComponent(inv.title());
+	}
+	public static void sendActionBar(Player p, String actionBar) {
+		try {
+			Func.dajMetode(p.getClass(), "sendActionBar", Component.class).invoke(p, toComponent(actionBar));
+		} catch (Throwable e) {
+			Func.throwEx(e);
+		}
+	}
+
+	public static TextComponent toComponent(String str) {
+		return PaperAdventure.LEGACY_SECTION_UXRC.deserialize(str);
+	}
+	public static String fromComponent(Component component) {
+		return PaperAdventure.LEGACY_SECTION_UXRC.serialize(component);
+	}
+	
+	
 	
 	public static String odpolszcz(String text) {
 		char[] znaki = text.toLowerCase().toCharArray();
@@ -237,7 +277,7 @@ public abstract class Func {
 	
 	public static String nazwaItemku(ItemStack item) {
 		ItemMeta meta = item.getItemMeta();
-		return meta.hasDisplayName() ? meta.getDisplayName() : Func.enumToString(item.getType());
+		return meta.hasDisplayName() ? Func.getDisplayName(meta) : Func.enumToString(item.getType());
 	}
 	public static String enumToString(Enum<?> en) {
 		return title(en.toString());
@@ -588,45 +628,46 @@ public abstract class Func {
 	}
 	public static ItemStack dodajLore(ItemStack item, String linia) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		if (lore == null)
 			lore = Lists.newArrayList();
 		lore.add(koloruj(linia));
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	public static ItemStack ustawLore(ItemStack item, String linia, int nrLini) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		if (lore == null) lore = Lists.newArrayList();
 		while (nrLini >= lore.size())
 			lore.add("");
 		lore.set(nrLini, koloruj(linia));
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	public static ItemStack wstawLore(ItemStack item, String linia, int nrLini) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = meta.getLore();
+		List<String> lore = Func.getLore(meta);
 		if (lore == null) lore = Lists.newArrayList();
 		while (nrLini >= lore.size())
 			lore.add("");
 		lore.add(nrLini, linia);
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	public static ItemStack ustawLore(ItemStack item, List<String> lore) {
 		ItemMeta meta = item.getItemMeta();
-		meta.setLore(koloruj(lore));
+		lore = koloruj(lore);
+		Func.setLore(meta, lore);
 		item.setItemMeta(meta);
 		return item;
 	}
 	public static ItemStack nazwij(ItemStack item, String nazwa) {
 		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(koloruj(nazwa));
+		Func.setDisplayName(meta, koloruj(nazwa));
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -660,13 +701,13 @@ public abstract class Func {
 		
 		// Nazwa
 		if (nazwa != null)
-			meta.setDisplayName(koloruj(nazwa));
+			Func.setDisplayName(meta, koloruj(nazwa));
 		
 		// Lore
 		if (lore != null) {
 			for (int i=0; i<lore.size(); i++) 
 				lore.set(i, koloruj(lore.get(i)));
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 		}
 		
 		// Wykończenie
@@ -699,8 +740,8 @@ public abstract class Func {
 		item = new ItemStack(Material.PLAYER_HEAD);
 		meta = (SkullMeta) item.getItemMeta();
 		
-		if (nazwa != null)	meta.setDisplayName(koloruj(nazwa));
-		if (lore != null)	meta.setLore(koloruj(lore));
+		if (nazwa != null)	Func.setDisplayName(meta, koloruj(nazwa));
+		if (lore != null)	Func.setLore(meta, koloruj(lore));
 		
 		GameProfile profile = new GameProfile(uuid, null);
         profile.getProperties().put("textures", new Property("textures", url));
@@ -835,7 +876,7 @@ public abstract class Func {
 		return stwórzInv(null, rzędy, nazwa);
 	}
 	public static Inventory stwórzInv(InventoryHolder holder, int rzędy, String nazwa) {
-		return Bukkit.createInventory(holder, rzędy * 9, koloruj(nazwa));
+		return Func.createInventory(holder, rzędy * 9, koloruj(nazwa));
 	}
 	public static void ustawPuste(Inventory inv) {
 		ustawPuste(inv, Baza.pustySlot);
@@ -850,7 +891,7 @@ public abstract class Func {
 			inv.setItem(slot, Baza.pustySlot);
 	}
 	public static Inventory CloneInv(Inventory inv, String nazwa) {
-		Inventory _inv = Bukkit.createInventory(inv.getHolder(), inv.getSize(), nazwa);
+		Inventory _inv = Func.createInventory(inv.getHolder(), inv.getSize(), nazwa);
 		for (int i=0; i<inv.getSize(); i++)
 			_inv.setItem(i, inv.getItem(i).clone());
 		return _inv;

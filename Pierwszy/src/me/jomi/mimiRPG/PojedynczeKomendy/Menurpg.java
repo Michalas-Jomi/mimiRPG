@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.Command;
@@ -105,14 +104,14 @@ public class Menurpg extends Komenda implements Listener {
 				nextlvl = "§6§oOsiągnięto już maksymalny poziom";
 				cenaexp = null;
 			}
-			meta.setLore(Arrays.asList("Zwiększa " + nazwa.toLowerCase(), 
+			Func.setLore(meta, Arrays.asList("Zwiększa " + nazwa.toLowerCase(), 
 					  "Aktualny poziom: §e" + at, nextlvl, cenaexp));
 			this.setItemMeta(meta);
 			
 		}
 		private void ustawTeksture(String url) {
 			SkullMeta meta = (SkullMeta) this.getItemMeta();
-			meta.setDisplayName(nazwa);
+			Func.setDisplayName(meta, nazwa);
 			// tekstura
 			GameProfile profile = new GameProfile(UUID.randomUUID(), null);
 	        profile.getProperties().put("textures", new Property("textures", url));
@@ -133,7 +132,7 @@ public class Menurpg extends Komenda implements Listener {
 	}
 	
 	private static void dajInv(Player p) {
-		Inventory inv = Bukkit.createInventory(p, 27, "menu RPG");
+		Inventory inv = Func.createInventory(p, 27, "menu RPG");
 		
 		// Itemy
 		HashMap<String, Atrybut> m = new HashMap<String, Atrybut>();
@@ -151,7 +150,7 @@ public class Menurpg extends Komenda implements Listener {
 	
 	@EventHandler
 	public void kliknięcie(InventoryClickEvent ev) {
-		if (!ev.getView().getTitle().equalsIgnoreCase("menu RPG")) return;
+		if (!Func.getTitle(ev.getView()).equalsIgnoreCase("menu RPG")) return;
 		
 		Player p = (Player) ev.getWhoClicked();
 		int slot = ev.getRawSlot();
@@ -159,7 +158,7 @@ public class Menurpg extends Komenda implements Listener {
 		if (slot < 0 || slot >= 27) return;
 		
 		if (ev.getCurrentItem().getType().equals(Material.PLAYER_HEAD))
-			mapa.get(p.getName()).get(ev.getCurrentItem().getItemMeta().getDisplayName()).kliknięty();
+			mapa.get(p.getName()).get(Func.getDisplayName(ev.getCurrentItem().getItemMeta())).kliknięty();
 		ev.setCancelled(true);
 	}
 	

@@ -736,6 +736,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Location loc = ev.getEntity().getLocation();
 		final float zasięg = ev.getRadius();
 		
+		detonateC4(loc, zasięg);
+	}
+	public static void detonateC4(Location loc, float zasięg) {
 		float r = zasięg/3*2;
 		loc.getWorld().spawnParticle(Particle.CLOUD, 		loc, (int) zasięg*50, r, r, r, 0);
 		loc.getWorld().spawnParticle(Particle.SMOKE_LARGE,	loc, (int) zasięg*20, r, r, r, 0);
@@ -761,7 +764,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		Supplier<Double> los = () -> Math.random() * (Func.losuj(.5) ? 1 : -1);
 		
 		Explozja explozja = new Explozja(loc);
-		World w = ev.getEntity().getWorld();
+		World w = loc.getWorld();
 		for (int i=0; i<ile; i++) {
 			Snowball s = (Snowball) w.spawnEntity(loc, EntityType.SNOWBALL);
 			s.setVelocity(new Vector(los.get(), los.get(), los.get()).multiply(5));
@@ -802,20 +805,27 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	
 	
-	int min() {
+	private int min() {
 		return config.wczytajInt("ustawienia.godzinyRajdów.min godz safe");
 	}
-	int max() {
+	private int max() {
 		return config.wczytajInt("ustawienia.godzinyRajdów.max godz safe");
 	}
-	boolean możnaRajdować() {
+	private boolean invert() {
+		return config.wczytaj("ustawienia.godzinyRajdów.invert", false);
+	}
+	public boolean możnaRajdować() {
 		int aktH = ZonedDateTime.now().getHour();
 		int min = min();
 		int max = max();
-		return !(aktH >= min && aktH < max);
+		
+		return (aktH >= min && aktH < max) == invert();
 	}
 	String rajdowanieMsg() {
-		return "Nie możesz rajdować baz w godzinach " + min() + "-" + max();
+		if (invert())
+			return "Możesz rajdować bazy tylko w godzinach " + min() + "-" + max();
+		else
+			return "Nie możesz rajdować baz w godzinach " + min() + "-" + max();
 	}
 	
 	boolean blokuj;
@@ -857,7 +867,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 						tnt.setYield(zasięg);
 						tnt.setVelocity(new Vector());
 						try { 
-							tnt.setCustomName(ev.getItemInHand().getItemMeta().getDisplayName());
+							tnt.setCustomName(Func.getDisplayName(ev.getItemInHand().getItemMeta()));
 						} catch (Exception e) {}
 						
 						Main.log(prefix + Func.msg("%s postawił c4 na koordynatach %sx %sy %sz", ev.getPlayer().getName(), ev.getBlock().getX(), ev.getBlock().getY(), ev.getBlock().getZ()));
@@ -1255,7 +1265,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	final String nazwaEqUlepszania = "§1§lUlepszanie Bazy";
 	@EventHandler
 	public void klikanieEq(InventoryClickEvent ev) {
-		if (!(ev.getView().getTitle().equals(nazwaEqUlepszania))) return;
+		if (!(Func.getTitle(ev.getView()).equals(nazwaEqUlepszania))) return;
 		
 		int slot = ev.getRawSlot();
 		
@@ -1265,7 +1275,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	@EventHandler
 	@SuppressWarnings("unchecked")
 	public void zamykanieEq(InventoryCloseEvent ev) {
-		if (!ev.getView().getTitle().equals(nazwaEqUlepszania)) return;
+		if (!Func.getTitle(ev.getView()).equals(nazwaEqUlepszania)) return;
 		
 		Player p = (Player) ev.getPlayer();
 		Gracz g = Gracz.wczytaj(p);
@@ -1317,7 +1327,7 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	Inventory stwórzInvUlepszenia(int poziom) {
 		ItemStack szybka = pustyZablokowanySlot.clone();
 		szybka.setType(Material.BLACK_STAINED_GLASS_PANE);
-		Inventory inv = Bukkit.createInventory(null, 9*5, nazwaEqUlepszania);
+		Inventory inv = Func.createInventory(null, 9*5, nazwaEqUlepszania);
 		for (int i=0; i< 9*5; i++)
 			inv.setItem(i, szybka);
 		

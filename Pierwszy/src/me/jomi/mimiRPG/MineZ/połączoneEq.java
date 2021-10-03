@@ -48,8 +48,8 @@ public class połączoneEq extends Komenda implements Listener {
 			@SuppressWarnings("unchecked")
 			public Krotka<Inventory, Inventory> getEq(Ekwipunki eqs) {
 				if (mapa != null) {
-					eq = Bukkit.createInventory(eqs, 5*9, "Ekwipunek");
-					ec = Bukkit.createInventory(eqs, 3*9, "Ender Chest");
+					eq = Func.createInventory(eqs, 5*9, "Ekwipunek");
+					ec = Func.createInventory(eqs, 3*9, "Ender Chest");
 
 					BiConsumer<Inventory, HashMap<Integer, ItemStack>> bic = (inv, mapa) -> mapa.forEach(inv::setItem);
 					
@@ -142,8 +142,8 @@ public class połączoneEq extends Komenda implements Listener {
 			
 			new File(stare).delete();
 			
-			itemki.eq = Bukkit.createInventory(eqs, 5*9, "Ekwipunek " + scieżka);
-			itemki.ec = Bukkit.createInventory(eqs, 3*9, "Ender Chest " + scieżka);
+			itemki.eq = Func.createInventory(eqs, 5*9, "Ekwipunek " + scieżka);
+			itemki.ec = Func.createInventory(eqs, 3*9, "Ender Chest " + scieżka);
 			
 			int i=0;
 			for (ItemStack item : p.getInventory()) itemki.eq.setItem(i++, item);

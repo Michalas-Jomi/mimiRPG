@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.google.common.collect.Lists;
@@ -24,6 +23,8 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Napis;
+
+import io.papermc.paper.event.player.AsyncChatEvent;
 
 @Moduł
 public class ChatGrupowy extends Komenda implements Listener {
@@ -76,8 +77,8 @@ public class ChatGrupowy extends Komenda implements Listener {
 	}
 	
 	@EventHandler
-	public void pisanie(AsyncPlayerChatEvent ev) {
-		String msg = ev.getMessage();
+	public void pisanie(AsyncChatEvent ev) {
+		String msg = Func.fromComponent(ev.message());
 		CommandSender p = ev.getPlayer();
 		if (mapa.containsKey(p.getName())) {
 			ev.setCancelled(true);

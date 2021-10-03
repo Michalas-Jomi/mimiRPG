@@ -226,7 +226,7 @@ public class SkinyItemków extends Komenda implements Listener, Przeładowalny {
 				sekcja.getKeys(false).forEach(klucz -> {
 					try {
 						ItemStack item = sekcja.getItemStack(klucz + ".item");
-						mapaNazw.put(kod(item), new Krotka<>(item.getItemMeta().getDisplayName(), Func.Int(klucz)));
+						mapaNazw.put(kod(item), new Krotka<>(Func.getDisplayName(item.getItemMeta()), Func.Int(klucz)));
 					} catch(Throwable e) {
 						Main.warn("Nieprawidłowość z " + f.getAbsolutePath() + " skiny." + klucz);
 					}

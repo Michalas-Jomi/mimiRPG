@@ -154,7 +154,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 	
 	@EventHandler
 	void zamykanieEq(InventoryCloseEvent ev) {
-		if (ev.getView().getTitle().equals(itemSkrzynia.getItemMeta().getDisplayName())) {
+		if (Func.getTitle(ev.getView()).equals(Func.getDisplayName(itemSkrzynia.getItemMeta()))) {
 			Location loc = ev.getInventory().getLocation();
 			for (_Budownik budownik : budowniki)
 				if (budownik.skrzynia.equals(loc)) {

@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
+import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Func;
 
@@ -27,6 +28,9 @@ public class RailGuny extends AbstractKarabiny<RailGuny.RailGun> {
 				
 				Location loc = rezult.getHitPosition().toLocation(p.getWorld());
 				
+				if (zasięgC4 > 0 && Main.włączonyModół(Bazy.class))
+					Bazy.detonateC4(loc, (float) zasięgC4);
+
 				if (mocWybuchu > 0)
 					p.getWorld().createExplosion(loc, (float) mocWybuchu, false, false, p);
 				

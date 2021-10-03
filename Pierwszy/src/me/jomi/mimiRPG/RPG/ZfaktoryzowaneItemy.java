@@ -155,9 +155,9 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		lore.add("§8" + Func.enumToString(TypItemu.typ(tag)));
 		lore.add(Ranga.ranga(tag).toString());
 		
-		meta.setLore(lore);
+		Func.setLore(meta, lore);
 		if (nazwa != null)
-			meta.setDisplayName(nazwa);
+			Func.setDisplayName(meta, nazwa);
 		
 		meta.setUnbreakable(true);
 		meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_DYE);
@@ -172,9 +172,9 @@ public class ZfaktoryzowaneItemy extends Komenda implements Listener {
 		String opis = null;
 		String nazwa = null;
 		if (item.hasItemMeta() && item.getItemMeta().hasLore())
-			opis = Func.listToString(item.getItemMeta().getLore(), 0, "\\n");
+			opis = Func.listToString(Func.getLore(item.getItemMeta()), 0, "\\n");
 		if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
-			nazwa = item.getItemMeta().getDisplayName();
+			nazwa = Func.getDisplayName(item.getItemMeta());
 		
 		List<Boost> boosty = Boost.getBoosty(item);
 		ByteArrayOutputStream blobStream = new ByteArrayOutputStream();

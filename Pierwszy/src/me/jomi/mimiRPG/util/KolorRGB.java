@@ -9,6 +9,8 @@ import com.google.common.collect.Lists;
 
 import me.jomi.mimiRPG.Mapowany;
 
+import net.kyori.adventure.text.format.TextColor;
+
 public class KolorRGB extends Mapowany {
 	@Mapowane int red;
 	@Mapowane int green;
@@ -46,6 +48,7 @@ public class KolorRGB extends Mapowany {
 		blue = b;
 	}
 	public KolorRGB() {}
+	@Override
 	public void Init() {
 		red 	= Math.max(0, Math.min(255, red));
 		green 	= Math.max(0, Math.min(255, green));
@@ -63,6 +66,10 @@ public class KolorRGB extends Mapowany {
 		return "§x" + hex.apply(red) + hex.apply(green) + hex.apply(blue);
 	}
 
+	public TextColor textColor() {
+		return TextColor.of(red, green, blue);
+	}
+	
 	public ChatColor zbliżony() {
 		return ChatColor.valueOf(Func.max(Lists.newArrayList(Domyślne.values()), 
 				k -> -(Math.abs(red - k.kolor.red) + Math.abs(green - k.kolor.green) + Math.abs(blue - k.kolor.blue))).toString());

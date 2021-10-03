@@ -109,7 +109,7 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 			if (ev.getRawSlot() >= slotPierwszyEnchantów && !klikany.isSimilar(Baza.pustySlotCzarny)) {
 					int punkty = dajPunkty(item);
 					if (punkty >= klikany.getItemMeta().getCustomModelData()) {
-						Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(klikany.getItemMeta().getDisplayName().substring(2).replace(' ', '_')));
+						Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(Func.getDisplayName(klikany.getItemMeta()).substring(2).replace(' ', '_')));
 						Func.enchantuj(item, ench, item.getEnchantmentLevel(ench) + 1);
 						ustawPunkty(item, punkty - klikany.getItemMeta().getCustomModelData());
 						ev.getWhoClicked().addScoreboardTag(tempTagNieOddawaniaItemku);
@@ -274,14 +274,14 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 	private static final String maxLvlLore = Func.koloruj("&6Level&8: &%aa3333-773333&l&oMAX");
 	static void ustawProgres(ItemStack item, double exp, double potrzebnyExp, int lvl) {
 		ItemMeta meta = item.getItemMeta();
-		List<String> lore = Func.nieNull(meta.getLore());
+		List<String> lore = Func.nieNull(Func.getLore(meta));
 		
 		if (lvl == -1) {
 			if (!lore.get(0).equals(maxLvlLore)) {
 				lore.set(0, maxLvlLore);
 				if (lore.size() >= 2)
 					lore.remove(1);
-				meta.setLore(lore);
+				Func.setLore(meta, lore);
 				item.setItemMeta(meta);
 			}
 			return;
@@ -309,7 +309,7 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 		if (!lore.get(1).equals(progres)) {
 			lore.set(0, "§6Level§8: §e" + (lvl + 1));
 			lore.set(1, progres);
-			meta.setLore(lore);
+			Func.setLore(meta, lore);
 			item.setItemMeta(meta);
 		}
 	}

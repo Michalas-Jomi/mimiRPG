@@ -67,7 +67,7 @@ public class Patrzeq extends Komenda implements Listener {
 		Player p = Bukkit.getPlayer(args[0]);
 		if (p == null) return Func.powiadom(sender, prefix + "Niepoprawna nazwa gracza: §e" + args[0]);
 		if (!mapa.containsKey(p.getName())) {
-			Inventory inv = Bukkit.createInventory(p, 5*9, "§1§lPodgląd gracza §4§l" + p.getName());
+			Inventory inv = Func.createInventory(p, 5*9, "§1§lPodgląd gracza §4§l" + p.getName());
 			for (int i=4*9+5; i<5*9; i++)
 				inv.setItem(i, brakSlotu);
 			mapa.put(p.getName(), inv);
@@ -84,7 +84,7 @@ public class Patrzeq extends Komenda implements Listener {
 		InventoryHolder _holder = ev.getInventory().getHolder();
 		if (!(_holder instanceof Player)) return;
 		Player holder = (Player) _holder;
-		if (!(ev.getView().getTitle().equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
+		if (!(Func.getTitle(ev.getView()).equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
 		if (holder.hasPermission("patrzeq.nietykalność") ||
 				!ev.getWhoClicked().hasPermission("patrzeq.modyfikuj") ||
 				(slot >= 4*9+5 && slot < 5*9))
@@ -97,7 +97,7 @@ public class Patrzeq extends Komenda implements Listener {
 		InventoryHolder _holder = ev.getInventory().getHolder();
 		if (!(_holder instanceof Player)) return;
 		Player holder = (Player) _holder;
-		if (!(ev.getView().getTitle().equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
+		if (!(Func.getTitle(ev.getView()).equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
 		if (holder.hasPermission("patrzeq.nietykalność") ||
 				!ev.getWhoClicked().hasPermission("patrzeq.modyfikuj"))
 			for (int slot : ev.getRawSlots())
@@ -112,7 +112,7 @@ public class Patrzeq extends Komenda implements Listener {
 		InventoryHolder _holder = ev.getInventory().getHolder();
 		if (!(_holder instanceof Player)) return;
 		Player holder = (Player) _holder;
-		if (!(ev.getView().getTitle().equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
+		if (!(Func.getTitle(ev.getView()).equals("§1§lPodgląd gracza §4§l" + holder.getName()))) return;
 		if (ev.getInventory().getViewers().size() <= 1)
 			mapa.remove(holder.getName());
 	}

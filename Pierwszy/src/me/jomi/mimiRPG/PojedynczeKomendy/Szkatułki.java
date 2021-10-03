@@ -60,7 +60,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 		@Mapowane Material blok = Material.LIGHT_BLUE_SHULKER_BOX;
 		
 		void otwórz(Player p) {
-			Inventory inv = Bukkit.createInventory(p, 3*9, Func.koloruj("&4&lOtwierasz Szkatułkę " + nazwa));
+			Inventory inv = Func.createInventory(p, 3*9, Func.koloruj("&4&lOtwierasz Szkatułkę " + nazwa));
 			// 13 środek
 			
 			if (broadcast)
@@ -143,7 +143,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 			edytujący.put(p.getName(), this);
 		}
 		private Inventory gui(Player p, int sloty, String nazwa) {
-			Inventory inv = Bukkit.createInventory(p, sloty, nazwa);
+			Inventory inv = Func.createInventory(p, sloty, nazwa);
 			int i=0;
 			for (ItemStack item : itemy)
 				inv.setItem(i++, item);
@@ -198,9 +198,9 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 				if (itemy.isEmpty())
 					p.sendMessage(prefix + "Nie możesz ustawić pustego dropu");
 				else {
-					Box box = (Box) config.wczytaj(ev.getView().getTitle());
+					Box box = (Box) config.wczytaj(Func.getTitle(ev.getView()));
 					box.skrzynka.itemy = itemy;
-					config.ustaw_zapisz(ev.getView().getTitle(), box);
+					config.ustaw_zapisz(Func.getTitle(ev.getView()), box);
 					przeładuj();
 					p.sendMessage(prefix + "Zapisano skrzynkę");
 				}
@@ -211,7 +211,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 	public void stawianie(BlockPlaceEvent ev) {
 		if (!ev.getPlayer().hasPermission(permEdycja)) return;
 		if (!ev.getItemInHand().getItemMeta().hasItemFlag(ItemFlag.HIDE_PLACED_ON)) return;
-		String nazwa = ev.getItemInHand().getItemMeta().getDisplayName();
+		String nazwa = Func.getDisplayName(ev.getItemInHand().getItemMeta());
 		nazwa = nazwa.substring(nazwa.indexOf(' ') + 1);
 		Func.wykonajDlaNieNull((Box) config.wczytaj(nazwa), box -> {
 			box.lokacje.add(ev.getBlock().getLocation());

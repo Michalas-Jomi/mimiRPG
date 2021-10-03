@@ -24,7 +24,7 @@ import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
 public class Kosz extends Komenda implements Przeładowalny, Zegar {
-	private static Inventory inv = Bukkit.createInventory(null, 6*9, "§1§lKosz");
+	private static Inventory inv = Func.createInventory(null, 6*9, "§1§lKosz");
 	private static List<ItemStack> kolejka = Lists.newArrayList();
 	
 	private static int maxTimer;

@@ -38,9 +38,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import me.jomi.mimiRPG.Main;
 import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
@@ -79,6 +76,8 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 		@Mapowane KolorRGB kolorOgonaPocisku;
 		@Mapowane ParticleZwykłe particleWybuchu;
 		
+		@Mapowane double zasięgC4 = 0d;
+		
 		
 		@Override
 		protected void Init() {
@@ -100,7 +99,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 				karabin.setAmount(karabin.getAmount() - 1);
 				p.getInventory().setItemInMainHand(karabin.getAmount() > 0 ? karabin : null);
 			} else if (!zabierzPocisk(p, karabin)) {
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak amunicji"));
+				Func.sendActionBar(p, "§cBrak amunicji");
 				przeładuj(p, karabin);
 				return;
 			}
@@ -168,9 +167,9 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			int pociski;
 			String pref;
 			Matcher matcher;
-			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(meta.getDisplayName())).matches()) {
+			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(Func.getDisplayName(meta))).matches()) {
 				pociski = zabierzPociski(p);
-				pref = meta.hasDisplayName() ? meta.getDisplayName() : nazwa;
+				pref = meta.hasDisplayName() ? Func.getDisplayName(meta) : nazwa;
 			} else {
 				pociski = Integer.parseInt(matcher.group(2));
 				if (pociski > magazynek) {
@@ -185,7 +184,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			if (pociski < 0)
 				return false;
 			
-			meta.setDisplayName(pref + " ⁍" + pociski);
+			Func.setDisplayName(meta, pref + " ⁍" + pociski);
 			karabin.setItemMeta(meta);
 			
 			return true;
@@ -196,7 +195,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			if (!meta.hasDisplayName())
 				return 0;
 			
-			Matcher matcher = patternPocisków.matcher(meta.getDisplayName());
+			Matcher matcher = patternPocisków.matcher(Func.getDisplayName(meta));
 			if (!matcher.matches())
 				return 0;
 			
@@ -227,13 +226,13 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 		public void przeładuj(Player p, ItemStack item) {
 			if (!p.getInventory().containsAtLeast(ammo, 1)) {
 				if (ammo != null)
-					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
+					Func.sendActionBar(p, "§cBrak naboi");
 			} else if (przeładowywane.add(item))
 				przeładuj(p, item, czasPrzeładowania * 20 + 1);
 		}
 		private void przeładuj(Player p, ItemStack item, int ticki) {
 			if (!p.getInventory().getItemInMainHand().equals(item)) {
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cAnulowano Przeładowywanie"));
+				Func.sendActionBar(p, "§cAnulowano Przeładowywanie");
 				przeładowywane.remove(item);
 				return;
 			}
@@ -246,7 +245,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			s.append("§a");	while (++i < zielone) s.append('|');
 			s.append("§c");	while (++i < 25)	  s.append('|');
 			
-			p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§6Przaładowywanie " + s));
+			Func.sendActionBar(p, "§6Przaładowywanie " + s);
 				
 			if (ticki <= 0)
 				przeładujTeraz(p, item);
@@ -263,15 +262,15 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 			String pref;
 			Matcher matcher;
 			int pociski = zabierzPociski(p);
-			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(meta.getDisplayName())).matches())
-				pref = meta.hasDisplayName() ? meta.getDisplayName() : nazwa;
+			if (!meta.hasDisplayName() || !(matcher = patternPocisków.matcher(Func.getDisplayName(meta))).matches())
+				pref = meta.hasDisplayName() ? Func.getDisplayName(meta) : nazwa;
 			else
 				pref = matcher.group(1);
 			
-			meta.setDisplayName(pref + " ⁍" + pociski);
+			Func.setDisplayName(meta, pref + " ⁍" + pociski);
 			karabin.setItemMeta(meta);
 			if (pociski <= 0)
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§cBrak naboi"));
+				Func.sendActionBar(p, "§cBrak naboi");
 		}
 	}
 	

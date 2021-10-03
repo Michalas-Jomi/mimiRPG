@@ -91,7 +91,7 @@ public class Wymienianie implements Listener{
 	// Menu
 	
 	private static Inventory stwórzMenu(String nick1, String nick2) {
-		Inventory inv = Bukkit.createInventory(null, 4*9, "§1§lWymiana§2");
+		Inventory inv = Func.createInventory(null, 4*9, "§1§lWymiana§2");
 		for (int i=4; i<9*4; i+=9)
 			inv.setItem(i, środek);
 		

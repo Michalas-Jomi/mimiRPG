@@ -352,7 +352,7 @@ public class Bingo extends Minigra {
 	@EventHandler
 	public void śmierć(PlayerDeathEvent ev) {
 		super.śmierć(ev);
-		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.odpada(ev.getEntity(), ev.getDeathMessage())));
+		Bukkit.getScheduler().runTask(Main.plugin, () -> Func.wykonajDlaNieNull(arena(ev.getEntity()), arena -> arena.odpada(ev.getEntity(), Func.fromComponent(ev.deathMessage()))));
 	}
 	
 	@Override @SuppressWarnings("unchecked") Arena 		arena(Entity p) { return super.arena(p); }

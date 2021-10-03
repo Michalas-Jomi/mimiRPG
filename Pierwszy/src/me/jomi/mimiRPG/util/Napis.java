@@ -162,7 +162,7 @@ public class Napis implements ConfigurationSerializable {
 			
 			String nazwa;
 			if (item.hasItemMeta() && item.getItemMeta().hasDisplayName())
-				nazwa = item.getItemMeta().getDisplayName();
+				nazwa = Func.getDisplayName(item.getItemMeta());
 			else {
 				Object nazwaItemu = Func.dajMetode(nmsItem.getClass(), "getName").invoke(nmsItem);
 				nazwa = (String) Func.dajMetode(nazwaItemu.getClass(), "getString").invoke(nazwaItemu);

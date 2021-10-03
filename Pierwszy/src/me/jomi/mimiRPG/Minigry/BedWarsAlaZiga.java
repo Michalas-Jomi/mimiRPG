@@ -56,7 +56,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 	public static class PustyHolder implements InventoryHolder {
 		private Inventory inv;
 		public PustyHolder(int rzędy, String nazwa) {
-			inv = Bukkit.createInventory(this, rzędy*9, Func.koloruj(nazwa));
+			inv = Func.createInventory(this, rzędy*9, Func.koloruj(nazwa));
 		}
 		@Override
 		public Inventory getInventory() {
@@ -255,7 +255,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		void przygotujStart(Arena arena) {
 			serce = new Serce(arena, this);
 			
-			ec = Bukkit.createInventory(null, 9, Func.koloruj(napisy + "Enderchest"));
+			ec = Func.createInventory(null, 9, Func.koloruj(napisy + "Enderchest"));
 			
 			przygotujGuiUlepszenia();
 			zrespMobaSklepu();
@@ -274,7 +274,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		}
 		private void przygotujGuiUlepszenia() {
 			// Ulepszenia Enchanty
-			guiUlepszeń = Bukkit.createInventory(this, 5*9, Func.koloruj("&lUlepszenia Drużynowe"));
+			guiUlepszeń = Func.createInventory(this, 5*9, Func.koloruj("&lUlepszenia Drużynowe"));
 			Func.ustawPuste(guiUlepszeń);
 			
 			for (Ulepszenie upgr : Lists.reverse(serce.arena.ulepszeniaDoKupienia))
@@ -307,7 +307,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 			for (HumanEntity p : ec.getViewers())
 				p.closeInventory();
 			
-			Inventory nowy = Bukkit.createInventory(null, ec.getSize() + 9, Func.koloruj(napisy + "Enderchest"));
+			Inventory nowy = Func.createInventory(null, ec.getSize() + 9, Func.koloruj(napisy + "Enderchest"));
 			for (int i=0; i<ec.getSize(); i++)
 				nowy.setItem(i, ec.getItem(i));
 			
@@ -323,7 +323,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 				return;
 			}
 			PlayerInventory inv = p.getInventory();
-			Enchant ench = Enchant.valueOf(item.getItemMeta().getDisplayName().substring(2));
+			Enchant ench = Enchant.valueOf(Func.getDisplayName(item.getItemMeta()).substring(2));
 			for (Ulepszenie upgr : serce.arena.ulepszeniaDoKupienia)
 				if (ench.equals(upgr.enchant)) {
 					List<ItemStack> cena = upgr.ceny.get(item.getAmount() - 1).cena;
@@ -389,7 +389,7 @@ public class BedWarsAlaZiga extends MinigraDrużynowa {
 		private Inventory inv;
 		
 		private void stwórzInv() {
-			inv = Bukkit.createInventory(this, rzędy*9, Func.koloruj("&4&l" + nazwa));
+			inv = Func.createInventory(this, rzędy*9, Func.koloruj("&4&l" + nazwa));
 			Func.ustawPuste(inv);
 			for (SklepItem sitem : Lists.reverse(itemy)) {
 				ItemStack item = sitem.item.clone();
