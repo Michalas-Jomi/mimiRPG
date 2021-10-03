@@ -2087,6 +2087,25 @@ public abstract class Func {
 	public static void particle(Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
 		loc.getWorld().spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
 	}
+	public static void particle(Player p, Location loc, int ilość, double dx, double dy, double dz, double prędkość, Color kolor, float wielkość) {
+		p.spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
+	}
+	public static void particle(Location loc, Location loc2, double step, BiConsumer<Location, Integer> bic) {
+		int steps = (int) (loc.distance(loc2) / step);
+		double x = Math.abs(loc.getX() - loc2.getX()) / steps;
+		double y = Math.abs(loc.getY() - loc2.getY()) / steps;
+		double z = Math.abs(loc.getZ() - loc2.getZ()) / steps;
+
+		if (loc.getX() > loc2.getX()) x *= -1;
+		if (loc.getY() > loc2.getY()) y *= -1;
+		if (loc.getZ() > loc2.getZ()) z *= -1;
+		
+		for (int i=0; i < steps; i++) {
+			bic.accept(loc, i);
+			loc.add(x, y, z);
+		}
+		bic.accept(loc2, steps);
+	}
 
 	public static String replaceGroup(Pattern pattern, String co, int grupa, String naCo) {
 	    return replaceGroup(pattern, co, grupa, 1, naCo);
