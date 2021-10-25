@@ -64,6 +64,7 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 
 		@Mapowane double attackCooldown; // w sekundach
 		@Mapowane double dmg = 2;
+		@Mapowane double dmgPrzeszycie = 0;
 		@Mapowane double mocWybuchu;
 		
 		@Mapowane double rozrzucenie = 0.0;

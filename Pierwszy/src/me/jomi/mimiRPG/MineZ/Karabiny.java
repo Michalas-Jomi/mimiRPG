@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -77,6 +78,11 @@ public class Karabiny extends AbstractKarabiny<Karabiny.Karabin> {
 		
 		Karabin karabin = karabiny.get(pocisk.getMetadata("mimiPocisk").get(0).asString());
 		ev.setDamage(karabin.dmg);
+		
+		if (ev.getEntity() instanceof LivingEntity) {
+			LivingEntity mob = (LivingEntity) ev.getEntity();
+			mob.setHealth(mob.getHealth() - karabin.dmgPrzeszycie);
+		}
 	}
 }
 

@@ -117,6 +117,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		@Mapowane List<String> wymaganeBossy;
 		@Mapowane int priorytet = 1;
 		@Mapowane ItemStack ikona = Func.stwórzItem(Material.GOLD_INGOT, "", "Boss");
+		@Mapowane ItemStack przepustka; // null dla braku przepustki
 		
 		public final Set<Integer> zajęte = new HashSet<>();
 
@@ -278,7 +279,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			int licz = 0;
 			while (it.hasNext() && licz < Baza.BudowanieAren.maxBloki) {
 				Krotka<Block, Block> krotka = it.next();
-				if (krotka.a.getType() != krotka.b.getType()) {
+				if (krotka.a.getType() != krotka.b.getType() || !krotka.a.getBlockData().getAsString().equals(krotka.b.getBlockData().getAsString())) {
 					//krotka.b.setType(krotka.a.getType(), false);
 					krotka.b.setBlockData(krotka.a.getBlockData(), false);
 					licz++;
@@ -423,13 +424,20 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		panel.ustawClick(ev -> {
 			if (ev.getCurrentItem().isSimilar(Baza.pustySlotCzarny))
 				return;
-			if (ev.getCurrentItem().getType() == Material.YELLOW_STAINED_GLASS_PANE &&
+			if (Func.multiEquals(ev.getCurrentItem().getType(), Material.YELLOW_STAINED_GLASS_PANE, Material.RED_STAINED_GLASS_PANE) &&
 					ev.getCurrentItem().getItemMeta().hasCustomModelData() && ev.getCurrentItem().getItemMeta().getCustomModelData() == 441441)
 				return;
 			
 			String boss = Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2);
 			try {
-				mapaArenDanych.get(boss).nowaArena(Party.dajGraczyParty((Player) ev.getWhoClicked()));
+				Player p = (Player) ev.getWhoClicked();
+				ArenaDane arena = mapaArenDanych.get(boss);
+				if (arena.przepustka != null) {
+					if (!p.getInventory().contains(arena.przepustka))
+						return;
+					p.getInventory().remove(arena.przepustka);
+				}
+				arena.nowaArena(Party.dajGraczyParty(p));
 			} catch (AssertionError e) {
 				ev.getWhoClicked().sendMessage(prefix + e.getMessage());
 			}
@@ -506,6 +514,19 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 			if (!krotka.b.minąłCooldown(krotka.c)) {
 				Func.dodajLore(item, "&cNiedostępne do &e" + Func.data(krotka.c + krotka.b.minutyCooldownu * 60 * 1000L));
 				Func.typ(item, Material.YELLOW_STAINED_GLASS_PANE);
+				Func.customModelData(item, 441441);
+			}
+			if (krotka.b.przepustka != null)
+				if (p.getInventory().contains(krotka.b.przepustka)) {
+					Func.dodajLore(item, "&czużywa przepustkę");
+				} else {
+					Func.typ(item, Material.YELLOW_STAINED_GLASS_PANE);
+					Func.customModelData(item, 441441);
+					Func.dodajLore(item, "&4Wymaga przepustki");
+				}
+			if (!(krotka.b.minGracze <= gracze.size() && (krotka.b.maxGracze == -1 || krotka.b.maxGracze >= gracze.size()))) {
+				Func.dodajLore(item, Func.msg("&cWymagane /party w ilości %s-%s &cosób", krotka.b.minGracze, krotka.b.maxGracze));
+				Func.typ(item, Material.RED_STAINED_GLASS_PANE);
 				Func.customModelData(item, 441441);
 			}
 			

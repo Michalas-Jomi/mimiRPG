@@ -1643,8 +1643,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			if (maBypass(p) || ostatnieLiczenie.minąłToUstaw(strId)) {
 				p.sendMessage(prefix + "Liczenie wartości wyspy");
 				Bukkit.getScheduler().runTaskAsynchronously(Main.plugin, () -> policzWartość(p, () -> {
-					Main.log(prefix + Func.msg("Wartość wyspy przeliczanej przez %s to %s", Func.getDisplayName(p),
-							Func.IntToString((int) pkt)));
+					Main.log(prefix + Func.msg("Wartość wyspy przeliczanej przez %s to %s", Func.getDisplayName(p), Func.IntToString((int) pkt)));
 					if (Gracz.wczytaj(p).wyspa != id)
 						p.sendMessage(prefix + Func.msg("Aktualna wartość ich wyspy: %s", pkt));
 					członkowie.keySet().forEach(

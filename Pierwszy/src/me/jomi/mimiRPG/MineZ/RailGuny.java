@@ -24,7 +24,11 @@ public class RailGuny extends AbstractKarabiny<RailGuny.RailGun> {
 			
 			
 			if (rezult != null) {
-				Func.wykonajDlaNieNull(rezult.getHitEntity(), e -> ((LivingEntity) e).damage(dmg, p));
+				Func.wykonajDlaNieNull(rezult.getHitEntity(), e -> {
+					LivingEntity mob = (LivingEntity) e;
+					mob.setHealth(mob.getHealth() - dmgPrzeszycie);
+					mob.damage(dmg, p);
+				});
 				
 				Location loc = rezult.getHitPosition().toLocation(p.getWorld());
 				

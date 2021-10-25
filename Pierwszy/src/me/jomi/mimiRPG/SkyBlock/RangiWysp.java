@@ -48,20 +48,31 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			if (suff.equals(aktsuff))
 				return;
 			
-			for (String członek : ev.wyspa.członkowie.keySet())
-				Main.chat.setPlayerSuffix(null, Func.graczOffline(członek), suff);
+			for (String członek : ev.wyspa.członkowie.keySet()) {
+				OfflinePlayer p = Func.graczOffline(członek);
+				Main.chat.setPlayerSuffix(null, p, suff);
+				
+				ustawGrupe(p, suff);
+			}
 		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void usuwanieWyspy(UsuwanieWyspyEvent ev) {
 		new Thread(() -> {
-			for (String członek : ev.wyspa.członkowie.keySet())
-				Main.chat.setPlayerSuffix(null, Func.graczOffline(członek), "");
+			for (String członek : ev.wyspa.członkowie.keySet()) {
+				OfflinePlayer p = Func.graczOffline(członek);
+				Main.chat.setPlayerSuffix(null, p, "");
+				ustawGrupe(p, null);
+			}
 		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void opuszczanieWyspy(OpuszczanieWyspyEvent ev) {
-		new Thread(() -> Main.chat.setPlayerSuffix(null, Func.graczOffline(ev.nick), "")).start();
+		new Thread(() -> {
+			OfflinePlayer p = Func.graczOffline(ev.nick);
+			Main.chat.setPlayerSuffix(null, p, "");
+			ustawGrupe(p, null);
+		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void dołączanieDoWyspy(DołączanieDoWyspyEvent ev) {
@@ -69,7 +80,17 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			OfflinePlayer randCzłonek = Func.graczOffline(Func.losuj(ev.wyspa.członkowie.keySet()));
 			String suff = Main.chat.getPlayerSuffix(null, randCzłonek);
 			Main.chat.setPlayerSuffix(null, ev.p, suff);
+			ustawGrupe(ev.p, suff);
 		}).start();
+	}
+	
+	private void ustawGrupe(OfflinePlayer p, String ranga) {
+		Func.forEach(Main.perms.getPlayerGroups(null, p), group -> {
+			if (group.startsWith("sky-"))
+				Main.perms.playerRemoveGroup(null, p, group);
+		});
+		if (ranga != null)
+			Main.perms.playerAddGroup(null, p, "sky-" + ranga);
 	}
 	
 	

@@ -61,6 +61,9 @@ public class Gracz extends Mapowany {
 	@Mapowane public HashMap<String, Long> bossyCooldown = new HashMap<>();
 	@Mapowane public HashMap<String, Integer> bossyLicznik = new HashMap<>();
 	
+	@Mapowane public HashMap<String, Long> dungiCooldown = new HashMap<>();
+	@Mapowane public HashMap<String, Integer> dungiLicznik = new HashMap<>();
+	
 	@Mapowane public int nasilanymute_licznik;
 	
 	@Mapowane public List<String> zbierankiZebrane = new ArrayList<>();

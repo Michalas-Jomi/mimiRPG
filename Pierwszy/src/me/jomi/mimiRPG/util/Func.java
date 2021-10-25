@@ -2091,6 +2091,7 @@ public abstract class Func {
 		p.spawnParticle(Particle.REDSTONE, loc, ilość, dx, dy, dz, prędkość, new Particle.DustOptions(kolor, wielkość));
 	}
 	public static void particle(Location loc, Location loc2, double step, BiConsumer<Location, Integer> bic) {
+		loc = loc.clone();
 		int steps = (int) (loc.distance(loc2) / step);
 		double x = Math.abs(loc.getX() - loc2.getX()) / steps;
 		double y = Math.abs(loc.getY() - loc2.getY()) / steps;

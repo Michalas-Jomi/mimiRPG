@@ -187,8 +187,8 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 			
 			if (atakujGraczy) {
 				EntityInsentient ei = (EntityInsentient) ((CraftEntity) mob).getHandle();
-				ei.bP = new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
-				ei.bP.a(2, new PathfinderGoalNearestAttackableTarget<EntityPlayer>(ei, EntityPlayer.class, true));
+				ei.bQ = new PathfinderGoalSelector(ei.getWorld().getMethodProfilerSupplier());
+				ei.bQ.a(2, new PathfinderGoalNearestAttackableTarget<EntityPlayer>(ei, EntityPlayer.class, true));
 			}
 			
 			

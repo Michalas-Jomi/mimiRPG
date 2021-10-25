@@ -73,6 +73,9 @@ public class Napis implements ConfigurationSerializable {
 		txt.setClickEvent(new ClickEvent(akcja, treść));
 		return this;
 	}
+	public Napis clickEvent(String treść) {
+		return clickEvent(treść.endsWith(">> ") ? Action.SUGGEST_COMMAND : Action.RUN_COMMAND, treść);
+	}
 
 	public Napis dodajK(String co) {
 		return dodaj(Func.koloruj(co));
