@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.MineZ;
 
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
@@ -20,14 +21,27 @@ public class RailGuny extends AbstractKarabiny<RailGuny.RailGun> {
 		
 		@Override
 		protected void strzel(Player p, Vector wzrok) {
-			RayTraceResult rezult = p.getWorld().rayTrace(p.getEyeLocation(), wzrok, zasięg, FluidCollisionMode.NEVER, true, 0, e -> e instanceof LivingEntity && ! p.getUniqueId().equals(e.getUniqueId()));
+			RayTraceResult rezult = p.getWorld().rayTrace(p.getEyeLocation(), wzrok, zasięg, FluidCollisionMode.NEVER, true, 0, e -> e instanceof LivingEntity && !p.getUniqueId().equals(e.getUniqueId()));
 			
 			
 			if (rezult != null) {
 				Func.wykonajDlaNieNull(rezult.getHitEntity(), e -> {
 					LivingEntity mob = (LivingEntity) e;
-					mob.setHealth(mob.getHealth() - dmgPrzeszycie);
+					
 					mob.damage(dmg, p);
+					
+					Func.wykonajDlaNieNull(mob.getAttribute(Attribute.GENERIC_ARMOR), armor -> {
+						double base = armor.getBaseValue();
+						int nodmgticks = mob.getNoDamageTicks();
+						
+						mob.setNoDamageTicks(0);
+						armor.setBaseValue(base - armor.getValue());
+						
+						mob.damage(dmgPrzeszycie, p);
+						
+						armor.setBaseValue(base);
+						mob.setNoDamageTicks(nodmgticks);
+					});
 				});
 				
 				Location loc = rezult.getHitPosition().toLocation(p.getWorld());
@@ -40,7 +54,6 @@ public class RailGuny extends AbstractKarabiny<RailGuny.RailGun> {
 				
 				if (particleWybuchu != null)
 					particleWybuchu.zresp(loc);
-				
 			}
 			
 			if (kolorOgonaPocisku != null) {

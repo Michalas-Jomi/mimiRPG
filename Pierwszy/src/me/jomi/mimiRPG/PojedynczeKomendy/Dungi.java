@@ -556,7 +556,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				pokój().drzwi.forEach(loc -> {
 					BlockData blok = loc.getBlock().getBlockData().clone();
 					loc.getBlock().setType(Material.GLASS, false);
-					Func.particle(p, loc, 5, .1, .1, .1, 0, Color.GRAY, 2);
+					Func.particle(p, loc.clone().add(.5, .5, .5), 5, .1, .1, .1, 0, Color.GRAY, 2);
 					Func.opóznij(5, () -> loc.getBlock().setBlockData(blok, false));
 				});
 		}
@@ -570,6 +570,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				p.sendMessage(prefix + Func.msg("MythicMob %s nie istnieje", mob.nazwaMoba));
 			else {
 				Entity e = mob.loc.getWorld().spawnEntity(mob.loc, Func.StringToEnum(EntityType.class, mm.getEntityType()));
+				moby.add(e);
 				e.setInvulnerable(true);
 				e.setGlowing(true);
 				if (e instanceof Attributable) {
@@ -624,7 +625,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			n.dodaj("§6Limit graczy§8: ");
 			n.dodaj(new Napis("§e" + String.valueOf(dane.minGracze), "§bKliknij aby ustawić", "/dungi edytor minGracze >> "));
 			n.dodaj("§7 - ");
-			n.dodajEnd(new Napis(String.valueOf(dane.maxGracze == -1 ? ("§eBrak górnego limitu §7(-1)") : dane.maxGracze), "§bKliknij aby ustawić", "/dungi edytor maxGracze >> "));
+			n.dodajEnd(new Napis(String.valueOf(dane.maxGracze == -1 ? ("§eBrak górnego limitu §7(-1)") : ("§e" + dane.maxGracze)), "§bKliknij aby ustawić", "/dungi edytor maxGracze >> "));
 			
 			n.dodaj("§6Broadcasty Zwycięstwo§9/§6Porażka§9/§6Start§8: ");
 			n.dodaj(new Napis(dane.broadcastZwycięstwa ? "§aTak" : "§cNie", "§bKliknij aby zmienić", "/dungi edytor bcz"));
@@ -711,9 +712,9 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				case "mobradar": p.teleport(pokój().moby.get(Func.Int(args[2])).loc); break;
 				case "mobrem": pokój().moby.remove(Func.Int(2)); odświeżPokój(); break;
 				case "mobadd": 
-					if (args.length == 5) {
+					if (args.length == 4) {
 						Mob mob = Func.utwórz(Mob.class);
-						mob.nazwaMoba = args[4];
+						mob.nazwaMoba = args[3];
 						mob.loc = p.getLocation();
 						pokój().moby.add(mob);
 						zainicjujMoba(mob);
@@ -757,7 +758,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 					try {
 						if (dane.nazwaBossa == null) 
 							throw new Error("Nazwa bossa musi być wpisana");
-						if (dane.maxGracze < dane.minGracze)
+						if (dane.maxGracze < dane.minGracze && dane.maxGracze != -1)
 							throw new Error("min gracze muszą być większe od max gracze");
 						if (dane.róg1.distance(dane.róg2) < 5)
 							throw new Error("Arena jest za mała");
@@ -772,14 +773,19 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 						
 						
 						new Config("configi/Dungi").ustaw_zapisz(dane.nazwaBossa, dane);
+						edytory.remove(p.getName());
+						p.sendMessage(prefix + "Zapisano Dungeon");
+						usuńMoby();
+						return;
 					} catch (Error e) {
 						p.sendMessage(prefix + e.getMessage());
+						usuńMoby();
 						return;
 					}
-					break;
 				case "anuluj":
 					edytory.remove(p.getName());
-					break;
+					p.sendMessage(prefix + "Anulowano edytowanie dungeonu");
+					return;
 				}
 			wyświetl();
 		}
@@ -937,11 +943,8 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 		
 		if (args.length <= 1)
 			return utab(args, "edytor");
-		else if (args[0].equalsIgnoreCase("edytor"))
-			if (args.length == 2)
-				return utab(args, "-t", "-u");
-			else if (args.length >= 3 && args[1].equalsIgnoreCase("-t"))
-				return utab(args, mapaArenDanych.keySet());
+		else if (args[0].equalsIgnoreCase("edytor") && args.length >= 2)
+			return utab(args, mapaArenDanych.keySet());
 		
 		return null;
 	}

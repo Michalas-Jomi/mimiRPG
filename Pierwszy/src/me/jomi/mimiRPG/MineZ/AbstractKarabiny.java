@@ -282,6 +282,8 @@ public abstract class AbstractKarabiny<T extends AbstractKarabiny.Karabin> exten
 	protected final String configPath;
 	protected final Config config;
 	
+	//protected final Set<String> graczeObrywający = new HashSet<>();
+	
 	private static final List<AbstractKarabiny<?>> klasy = new ArrayList<>();
 	public AbstractKarabiny(String komenda, String config, Class<T> clazz) {
 		super(komenda);

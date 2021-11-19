@@ -120,6 +120,15 @@ Zablokowane Osiągnięcia:
   - 'minecraft:story/.*'
 
 
+##################
+### Targowisko ###
+
+Targowisko:
+  priorityRegionów: 10
+  startowyCzas: 720 # w minutach
+  item: clay_ball
+
+
 ###############################
 ### Automatyczne Wiadomości ###
 

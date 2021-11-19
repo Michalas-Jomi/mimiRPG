@@ -357,6 +357,12 @@ public class AirDrop extends Komenda implements Listener, Przeładowalny, Zegar 
 		Drop drop = (Drop) ev.getEntity().getMetadata(metaId).get(0).value();
 		if (drop != null)
 			drop.rozbij(ev.getEntity().getLocation().getBlockY() + 1);
+		Func.opóznij(1, () -> {
+			Func.wykonajDlaNieNull(ev.getItemDrop(), item -> {
+				if (!item.isDead())
+					item.remove();
+			});
+		});
 		
 	}
 	@EventHandler

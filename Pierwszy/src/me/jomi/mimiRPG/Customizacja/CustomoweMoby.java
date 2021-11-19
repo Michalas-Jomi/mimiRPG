@@ -362,7 +362,7 @@ public class CustomoweMoby implements Listener, Zegar, Przeładowalny {
 		return null;
 	}
 	void zrespMoba(Location loc) {
-		if (loc == null || !(loc.getBlock().getType().isAir() && loc.clone().add(0, 1, 0).getBlock().getType().isAir())) return;
+		if (loc == null || !(!loc.getBlock().isSolid() && !loc.clone().add(0, 1, 0).getBlock().getType().isSolid())) return;
 	
 		String _flagi = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(loc.getWorld()))
 				.getApplicableRegions(BlockVector3.at(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()))

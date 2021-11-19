@@ -272,7 +272,6 @@ public class Drop implements ConfigurationSerializable, Cloneable {
 			return String.format("PustyDrop %s %s-%s x%s +%s +x%s", (szansa * 100) + "%", min_ilość, max_ilość, rolle, (szansaPerPoziom * 100) + "%", rollePerPoziom);
 	}
 	
-	
 	// TODO kod wygenerowany przez eclipse, przeanalizować
 	@Override
 	public int hashCode() {

@@ -27,6 +27,7 @@ public class _WorldGuard {
 	public static StateFlag flagaUżywanieWiadra;
 	public static StateFlag flagaRadiacja;
 	public static StateFlag flagaGod;
+	public static StateFlag flagaTargowisko;
 	
 	public static void włącz() {
 		try {
@@ -36,6 +37,7 @@ public class _WorldGuard {
 				flagaCustomoweMoby	= new StringFlag("CustomoweMoby"),
 				flagaUżywanieWiadra	= new StateFlag("NapelnianieWiadra", true),
 				flagaStawianieBaz	= new StateFlag("StawianieBaz", true),
+				flagaTargowisko 	= new StateFlag("Targowisko", false),
 				flagaRadiacja		= new StateFlag("Radiacja", false),
 				flagaGod			= new StateFlag("god", false),
 				flagaC4				= new StateFlag("C4", false)

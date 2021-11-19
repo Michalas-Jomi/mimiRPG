@@ -181,17 +181,26 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		}
 		
 		public void usuń() {
-			mapaPaneli.remove(napis.getUniqueId());
-			
-			napis.getLocation().getBlock().setType(Material.AIR);
-			napis.remove();
-			tytuł.remove();
+			if (napis != null) {
+				mapaPaneli.remove(napis.getUniqueId());
+				
+				napis.getLocation().getBlock().setType(Material.AIR);
+				napis.remove();
+			}
+			if (tytuł != null)
+				tytuł.remove();
 		}
 	
 		public void odświeżEntityNapisów() {
-			napis = (ArmorStand) Bukkit.getEntity(napis.getUniqueId());
+			UUID uuid = napis.getUniqueId();
+			napis = (ArmorStand) Bukkit.getEntity(uuid);
 			tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
-			odświeżNapis();
+			
+			if (napis == null || tytuł == null) {
+				mapaPaneli.remove(uuid);
+				usuń();
+			} else
+				odświeżNapis();
 		}
 	}
 	

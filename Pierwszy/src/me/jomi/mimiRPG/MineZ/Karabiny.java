@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.MineZ;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -81,7 +82,19 @@ public class Karabiny extends AbstractKarabiny<Karabiny.Karabin> {
 		
 		if (ev.getEntity() instanceof LivingEntity) {
 			LivingEntity mob = (LivingEntity) ev.getEntity();
-			mob.setHealth(mob.getHealth() - karabin.dmgPrzeszycie);
+			
+			Func.wykonajDlaNieNull(mob.getAttribute(Attribute.GENERIC_ARMOR), armor -> {
+				double base = armor.getBaseValue();
+				int nodmgticks = mob.getNoDamageTicks();
+				
+				mob.setNoDamageTicks(0);
+				armor.setBaseValue(base - armor.getValue());
+				
+				mob.damage(karabin.dmgPrzeszycie, ev.getDamager());
+				
+				armor.setBaseValue(base);
+				mob.setNoDamageTicks(nodmgticks);
+			});
 		}
 	}
 }
