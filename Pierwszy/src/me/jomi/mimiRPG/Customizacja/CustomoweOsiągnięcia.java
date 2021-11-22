@@ -59,6 +59,7 @@ import me.jomi.mimiRPG.Mapowany;
 import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.Edytory.EdytorOgólny;
 import me.jomi.mimiRPG.PojedynczeKomendy.Bossy.API.WygranaBossArenaEvent;
+import me.jomi.mimiRPG.PojedynczeKomendy.Dungi.API.WygranaDungArenaEvent;
 import me.jomi.mimiRPG.SkyBlock.DailyAdv;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock;
 import me.jomi.mimiRPG.SkyBlock.SkyBlock.API.PrzeliczaniePunktówWyspyEvent;
@@ -574,6 +575,13 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 	}
 	@EventHandler
 	public void wygyrwanieBossAreny(WygranaBossArenaEvent ev) {
+		Func.wykonajDlaNieNull(mapaBossAren.get(ev.nazwaBossa), lista ->
+			lista.forEach(krotka ->
+				ev.arena.wykonajGraczom(p ->
+					krotka.a.odznacz(p, krotka.b))));
+	}
+	@EventHandler
+	public void wygyrwanieBossAreny(WygranaDungArenaEvent ev) {
 		Func.wykonajDlaNieNull(mapaBossAren.get(ev.nazwaBossa), lista ->
 			lista.forEach(krotka ->
 				ev.arena.wykonajGraczom(p ->

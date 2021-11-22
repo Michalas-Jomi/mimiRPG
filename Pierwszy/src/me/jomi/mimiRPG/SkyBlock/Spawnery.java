@@ -177,7 +177,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 				mat = Material.valueOf((upgr1.mob + "_spawn_egg").toUpperCase());
 			} catch(Throwable e) {}
 			
-			ItemStack item = Func.stwórzItem(mat, "§9Ewolułuj Moba", "§bKoszt: §e" + Func.DoubleToString(upgr1.cena) + "$", "§bAktualnie: §e" + mob, "§bNastępny: §e" + upgr1.mob, "§bSzansa: §e" + Func.zaokrąglij(szansaEwolucji, 2) * 100 + "%");
+			ItemStack item = Func.stwórzItem(mat, "§9Ewolułuj Moba", "§bKoszt: §e" + Func.DoubleToString(upgr1.cena) + "$", "§bAktualnie: §e" + mob, "§bNastępny: §e" + upgr1.mob, "§bSzansa: §e" + Func.zaokrąglij(upgr1.szansaEwolucji, 2) * 100 + "%");
 			if (upgr1.ulepszenia.id != this.ulepszenia.id) {
 				Func.dodajLore(item, "§cZapomni dotychczasowe ulepszenia");
 				resetowaćNastępny = true;

@@ -158,7 +158,7 @@ public abstract class Func {
 		return Func.wykonajWszystkim(meta.lore(), Func::fromComponent);
 	}
 	public static ItemMeta setLore(ItemMeta meta, List<String> lore) {
-		meta.lore(Func.wykonajWszystkim(lore, Func::toComponent));
+		meta.lore((lore == null || lore.isEmpty()) ? null : Func.wykonajWszystkim(lore, Func::toComponent));
 		return meta;
 	}
 	public static String getTitle(InventoryView inv) {

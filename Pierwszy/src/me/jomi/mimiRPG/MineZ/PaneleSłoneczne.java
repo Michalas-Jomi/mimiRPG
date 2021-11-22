@@ -192,21 +192,18 @@ public class PaneleSłoneczne implements Listener, Zegar, Przeładowalny {
 		}
 	
 		public void odświeżEntityNapisów() {
-			UUID uuid = napis.getUniqueId();
-			napis = (ArmorStand) Bukkit.getEntity(uuid);
-			tytuł = (ArmorStand) Bukkit.getEntity(tytuł.getUniqueId());
-			
-			if (napis == null || tytuł == null) {
-				mapaPaneli.remove(uuid);
-				usuń();
-			} else
+			Func.wykonajDlaNieNull(Bukkit.getEntity(napis.getUniqueId()), _napis -> Func.wykonajDlaNieNull(Bukkit.getEntity(tytuł.getUniqueId()), _tytuł -> {
+				napis = (ArmorStand) _napis;
+				tytuł = (ArmorStand) _tytuł;
+				
 				odświeżNapis();
+			}));
 		}
 	}
 	
 	
 	public PaneleSłoneczne() {
-		Bukkit.getWorlds().forEach(world -> Func.forEach(world.getLoadedChunks(), this::sprawdzChunk));
+		Func.opóznij(1, () -> Bukkit.getWorlds().forEach(world -> Func.forEach(world.getLoadedChunks(), this::sprawdzChunk)));
 	}
 	
 	

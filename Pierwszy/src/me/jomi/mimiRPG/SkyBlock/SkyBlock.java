@@ -682,7 +682,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					return Func.powiadom(p, prefix + "Nie możesz postawić więcej leji");
 				hopery++;
 			} else if (blok == Material.SPAWNER) {
-				if (spawnery + 1 > Ulepszenia.limityBloków[poziomy.limityBloków].wartość / 2)
+				if (spawnery + 1 > Ulepszenia.limityBloków[poziomy.limityBloków].wartość / 4)
 					return Func.powiadom(p, prefix + "Nie możesz postawić więcej spawnerów");
 				spawnery++;
 			} else
@@ -2095,8 +2095,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			inv.setItem(21, dajItemekInvUlepszenia("limityBloków", Material.HOPPER, "Limity Bloków",
 					"&aZwiększa limity bloków na wyspie",
-					limit -> String.format("Aktualny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 2),
-					limit -> String.format("Następny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 2)));
+					limit -> String.format("Aktualny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 4),
+					limit -> String.format("Następny limit: &3%s &aleji &3%s &aspawnerów", limit, limit / 4)));
 
 			inv.setItem(22,
 					dajItemekInvUlepszenia("magazyn", Material.CHEST, "Magazyn", "&aZwiększa pojemność magazynu wyspy",

@@ -88,6 +88,8 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		
 		@Mapowane ItemStack potrzebnyItemUpgradu;
 		@Mapowane int ilośćPotrzebnegoItemuUpgradu;
+		
+		@Mapowane List<DropMiniona> produkowaneItemy;
 	}
 	public static class MinionDane extends Mapowany {
 		static final Map<String, MinionDane> mapa = new HashMap<>();
@@ -96,7 +98,6 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		@Mapowane String skinurl;
 		@Mapowane KolorRGB ubranko;
 		@Mapowane String nazwa;
-		@Mapowane List<DropMiniona> produkowaneItemy;
 		@Mapowane(nieTwórz = true) Material wymaganyBlok;
 		
 		@Override
@@ -111,9 +112,6 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			tag.setByte("lvl", (byte) 0);
 			tag.set("itemy", new NBTTagList());
 			NMS.nms(itemLvl0).getTag().set("minion", tag);
-			
-			if (produkowaneItemy.isEmpty())
-				Main.warn(Func.msg("Minion %s nie produkuje żadnych itemów!", nazwa));
 		}
 		ItemStack itemLvl0;
 		public ItemStack itemLvl0() {
@@ -241,15 +239,17 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			
 			Set<Integer> pełne = new HashSet<>();
 			
+			List<DropMiniona> dropItemy = produkowaneItemy();
+			
 			while (tickiPracy-- > 0)
-				for (int i = 0; i < dane.produkowaneItemy.size(); i++) {
+				for (int i = 0; i < dropItemy.size(); i++) {
 					if (pełne.contains(i))
 						continue;
-					DropMiniona drop = dane.produkowaneItemy.get(i);
+					DropMiniona drop = dropItemy.get(i);
 					if (Func.losuj(drop.szansa))
 						if (!inv.addItem(drop.item).isEmpty()) {
 							pełne.add(i);
-							if (pełne.size() == dane.produkowaneItemy.size()) {
+							if (pełne.size() == dropItemy.size()) {
 								ustawPełny(true);
 								return;
 							}
@@ -504,7 +504,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 						e -> e instanceof Player).forEach(gracz -> NMS.nms((Player) gracz).b.sendPacket(packet));
 				AtomicBoolean pełny = new AtomicBoolean(true);
 				AtomicBoolean cośDropnięte = new AtomicBoolean(false);
-				dane.produkowaneItemy.forEach(drop -> {
+				produkowaneItemy().forEach(drop -> {
 					if (Func.losuj(drop.szansa)) {
 						cośDropnięte.set(true);
 						pełny.set(pełny.get() && !inv.addItem(drop.item).isEmpty());
@@ -591,7 +591,7 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 			
 			lore.add(" ");
 			lore.add("§7Poziom§8: §e" + (lvl + 1));
-			lore.add("§7Pracuje co§8: §e" + lvl().slotyEq + "s");
+			lore.add("§7Pracuje co§8: §e" + lvl().czas + "s");
 			lore.add("§7Ekwipunek§8: §e" + lvl().slotyEq + " slotów");
 			
 			Func.setLore(meta, lore);
@@ -621,6 +621,19 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		
 		public MinionDaneLvl lvl() {
 			return dane.lvle.get(lvl);
+		}
+		
+		public List<DropMiniona> produkowaneItemy() {
+			int lvl = this.lvl;
+			while (lvl >= 0) {
+				List<DropMiniona> drop = dane.lvle.get(lvl).produkowaneItemy;
+				
+				if (drop != null)
+					return drop;
+				
+				lvl--;
+			}
+			return new ArrayList<>();
 		}
 	
 	

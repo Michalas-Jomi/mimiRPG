@@ -3,6 +3,7 @@ package me.jomi.mimiRPG.SkyBlock;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -26,6 +27,32 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 
 @Moduł
 public class RangiWysp extends Komenda implements Przeładowalny, Listener {
+	public static class Ranga {
+		final double pkt;
+		final String nazwa;
+		final List<String> cmd_stracone;
+		final List<String> cmd_zdobyty;
+		
+		public Ranga(String nazwa, double pkt, List<String> cmd_stracone, List<String> cmd_zdobyty) {
+			this.pkt = pkt;
+			this.nazwa = nazwa;
+			this.cmd_zdobyty = Func.nieNull(cmd_zdobyty);
+			this.cmd_stracone = Func.nieNull(cmd_stracone);
+		}
+		
+		public void strać(String gracz) {
+			Bukkit.getScheduler().runTask(Main.plugin, () -> 
+					cmd_stracone.forEach(cmd -> 
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%gracz%", gracz))));
+		}
+		public void zdobądz(String gracz) {
+			Bukkit.getScheduler().runTask(Main.plugin, () -> 
+					cmd_zdobyty.forEach(cmd -> 
+							Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%gracz%", gracz))));
+		}
+	}
+	
+	
 	public RangiWysp() {
 		super("rangiWysp");
 	}
@@ -33,7 +60,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		return Main.włączonyModół(SkyBlock.class) && Main.chat != null;
 	}
 
-	private final List<Krotka<String, Double>> rangi = Lists.newArrayList();
+	private final List<Ranga> rangi = Lists.newArrayList();
 
 	// EventHandler
 	
@@ -48,9 +75,15 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			if (suff.equals(aktsuff))
 				return;
 			
+			Ranga stara = ranga(aktsuff);
+			Ranga nowa = ranga(suff);
+			
 			for (String członek : ev.wyspa.członkowie.keySet()) {
 				OfflinePlayer p = Func.graczOffline(członek);
 				Main.chat.setPlayerSuffix(null, p, suff);
+				
+				stara.strać(p.getName());
+				nowa.zdobądz(p.getName());
 				
 				ustawGrupe(p, suff);
 			}
@@ -81,10 +114,28 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			String suff = Main.chat.getPlayerSuffix(null, randCzłonek);
 			Main.chat.setPlayerSuffix(null, ev.p, suff);
 			ustawGrupe(ev.p, suff);
+			
+			Ranga ranga = ranga(suff);
+			int index = index(ranga);
+			
+			for (int i=0; i < index; i++) {
+				rangi.get(i).zdobądz(ev.p.getName());
+				rangi.get(i).strać(ev.p.getName());
+			}
+			rangi.get(index).zdobądz(ev.p.getName());
+			
 		}).start();
 	}
 	
 	private void ustawGrupe(OfflinePlayer p, String ranga) {
+		if (ranga == null)
+			Func.wykonajDlaNieNull(ranga(p), r -> {
+				int i = index(r);
+				while (i >= 0)
+					rangi.get(i--).strać(p.getName());
+			});
+		
+		
 		Func.forEach(Main.perms.getPlayerGroups(null, p), group -> {
 			if (group.startsWith("sky-"))
 				Main.perms.playerRemoveGroup(null, p, group);
@@ -93,13 +144,27 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 			Main.perms.playerAddGroup(null, p, "sky-" + ranga);
 	}
 	
-	
+	int index(Ranga ranga) {
+		for (int i=0; i < rangi.size(); i++)
+			if (rangi.get(i).nazwa.equals(ranga.nazwa))
+				return i;
+		return -1;
+	}
+	Ranga ranga(OfflinePlayer p) {
+		return ranga(Main.chat.getPlayerSuffix(null, p));
+	}
+	Ranga ranga(String suffix) {
+		for (Ranga ranga : rangi)
+			if (ranga.nazwa.equals(suffix))
+				return ranga;
+		return null;
+	}
 	String ranga(double pkt) {
-		String ost = rangi.isEmpty() ? "" : rangi.get(0).a;
-		for (Krotka<String, Double> krotka : rangi) {
-			if (krotka.b > pkt)
+		String ost = rangi.isEmpty() ? "" : rangi.get(0).nazwa;
+		for (Ranga ranga : rangi) {
+			if (ranga.pkt > pkt)
 				break;
-			ost = krotka.a;
+			ost = ranga.nazwa;
 		}
 		return ost;
 	}
@@ -112,9 +177,11 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		rangi.clear();
 		Double ost = null;
 		boolean info = true;
-		for (Entry<String, Object> en : Main.ust.sekcja("RangiWysp").getValues(false).entrySet())
-			if (!en.getKey().equals("prefix")) {
-				double w = Func.DoubleObj(en.getValue());
+		ConfigurationSection sekcja = Main.ust.sekcja("RangiWysp");
+		for (String key : sekcja.getValues(false).keySet())
+			if (!key.equals("prefix")) {
+				double w = Func.DoubleObj(sekcja.get(key + ".pkt"));
+				
 				if (info) {
 					if (ost != null && ost > w) {
 						Main.warn("Nieposortowane RangiWysp w ustawienia.yml. Należy je posortować dla poprawnego funkcjonowania");
@@ -122,7 +189,7 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 					}
 					ost = w;
 				}
-				rangi.add(new Krotka<>(prefix + en.getKey(), w));
+				rangi.add(new Ranga(prefix + key, w, sekcja.getStringList(key + ".cmd_stracone"), sekcja.getStringList(key + ".cmd_zdobyty")));
 			}
 	}
 	@Override

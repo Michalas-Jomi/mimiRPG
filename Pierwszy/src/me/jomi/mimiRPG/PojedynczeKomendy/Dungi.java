@@ -343,7 +343,6 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				porażka();
 			} else
 				Func.opóznij(20, this::timer);
-			
 		}
 		
 		public void sprawdzNastępnyPokój() {
@@ -395,7 +394,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 		public void porażka() {
 			if (arenaDane.broadcastPorażki)
 				Func.broadcast(prefix + Func.msg("Drużyna szaleńców %s poległa na polu chwały przeciwko Bossowi %s",
-						graczeStr, boss.getDisplayName()));
+						graczeStr, boss == null ? arenaDane.nazwaBossa : boss.getDisplayName()));
 			Bukkit.getPluginManager().callEvent(new PrzegranaDungArenaEvent(this));
 			zakończ();
 		}
