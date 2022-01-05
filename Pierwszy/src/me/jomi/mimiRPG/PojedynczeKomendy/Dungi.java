@@ -111,6 +111,8 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 	
+	static final Map<String, Location> tpBack = new HashMap<>();
+	
 	public static class ArenaDane extends Mapowany {
 		public static class Pokój extends Mapowany {
 			public static class Mob extends Mapowany {
@@ -280,6 +282,11 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			
 			spawnGraczy.clone().add(0, -1, 0).getBlock().setType(Material.BEDROCK, false);
 			gracze.forEach(p -> {
+				tpBack.put(p.getName(), p.getLocation());
+				
+				p.setFlying(false);
+				p.setAllowFlight(false);
+				
 				p.addScoreboardTag(Main.tagBlokowanieKomendy);
 				Func.ustawMetadate(p, meta, this);
 				p.teleport(spawnGraczy);
@@ -352,6 +359,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			następnyPokój();
 		}
 		private void następnyPokój() {
+			if (zakończona) return;
 			moby.clear();
 			if (pokój >= 0) {
 				arenaDane.pokoje.get(pokój).otwórzDrzwi(this);
@@ -364,6 +372,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				arenaDane.pokoje.get(pokój).zrespMoby(this);
 		}
 		private void walkaZBossem() {
+			if (zakończona) return;
 			this.boss = dajMythicMob(arenaDane.nazwaBossa).spawn(BukkitAdapter.adapt(przesuń(arenaDane.spawnBossa)), 1);
 			Func.ustawMetadate(this.boss.getEntity().getBukkitEntity(), metaArenaMob, this);
 			powiadomGraczy("Boss Dungeonu został przywołany");
@@ -399,20 +408,23 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			zakończ();
 		}
 		public void zakończ() {
-			Main.log(prefix + Func.msg("arena graczy %s przeciwko %s zakończyła się", graczeStr, boss.getDisplayName()));
+			Main.log(prefix + Func.msg("arena graczy %s przeciwko %s zakończyła się", graczeStr, boss == null ? arenaDane.nazwaBossa : boss.getDisplayName()));
 			
 			zakończona = true;
 			
 			areny.remove(this);
 			
 			usuńMoba(boss);
-			moby.forEach(Arena::usuńMoba);
+			while (moby.size() > 0)
+				usuńMoba(moby.remove(0));
 			
 			gracze.forEach(p -> zapomnij(p, false));
 			
 			arenaDane.zajęte.remove(przesunięcieLoc);
 		}
 		private static void usuńMoba(ActiveMob mob) {
+			if (mob == null) return;
+			if (mob.isDead()) return;
 			mob.setDespawned();
 			Func.wykonajDlaNieNull(mob.getEntity(), e -> {
 				e.remove();
@@ -451,7 +463,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 					}
 			p.removeScoreboardTag(Main.tagBlokowanieKomendy);
 			p.removeMetadata(meta, Main.plugin);
-			Func.tpSpawn(p);
+			p.teleport(tpBack.remove(p.getName()));
 			if (bbCzas != null)
 				bbCzas.removePlayer(p);
 		}
@@ -474,6 +486,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			return p.hasMetadata(meta) ? (Arena) p.getMetadata(meta).get(0).value() : null;
 		}
 		public void zdespawnowany(MythicMobDespawnEvent ev) {
+			if (zakończona) return; 
 			Main.log(prefix + Func.msg("boss %s z areny graczy %s został zdespawnowany!", ev.getMob().getDisplayName(), graczeStr));
 			zakończ();
 			graczeStart.forEach(p -> {

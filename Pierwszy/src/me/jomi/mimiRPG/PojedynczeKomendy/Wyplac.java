@@ -80,11 +80,18 @@ public class Wyplac extends Komenda implements Listener {
 	@EventHandler
 	public void użycie(PlayerInteractEvent ev) {
 		if (ev.getAction().toString().startsWith("LEFT")) return;
+		
 		Player p = ev.getPlayer();
 		ItemStack item = p.getInventory().getItemInMainHand();
 		if (!item.hasItemMeta()) return;
+		
 		ItemMeta meta = item.getItemMeta();
-		if (item.getType().equals(Material.PAPER) && meta.hasDisplayName() && Func.getDisplayName(meta).equals("§9§lBanknot§2") && meta.hasLore()) {
+		if (
+				item.getType().equals(Material.PAPER) && 
+				meta.hasDisplayName() && 
+				Func.getDisplayName(meta).equals("§9§lBanknot") && 
+				meta.hasLore()
+				) {
 			List<String> lore = Func.getLore(meta);
 			if (lore.size() == 2 && lore.get(0).equals("§bUżyj Prawym Przyciskiem Myszy")) {
 				double ile = Func.Double(lore.get(1).split(" ")[1].replace(",", ""), 0);

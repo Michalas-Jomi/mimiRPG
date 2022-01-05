@@ -727,8 +727,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			try {
 				for (int i = 1; i < fields.length - 1; i++)
 					fields[i].set(perm, kod.charAt(i - 1) == '1');
-				for (int i = 0; i < warpy.size(); i++)
-					perm.warpy.add(kod.charAt(fields.length + i - 2) == '1');
+				for (int i = 0; i < warpy.size(); i++) {
+					try {
+						perm.warpy.add(kod.charAt(fields.length + i - 2) == '1');
+					} catch (IndexOutOfBoundsException e) {
+						perm.warpy.add(true);
+						Func.opóznij(1, () -> odświeżKodPermisji(perm, nazwaKod + "1"));
+						Main.warn("Brak permisji dla warpa na wyspie o id:" + id + " \"" + nazwaKod + "\"(" + kod.length() + " znaków kodu) warpy: " + perm.warpy.size() + "/" + warpy.size() + ", przyznawanie dostępu");
+					}
+				}
 			} catch (Throwable e) {
 				Main.warn("coś nie tak z kodem na wyspie o id:" + id + " \"" + nazwaKod + "\"(" + kod.length() + " znaków kodu) warpy: " + perm.warpy.size() + "/" + warpy.size() + " permisje: " + (fields.length - 2));
 				odświeżKodPermisji(perm);

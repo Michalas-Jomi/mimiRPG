@@ -1,7 +1,6 @@
 package me.jomi.mimiRPG.SkyBlock;
 
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -209,12 +208,11 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		String prefix = "§6" + sekcja.getString("prefix", "§a§l ");
 		sender.sendMessage("§a§n|< §c-§l<>§c- §6Rangi wysp §c-§l<>§c- §a§n>|");
 		int licz = 0;
-		for (Entry<String, Object> entry : sekcja.getValues(false).entrySet())
-			if (!entry.getKey().equals("prefix")) {
-				if (licz != 0 && licz++ % 3 == 0)
-					sender.sendMessage(" ");
-				sender.sendMessage(prefix + entry.getKey() + "§8: §e" + Func.DoubleToString(Func.DoubleObj(entry.getValue())));
-			}
+		for (Ranga ranga : rangi) {
+			if (licz != 0 && licz++ % 3 == 0)
+				sender.sendMessage(" ");
+			sender.sendMessage(prefix + ranga.nazwa + "§8: §e" + Func.DoubleToString(ranga.pkt));
+		}
 		return true;
 	}
 }

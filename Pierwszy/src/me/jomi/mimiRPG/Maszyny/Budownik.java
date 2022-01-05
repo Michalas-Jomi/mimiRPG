@@ -1,8 +1,10 @@
 package me.jomi.mimiRPG.Maszyny;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -31,10 +33,12 @@ import me.jomi.mimiRPG.Moduły.Moduł;
 import me.jomi.mimiRPG.util.Config;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
+import me.jomi.mimiRPG.util.Krotka;
+import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
-public class Budownik extends Komenda implements Listener, Zegar {
+public class Budownik extends Komenda implements Listener, Zegar, Przeładowalny {
 	public static final String prefix = Func.prefix("Budownik");
 	private final ItemStack itemSkrzynia = Func.połysk(Func.stwórzItem(Material.BARREL, "&6&lBudownik",
 		"&bTo jest jeden z rogów Budownika", "&bDrugi otrzymasz po postawieniu tego",
@@ -45,6 +49,7 @@ public class Budownik extends Komenda implements Listener, Zegar {
 	
 	static final HashMap<String, Location> mapa = new HashMap<>();
 	public static final List<_Budownik> budowniki = Lists.newArrayList();
+	public static final Set<Material> blacklista = EnumSet.noneOf(Material.class);
 	
 	static final Config config = new Config("configi/Budowniki");
 	public Budownik() {
@@ -163,6 +168,23 @@ public class Budownik extends Komenda implements Listener, Zegar {
 				}
 		}
 	}
+	
+	
+	@Override
+	public void przeładuj() {
+		blacklista.clear();
+		Main.ust.wczytajListe("Budownik.blacklista").forEach(mat -> {
+			try {
+				blacklista.add(Func.StringToEnum(Material.class, mat));
+			} catch (Throwable e) {
+				Main.warn("Niepoprawny blok na blackliście budownika: " + mat);
+			}
+		});
+	}
+	@Override
+	public Krotka<String, Object> raport() {
+		return Func.r("Budowniki / blacklista", budowniki.size() + "/" + blacklista.size());
+	}
 }
 
 class _Budownik {
@@ -234,7 +256,7 @@ class _Budownik {
 		if (koniec) return;
 		Inventory inv = ((Barrel) skrzynia.getBlock().getState()).getInventory();
 		for (ItemStack item : inv)
-			if (item != null && item.getType().isBlock() && !item.getType().toString().endsWith("SHULKER_BOX") && !item.getItemMeta().hasEnchants()) {
+			if (item != null && item.getType().isBlock() && !item.getItemMeta().hasEnchants() && !Budownik.blacklista.contains(item.getType())) {
 				akt.getBlock().setType(item.getType());
 				item.setAmount(item.getAmount() - 1);
 				akt.getWorld().spawnParticle(Particle.CLOUD, akt, 20, .5, .5, .5, .05);
