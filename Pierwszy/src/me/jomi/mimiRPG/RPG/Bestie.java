@@ -207,7 +207,7 @@ public class Bestie extends Komenda implements Listener, Przeładowalny, Zegar {
 			mob.setCustomName(CraftChatMessage.fromStringOrNull(nazwa));
 			mob.setCustomNameVisible(true);
 			
-			((CraftWorld) loc.getWorld()).addEntity(mob, SpawnReason.CUSTOM, null);
+			((CraftWorld) loc.getWorld()).addEntity(mob, SpawnReason.CUSTOM, null, false);
 
 			LivingEntity bukkit = (LivingEntity) mob.getBukkitEntity();
 			

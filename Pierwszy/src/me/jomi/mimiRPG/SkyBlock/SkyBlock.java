@@ -2986,12 +2986,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void dołączanieDoGry(PlayerJoinEvent ev) {
 		Player p = ev.getPlayer();
-		Func.wykonajDlaNieNull(Wyspa.wczytaj(p.getLocation()), wyspa -> {
-			if (wyspa.członkowie.containsKey(p.getName()))
-				Func.tpSpawn(p);
-			else
-				wyspa.ustawBorder(p);
-		});
+		Func.wykonajDlaNieNull(Wyspa.wczytaj(p.getLocation()), wyspa -> wyspa.ustawBorder(p));
 	}
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void tepanie(PlayerTeleportEvent ev) {

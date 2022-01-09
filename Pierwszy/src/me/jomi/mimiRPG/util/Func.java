@@ -106,6 +106,7 @@ import io.papermc.paper.adventure.DisplayNames;
 import io.papermc.paper.adventure.PaperAdventure;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public abstract class Func {
 	public static String prefix(String nazwa) {
@@ -158,9 +159,10 @@ public abstract class Func {
 		return Func.wykonajWszystkim(meta.lore(), Func::fromComponent);
 	}
 	public static ItemMeta setLore(ItemMeta meta, List<String> lore) {
-		meta.lore((lore == null || lore.isEmpty()) ? null : Func.wykonajWszystkim(lore, Func::toComponent));
+		meta.setLore((lore == null || lore.isEmpty()) ? null : lore);
 		return meta;
 	}
+	
 	public static String getTitle(InventoryView inv) {
 		return fromComponent(inv.title());
 	}
@@ -172,8 +174,13 @@ public abstract class Func {
 		}
 	}
 
-	public static TextComponent toComponent(String str) {
-		return PaperAdventure.LEGACY_SECTION_UXRC.deserialize(str);
+	public static Component toComponent(String str) {
+		TextComponent comp = PaperAdventure.LEGACY_SECTION_UXRC.deserialize(str);
+		Func.forEach(TextDecoration.values(), dec -> {
+			if (comp.decoration(dec) == TextDecoration.State.NOT_SET)
+				comp.decoration(dec, TextDecoration.State.FALSE);
+		});
+		return comp;
 	}
 	public static String fromComponent(Component component) {
 		return PaperAdventure.LEGACY_SECTION_UXRC.serialize(component);
@@ -807,6 +814,31 @@ public abstract class Func {
 			set.accept(slot, null);
 		} else
 			set.accept(slot, item);
+	}
+	public static boolean zabierzItem(Inventory inv, ItemStack item) {
+		// nie testowane
+		int doZabrania = item.getAmount();
+		for (int i=0; i < inv.getSize(); i++) {
+			ItemStack item2 = inv.getItem(i);
+			if (item.isSimilar(item2)) {
+				if (item2.getAmount() >= doZabrania) {
+					item2.setAmount(item2.getAmount() - doZabrania);
+					doZabrania -= item2.getAmount();
+					inv.setItem(i, item2.getAmount() <= 0 ? null : item2);
+				} else {
+					inv.setItem(i, null);
+					doZabrania -= item2.getAmount();
+				}
+				
+				if (doZabrania <= 0)
+					return true;
+			}
+		}
+		
+		item = item.clone();
+		item.setAmount(item.getAmount() - doZabrania);
+		inv.addItem(item);
+		return false;
 	}
 	public static boolean posiada(Inventory inv, List<ItemStack> itemy) {
 		List<ItemStack> potrzebne = Lists.newArrayList();

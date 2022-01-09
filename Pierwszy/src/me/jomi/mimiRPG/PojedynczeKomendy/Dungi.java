@@ -496,7 +496,6 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			});
 		}
 	
-	
 		@Override
 		public int hashCode() {
 			return Objects.hash(przesunięcieLoc, arenaDane.nazwaBossa, graczeStart);
@@ -830,7 +829,8 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 				if (arena.przepustka != null) {
 					if (!p.getInventory().contains(arena.przepustka))
 						return;
-					p.getInventory().remove(arena.przepustka);
+					//Func.zabierz(p.getInventory(), Lists.newArrayList(arena.przepustka));
+					Func.zabierzItem(p.getInventory(), arena.przepustka);
 				}
 				arena.nowaArena(Party.dajGraczyParty(p));
 			} catch (AssertionError e) {

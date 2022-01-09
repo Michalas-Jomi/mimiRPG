@@ -229,8 +229,10 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				int sprzedane = limitStart - limit;
 				Main.econ.depositPlayer(p, sprzedane * cena);
 				
-				p.sendMessage(Func.msg(prefix + "Sprzedałeś %s x%s za %s$", Func.nazwaItemku(finalnyItem), sprzedane, sprzedane * cena));
-				Main.log(prefix + "%s sprzedał %s x%s za %s$", Func.getDisplayName(p), Func.nazwaItemku(finalnyItem), sprzedane, sprzedane * cena);
+				if (sprzedane > 0) {
+					p.sendMessage(Func.msg(prefix + "Sprzedałeś %s x%s za %s$", Func.nazwaItemku(finalnyItem), sprzedane, sprzedane * cena));
+					Main.log(prefix + "%s sprzedał %s x%s za %s$", Func.getDisplayName(p), Func.nazwaItemku(finalnyItem), sprzedane, sprzedane * cena);
+				}
 			};
 			Consumer<Integer> kup = limit -> {
 				double cena = kwota.apply(0);
@@ -252,8 +254,10 @@ public class Sklep extends Komenda implements Listener, Przeładowalny {
 				int kupione = limitStart - limit;
 				Main.econ.withdrawPlayer(p, kupione * cena);
 				
-				p.sendMessage(Func.msg(prefix + "Kupiłeś %s x%s za %s$", Func.nazwaItemku(finalnyItem), kupione, kupione * cena));
-				Main.log(prefix + "%s kupił %s x%s za %s$", Func.getDisplayName(p), Func.nazwaItemku(finalnyItem), kupione, kupione * cena);
+				if (kupione > 0) {
+					p.sendMessage(Func.msg(prefix + "Kupiłeś %s x%s za %s$", Func.nazwaItemku(finalnyItem), kupione, kupione * cena));
+					Main.log(prefix + "%s kupił %s x%s za %s$", Func.getDisplayName(p), Func.nazwaItemku(finalnyItem), kupione, kupione * cena);
+				}
 			};
 			switch(typ) {
 			case LEFT:

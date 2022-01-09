@@ -2,6 +2,9 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -28,14 +31,19 @@ import me.jomi.mimiRPG.util.Przeładowalny;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 @Moduł
-public class Targ extends Komenda implements Listener, Przeładowalny{
+public class Targ extends Komenda implements Listener, Przeładowalny {
+	private static ItemStack itemBrak = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§6§2 ", null);
+	private static ItemStack itemBrakTowaru = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§6§2 ", null);
+	private static ItemStack itemOdśwież = Func.dajGłówkę("§6Odśwież", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0=");
+	private static ItemStack itemTowary = Func.dajGłówkę("§6Pokaż tylko własne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0=");
+	private static ItemStack itemPoprzedniaStrona = Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Poprzednia strona", null);
+	private static ItemStack itemNastępnaStrona = Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Następna strona",	  null);
 	public static Config config = new Config("configi/targ");
 	private static List<ItemStack> Itemy = Lists.newArrayList();
 	private static HashMap<String, List<ItemStack>> menu = new HashMap<>();
 	private static HashMap<String, Integer> strony = new HashMap<>();
 	public  static String prefix = Func.prefix("Targ");
 	private static List<String> gracze;
-	public static int limitOfert = 5;
 	public static int maxCena = 10_000_000;
 	public Targ() {
 	    super("wystaw", prefix + "/wystaw <cena> [ilość]");
@@ -93,16 +101,16 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		Inventory inv = Func.createInventory(p, 6*9,"§6§lTarg");
 		List<ItemStack> lista = Lists.newArrayList();
 		lista.addAll(Itemy);
+		lista = Lists.reverse(lista);
 		menu.put(p.getName(), lista);
 		
-		ItemStack brak = Func.stwórzItem(Material.BLACK_STAINED_GLASS_PANE, 1, "§6§2 ", null);
-		inv.setItem(49, Func.dajGłówkę("§6Odśwież", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg4N2NjMzg4YzhkY2ZjZjFiYThhYTVjM2MxMDJkY2U5Y2Y3YjFiNjNlNzg2YjM0ZDRmMWMzNzk2ZDNlOWQ2MSJ9fX0="));
-		inv.setItem(46, Func.dajGłówkę("§6Pokaż tylko własne towary", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlZmE1YWM4NmVkYjdhYWQyNzFmYjE4YjRmNzg3ODVkMGY0OWFhOGZjNzMzM2FlMmRiY2JmY2E4NGIwOWI5ZiJ9fX0="));
-		inv.setItem(45, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Poprzednia strona", null));
-		inv.setItem(53, Func.stwórzItem(Material.WRITABLE_BOOK, 1, "§6Następna strona",	  null));
+		inv.setItem(49, itemOdśwież);
+		inv.setItem(46, itemTowary);
+		inv.setItem(45, itemPoprzedniaStrona);
+		inv.setItem(53, itemNastępnaStrona);
 		for (int i=47; i<9*6-1; i++)
 			if (inv.getItem(i) == null)
-				inv.setItem(i, brak);
+				inv.setItem(i, itemBrak);
 		p.openInventory(inv);
 		zmieńStrone(p, 0, true);
 		return true;
@@ -114,10 +122,9 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		if (!pierwsze)
 			if (strona*45 > max) return;
 		Inventory inv = p.getOpenInventory().getInventory(0);
-		ItemStack brakTowaru = Func.stwórzItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1, "§6§2 ", null);
 		strony.put(p.getName(), strona);
 		for (int i=0; i<5*9; i++)
-			inv.setItem(i, brakTowaru);
+			inv.setItem(i, itemBrakTowaru);
 		for (int i=strona*45; i<(strona+1)*45; i++) {
 			if (i >= max)
 				break;
@@ -134,7 +141,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		int len = lore.size();
 		String sprzedawca = lore.get(len-1).split(" ")[1].substring(2);
 		if (sprzedawca.equals(p.getName())) {
-			wycofajItem(p, item);
+			Main.panelTakNie(p, "§4§lCzy napewno chcesz wycofać ofertę na §c" + Func.nazwaItemku(item), "§aTak", "§cNie", () -> wycofajItem(p, item), () -> {});
 			return;
 		}
 		String s = lore.get(len-2).split(" ")[1];
@@ -148,28 +155,31 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			p.sendMessage(prefix + "Nie masz wolnego miejsca w ekwipunku");
 			return;
 		}
-		EconomyResponse r = Main.econ.withdrawPlayer(p, cena);
-		Main.econ.depositPlayer(sprzedawca, cena);
-        if(r.transactionSuccess()) {
-        	p.sendMessage(String.format(prefix + "Kupiłeś przedmiot od gracza §e%s§6 za §e%s$§6 zostało ci §e%s$", sprzedawca, Func.DoubleToString(r.amount), Func.DoubleToString(r.balance)));
-        	Player sp = Bukkit.getPlayer(sprzedawca);
-        	if (sp != null && sp.isOnline())
-        		sp.sendMessage(String.format(prefix + "Gracz §e%s§6 kupił od ciebie przedmiot za §e%s$", p.getName(), Func.DoubleToString(r.amount)));
-        } else {
-            p.sendMessage(String.format(prefix + "Wystąpił problem: §c%s", r.errorMessage));
-            return;
-        }
-        Itemy.remove(item);
-        List<ItemStack> of = (List<ItemStack>) config.wczytaj(sprzedawca);
-        of.remove(item);
-		if (of.size() == 0) {
-			gracze.remove(sprzedawca);
-			config.ustaw("gracze", gracze);
-			config.ustaw_zapisz(sprzedawca, null);
-		} else
-			config.ustaw_zapisz(sprzedawca, of);
-		p.getInventory().addItem(odtwórzItem(item));
-		odświeżOferte(p);
+		
+		Main.panelTakNie(p, "§4§lCzy napewno chcesz kupić §c" + Func.nazwaItemku(item), "§aTak§6, zapłacę " + cena + "$", "§cNie§6, dziękuję", () -> {
+			EconomyResponse r = Main.econ.withdrawPlayer(p, cena);
+			Main.econ.depositPlayer(sprzedawca, cena);
+	        if(r.transactionSuccess()) {
+	        	p.sendMessage(String.format(prefix + "Kupiłeś przedmiot od gracza §e%s§6 za §e%s$§6 zostało ci §e%s$", sprzedawca, Func.DoubleToString(r.amount), Func.DoubleToString(r.balance)));
+	        	Player sp = Bukkit.getPlayer(sprzedawca);
+	        	if (sp != null && sp.isOnline())
+	        		sp.sendMessage(String.format(prefix + "Gracz §e%s§6 kupił od ciebie przedmiot za §e%s$", p.getName(), Func.DoubleToString(r.amount)));
+	        } else {
+	            p.sendMessage(String.format(prefix + "Wystąpił problem: §c%s", r.errorMessage));
+	            return;
+	        }
+	        Itemy.remove(item);
+	        List<ItemStack> of = (List<ItemStack>) config.wczytaj(sprzedawca);
+	        of.remove(item);
+			if (of.size() == 0) {
+				gracze.remove(sprzedawca);
+				config.ustaw("gracze", gracze);
+				config.ustaw_zapisz(sprzedawca, null);
+			} else
+				config.ustaw_zapisz(sprzedawca, of);
+			p.getInventory().addItem(odtwórzItem(item));
+			odświeżOferte(p);
+		}, () -> {});
 	}
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	private static void wystawItem(Player p, double cena) {
@@ -184,7 +194,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		List<ItemStack> oferty = (List<ItemStack>) config.wczytaj(nick);
 		if (oferty == null)
 			oferty = Lists.newArrayList();
-		if (oferty.size() >= limitOfert)
+		if (oferty.size() >= limitOfert(p))
 			{p.sendMessage(prefix + "Osiągnięto już limit ofert"); return;}
 		if (!gracze.contains(nick)) {
 			gracze.add(nick);
@@ -196,6 +206,18 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 		config.ustaw_zapisz(nick, oferty);
 		p.setItemInHand(new ItemStack(Material.AIR));
 		p.sendMessage(prefix + "Wystawiono item za §e" + Func.DoubleToString(cena) + "$");
+	}
+	private static final Pattern limitOfertPattern = Pattern.compile("mimirpg\\.targ\\.limit\\.(\\d+)");
+	public static int limitOfert(Player p) {
+		AtomicInteger ai = new AtomicInteger(0);
+		p.getEffectivePermissions().forEach(perm -> {
+			if (perm.getValue()) {
+				Matcher matcher = limitOfertPattern.matcher(perm.getPermission());
+				if (matcher.matches())
+					ai.set(Math.max(ai.get(), Func.Int(matcher.group(1))));
+			}
+		});
+		return ai.get();
 	}
 	@SuppressWarnings("unchecked")
 	private void wycofajItem(Player p, ItemStack item) {
@@ -250,8 +272,8 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			if (slot >= 6*9 || slot < 0) return;
 			ev.setCancelled(true);
 			
-			String nazwa = Func.getDisplayName(item.getItemMeta());
-			if (nazwa.equals("§6§2 ")) return;
+			String nazwa = Func.nazwaItemku(item);
+			if (item.isSimilar(itemBrakTowaru)) return;
 			if (slot < 5*9) {kup(p, item); return;}
 			switch(nazwa) {
 			case "§6Poprzednia strona":
@@ -273,7 +295,7 @@ public class Targ extends Komenda implements Listener, Przeładowalny{
 			ev.setCancelled(true);
 			if (slot == 17) 
 				dajMenu(p);
-			else if (!Func.getDisplayName(item.getItemMeta()).equals("§aKliknij item aby go wycofać"))
+			else if (!Func.nazwaItemku(item).equals("§aKliknij item aby go wycofać"))
 				wycofajItem(p, item);
 			return;
 		}

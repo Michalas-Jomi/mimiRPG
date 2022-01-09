@@ -24,6 +24,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -274,6 +275,21 @@ public class ItemyRPG extends KomendaZMapowanymiItemami<Rozwój> implements List
 	private static final String maxLvlLore = Func.koloruj("&6Level&8: &%aa3333-773333&l&oMAX");
 	static void ustawProgres(ItemStack item, double exp, double potrzebnyExp, int lvl) {
 		ItemMeta meta = item.getItemMeta();
+		
+		// damage
+		
+		if (meta instanceof Damageable) {
+			Damageable dmg = (Damageable) meta;
+			int max = item.getType().getMaxDurability();
+			
+			double p = exp / potrzebnyExp;
+			
+			dmg.setDamage((int) Math.min(max - 1, Math.max(1, max - p*max)));
+		}
+		
+		
+		// lore
+		
 		List<String> lore = Func.nieNull(Func.getLore(meta));
 		
 		if (lvl == -1) {
