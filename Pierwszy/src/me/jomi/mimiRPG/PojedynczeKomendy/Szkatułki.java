@@ -252,6 +252,7 @@ public class Szkatułki extends Komenda implements Listener, Przeładowalny {
 			};
 			k.a = skrzynia -> {
 				tmp.remove(p.getName());
+				p.removeScoreboardTag(Main.tagBlokOtwarciaJednorazowy);
 				if (p.getInventory().getItemInMainHand().isSimilar(skrzynia.klucz)) {
 					Func.zabierzItem(p.getInventory(), EquipmentSlot.HAND);
 					skrzynia.otwórz(p);

@@ -157,6 +157,10 @@ public class Targ extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		Main.panelTakNie(p, "§4§lCzy napewno chcesz kupić §c" + Func.nazwaItemku(item), "§aTak§6, zapłacę " + cena + "$", "§cNie§6, dziękuję", () -> {
+			if (!Itemy.contains(item)) {
+				p.sendMessage(prefix + "Tego przedmiotu nie ma już na targu");
+				return;
+			}
 			EconomyResponse r = Main.econ.withdrawPlayer(p, cena);
 			Main.econ.depositPlayer(sprzedawca, cena);
 	        if(r.transactionSuccess()) {

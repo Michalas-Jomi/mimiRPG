@@ -574,14 +574,14 @@ public class CustomoweOsiągnięcia extends Komenda implements Listener, Przeła
 		});
 	}
 	@EventHandler
-	public void wygyrwanieBossAreny(WygranaBossArenaEvent ev) {
+	public void wygrywanieBossAreny(WygranaBossArenaEvent ev) {
 		Func.wykonajDlaNieNull(mapaBossAren.get(ev.nazwaBossa), lista ->
 			lista.forEach(krotka ->
 				ev.arena.wykonajGraczom(p ->
 					krotka.a.odznacz(p, krotka.b))));
 	}
 	@EventHandler
-	public void wygyrwanieBossAreny(WygranaDungArenaEvent ev) {
+	public void wygrywanieDungAreny(WygranaDungArenaEvent ev) {
 		Func.wykonajDlaNieNull(mapaBossAren.get(ev.nazwaBossa), lista ->
 			lista.forEach(krotka ->
 				ev.arena.wykonajGraczom(p ->

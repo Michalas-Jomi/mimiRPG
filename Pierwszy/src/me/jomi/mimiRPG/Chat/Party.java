@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -155,6 +156,21 @@ public class Party extends Komenda implements Listener {
 	@EventHandler
 	public void opuszczanieGry(PlayerQuitEvent ev) {
 		Func.wykonajDlaNieNull(mapaParty.get(ev.getPlayer().getName()), party -> party.opuść(ev.getPlayer()));
+	}
+	@EventHandler
+	public void dmg(EntityDamageByEntityEvent ev) {
+		if (ev.getEntity() instanceof Player && ev.getDamager() instanceof Player) {
+			Player p1 = (Player) ev.getEntity();
+			Player p2 = (Player) ev.getDamager();
+			
+			Func.wykonajDlaNieNull(dajParty(p1), party1 -> {
+				Func.wykonajDlaNieNull(dajParty(p2), party2 -> {
+					if (party1.przywódca.getName().equals(party2.przywódca.getName()))
+						ev.setDamage(0);
+						ev.setCancelled(true);
+				});
+			});
+		}
 	}
 	
 	public static List<Player> dajGraczyParty(Player p) {

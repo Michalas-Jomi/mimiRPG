@@ -1,4 +1,4 @@
-package me.jomi.mimiRPG.PojedynczeKomendy;
+package me.jomi.mimiRPG.SkyBlock;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

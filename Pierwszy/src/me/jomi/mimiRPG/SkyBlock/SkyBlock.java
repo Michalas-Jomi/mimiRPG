@@ -1400,7 +1400,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			n.dodaj(infoCzłonkowie());
 			n.dodaj("\n");
-			n.dodajEndK("&aData stwrzenia: &e" + dataUtworzenia,
+			n.dodajEndK("&aData stworzenia: &e" + dataUtworzenia,
 					"&aGenerator: &e" + Ulepszenia.generator[poziomy.generator].wartość + " lvl",
 					"&aPunkty: &e" + Func.DoubleToString(pkt), "&aTyp: &e" + typ);
 
@@ -1601,7 +1601,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		public void tpHome(Player p) {
 			p.teleport(locHome);
-			p.sendMessage(prefix + "Zostałeś przeleportowany na swoją wyspę");
+			p.sendMessage(prefix + "Zostałeś przeteleportowany na swoją wyspę");
 		}
 
 		
@@ -1663,7 +1663,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		}
 		public void policzWartość(Player p, Runnable taskNaKoniec) {
-			int dostępne = Runtime.getRuntime().availableProcessors();
+			int dostępne = Main.ust.wczytajInt("SkyBlock.isvalue.maxWątki");
+			if (dostępne <= 0)
+				dostępne = Runtime.getRuntime().availableProcessors();
 			
 			final int overworld, nether;
 			
@@ -1914,7 +1916,8 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				}
 			}
 			checker.checkFormat(permisje(p).wyrzucanie_członków_i_uncoop, "Nie masz uprawnień aby wyrzucać członków z wyspy");
-
+			checker.checkFormat(!członkowie.get(kogo).equals("właściciel"), "Nie możesz wyrzucić właściciela wyspy");
+			
 			if (new OpuszczanieWyspyEvent(this, kogo).isCancelled())
 				return;
 

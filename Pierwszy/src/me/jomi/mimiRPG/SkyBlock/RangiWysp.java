@@ -81,8 +81,8 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 				OfflinePlayer p = Func.graczOffline(członek);
 				Main.chat.setPlayerSuffix(null, p, suff);
 				
-				stara.strać(p.getName());
-				nowa.zdobądz(p.getName());
+				Func.wykonajDlaNieNull(stara, r -> r.strać  (p.getName()));
+				Func.wykonajDlaNieNull(nowa,  r -> r.zdobądz(p.getName()));
 				
 				ustawGrupe(p, suff);
 			}
@@ -93,8 +93,8 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 		new Thread(() -> {
 			for (String członek : ev.wyspa.członkowie.keySet()) {
 				OfflinePlayer p = Func.graczOffline(członek);
-				Main.chat.setPlayerSuffix(null, p, "");
 				ustawGrupe(p, null);
+				Main.chat.setPlayerSuffix(null, p, "");
 			}
 		}).start();
 	}
@@ -102,8 +102,8 @@ public class RangiWysp extends Komenda implements Przeładowalny, Listener {
 	public void opuszczanieWyspy(OpuszczanieWyspyEvent ev) {
 		new Thread(() -> {
 			OfflinePlayer p = Func.graczOffline(ev.nick);
-			Main.chat.setPlayerSuffix(null, p, "");
 			ustawGrupe(p, null);
+			Main.chat.setPlayerSuffix(null, p, "");
 		}).start();
 	}
 	@EventHandler(priority = EventPriority.MONITOR)

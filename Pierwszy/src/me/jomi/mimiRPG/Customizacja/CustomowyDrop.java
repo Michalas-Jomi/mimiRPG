@@ -221,7 +221,7 @@ public class CustomowyDrop implements Listener, Przeładowalny {
 			ev.getEntity().remove();
 		}
 	}
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(priority=EventPriority.LOW)
 	public void śmierćMoba(EntityDeathEvent ev) {
 		final String typ = ev.getEntityType().toString();
 		final LivingEntity mob = ev.getEntity();

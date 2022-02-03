@@ -47,7 +47,7 @@ public abstract class MinigraDrużynowa extends Minigra {
 
 		private final HashMap<String, Krotka<StringBuffer, Integer>> mapaDrużynDlaMsgWin = new HashMap<>();
 		
-		Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();;
+		Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
 		
 		
 		// abstract

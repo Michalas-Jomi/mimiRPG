@@ -2,15 +2,20 @@ package me.jomi.mimiRPG.SkyBlock;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
@@ -18,7 +23,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_17_R1.block.CraftCreatureSpawner;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -28,6 +35,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -35,6 +45,9 @@ import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.loot.LootContext;
+import org.bukkit.loot.LootTable;
+import org.bukkit.persistence.PersistentDataType;
 
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -221,6 +234,44 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	final HashMap<String, CreatureSpawner> panele = new HashMap<>();
 	
 	static Dane dane;
+	static class Stakowanie {
+		static NamespacedKey nsk = new NamespacedKey(Main.plugin, "mimispawnerstack");
+		static List<String> whitelista;
+		static boolean status;
+		static int zasięg;
+		static int max;
+		
+		public static int ileWStaku(Entity e) {
+			return  e.getPersistentDataContainer().has(nsk, PersistentDataType.INTEGER) ?
+					e.getPersistentDataContainer().get(nsk, PersistentDataType.INTEGER) :
+					1;
+		}
+		public static void ustawStak(Entity e, int ile) {
+			int start = ileWStaku(e);
+			
+			if (e instanceof LivingEntity) {
+				LivingEntity le = (LivingEntity) e;
+				AttributeInstance attr = le.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				attr.setBaseValue((attr.getBaseValue() / start) * ile);
+				le.setHealth(attr.getValue());
+			}
+			
+			
+			e.setCustomNameVisible(true);
+			
+			String name = e.getCustomName() == null ? "" : e.getCustomName();
+			
+			if (start == 1) name = "§7" + name + "§7";
+			else 			name = name.substring(0, name.length() - String.valueOf(start).length() - 2);
+			
+			name += " x" + ile;
+			
+			e.setCustomName(name);
+			
+			e.getPersistentDataContainer().set(nsk, PersistentDataType.INTEGER, ile);
+		}
+	}
+	
 	
 	public Spawnery() {
 		super("spawner", "/spawner <mob> (gracz)");
@@ -432,6 +483,70 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 		panele.remove(ev.getPlayer().getName());
 	}
 
+	@EventHandler(priority = EventPriority.HIGH)
+	public void respienie(EntitySpawnEvent ev) {
+		if (!Stakowanie.status) return;
+		if (ev.getEntity().getEntitySpawnReason() != SpawnReason.SPAWNER) return;
+		if (!Stakowanie.whitelista.contains(ev.getLocation().getWorld().getName())) return;
+		
+		Collection<? extends Entity> wZasięgu = ev.getLocation().getNearbyEntitiesByType(ev.getEntity().getClass(), Stakowanie.zasięg);
+		
+		// dołączanie do staka
+		for (Entity e : wZasięgu) {
+			if (e.getUniqueId().equals(ev.getEntity().getUniqueId())) continue;
+			if (e.isDead()) continue;
+			
+			int ile = Stakowanie.ileWStaku(e);
+			if (ile > 1 && ile < Stakowanie.max) {
+				Stakowanie.ustawStak(e, ile + 1);
+				Bukkit.getScheduler().runTask(Main.plugin, () -> ev.getEntity().remove());
+				return;
+			}
+		}
+		
+		// tworzenia nowego staka
+		for (Entity e : wZasięgu) {
+			if (e.getUniqueId().equals(ev.getEntity().getUniqueId())) continue;
+			if (Stakowanie.ileWStaku(e) != 1) continue;
+			if (e.isDead()) continue;
+			
+			Stakowanie.ustawStak(e, 2);
+			Bukkit.getScheduler().runTask(Main.plugin, () -> ev.getEntity().remove());
+		}
+	}
+	
+	private EntityDeathEvent offEv = null;
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void śmierćMoba(EntityDeathEvent ev) {
+		if (!Stakowanie.status) return;
+		if (ev.equals(offEv)) return;
+		
+		int ile = Stakowanie.ileWStaku(ev.getEntity());
+		if (ile <= 1) return;
+		
+		
+		ev.getDrops().clear();
+		
+		offEv = ev;
+		for (int i=0; i < ile-1; i++)
+			Bukkit.getPluginManager().callEvent(ev);
+		offEv = null;
+		
+		
+		ev.setDroppedExp(ev.getDroppedExp() * ile);
+		
+		Random rand = new Random();
+		LootTable loot = Bukkit.getLootTable(NamespacedKey.minecraft("entities/" + ev.getEntity().getType().name().toLowerCase()));
+		for (int i=0; i < ile; i++)
+			loot.populateLoot(rand, 
+					new LootContext.Builder(ev.getEntity().getLocation())
+					.killer(ev.getEntity().getKiller())
+					.lootedEntity(ev.getEntity())
+					.build())
+				.forEach(ev.getDrops()::add);
+		
+		Bukkit.getScheduler().runTask(Main.plugin, () -> ev.getEntity().remove());
+	}
 	
 	
 	// Override
@@ -467,6 +582,12 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 
 	@Override
 	public void przeładuj() {
+		Stakowanie.status = Main.ust.wczytajBoolean("Spawnery.stakowanie.status");
+		Stakowanie.max = Main.ust.wczytajInt("Spawnery.stakowanie.max");
+		Stakowanie.zasięg = Main.ust.wczytajInt("Spawnery.stakowanie.zasięg");
+		Stakowanie.whitelista = Main.ust.wczytajListe("Spawnery.stakowanie.whitelista");
+		
+		
 		dane =  new Config("configi/Spawnery").wczytaj("Spawnery", Dane::new);
 		
 		List<Ulepszenie> ulepszenia = Lists.newArrayList(dane.ulepszenia);
@@ -506,7 +627,7 @@ public class Spawnery extends Komenda implements Przeładowalny, Listener {
 	public Krotka<String, Object> raport() {
 		int x = 0;
 		try {
-			x = Main.ust.sekcja("Spawnery.ulepszenia").getKeys(false).size();
+			x = dane.ulepszenia.size();
 		} catch (Exception e) {}
 		return Func.r("wczytane ulepszenia", x);
 	}

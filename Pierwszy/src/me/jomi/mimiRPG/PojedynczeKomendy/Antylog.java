@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -40,9 +43,16 @@ import me.jomi.mimiRPG.util.Zegar;
 
 @Moduł
 public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny {
+	public static enum Pozycja {
+		BOSSBAR,
+		ACTIONBAR,
+	}
+	
+	
 	public static final String prefix = Func.prefix("Antylog");
 	final HashMap<String, Set<String>> gracze = new HashMap<>();
 	final HashMap<String, Integer> 	   czasy  = new HashMap<>();
+	final HashMap<String, BossBar> 	   bary  = new HashMap<>();
 
 	public Antylog() {
 		super("antylogbypass");
@@ -67,6 +77,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	}
 	
 	int maxCzas = 40;
+	Pozycja pozycja = Pozycja.ACTIONBAR;
 	
 	@Override
 	public int czas() {
@@ -82,18 +93,25 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 	
 	void info(String nick) {
 		int czas = czasy.getOrDefault(nick, maxCzas);
-		String walka = "§"+(czas % 2 == 0 ? '6' : 'e')+"Walka";
-		StringBuilder txt = new StringBuilder(walka);
-		txt.append(" §a");
-		czas /= 2;
-		for (int i=0; i<czas; i++)
-			txt.append('|');
-		txt.append("§c");
-		for (int i=czas; i<maxCzas/2; i++)
-			txt.append('|');
-		txt.append(' ').append(walka);
-
-		Func.sendActionBar(Bukkit.getPlayer(nick), txt.toString());
+		
+		switch (pozycja) {
+		case ACTIONBAR:
+			String walka = "§"+(czas % 2 == 0 ? '6' : 'e')+"Walka";
+			StringBuilder txt = new StringBuilder(walka);
+			txt.append(" §a");
+			for (int i=0; i<czas / 2; i++)
+				txt.append('|');
+			txt.append("§c");
+			for (int i=czas / 2; i<maxCzas/2; i++)
+				txt.append('|');
+			txt.append(' ').append(walka);
+			
+			Func.sendActionBar(Bukkit.getPlayer(nick), txt.toString());
+			return;
+		case BOSSBAR:
+			Func.wykonajDlaNieNull(bary.get(nick), bar -> bar.setProgress(1 - (double) czas / (double) maxCzas));
+			return;
+		}
 	}
 	@EventHandler
 	public void dołączanieDoGry(PlayerJoinEvent ev) {
@@ -115,6 +133,7 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 			p.removeScoreboardTag("mimiAntylog");
 			info(nick);
 		});
+		Func.wykonajDlaNieNull(bary.remove(nick), bar -> bar.removeAll());
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -157,8 +176,27 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		gracze.get(atakowany.getName()).add(atakujący.getName());
 		gracze.get(atakujący.getName()).add(atakowany.getName());
 		
+		if (pozycja == Pozycja.BOSSBAR) {
+			BossBar bossbar;
+			
+			if (!bary.containsKey(atakowany.getName())) {
+				bossbar = Bukkit.createBossBar("§6Walka", BarColor.YELLOW, BarStyle.SOLID);
+				bossbar.addPlayer(atakowany);
+				bossbar.setVisible(true);
+				bary.put(atakowany.getName(), bossbar);
+			}
+			
+			if (!bary.containsKey(atakujący.getName())) {
+				bossbar = Bukkit.createBossBar("§6Walka", BarColor.YELLOW, BarStyle.SOLID);
+				bossbar.addPlayer(atakujący);
+				bossbar.setVisible(true);
+				bary.put(atakujący.getName(), bossbar);
+			}
+		}
+		
 		info(atakujący.getName());
 		info(atakowany.getName());
+		
 		
 		if (Main.ust.wczytaj("Antylog.glowing", true)) {
 			atakujący.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, maxCzas*5, 1, false, false, false));
@@ -218,6 +256,8 @@ public class Antylog extends Komenda implements Listener, Zegar, Przeładowalny 
 		dozwolone = Sets.newHashSet(Main.ust.wczytajListe("Antylog.Dozwolone Komendy"));
 		dozwolone.add("/antylogbypass");
 		maxCzas = Main.ust.wczytaj("Antylog.Czas", 10) * 4;
+		pozycja = Func.StringToEnum(Pozycja.class, Main.ust.wczytaj("Antylog.pozycja", "ACTIONBAR"));
+		
 	}
 	@Override
 	public Krotka<String, Object> raport() {

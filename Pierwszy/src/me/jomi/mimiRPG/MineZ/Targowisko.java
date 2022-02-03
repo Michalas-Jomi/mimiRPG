@@ -27,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import com.nisovin.shopkeepers.SKShopkeepersPlugin;
 import com.nisovin.shopkeepers.api.events.PlayerCreatePlayerShopkeeperEvent;
 import com.nisovin.shopkeepers.api.events.PlayerDeleteShopkeeperEvent;
+import com.nisovin.shopkeepers.api.events.ShopkeeperEditedEvent;
 import com.nisovin.shopkeepers.api.shopkeeper.ShopkeeperCreateException;
 import com.nisovin.shopkeepers.api.shopkeeper.player.PlayerShopCreationData;
 import com.nisovin.shopkeepers.shopkeeper.AbstractShopkeeper;
@@ -227,7 +228,10 @@ public class Targowisko extends Komenda implements Listener, Przeładowalny, Zeg
 				usuńTargowisko(shop.getOwnerName().toLowerCase());
 		}
 	}
-
+	@EventHandler
+	public void edit(ShopkeeperEditedEvent ev) {
+		ev.getShopkeeper().getUISessions().forEach(ses -> ses.close());
+	}
 	
 	
 	// Override

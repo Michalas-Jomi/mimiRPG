@@ -238,7 +238,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 		}
 	}
 	public static class Arena {
-		static final String meta = "mimiBossArena";
+		static final String meta = "mimiDungArena";
 		
 		final int przesunięcieLoc;
 		final ArenaDane arenaDane;
@@ -821,6 +821,10 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			if (Func.multiEquals(ev.getCurrentItem().getType(), Material.YELLOW_STAINED_GLASS_PANE, Material.RED_STAINED_GLASS_PANE) &&
 					ev.getCurrentItem().getItemMeta().hasCustomModelData() && ev.getCurrentItem().getItemMeta().getCustomModelData() == 441441)
 				return;
+			if (!stwórzPanel((Player) ev.getWhoClicked()).getItem(ev.getRawSlot()).isSimilar(ev.getCurrentItem())) {
+				ev.getWhoClicked().closeInventory();
+				return;
+			}
 			
 			String boss = Func.getDisplayName(ev.getCurrentItem().getItemMeta()).substring(2);
 			try {
@@ -885,7 +889,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 	
 	static Panel panel = new Panel(true);
 	
-	public void otwórzPanel(Player p) {
+	private Inventory stwórzPanel(Player p) {
 		List<Gracz> gracze = Func.wykonajWszystkim(Party.dajGraczyParty(p), Gracz::wczytaj);
 		
 		List<TriKrotka<String, ArenaDane, Long>> dostępne = new ArrayList<>();
@@ -934,7 +938,11 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			inv.setItem(slot[0]++, item);
 		});
 		
-		p.openInventory(inv);
+		return inv;
+		
+	}
+	public void otwórzPanel(Player p) {
+		p.openInventory(stwórzPanel(p));
 	}
 	
 	public static Arena arena(Entity mob) {
