@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -83,6 +84,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.AtomicDouble;
 
 import net.md_5.bungee.api.chat.ClickEvent.Action;
 
@@ -114,6 +116,7 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Krotki.MonoKrotka;
 import me.jomi.mimiRPG.util.NMS;
 import me.jomi.mimiRPG.util.Napis;
+import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.Przeładowalny;
 
 //TODO /is tempban
@@ -541,7 +544,6 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 			typ.wklejSchematy(locŚrodek.getBlockX(), locŚrodek.getBlockY(), locŚrodek.getBlockZ());
 			
-			policzWartość(p, null);
 			sprawdzTop();
 
 			zapiszNatychmiast();
@@ -1632,15 +1634,148 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 		
 		// /is value
+		
+		private static final Panel panel_isValue = new Panel(true);
+		static {
+			panel_isValue.ustawClick(ev -> {
+				if (Baza.pustySlotCzarny.isSimilar(ev.getCurrentItem())) return;
+				
+				Wyspa wyspa = (Wyspa) panel_isValue.dajDanePanelu(ev.getInventory());
+				Material mat = ev.getCurrentItem().getType();
+				Inventory inv = ev.getWhoClicked().getInventory();
+				double pkt = punktacja.getOrDefault(mat, 0d);
+				int posiadane = wyspa.punkty.getOrDefault(mat.name(), 0);
+				
+				int ile = 0;
+				for (int i=0; i < inv.getSize(); i++) {
+					ItemStack item = inv.getItem(i);
+					if (item != null && item.getType() == mat && new ItemStack(mat).isSimilar(item)) {
+						ile += item.getAmount();
+						inv.setItem(i, null);
+					}
+				}
+				
+				if (ile == 0)
+					ev.getWhoClicked().sendMessage(prefix + Func.msg("Nie posiadzasz żadnego %s w swoim eq", Func.enumToString(mat)));
+				else {
+					wyspa.punkty.put(mat.name(), posiadane + ile);
+					posiadane += ile;
+					wyspa.policzWartość((Player) ev.getWhoClicked());
+					wyspa.powiadomCzłonków("%s wrzucił %sx %s (%spkt) do /is value aktualna wartość wyspy: %spkt",
+							ev.getWhoClicked().getName(), ile, Func.enumToString(mat), ile * pkt, wyspa.pkt);
+					
+					ItemStack item = ev.getCurrentItem();
+					List<String> lore = Func.getLore(item.getItemMeta());
+					lore.set(1, "§6Posiadane§7: §e" + posiadane);
+					lore.set(2, "§6Razem§7: §e" + Func.DoubleToString(posiadane * pkt));
+					ev.getInventory().setItem(ev.getRawSlot(), Func.ustawLore(item, lore));
+				}
+			});
+		}
+		private Inventory inv_isValue = null;
+		
+		@Mapowane double dodatkowe_pkt;
+		@Mapowane double pkt;
+		@Mapowane boolean przeliczył = false;
+		boolean blokadaLiczenia = false;
+		@Mapowane HashMap<String, Integer> punkty = new HashMap<>();
+		
+		public boolean wartość(Player p) throws MsgCmdError {
+			checker.checkFormat(permisje(p).liczenie_wartości_wyspy, "Nie masz uprawnień do przeliczania wartości wyspy");
 
+			if (!przeliczył && !blokadaLiczenia)
+				zbierzStareBloki(p);
+			
+			p.openInventory(dajInv_isValue());
+			
+			return false;
+		}
+		private void zbierzStareBloki(Player p) {
+			blokadaLiczenia = true;
+			
+			Runnable koniec = () -> {
+				przeliczył = true;
+				blokadaLiczenia = false;
+				
+				if (inv_isValue != null)
+					while (!inv_isValue.getViewers().isEmpty())
+						inv_isValue.getViewers().get(0).closeInventory();
+				
+				inv_isValue = null;
+				
+				policzWartość(p);
+				
+				powiadomCzłonków("Zebrano drogocenne bloki, aktualna wartość wyspy: %s", pkt);
+			};
+			
+			Krotka<Location, Location> rogi = rogi();
+			Predicate<Block> work = blok -> {
+				Func.wykonajDlaNieNull(podmianaBloków.get(blok.getType()), mat -> {
+					punkty.put(blok.getType().name(), punkty.getOrDefault(blok.getType().name(), 0) + 1);
+					blok.setType(mat, false);
+				});
+				return true;
+			};
+			Func.wykonajNaBlokach(rogi.a, rogi.b, work, () -> {
+				if (Światy.dozwolonyNether) {
+					rogi.a.setWorld(Światy.nether);
+					rogi.b.setWorld(Światy.nether);
+					Func.wykonajNaBlokach(rogi.a, rogi.b, work, koniec);
+				} else
+					koniec.run();
+			}); 
+		}
+		private Inventory dajInv_isValue() {
+			if (inv_isValue == null || (punktacja.size() > 6*9 && inv_isValue.getViewers().isEmpty())) {
+				int pr = Func.potrzebneRzędy(punktacja.size());
+				inv_isValue = panel_isValue.stwórz(this, pr <= 4 ? pr + 2 : pr, "§e§lWartość", Baza.pustySlotCzarny);
+				
+				EnumSet<Material> set = EnumSet.noneOf(Material.class);
+				while (set.size() < 6*9 && set.size() < punktacja.size())
+					set.add(Func.losuj(punktacja.keySet()));
+				
+				List<ItemStack> itemy = new ArrayList<>();
+				for (Material mat : set) {
+					int posiadane = punkty.getOrDefault(mat.name(), 0);
+					double pkt = punktacja.get(mat);
+					ItemStack ikona = Func.stwórzItem(mat, "§b" + Func.enumToString(mat), 
+							"§6Wartość§7: §e" + Func.DoubleToString(pkt) + "§6pkt",
+							"§6Posiadane§7: §e" + posiadane,
+							"§6Razem§7: §e" + Func.DoubleToString(posiadane * pkt)
+							);
+					Func.insort(ikona, itemy, item -> Func.stringToDouble(item.getType().name()));
+				}
+				
+				for (int slot : Func.sloty(itemy.size(), pr))
+					inv_isValue.setItem(pr <= 4 ? slot + 9 : slot, itemy.remove(0));
+			}
+			return inv_isValue;
+		}
+		void policzWartość(Player p) {
+			AtomicDouble pkt = new AtomicDouble(dodatkowe_pkt);
+			punkty.forEach((mat, ile) -> pkt.getAndAdd(punktacja.getOrDefault(Func.StringToEnum(Material.class, mat), 0d) * ile));
+			
+
+			double nowe = new PrzeliczaniePunktówWyspyEvent(this, p, this.pkt, pkt.get() + dodatkowe_pkt).pktPo;
+			if (nowe != this.pkt) {
+				this.pkt = nowe;
+				sprawdzTop();
+			}
+			
+			this.pkt = nowe;
+			zapisz();
+		}
+		public double getPkt() {
+			return pkt;
+		}
+		
+		// stare /is value
+/*
 		private Runnable pkt_taskNaKoniec;
 		private Player pkt_p;
 		private long pkt_start;
 		private volatile int oczekujące;
 		private volatile double pkt_policzone;
-		@Mapowane double dodatkowe_pkt;
-		@Mapowane double pkt;
-		static final Cooldown ostatnieLiczenie = new Cooldown(60 * 30);
 		public boolean wartość(Player p) throws MsgCmdError {
 			checker.checkFormat(permisje(p).liczenie_wartości_wyspy, "Nie masz uprawnień do przeliczania wartości wyspy");
 			checker.checkFormat(oczekujące <= 0, "Wartość jest aktualnie liczona");
@@ -1742,9 +1877,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				});
 		}
 		
-		public double getPkt() {
-			return pkt;
-		}
+*/
 
 		
 		// /is invite /is join
@@ -3184,6 +3317,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 	// [ ((overworld cobl, overworld stone), (nether cobl, nether stone)), ][lvl -1]
 	static final List<MonoKrotka<MonoKrotka<Ciąg<Material>>>> generator = Lists.newArrayList();
 	static final Map<Material, Double> punktacja = new EnumMap<>(Material.class);
+	static final Map<Material, Material> podmianaBloków = new EnumMap<>(Material.class);
 	static double punktacja_AIR;
 	static final List<Biom> biomy = Lists.newArrayList();
 	static List<Integer> slotyTopki;
@@ -3250,8 +3384,14 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 		slotyTopki = Func.nieNull((List<Integer>) config.wczytaj("topka.sloty"));
 		topInfo = Func.nieNull((List<TopInfo>) configData.wczytaj("topka.gracze"));
 		yWysp = config.wczytaj("y wysp", 100);
-		Wyspa.ostatnieLiczenie.ustawDomyślny(config.wczytaj("cooldown.liczenie punktów", 60 * 30));
 
+		
+		// PodmianaBloków
+		podmianaBloków.clear();
+		Func.wykonajDlaNieNull(config.sekcja("podmianaBloków"), sekcja -> sekcja.getValues(false).forEach((klucz, wartość) -> 
+				podmianaBloków.put(Func.StringToEnum(Material.class, klucz), Func.StringToEnum(Material.class, (String) wartość))));
+		
+		
 		// Punktacja
 		punktacja.clear();
 		Func.wykonajDlaNieNull(config.sekcja("punktacja"), sekcja -> sekcja.getValues(false).forEach((klucz, obj) -> {

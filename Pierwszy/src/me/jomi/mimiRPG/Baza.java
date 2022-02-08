@@ -44,8 +44,8 @@ public class Baza implements Listener {
 	
 	// TODO: wczytywać
 	public static class BudowanieAren {
-		public static int maxBloki = 20000;
-		public static int tickiPrzerw = 3;
+		public static int maxBloki = 2000;
+		public static int tickiPrzerw = 1;
 	}
 	
 	public static boolean bezpieczna(String cmd) {

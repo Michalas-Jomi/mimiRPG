@@ -1964,17 +1964,21 @@ public abstract class Func {
 		return new IteratorBloków<>(róg1, róg2, świat::getBlockAt);
 	}
 	public static void wykonajNaBlokach(Location róg1, Location róg2, Predicate<Block> cons) {
-		wykonajNaBlokach(blokiIterator(róg1, róg2), cons);
+		wykonajNaBlokach(róg1, róg2, cons, null);
 	}
-	private static void wykonajNaBlokach(Iterator<Block> it, Predicate<Block> cons) {
+	public static void wykonajNaBlokach(Location róg1, Location róg2, Predicate<Block> cons, Runnable callback) {
+		wykonajNaBlokach(blokiIterator(róg1, róg2), cons, callback);
+	}
+	private static void wykonajNaBlokach(Iterator<Block> it, Predicate<Block> cons, Runnable callback) {
 		int mx = Baza.BudowanieAren.maxBloki;
 		int licz = 0;
 		
 		while (it.hasNext())
 			if (cons.test(it.next()) && ++licz >= mx) {
-				Func.opóznij(Baza.BudowanieAren.tickiPrzerw, () -> wykonajNaBlokach(it, cons));
+				Func.opóznij(Baza.BudowanieAren.tickiPrzerw, () -> wykonajNaBlokach(it, cons, callback));
 				return;
 			}
+		Func.wykonajDlaNieNull(callback, Runnable::run);
 	}
 	public static void wykonajNaBlokach(Location róg1, Location róg2, FunctionXYZ<Boolean> cons) {
 		wykonajNaBlokach(new IteratorBloków<>(róg1, róg2, cons));

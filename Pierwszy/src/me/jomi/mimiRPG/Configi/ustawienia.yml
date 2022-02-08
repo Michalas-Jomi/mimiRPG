@@ -204,6 +204,8 @@ Kosz:
 ### Spawnery ###
 
 Spawnery:
+  # zamiast moby dokoła respi sam drop
+  wyłączMoby: false
   # stakowanie mobów polega na połączeniu kilka mobów tego samego typu ze spawnera w jeden silnijszy sumując ich hp i drop
   stakowanie:
     # określa czy stakować moby ze spawnerów czy nie
