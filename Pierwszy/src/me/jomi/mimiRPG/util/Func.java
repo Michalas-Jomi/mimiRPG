@@ -1648,12 +1648,6 @@ public abstract class Func {
 			mapa.put(klucz, w = domyślna.get());
 		return w;
 	}
-	public static <K, V> V wezUstaw(Map<K, V> mapa, K klucz, V domyślna) {
-		V w = mapa.get(klucz);
-		if (w == null)
-			mapa.put(klucz, w = domyślna);
-		return w;
-	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> boolean multiEquals(T co, T... czemu) {
