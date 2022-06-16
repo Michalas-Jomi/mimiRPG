@@ -99,7 +99,7 @@ class Funkcja {
 			return;
 		String komenda = komendy[nr];
 		for (int i=1; i<=this.parametry; i++)
-			komenda = komenda.replace("%"+i+"%", parametry[i]);
+			komenda = komenda.replace("%"+i+"%", parametry[i].replace("-", " "));
 		if (komenda.startsWith(">czekaj")) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
 	            @Override

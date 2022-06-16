@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -29,6 +30,8 @@ import me.jomi.mimiRPG.Chat.Party.API.OpuszczaniePartyEvent;
 import me.jomi.mimiRPG.util.Func;
 import me.jomi.mimiRPG.util.Komenda;
 import me.jomi.mimiRPG.util.Napis;
+import org.bukkit.projectiles.ProjectileSource;
+import org.jetbrains.annotations.Nullable;
 
 @Moduł(priorytet = Moduł.Priorytet.NAJWYŻSZY)
 public class Party extends Komenda implements Listener {
@@ -162,9 +165,15 @@ public class Party extends Komenda implements Listener {
 		if (ev.getEntity() instanceof Player && ev.getDamager() instanceof Player) {
 			Player p1 = (Player) ev.getEntity();
 			Player p2 = (Player) ev.getDamager();
+
+			if (ev.getDamager() instanceof Projectile) {
+				ProjectileSource e = ((Projectile) ev.getDamager()).getShooter();
+				if (e instanceof Player)
+					p2 = (Player) e;
+			}
 			
-			Func.wykonajDlaNieNull(dajParty(p1), party1 -> {
-				Func.wykonajDlaNieNull(dajParty(p2), party2 -> {
+			Func.wykonajDlaNieNull(dajParty(p2), party2 -> {
+				Func.wykonajDlaNieNull(dajParty(p1), party1 -> {
 					if (party1.przywódca.getName().equals(party2.przywódca.getName()))
 						ev.setDamage(0);
 						ev.setCancelled(true);

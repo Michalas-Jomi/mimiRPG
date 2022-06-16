@@ -718,7 +718,9 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 		Func.opóznij(30, () -> {
 			String _uuids = chunk.getPersistentDataContainer().get(kluczMiniona, PersistentDataType.STRING);
 			List<String> uuids = Func.tnij(_uuids, ",");
-			
+
+			List<String> toRemove = new ArrayList<>();
+
 			uuids.forEach(uuid -> {
 				if (uuid.isEmpty())
 					return;
@@ -726,9 +728,19 @@ public class Miniony extends Komenda implements Listener, Przeładowalny, Zegar 
 				if (as == null) {
 					if (warnCooldown.minąłToUstaw(uuid))
 						Main.warn("Nieodnaleziono miniona o uuid: " + uuid);
+					else
+						toRemove.add(uuid);
 				} else
 					new Minion(as);
 			});
+
+			if (!toRemove.isEmpty()) {
+				for (String uuid : toRemove)
+					uuids.remove(uuid);
+
+				PersistentDataContainer data = chunk.getPersistentDataContainer();
+				data.set(kluczMiniona, PersistentDataType.STRING, Func.listToString(uuids, 0, ","));
+			}
 		});
 	}
 

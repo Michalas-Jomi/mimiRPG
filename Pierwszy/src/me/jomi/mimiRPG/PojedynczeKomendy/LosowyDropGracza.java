@@ -2,6 +2,7 @@ package me.jomi.mimiRPG.PojedynczeKomendy;
 
 import java.util.List;
 
+import me.jomi.mimiRPG.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -73,7 +74,7 @@ public class LosowyDropGracza extends Komenda implements Listener {
 		else
 			p.sendMessage(prefix + Func.msg("Drop gracza %s %s% >= %s%", nick, gracz.dropPoŚmierci, szansa));
 	}
-	
+
 	@EventHandler(priority=EventPriority.HIGH)
 	public void śmierćGracza(PlayerDeathEvent ev) {
 		if (ev.getKeepInventory())

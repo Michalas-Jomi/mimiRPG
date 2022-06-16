@@ -26,6 +26,7 @@ public class _WorldGuard {
 	public static StateFlag flagaC4;
 	public static StateFlag flagaUżywanieWiadra;
 	public static StateFlag flagaRadiacja;
+	public static StateFlag flagaStrefaGazu;
 	public static StateFlag flagaGod;
 	public static StateFlag flagaTargowisko;
 	
@@ -39,6 +40,7 @@ public class _WorldGuard {
 				flagaStawianieBaz	= new StateFlag("StawianieBaz", true),
 				flagaTargowisko 	= new StateFlag("Targowisko", false),
 				flagaRadiacja		= new StateFlag("Radiacja", false),
+				flagaStrefaGazu		= new StateFlag("StrefaGazu", false),
 				flagaGod			= new StateFlag("god", false),
 				flagaC4				= new StateFlag("C4", false)
 			})

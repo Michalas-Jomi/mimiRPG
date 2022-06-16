@@ -277,6 +277,7 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 				))));
 		
 	}
+	protected void subPrzeładuj() {}
 	@Override
 	public void przeładuj() {
 		wczytajUlepszeniaStandardowo(ulepszeniaPrędkości, "prędkość", "ticki");
@@ -290,7 +291,9 @@ public abstract class ModułMaszyny implements Listener, Zegar, Przeładowalny {
 		if (itemMaszyny == null)
 			itemMaszyny = Func.stwórzItem(getShulkerType(), "&6&l" + this.getClass().getSimpleName(),
 					"&aTen przedmiot", "&aTo potężna maszyna", "&aZasilana tlenem z atmosfery");
-		
+
+		subPrzeładuj();
+
 		CustomoweItemy.customoweItemy.put(this.getClass().getSimpleName(), itemMaszyny);
 	}
 	@Override

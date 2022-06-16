@@ -12,6 +12,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import io.lumine.mythic.api.mobs.MythicMob;
+import io.lumine.mythic.bukkit.BukkitAdapter;
+import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
+import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
+import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -55,13 +61,6 @@ import me.jomi.mimiRPG.util.Krotka;
 import me.jomi.mimiRPG.util.Krotki.TriKrotka;
 import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.Przeładowalny;
-
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDespawnEvent;
-import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
-import io.lumine.xikage.mythicmobs.mobs.MythicMob;
 
 @Moduł
 public class Bossy extends Komenda implements Listener, Przeładowalny {
@@ -178,7 +177,7 @@ public class Bossy extends Komenda implements Listener, Przeładowalny {
 		}
 		
 		public MythicMob dajTypBossa() {
-			return MythicMobs.inst().getMobManager().getMythicMob(nazwaBossa);
+			return MythicBukkit.inst().getMobManager().getMythicMob(nazwaBossa).get();
 		}
 		
 		public Arena nowaArena(List<Player> gracze) {

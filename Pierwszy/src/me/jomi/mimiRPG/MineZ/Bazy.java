@@ -721,6 +721,9 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 		detonateC4(loc, zasięg);
 	}
 	public static void detonateC4(Location loc, float zasięg) {
+		if (!możnaRajdować())
+			return;
+
 		float r = zasięg/3*2;
 		loc.getWorld().spawnParticle(Particle.CLOUD, 		loc, (int) zasięg*50, r, r, r, 0);
 		loc.getWorld().spawnParticle(Particle.SMOKE_LARGE,	loc, (int) zasięg*20, r, r, r, 0);
@@ -787,16 +790,16 @@ public class Bazy extends Komenda implements Listener, Przeładowalny, Zegar {
 	}
 	
 	
-	private int min() {
+	private static int min() {
 		return config.wczytajInt("ustawienia.godzinyRajdów.min godz safe");
 	}
-	private int max() {
+	private static int max() {
 		return config.wczytajInt("ustawienia.godzinyRajdów.max godz safe");
 	}
-	private boolean invert() {
+	private static boolean invert() {
 		return config.wczytaj("ustawienia.godzinyRajdów.invert", false);
 	}
-	public boolean możnaRajdować() {
+	public static boolean możnaRajdować() {
 		int aktH = ZonedDateTime.now().getHour();
 		int min = min();
 		int max = max();

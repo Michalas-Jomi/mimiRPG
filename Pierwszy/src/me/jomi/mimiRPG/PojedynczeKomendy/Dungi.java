@@ -14,6 +14,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.lumine.mythic.api.mobs.MythicMob;
+import io.lumine.mythic.bukkit.BukkitAdapter;
+import io.lumine.mythic.bukkit.MythicBukkit;
+import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
+import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
+import io.lumine.mythic.core.mobs.ActiveMob;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -68,12 +75,6 @@ import me.jomi.mimiRPG.util.Panel;
 import me.jomi.mimiRPG.util.Przeładowalny;
 import me.jomi.mimiRPG.util.Zegar;
 
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.xikage.mythicmobs.adapters.bukkit.BukkitAdapter;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDeathEvent;
-import io.lumine.xikage.mythicmobs.api.bukkit.events.MythicMobDespawnEvent;
-import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
-import io.lumine.xikage.mythicmobs.mobs.MythicMob;
 
 @Moduł
 public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
@@ -356,7 +357,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 			for (ActiveMob mob : moby)
 				if (!mob.isDead())
 					return;
-			następnyPokój();
+			Func.opóznij(10, this::następnyPokój);
 		}
 		private void następnyPokój() {
 			if (zakończona) return;
@@ -951,7 +952,7 @@ public class Dungi extends Komenda implements Listener, Przeładowalny, Zegar {
 		return null;
 	}
 	public static MythicMob dajMythicMob(String mob) {
-		return MythicMobs.inst().getMobManager().getMythicMob(mob);
+		return MythicBukkit.inst().getMobManager().getMythicMob(mob).get();
 	}
 	
 	

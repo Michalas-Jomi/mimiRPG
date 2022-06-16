@@ -13,6 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Container;
+import org.bukkit.craftbukkit.v1_17_R1.CraftServer;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.ArmorStand.LockType;
 import org.bukkit.entity.Entity;
@@ -63,6 +64,7 @@ public class AutoCrafting extends ModułMaszyny {
 				if (result == null)
 					return;
 			}
+
 			Container shulker = getContainer();
 			
 			Inventory inv = shulker.getInventory();
@@ -131,16 +133,21 @@ public class AutoCrafting extends ModułMaszyny {
 					choice = shapelessRec.getChoiceList();
 				} else
 					result = null;
-			});
+			}, () -> Main.warn("Nieznana recepta autocraftingu ", recepta));
 			
 			armorstandy.forEach(uuid ->
 				Func.wykonajDlaNieNull(Bukkit.getEntity(UUID.fromString(uuid)), en ->
 					((ArmorStand) en).getEquipment().setHelmet(result == null ? new ItemStack(Material.BARRIER) : result)));
 		}
-		public void ustawRecepte(NamespacedKey recepta) {
-			this.recepta = recepta.toString();
-			zapisz();
+		public void ustawRecepte(Player p, String recepta) {
+			if (!whitelista.isEmpty() && !whitelista.contains(recepta)) {
+				p.sendMessage(prefix + "Autocrafting potrafi craftować tylko: §e" + Func.listToString(whitelista, 0, ", "));
+				return;
+			}
+			p.sendMessage(prefix + "Ustawiono recepte autocraftingu");
+			this.recepta = recepta;
 			odświeżRecepte();
+			zapisz();
 		}
 		public void wybierzRecepte(Player p) {
 			p.openWorkbench(p.getLocation(), true);
@@ -152,8 +159,10 @@ public class AutoCrafting extends ModułMaszyny {
 			return inst;
 		}
 	}
-	
+
 	static final Map<String, Maszyna> mapaWybierającychRecepte = new HashMap<>();
+
+	static List<String> whitelista;
 
 	static AutoCrafting inst;
 	public AutoCrafting() {
@@ -193,9 +202,7 @@ public class AutoCrafting extends ModułMaszyny {
 		Func.wykonajDlaNieNull(mapaWybierającychRecepte.remove(ev.getWhoClicked().getName()), maszyna -> {
 			ev.setCancelled(true);
 			try {
-				maszyna.recepta = Func.dajMetode(ev.getRecipe().getClass(), "getKey").invoke(ev.getRecipe()).toString();
-				maszyna.odświeżRecepte();
-				maszyna.zapisz();
+				maszyna.ustawRecepte((Player) ev.getWhoClicked(), Func.dajMetode(ev.getRecipe().getClass(), "getKey").invoke(ev.getRecipe()).toString());
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -203,7 +210,7 @@ public class AutoCrafting extends ModułMaszyny {
 		});
 	}
 	
-	
+
 	@Override
 	protected Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> getFunkcjePanelu(ModułMaszyny.Maszyna m) {
 		Map<ItemStack, BiConsumer<Player, ModułMaszyny.Maszyna>> funkcjePanelu = new HashMap<>();
@@ -219,4 +226,11 @@ public class AutoCrafting extends ModułMaszyny {
 		
 		return funkcjePanelu;
 	}
+
+
+	@Override
+	protected void subPrzeładuj() {
+		whitelista = Main.ust.wczytajListe("AutoCrafting.whitelista");
+	}
+
 }

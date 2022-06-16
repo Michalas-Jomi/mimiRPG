@@ -7,17 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -27,13 +18,8 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -644,6 +630,19 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 					return true;
 				});
 			}
+
+			rogi = rogi();
+			for (int x=rogi.a.getBlockX(); x <= rogi.b.getBlockX(); x += 16)
+				for (int z=rogi.a.getBlockX(); z <= rogi.b.getBlockX(); z += 16) {
+					_usuń(Światy.overworld.getChunkAt(x / 16, z / 16));
+					if (Światy.dozwolonyNether)
+						_usuń(Światy.nether.getChunkAt(x / 16, z / 16));
+				}
+		}
+		private void _usuń(Chunk chunk) {
+			for (Entity entity : chunk.getEntities())
+				if (!(entity instanceof Player) && this.zawiera(entity.getLocation()))
+					entity.remove();
 		}
 
 		public boolean zawiera(Location loc) {
@@ -1643,7 +1642,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				Wyspa wyspa = (Wyspa) panel_isValue.dajDanePanelu(ev.getInventory());
 				Material mat = ev.getCurrentItem().getType();
 				Inventory inv = ev.getWhoClicked().getInventory();
-				double pkt = punktacja.getOrDefault(mat, 0d);
+				double pkt = punktacja.getOrDefault(mat.name(), 0d);
 				int posiadane = wyspa.punkty.getOrDefault(mat.name(), 0);
 				
 				int ile = 0;
@@ -1730,15 +1729,15 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 				int pr = Func.potrzebneRzędy(punktacja.size());
 				inv_isValue = panel_isValue.stwórz(this, pr <= 4 ? pr + 2 : pr, "§e§lWartość", Baza.pustySlotCzarny);
 				
-				EnumSet<Material> set = EnumSet.noneOf(Material.class);
+				HashSet<String> set = new HashSet<>();
 				while (set.size() < 6*9 && set.size() < punktacja.size())
 					set.add(Func.losuj(punktacja.keySet()));
 				
 				List<ItemStack> itemy = new ArrayList<>();
-				for (Material mat : set) {
-					int posiadane = punkty.getOrDefault(mat.name(), 0);
+				for (String mat : set) {
+					int posiadane = punkty.getOrDefault(mat, 0);
 					double pkt = punktacja.get(mat);
-					ItemStack ikona = Func.stwórzItem(mat, "§b" + Func.enumToString(mat), 
+					ItemStack ikona = Func.stwórzItem(Func.StringToEnum(Material.class, mat), "§b" + mat,
 							"§6Wartość§7: §e" + Func.DoubleToString(pkt) + "§6pkt",
 							"§6Posiadane§7: §e" + posiadane,
 							"§6Razem§7: §e" + Func.DoubleToString(posiadane * pkt)
@@ -1752,11 +1751,12 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			return inv_isValue;
 		}
 		void policzWartość(Player p) {
-			AtomicDouble pkt = new AtomicDouble(dodatkowe_pkt);
-			punkty.forEach((mat, ile) -> pkt.getAndAdd(punktacja.getOrDefault(Func.StringToEnum(Material.class, mat), 0d) * ile));
-			
+			double pkt = dodatkowe_pkt;
+			for (Entry<String, Integer> entry : punkty.entrySet())
+				pkt += punktacja.getOrDefault(entry.getKey(), 0d) * entry.getValue();
 
-			double nowe = new PrzeliczaniePunktówWyspyEvent(this, p, this.pkt, pkt.get() + dodatkowe_pkt).pktPo;
+
+			double nowe = new PrzeliczaniePunktówWyspyEvent(this, p, this.pkt, pkt).pktPo;
 			if (nowe != this.pkt) {
 				this.pkt = nowe;
 				sprawdzTop();
@@ -3316,7 +3316,7 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 
 	// [ ((overworld cobl, overworld stone), (nether cobl, nether stone)), ][lvl -1]
 	static final List<MonoKrotka<MonoKrotka<Ciąg<Material>>>> generator = Lists.newArrayList();
-	static final Map<Material, Double> punktacja = new EnumMap<>(Material.class);
+	static final Map<String, Double> punktacja = new HashMap<>();
 	static final Map<Material, Material> podmianaBloków = new EnumMap<>(Material.class);
 	static double punktacja_AIR;
 	static final List<Biom> biomy = Lists.newArrayList();
@@ -3398,9 +3398,9 @@ public class SkyBlock extends Komenda implements Przeładowalny, Listener {
 			Material mat = Func.StringToEnum(Material.class, klucz);
 			double pkt = Func.DoubleObj(obj);
 			if (pkt != 0)
-				punktacja.put(mat, pkt);
+				punktacja.put(mat.name(), pkt);
 		}));
-		punktacja_AIR = punktacja.getOrDefault(Material.AIR, 0d);
+		punktacja_AIR = punktacja.getOrDefault(Material.AIR.name(), 0d);
 
 		// Generator
 		generator.clear();

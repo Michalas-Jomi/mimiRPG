@@ -93,6 +93,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	public static class Zadanie extends Mapowany {
 		@Mapowane String id;
 		@Mapowane String nazwaWyświetlana;
+		@Mapowane int cooldownOdbioru = 0;
 		@Mapowane List<String> opis;
 		@Mapowane List<String> wymagane;
 		@Mapowane List<ItemStack> nagroda;
@@ -153,9 +154,6 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		}
 		
 		AktywneZadanie przyjmij(Player p) {
-			cmdsStart.forEach(cmd -> 
-			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-						cmd.replace("%nick%", p.getName()).replace("%displayname%", Func.getDisplayName(p))));
 			
 			Gracz g = Gracz.wczytaj(p);
 			
@@ -166,6 +164,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			g.zapisz();
 			
 			p.sendMessage(prefix + Func.msg("Przyjąłeś nowe zadanie: %s", nazwaWyświetlana));
+
+			runCmds(p, cmdsStart, 0);
 			
 			return zadanie;
 		}
@@ -173,6 +173,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	public static class AktywneZadanie extends Mapowany {
 		@Mapowane String zadanie;
 		@Mapowane List<Integer> postępKryteriow;
+		@Mapowane int oddane = -1;
 		private boolean ukończone = false;
 		
 		int getPostęp(int i) {
@@ -197,16 +198,30 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 			Gracz g = Gracz.wczytaj(p);
 			for (int i=0; i < g.zadania.aktywne.size(); i++)
 				if (g.zadania.aktywne.get(i).zadanie.equals(zadanie)) {
-					g.zadania.ukończone.add(zadanie);
-					g.zadania.aktywne.remove(i);
-					Func.wykonajDlaNieNull(wczytaj(zadanie), zadanie -> {
-						zadanie.nagroda.forEach(item -> Func.dajItem(p, item));
-						zadanie.cmdsKoniec.forEach(cmd -> 
-								Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-											cmd.replace("%nick%", p.getName()).replace("%displayname%", Func.getDisplayName(p))));
-					});
-					g.zapisz();
-					p.sendMessage(prefix + Func.msg("Ukończyłeś zadanie %s", zadanie));
+					Zadanie objZadanie = wczytaj(zadanie);
+
+					if (objZadanie == null) {
+						p.sendMessage(Func.msg(prefix + "Zadanie %s nie istnieje, skontaktuj się z §cAdministratorem", zadanie));
+						return;
+					}
+
+					int czas = ((int) (System.currentTimeMillis() / 1000)) - oddane;
+
+					if (objZadanie.cooldownOdbioru <= 0 || czas >= objZadanie.cooldownOdbioru) {
+						g.zadania.ukończone.add(zadanie);
+						g.zadania.aktywne.remove(i);
+						Func.wykonajDlaNieNull(wczytaj(zadanie), zadanie -> {
+							zadanie.nagroda.forEach(item -> Func.dajItem(p, item));
+							runCmds(p, zadanie.cmdsKoniec, 0);
+						});
+						g.zapisz();
+						p.sendMessage(prefix + Func.msg("Ukończyłeś zadanie %s", zadanie));
+					} else {
+						if (oddane == -1)
+							oddane = (int) (System.currentTimeMillis() / 1000);
+						p.sendMessage(prefix + "Musisz poczekać jeszcze %s zanim odbierzesz nagrode", Func.czas(czas));
+					}
+
 					return;
 				}
 		}
@@ -285,7 +300,9 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 	
 	
 	public static final String permInfo = Func.permisja("zadania.czyjeś");
-	
+	static final HashMap<String, Zadanie> mapaZadań = new HashMap<>();
+
+
 	static Zadanie wczytaj(String nazwa) {
 		return mapaZadań.get(nazwa);
 	}
@@ -352,7 +369,22 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		
 		}
 	}
-	
+
+	static void runCmds(Player p, List<String> cmds, int index) {
+		if (index >= cmds.size())
+			return;
+
+		String cmd = cmds.get(index);
+
+		if (cmd.startsWith(">czekaj")) {
+			int delay = Func.Int(Func.tnij(cmd, " ").get(1));
+			Func.opóznij(delay * 20, () -> runCmds(p, cmds, index + 1));
+		} else {
+			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+					cmd.replace("%nick%", p.getName()).replace("%displayname%", Func.getDisplayName(p)));
+			runCmds(p, cmds, index + 1);
+		}
+	}
 	
 	// EventHandler
 	
@@ -410,8 +442,8 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 				}
 			});
 	}
-	
-	
+
+
 	
 	// Override
 	
@@ -666,9 +698,7 @@ public class Zadania extends Komenda implements Przeładowalny, Listener {
 		return false;
 	}
 	
-	
-	static final HashMap<String, Zadanie> mapaZadań = new HashMap<>();
-	
+
 	@Override
 	public void przeładuj() {
 		Config config = new Config("configi/Zadania");	

@@ -67,7 +67,7 @@ public class KolorRGB extends Mapowany {
 	}
 
 	public TextColor textColor() {
-		return TextColor.of(red, green, blue);
+		return TextColor.color(red, green, blue);
 	}
 	
 	public ChatColor zbliżony() {
